@@ -10,7 +10,7 @@ If you have access to more than one model or vendor, each with its own separate 
 ## When a budget signal says a window is getting low
 
 1. **Be deliberate before large spends.** If the next action is inherently large (a wide parallel fan-out, ingesting a big corpus, a long agentic loop), say so explicitly before doing it: state the intended scope, either in your own reasoning or to whoever you're working with. If no one is available to check with, default to the smallest scope that actually accomplishes the task rather than blocking entirely.
-2. **Shift heavy work to whichever provider has headroom.** If one provider is the constraint and another has budget to spare, route the heavy or parallel execution and review work there. You orchestrate; the other provider spends its own budget. This is the same idea as the multi-model-adversarial-review skill: a second vendor isn't just diversity of opinion, it's also separate capacity.
+2. **Shift heavy work to whichever provider has headroom.** If one provider is the constraint and another has budget to spare, route the heavy or parallel execution and review work there. You orchestrate; the other provider spends its own budget. This is the same idea as the multi-model-adversarial-review skill: a second vendor gives you diversity of opinion. It also gives you separate capacity.
 3. **Trim before you cut scope.** Lower the effort/reasoning setting, batch requests, and avoid re-reading large context you've already processed, before you resort to skipping work outright.
 
 ## When budgets are healthy
