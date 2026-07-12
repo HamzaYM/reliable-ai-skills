@@ -631,38 +631,42 @@ def cmd_ab(args):
     # --effort is fail-closed: the installed CLI must advertise the flag
     # AND the requested level before any API call, because the CLI itself
     # ignores unknown effort values and silently runs at the default
-    # effort, which would mislabel this cell.
+    # effort, which would mislabel this cell. Skipped under --dry-run: a
+    # dry run makes no API calls and eval/README.md documents it as such,
+    # so it must not require a CLI to even be installed.
     effort_evidence = None
-    if args.effort:
+    effort_support = None
+    if not args.dry_run:
+        if args.effort:
+            try:
+                effort_evidence = consumer_mod.verify_effort_support(args.effort)
+            except consumer_mod.ConsumerError as exc:
+                fail(str(exc))
+
+        # Per-model enumeration of supported effort levels and detected
+        # defaults, recorded verbatim in run-meta.
         try:
-            effort_evidence = consumer_mod.verify_effort_support(args.effort)
+            effort_support = consumer_mod.enumerate_effort_support(args.model)
         except consumer_mod.ConsumerError as exc:
             fail(str(exc))
 
-    # Per-model enumeration of supported effort levels and detected
-    # defaults, recorded verbatim in run-meta.
-    try:
-        effort_support = consumer_mod.enumerate_effort_support(args.model)
-    except consumer_mod.ConsumerError as exc:
-        fail(str(exc))
+        # Judge panel preflight: both judges run pinned at --effort medium,
+        # so the installed CLI must advertise that level before any spend.
+        try:
+            judge_effort_evidence = consumer_mod.verify_effort_support(
+                judge_mod.JUDGE_EFFORT
+            )
+        except consumer_mod.ConsumerError as exc:
+            fail(f"judge panel effort preflight failed: {exc}")
 
-    # Judge panel preflight: both judges run pinned at --effort medium, so
-    # the installed CLI must advertise that level before any spend.
-    try:
-        judge_effort_evidence = consumer_mod.verify_effort_support(
-            judge_mod.JUDGE_EFFORT
-        )
-    except consumer_mod.ConsumerError as exc:
-        fail(f"judge panel effort preflight failed: {exc}")
-
-    # Adjudicator preflight: the pinned adjudicator effort must also be
-    # advertised by the installed CLI before any spend.
-    try:
-        adjudicator_effort_evidence = consumer_mod.verify_effort_support(
-            judge_mod.ADJUDICATOR_EFFORT
-        )
-    except consumer_mod.ConsumerError as exc:
-        fail(f"adjudicator effort preflight failed: {exc}")
+        # Adjudicator preflight: the pinned adjudicator effort must also be
+        # advertised by the installed CLI before any spend.
+        try:
+            adjudicator_effort_evidence = consumer_mod.verify_effort_support(
+                judge_mod.ADJUDICATOR_EFFORT
+            )
+        except consumer_mod.ConsumerError as exc:
+            fail(f"adjudicator effort preflight failed: {exc}")
 
     n_consumers = len(tasks) * 2 * args.repeats
     n_judges = (len(tasks) * args.repeats * args.judge_repeats
@@ -1380,8 +1384,10 @@ def dry_run(args, tasks_path, tasks, seed, preregistered, n_consumers,
               f"{effort_evidence['cli_help_evidence']}")
     try:
         print(f"claude CLI: {consumer_mod.claude_version()}")
-    except consumer_mod.ConsumerError as exc:
-        fail(str(exc))
+    except consumer_mod.ConsumerError:
+        # Informational only: a dry run makes no API calls, so it must
+        # stay usable on a machine without the CLI installed (e.g. CI).
+        print("claude CLI: not found on PATH (not required for --dry-run)")
     print(f"auth: {'ANTHROPIC_API_KEY' if os.environ.get('ANTHROPIC_API_KEY') else 'subscription login'}")
     with tempfile.TemporaryDirectory(prefix="skills-eval-dry-") as tmp:
         tmp = Path(tmp)
