@@ -1,6 +1,6 @@
 # Reliable AI Skills
 
-[![validate](https://github.com/HamzaYM/reliable-ai-skills/actions/workflows/evals.yml/badge.svg?branch=main)](https://github.com/HamzaYM/reliable-ai-skills/actions/workflows/evals.yml)
+[![validate](https://github.com/HamzaYM/reliable-ai-skills/actions/workflows/evals.yml/badge.svg?branch=main&event=push)](https://github.com/HamzaYM/reliable-ai-skills/actions/workflows/evals.yml)
 
 This is a library of 17 Claude Code skills for building and operating AI systems in production: adversarial and tiered review, validation gates, cost and safety guardrails, deploy campaigns, debugging playbooks, and change control. Each one started as a discipline that caught a real bug, prevented a real incident, or shortened a real debugging session in a live system, and was then stripped of every identifying detail and rewritten as a portable pattern that drops into any codebase. The repo also ships the eval harness I use to test whether a skill actually changes agent behavior, because "this prompt seems helpful" is not a bar I am willing to publish against.
 
