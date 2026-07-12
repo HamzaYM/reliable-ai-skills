@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29415,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1399013,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13177,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13177,
+        "cache_read_input_tokens": 23701,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13177,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13177,
+            "cache_read_input_tokens": 23701,
+            "input_tokens": 2,
+            "output_tokens": 3331,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3331,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very close in substance and evidence for (a), (b), and (d); Report 2 is stronger on (c), explicitly rejecting deferral of the doc fix and endorsing a same-commit/PR policy going forward, which Report 1 only partially addresses.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in `backend/app/billing/gateway.py`... A grep for `chargekit` across `medibill/` finds exactly two call sites that bypass the gateway: `backend/app/api/invoices.py:14-16`... `backend/app/workers/dunning.py:9-13`... The only other provider import is `backend/app/billing/errors.py:6`, which imports just `chargekit.errors` exception classes \u2014 that is the boundary exception the doc explicitly permits, so it is not a deviation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should be a thin accessor (e.g. `refund(...)`) in `medibill/backend/app/billing/gateway.py`... naming `app/billing/errors.py` as the only exception (it imports only the SDK's error classes, `errors.py:6-9`, which matches its documented role)... `medibill/backend/app/api/invoices.py:4,14-16`... `medibill/backend/app/workers/dunning.py:2,9-13`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "In the code, `InvoiceOut` (`backend/app/models/invoice.py:16-22`) has a sixth field, `external_ref`, which `charge_invoice` populates and returns (`backend/app/api/invoices.py:17-18`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the actual serializer `InvoiceOut` (`backend/app/models/invoice.py:16-22`) has a sixth field, `external_ref`, which is populated by the charge route (`invoices.py:17`) and backed by migration `backend/migrations/0006_add_invoice_external_ref.sql`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "drift between it and the code is a bug to fix now \u2014 not after the refund feature lands... Going forward, any change the refund feature makes to what the doc governs \u2014 a new gateway accessor, a new response field, a new webhook type \u2014 must update `ARCHITECTURE.md` in the same commit and be called out in that commit/PR summary.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "hard-coding an exact count (\"4 webhook event types\") guarantees the doc rots on every addition. Better to enumerate the types without a count and point at `backend/app/api/webhooks.py` as the source of truth",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a hard-coded count in prose is guaranteed to drift again. Drop the number entirely and either point readers at `backend/app/api/webhooks.py` as the source of truth for handled event types, or keep the list without asserting an exact count",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

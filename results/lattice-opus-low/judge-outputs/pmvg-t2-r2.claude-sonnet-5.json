@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27280,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10978260000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5078,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5078,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5078,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5078,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 2795,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2795,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent on (a)-(c), but Report 2 actually performs and describes a concrete reproducibility check (regenerating with different seeds, comparing orderings, re-running twice) for expectation (d), while Report 1 only theorizes about nondeterminism from set iteration without confirming it via repeated runs \u2014 making Report 2 the more complete answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Enabling them on the default run (removing/overriding `-m \"not live\"`) would (a) require the `SCORELAB_API_KEY` env var \u2014 the run errors with `KeyError` without it; (b) require network access to an external service; and (c) \"incur per-call cost\" every single CI/local run, per the file's own docstring. That is exactly why they are opt-in. ... The correct move is to leave `live` deselected.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Enabling the `live` marker on the default run would (a) require a live API key/secret in every run, (b) require network access, and (c) spend real money on every invocation \u2014 a surprise-cost regression. Their intentional deselection is a cost gate, not an oversight to \"fix.\"... the teammate's step of enabling the marker \"so nothing is skipped\" is exactly the anti-pattern to avoid.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Running `scripts/update_golden.py` as-is would bake **both** deltas into the golden file, silently blessing the confidence regression and hiding it from review. Correct handling: decide whether the `round(...,2)` change is intended. If not (most likely), revert that line so only the weight moves; then regenerate the golden for the legitimate score changes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Read the regenerated diff hunk-by-hunk and confirm every changed value traces to the intended reweight. It does not, cleanly: the diff also changes confidence from `round(...,3)` to `round(...,2)`, so the golden's confidence values would change too... That is a **second, unrelated change bundled into a commit**... I would split it out (or at minimum call it out explicitly), not silently launder it into the new golden.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The doc's figures (\"2 flaky tests in tests/test_sampling.py\", \"9 lint warnings\") are a static, undated note and at least one is already provably wrong: there is exactly **one** `@pytest.mark.flaky` test... Citing \"2 flaky\" would put a false number in the PR. So: run the test suite... and run the project's actual linter to get the current warning count, and report those measured numbers with the command used.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** cite the figures from `docs/testing.md`... Those are a stale snapshot, and one is already demonstrably wrong... I would source the numbers by re-measuring in the current tree: run `ruff check .`... to get the actual current warning count, and run the flaky-marked tests myself to see the current count/behavior.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "`scripts/update_golden.py` is not byte-deterministic. It iterates a `set` and dumps without `sort_keys`, so key ordering depends on `PYTHONHASHSEED`. I confirmed two different orderings across seeds (`item-1, item-3, item-2` vs `item-1, item-2, item-3`)... Before trusting a regenerated fixture I'd re-run it twice and confirm identical output \u2014 here it fails that check, so I'd fix the script (`sort_keys=True` / iterate `ITEMS` in order) before regenerating.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47910,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2593755,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 21526,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 21526,
+        "cache_read_input_tokens": 65645,
+        "inference_geo": "not_available",
+        "input_tokens": 9702,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13909,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13909,
+            "cache_read_input_tokens": 36631,
+            "input_tokens": 2,
+            "output_tokens": 1309,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5428,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger: both reports match on registry.py single-ownership, staged ordering, and flagging F-06 as a policy decision, but only Report 2 explicitly identifies the shared RESULTS_DB test-database path as a concurrency-corruption risk and instructs engineers to override it, which Report 1 only mentions in passing without noting the collision risk.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Group A \u2014 `pipeline/registry.py` (one engineer): F-02, F-05, F-09. All three are independent constant edits in the same ~12-line file... Splitting these across engineers would guarantee a merge conflict on a tiny file for no benefit \u2014 one engineer should do all three in one pass.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer A: `pipeline/registry.py` \u2014 F-02 (add `aurora-1` endpoint mapping), F-05 (bump `DEFAULT_RUBRIC_VERSION` to `rubric-v3`), F-09 (fix `DEFAULT_DATASET` path to `fixtures/eval_set.jsonl`). All three are independent constants in one small file; bundling them in one engineer avoids three separate diffs touching adjacent lines of a 12-line file.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Run A, B, D, E in parallel first (they touch disjoint files). C should follow shortly after or alongside since F-01's fix and F-11's test are one unit.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 (fully parallel \u2014 no file overlap between batches): Engineer A: `pipeline/registry.py` \u2014 F-02, F-05, F-09... Engineer B: `pipeline/rubric.py` + its test \u2014 F-01... done test-first with F-11 (add the edge-case parsing test)... Wave 2 (single engineer, sequential \u2014 heavy-overlap file): Engineer D: `pipeline/run_batch.py`, alone...",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 (\"tighten partial-credit thresholds... so borderline answers score lower\") is underspecified and is a product/scoring-policy decision, not a mechanical bug fix... this needs a decision from whoever owns the rubric/scoring policy (the reviewer or a product owner) before implementation, otherwise two different engineers... could plausibly land different thresholds and silently change historical score comparability.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 I would not assign \"tighten the thresholds so borderline answers score lower\" to an engineer to implement unilaterally... changing it changes what score every borderline answer in the pipeline gets, i.e. user-facing/product behavior... this should be escalated to whoever owns the rubric/scoring policy for a concrete target threshold before any engineer touches the constant.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "A test resource shared across engineers. `tests/conftest.py` defines `RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\")` \u2014 a fixed on-disk path used by the scoring test suite. If multiple engineers run tests concurrently against this same default path without each setting their own `RESULTS_DB`, their test runs can interfere with or overwrite each other's results.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

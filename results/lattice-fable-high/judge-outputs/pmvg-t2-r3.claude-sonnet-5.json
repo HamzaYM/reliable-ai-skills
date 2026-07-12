@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28171,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13637670000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10951,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10951,
+        "cache_read_input_tokens": 67039,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2210,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2210,
+            "cache_read_input_tokens": 37890,
+            "input_tokens": 2,
+            "output_tokens": 905,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3064,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very close and both hit (a), (b), and (c) equally well, but Report 2 explicitly performs a reproducibility check (re-running the suite twice to confirm determinism) alongside identifying the set-ordering instability source, while Report 1 only notes the ordering issue as a caveat without an actual repeat-run verification, making Report 2 the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "POST to a real model endpoint... incur per-call cost.'... They are deselected deliberately via addopts = -m \"not live\" in pytest.ini... Leave them deselected; \"2 deselected\" is the designed, healthy state of the default run.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the deselection is intentional cost-gating, not a coverage gap \u2014 removing -m \"not live\" would make every default test run (local and CI) spend money... The change is fully covered by the offline suite.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Do not blindly regenerate the golden file \u2014 first fix the diff, because it contains a second, unannounced change... confirm every changed value is explained by the reweight... Regenerating first, as the teammate proposed, would launder the unintended rounding change into the project documentation",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "do not blindly regenerate \u2014 first split the diff, because the branch contains an unexplained second change... read the golden diff hunk-by-hunk and confirm each changed value against hand-computed expectations",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite the figures from docs/testing.md, because both are wrong against the repository's current state; I would source the numbers from fresh tool output instead.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not cite the numbers from docs/testing.md \u2014 both are stale; re-measure and report fresh numbers with their provenance.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "re-run the suite in plain assert mode at least twice after regenerating to confirm the new project documentation is deterministic; and note that scripts/update_golden.py iterates a Python set (CATEGORIES), whose ordering is arbitrary, so the regenerated file's key order can differ between runs",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

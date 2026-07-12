@@ -1,0 +1,384 @@
+{
+  "adjudicator": {
+    "effort": "medium",
+    "effort_mechanism": {
+      "advertised_levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "cli_flag": "--effort medium",
+      "cli_help_evidence": "--effort <level>                      Effort level for the current session (low, medium, high, xhigh, max)",
+      "note": "pinned on every adjudicator invocation; any CLI effort warning or cross-model fallback fails that invocation closed"
+    },
+    "failure_rule": "adjudicator failure after one retry excludes the task like a judge failure; the more-than-one-third floor triggers only on judge-failure exclusions, never on adjudicated disagreements",
+    "floor_rule": "a must-hit whose disputed mark has no adjudicator result (adjudicator failure after the pre-registered retry) is excluded from both arms of that comparison as a judge-failure exclusion, never as a disagreement; when more than one third of a comparison's must-hit marks are excluded this way, the entire paired comparison is excluded and reported; adjudicated disagreements never trigger this floor",
+    "input": "minimal by construction: the disputed expectation text, the two blinded report slots exactly as the primary judges saw them, and the judging frame; invoked once per disputed report-slot mark",
+    "model": "claude-fable-5",
+    "models_effective": [],
+    "rule": "per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator",
+    "schema": "eval/schemas/adjudicator.schema.json"
+  },
+  "auth_mode": "subscription-login",
+  "claude_cli_version": "2.1.206 (Claude Code)",
+  "cold_arm_isolation": {
+    "ambient_user_skills": [
+      "budget-aware-allocation",
+      "codex-adversarial-review",
+      "codex-advisory-opinion",
+      "consulting-company-framework",
+      "framer",
+      "framer-code-components",
+      "tiered-review"
+    ],
+    "skill_tool": "consumers run with --allowedTools Read,Grep,Glob,Bash, which exposes no Skill tool, so user-level and project-level skills cannot be invoked in either arm",
+    "workspace": "cold workspaces are staged into a fresh temp directory and asserted to contain no .claude directory before every consumer run"
+  },
+  "concurrency": 4,
+  "consumer_models_effective": [
+    "claude-opus-4-8"
+  ],
+  "created_at": "2026-07-10T23:41:48Z",
+  "effort": "medium",
+  "effort_mechanism": {
+    "advertised_levels": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ],
+    "cli_flag": "--effort medium",
+    "cli_help_evidence": "--effort <level>                      Effort level for the current session (low, medium, high, xhigh, max)",
+    "consumer_stderr_checked": true,
+    "note": "every consumer invocation carried --effort and failed closed on any CLI effort warning; judges ran at their own pinned effort (see judge_panel)"
+  },
+  "effort_sources": {
+    "env_CLAUDE_CODE_EFFORT_LEVEL": null,
+    "user_settings_effortLevel": "medium"
+  },
+  "effort_support": {
+    "cli_advertised_levels": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ],
+    "cli_help_evidence": "--effort <level>                      Effort level for the current session (low, medium, high, xhigh, max)",
+    "detected_default": {
+      "env_CLAUDE_CODE_EFFORT_LEVEL": null,
+      "note": "the CLI exposes no per-model default effort in --help or headless output; the ambient sources above are the only observable default inputs, and the effort value recorded in run-meta is authoritative",
+      "user_settings_effortLevel": "medium"
+    },
+    "effort_invariant": false,
+    "model": "claude-opus-4-8",
+    "probe": "stderr effort-warning scan on every consumer invocation, fail closed",
+    "supported_levels": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ]
+  },
+  "excluded_tasks": [],
+  "freeze": {
+    "frozen_at": "2026-07-10T08:32:03Z",
+    "task_file_sha256": "b378c79644280bb93fb8ac71d0cadcfe301fd15b226dfaec852b619a2aa1c890"
+  },
+  "instrument_hashes_at_run": {
+    "agents/adjudicator-prompt.md": "7cc47d2cdd5020d64936800998d69a593492fa69ad3c75856086f6604967f40e",
+    "agents/consumer-persona.md": "deffae87af890db69c9a637857a5b3d9cdf19663a6616b5d3eae23f9a17d64b1",
+    "agents/judge-prompt.md": "5cdd153db83a967f96909be26f0d20e4ddb12044f0035743eb58a2996a4bb0d2",
+    "schemas/adjudicator.schema.json": "f7d8a14f4c82b52eb3f2e85fe1a2707f8a4d7640a41354d23a19e096d52601fd",
+    "schemas/judge.schema.json": "eaa068b0686fd039a186627643fcad5a9ac0ef0bb4df91b1a1728017c55d7c04",
+    "schemas/task.schema.json": "56e066855f6a69942c076cd2a8fb7b69548c172c8eeb76dc19d55f7038a68b38"
+  },
+  "judge_model": "two-judge panel (see judge_panel)",
+  "judge_panel": {
+    "blinding": "identical blinding stack for both judges: the same scrubbed and verifier-checked judge inputs, the same seeded order key, and the same leak verifier gate",
+    "combination_rule": "per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator",
+    "effort": "medium",
+    "effort_mechanism": {
+      "advertised_levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "cli_flag": "--effort medium",
+      "cli_help_evidence": "--effort <level>                      Effort level for the current session (low, medium, high, xhigh, max)",
+      "note": "pinned identically for both judges on every judge invocation, never varying across cells; any CLI effort warning on a judge's stderr fails that judge run closed"
+    },
+    "judges": {
+      "claude-opus-4-8": {
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_requested": "claude-opus-4-8",
+        "models_effective": [
+          "claude-opus-4-8"
+        ]
+      },
+      "claude-sonnet-5": {
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_requested": "claude-sonnet-5",
+        "models_effective": [
+          "claude-sonnet-5"
+        ]
+      }
+    },
+    "models": [
+      "claude-sonnet-5",
+      "claude-opus-4-8"
+    ]
+  },
+  "judge_repeats": 1,
+  "max_output_tokens": {
+    "mechanism": "CLAUDE_CODE_MAX_OUTPUT_TOKENS environment variable on every consumer invocation, identical in both arms and at every effort level",
+    "value": 64000
+  },
+  "merge_history": [
+    {
+      "merged_from": "lattice-opus-medium-part2",
+      "merged_task_ids": [
+        "env-hazards-t1",
+        "farch-t1",
+        "s2p-cutover-t1",
+        "sysdbg-t2"
+      ],
+      "note": "raw artifacts (consumer/judge-inputs/judge-outputs) copied, order-key and tasks/skill_hashes/excluded_tasks dicts unioned; scores/REPORT regenerated via --report afterward",
+      "source_run_id": "lattice-opus-medium-part2",
+      "source_seed": 9776661827187132542
+    },
+    {
+      "merged_from": "lattice-opus-medium-part3",
+      "merged_task_ids": [
+        "consent-t2",
+        "dora-t2",
+        "eval-harness-t1",
+        "pmvg-t2",
+        "tcr-t1"
+      ],
+      "note": "raw artifacts copied, order-key/tasks/skill_hashes/excluded_tasks dicts unioned; scores/REPORT regenerated via --report afterward",
+      "source_run_id": "lattice-opus-medium-part3",
+      "source_seed": 3045222357324254651
+    }
+  ],
+  "model": "claude-opus-4-8",
+  "preregistered": true,
+  "repeats": 1,
+  "resumed": false,
+  "run_id": "lattice-opus-medium",
+  "seed": 7742485137540372977,
+  "skill_hashes_at_run": {
+    "adversarial-review/multi-model-adversarial-review": "d30b88b62a3e843ecbed237591da98ce299c80199c4e1916dda2189d72843ef2",
+    "architecture-and-contracts/architecture-contracts-as-law": "60758196cf2fd74dee923f454dbb98aecd16e0d27eb6df3330fac4c8c2a0a63b",
+    "auth-and-tenancy/multi-tenant-auth-reference": "f8e84125144e344c54d4ea76d5ddadac0c3b0d9d5a8efd48fb6cdfac2113082e",
+    "campaign-execution/multi-agent-batch-campaigns": "456b3f0af2085dbcfa77e8ec9bdeecaa034c5a5b9eac57a8715786cfb82dd579",
+    "change-control/git-change-control-for-agents": "bb7dc1b57cb971eb3273b57c618c076c26c24379eebea76f3bc8956923169d22",
+    "cost-and-safety-guardrails/ai-cost-tracking-and-guardrails": "4c5bc9792ab84104c2523d3dacdff4844d17efea3b6466e13bec81e031f712f6",
+    "cost-and-safety-guardrails/budget-aware-model-allocation": "f1c48780271c5142736c172418802804a7749c56c19c95824422fe7bb0bdfa41",
+    "cost-and-safety-guardrails/config-and-secrets-hygiene": "62b33ed5d9ac6ecd67476063fbeb2976875d702c4a49b4c065c5ea6d30a689fd",
+    "debugging-playbooks/failure-archaeology": "ba7df53f64d22e1d630fcf24c9171266f8ff3fc7a4b620372679bc85b0a9ba25",
+    "debugging-playbooks/systematic-debugging-playbook": "8dce519acef3c1d19681b0eb3410c9e9f1799f1735778af735fe5f840c5d4345",
+    "deploy-and-infra/environment-and-build-hazards": "8602408a4d060bf191b15caeed2f7f88f1347c4ed682558a3b292afd4ab98ed5",
+    "deploy-and-infra/staging-to-prod-cutover-campaign": "87d12dfa266d8719fa6b29c8b5835a63483ab6690d6971dec373f700842d809e",
+    "docs-and-compliance/consent-and-regulated-data-reference": "6c8347818e745e60833656f332699914b6d9fe955a913082d06fedc8eef6ced9",
+    "docs-and-compliance/docs-of-record-and-arbitration": "80e278138e76a6831689c021cd53083b61bcc6decdfaa70e20f77f542677338d",
+    "evals-and-scoring/llm-eval-harness-and-scoring-pipeline": "eeea03cdc9c62b6920b10e36e6b054c148ab801b80e48bcc18993ef0816b217c",
+    "tiered-review/tiered-consultancy-review": "45b1cdba16ba5c2d9f226a3998162f55f581d6cf0ccb2f8f19d62fec9ba04c51",
+    "validation-gates/pre-merge-validation-gate": "05026a34d165cc72074a77f08d53e6c6713d82bc7748872bc724d2a05c725e0b"
+  },
+  "task_file": "eval/tasks/golden-suite.jsonl",
+  "task_file_sha256": "b378c79644280bb93fb8ac71d0cadcfe301fd15b226dfaec852b619a2aa1c890",
+  "tasks": {
+    "aicg-t2": {
+      "fixture": "pipeline",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "cost-and-safety-guardrails/ai-cost-tracking-and-guardrails"
+    },
+    "arch-contracts-t1": {
+      "fixture": "saasapp",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "architecture-and-contracts/architecture-contracts-as-law"
+    },
+    "bama-t1": {
+      "fixture": "pipeline",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "cost-and-safety-guardrails/budget-aware-model-allocation"
+    },
+    "consent-t2": {
+      "fixture": "pipeline",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "docs-and-compliance/consent-and-regulated-data-reference"
+    },
+    "csh-t1": {
+      "fixture": "saasapp",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "cost-and-safety-guardrails/config-and-secrets-hygiene"
+    },
+    "dora-t2": {
+      "fixture": "saasapp",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "docs-and-compliance/docs-of-record-and-arbitration"
+    },
+    "env-hazards-t1": {
+      "fixture": "saasapp",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "skill": "deploy-and-infra/environment-and-build-hazards"
+    },
+    "eval-harness-t1": {
+      "fixture": "pipeline",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "evals-and-scoring/llm-eval-harness-and-scoring-pipeline"
+    },
+    "farch-t1": {
+      "fixture": "saasapp",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "debugging-playbooks/failure-archaeology"
+    },
+    "git-cc-t2": {
+      "fixture": "pipeline",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "change-control/git-change-control-for-agents"
+    },
+    "mabc-t2": {
+      "fixture": "pipeline",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "campaign-execution/multi-agent-batch-campaigns"
+    },
+    "mmar-t1": {
+      "fixture": "saasapp",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "skill": "adversarial-review/multi-model-adversarial-review"
+    },
+    "mt-auth-t1": {
+      "fixture": "saasapp",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "skill": "auth-and-tenancy/multi-tenant-auth-reference"
+    },
+    "pmvg-t2": {
+      "fixture": "pipeline",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "validation-gates/pre-merge-validation-gate"
+    },
+    "s2p-cutover-t1": {
+      "fixture": "saasapp",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "deploy-and-infra/staging-to-prod-cutover-campaign"
+    },
+    "sysdbg-t2": {
+      "fixture": "pipeline",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "skill": "debugging-playbooks/systematic-debugging-playbook"
+    },
+    "tcr-t1": {
+      "fixture": "docsrepo",
+      "must_hit_ids": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "skill": "tiered-review/tiered-consultancy-review"
+    }
+  },
+  "validity_rules": {
+    "cli_effort_warning": "a consumer run whose stderr carried a CLI effort warning is invalid: the requested effort was not applied",
+    "cross_model_fallback": "a consumer run answered by a model other than the requested one is invalid: one retry, then the task is excluded-as-invalid",
+    "truncated_by_limit": "a consumer run whose output hit the pinned ceiling is invalid: one retry, then the task is excluded-as-invalid"
+  },
+  "wall_clock_seconds": 1507.0,
+  "workspace_mutation_warnings": [
+    "git-cc-t2-loaded",
+    "sysdbg-t2-cold",
+    "sysdbg-t2-loaded",
+    "pmvg-t2-cold",
+    "pmvg-t2-loaded"
+  ]
+}

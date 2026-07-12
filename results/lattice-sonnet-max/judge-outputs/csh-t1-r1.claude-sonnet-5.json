@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19699,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1097112,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7124,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7124,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9696,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7124,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7124,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9696,
+            "output_tokens": 1945,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1945,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit a/b/c equally well, but only Report 2 identifies the missing environment-level gate and recommends ANDing it with the per-tenant flag (expectation d), giving it a fuller answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders are sent automatically \u2014 the feature defaults to on, not off. The decision is made in backend/app/feature_flags.py, function auto_send_reminders_enabled, lines 10\u201313... if so, line 12 returns True.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders are sent automatically. The decision is made in auto_send_reminders_enabled at backend/app/feature_flags.py:10-13... when the auto_send_reminders key is absent... the function returns True.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Where I'd change it: backend/app/feature_flags.py:12 \u2014 change return True to return False (equivalently, rewrite the function body as return bool(tenant.settings.get(\"auto_send_reminders\", False))), so a missing/unset value defaults to disabled",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change backend/app/feature_flags.py:11-12, inverting the None-branch to return False... With that change, an unset flag now means \"off\" on both the backend (no messages sent) and the frontend",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the two flags are not equivalent in risk (cosmetic UI preference vs. outbound patient communication with cost/consent implications), and the same commit's own frontend code defaults the visible toggle to the opposite state",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "compact_calendar_view_enabled and auto_send_reminders_enabled sit in different risk categories (a cosmetic UI preference vs. an automated action that contacts patients), and the default that's correct for one is wrong for the other.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Add an env-level master switch / kill switch. infra/main.tf defines only a generic environment variable \u2014 there is no global toggle to disable reminders across all tenants at once if something goes wrong post-launch. Per project documentation's recipe for new flags, a per-tenant automated-messaging flag should be ANDed with an env-level master, and a rollback affordance should be defined before shipping the \"on\" state.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

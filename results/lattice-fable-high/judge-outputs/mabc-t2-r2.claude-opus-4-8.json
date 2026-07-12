@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31010,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.18037650000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10647,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10647,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10647,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10647,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2364,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2364,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent grounding and correctness; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Batch B \u2014 registry (F-02, F-05, F-09). Owns `pipeline/registry.py`. All three findings edit this one 11-line file, so they must belong to one engineer",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer C \u2014 `pipeline/registry.py` (F-02, F-05, F-09). Three one-line changes to one 12-line file... Splitting these across people would be three PRs conflicting on adjacent lines for trivial gain.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Ordering: all four batches run **in a single parallel wave**, because after the by-file grouping they are fully file-disjoint... The fix and its edge-case test... go to the same engineer, test-first... with the F-12 boundary test written first",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "all four streams start in parallel on day one, branching from `f3cac92` on `main`, because the file sets are disjoint... Engineer B \u2014 `pipeline/rubric.py` (F-01, F-11)... Engineer C \u2014 `pipeline/registry.py` (F-02, F-05, F-09)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 escalate, don't assign. \"Tighten `PARTIAL_CREDIT_THRESHOLDS` so borderline answers score lower\" is a deliberate change to scoring output \u2014 user-facing behavior... Whether and how much to tighten is a product/eval-owner decision, not something an engineer should guess. Flag it as a decision request",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 a policy decision disguised as a bug... Changing it silently changes every score the pipeline produces. This needs the reviewer or a product owner to specify the new values... before anyone codes it",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the default in `tests/conftest.py:4` is the shared `/var/tmp/llm-scoring/results.db` and parallel suite runs against it would collide... each needs an isolated override",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A per-engineer `RESULTS_DB` environment variable pointing at a private path, since `tests/conftest.py` defaults to the machine-global `/var/tmp/llm-scoring/results.db`... Engineers running the suite concurrently on the same host would share (and could clobber) one results database unless each overrides `RESULTS_DB`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

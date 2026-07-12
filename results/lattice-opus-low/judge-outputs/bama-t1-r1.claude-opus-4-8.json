@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23664,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.135563,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3181,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3181,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3181,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3181,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 1934,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1934,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both nail the core token/backend analysis, but Report 2 is stronger because it also flags the snapshot's ~3-hour staleness and commits to re-checking live limits (expectation d), which Report 1 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 1,800 tokens/call = **~9.36 million tokens** for a full run. ... **northpeak** (default): window total 10,000,000, **remaining 640,000** ... the ~9.36M-token run is **~14\u00d7 larger than northpeak's remaining 640K** \u2014 nowhere near enough",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 \u00d7 1,800 = **9,360,000 tokens** ... **Northpeak (primary/default):** only **640,000 tokens remaining** in the window ... **~14.6\u00d7 the remaining headroom** \u2014 it would exhaust northpeak after roughly the first ~355 transcripts and fail well short.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```\nThis bills against ridgeline (10.8M remaining \u2265 9.36M needed).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'd send the full run to the secondary backend instead: ... --provider secondary ... while ridgeline has 10.8M \u2014 enough to finish.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** use the default path. Launching `run_nightly.sh` as-is would send the full job to northpeak, which has only 640K of 9.36M tokens left ... Instead I'd route to the secondary backend",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** run the default path. I'd send the full run to the secondary backend instead ... consider whether a `--limit` smoke test (a few hundred transcripts) is worth spending first to validate the path end-to-end.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**The snapshot is ~3 hours stale.** It was generated at 19:25 UTC; treating \"now\" as 22:30 UTC, ridgeline's 10.8M is a stale reading. ... I'd re-pull fresh telemetry before launching",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

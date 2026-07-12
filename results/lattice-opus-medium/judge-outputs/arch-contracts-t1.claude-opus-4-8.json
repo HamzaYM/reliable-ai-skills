@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 38696,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.192368,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6514,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6514,
+        "cache_read_input_tokens": 15436,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6514,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6514,
+            "cache_read_input_tokens": 15436,
+            "input_tokens": 9357,
+            "output_tokens": 2909,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2909,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and cover (a), (b), (c) equally well, but Report 2 is better overall because it correctly recommends dropping the hardcoded webhook count in favor of pointing at the code, whereas Report 1 proposes re-hardcoding it as \"5\".",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls (a `refund(...)` function) should live in `backend/app/billing/gateway.py`. ... `backend/app/api/invoices.py:14-16` ... `backend/app/workers/dunning.py:9-13` ... `backend/app/billing/errors.py:6` also imports from `chargekit`, but that is the documented, allowed exception",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls belong in `backend/app/billing/gateway.py`. ... **Compliant (declared exception):** `backend/app/billing/errors.py:6` ... **Violation:** `backend/app/api/invoices.py:14` ... **Violation:** `backend/app/workers/dunning.py:9`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The response serializer `InvoiceOut` (`models/invoice.py:16-28`) also carries `external_ref` ... There is also a migration `0006_add_invoice_external_ref.sql` backing this column. So the response has **six** fields, not the \"exactly\" five the doc claims.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the actual serializer `InvoiceOut` (`backend/app/models/invoice.py:15\u201328`) returns a **sixth** field, `external_ref` ... backed by a real migration (`0006_add_invoice_external_ref.sql`). The word \"exactly\" is now false \u2014 `external_ref` is missing from the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It should be corrected, and the correction should be treated as part of the refund feature work \u2014 before/alongside the code, not after.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the refund work is the moment to reconcile it \u2014 the doc should be corrected in the **same commit** as the refund change, not deferred.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "I would not restate it as \"5 types\" \u2014 a hardcoded count in a doc is guaranteed to drift again the next time a branch is added ... I'd drop the number and describe the property instead, pointing at the handler as the source of truth",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

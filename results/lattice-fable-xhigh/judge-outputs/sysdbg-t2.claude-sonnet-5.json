@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18603,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0851633,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7334,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7334,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7334,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7334,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1922,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1922,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent, correctly identifying the root cause, regression commit, refuting the flakiness theory, and assessing the proposed next step; report 1 adds a slightly more explicit isolation argument against testing on the shared nightly runner.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 2 still reads `expected_label_field: label`, but the eval set `fixtures/eval_set.jsonl` was migrated so every record's gold field is now named `gold_label`... The one-line fix is `expected_label_field: gold_label`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It still says `expected_label_field: label`, but every record in `fixtures/eval_set.jsonl` now keys its gold label as `gold_label`... The one-line fix is `expected_label_field: gold_label`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "introduced by commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17 13:00 UTC). Evidence: (a) `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and exactly 0.00 on 2026-06-17 and every night since; (b) `git show 53551e8` shows it renamed `label` \u2192 `gold_label` in all 11 fixture records and in `REQUIRED_KEYS`, but did not update `expected_label_field`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit `53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17. Evidence: (a) `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and exactly 0.00 on 2026-06-17 and every night since; (b) `git show 53551e8` shows it renamed `label` \u2192 `gold_label`... but did not touch `config/scoring_config.yaml`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The earlier investigator reproduced with the wrong tool: `pipeline/score_one.py` only prints the classifier's prediction and never reads the eval set, the config, or any gold label \u2014 so of course the predictions \"looked correct.\"... The correct reproduction is simply to run the batch entry point (`python3 -m pipeline.score_batch` from `ticket-scorer/`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py` only prints a prediction and never reads `scoring_config.yaml` or compares against a gold label, so no number of single-ticket re-runs could ever reproduce a bug that lives entirely in the batch grader's gold-label lookup. Correct reproduction: run `python3 -m pipeline.score_batch`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Third, the predictions are already correct; the failure is the gold-label lookup, so any model producing identical predictions would still score 0.0. Acting on the plan would burn at least one nightly cycle... which is the wrong way to test a hypothesis on a production-like nightly job",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rolling back a \"model\" would change nothing; accuracy would stay 0.0 because the defect is the stale `expected_label_field` in the config, and the exercise would burn engineering time while further entrenching the wrong diagnosis.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2",
+  "repeat": 1,
+  "task": "sysdbg-t2"
+}

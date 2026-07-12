@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28131,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2064155,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13072,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13072,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13072,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13072,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2366,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2366,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct file/function citations, defect analysis, and concrete fixes; they are comparable, with Report 2 adding slightly more (batch abort, counter side-effects) but on core expectations they are equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "on **any** `except Exception as e` it logs a warning and does `return secondary.complete(payload)`... **`BadRequestError`** \u2014 definitively non-retryable (malformed request). Fallover is **wrong**... Should be raised... **Concrete fix:** add an explicit non-retryable denylist in `router.py`, e.g. `NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)`... Fail over only on `(RateLimitError, RequestTimeoutError, ServerError)` (plus connection errors).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the single `except Exception` (router.py:16) handles **every one identically**... `BadRequestError` \u2014 *deterministic* client-side error... failover **is not appropriate**... `ContentPolicyError` \u2014 *deterministic* refusal... `AuthError`... **Not appropriate**... Concrete fix: only fail over on the transient classes and let the deterministic/operational ones propagate... `TRANSIENT = (RateLimitError, RequestTimeoutError, ServerError)`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A \u2014 `if os.environ.get(\"STAGE\") != \"production\": return True`.** Returns `True` (allow) whenever `STAGE` is anything other than the exact string `\"production\"`... **Path C \u2014 `except RedisError: return True`.** When `redis.incr` raises (Redis down/unreachable), it returns `True` (allow). This **fails open**... this should fail **closed** (return `False`, or raise)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A \u2014 non-production... if `os.environ.get(\"STAGE\") != \"production\"`, return `True`... fail-open by default... **Path D \u2014 redis error (lines 17\u201318):** in production, if `redis.incr` raises `RedisError`, return `True`... **fail-open on infrastructure failure**... Concrete fixes: default the limiter to *enabled* (fail-closed or at least normalize/whitelist the stage...)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`input_text`** is the full intake document \u2014 the sensitive free-text PII itself \u2014 logged **verbatim**... **`metadata`** is dumped **wholesale** with no filtering... requires an **allowlist** of metadata keys known safe to log, dropping everything else... **Concrete fix:** ... replace `input_text` with a hash and/or length/truncated excerpt; and filter `metadata` through an explicit allowlist of safe keys",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`input_text` is the full raw intake document**... Writing the entire sensitive document verbatim into application logs... **`metadata` is dumped whole**, with no field whitelist... Concrete fix: do not log `input_text` at all... whitelist specific safe `metadata` keys rather than dumping the dict.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**`PII_SALT` unset (or empty):** the default `\"\"` means the function silently computes an **unsalted** `sha256(applicant_id)`... **Concrete fix:** treat `PII_SALT` as a required secret \u2014 raise (fail closed) if it is missing/empty rather than defaulting to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it reads `PII_SALT` from the environment with a default of empty string... It computes an **unsalted `sha256(applicant_id)`**... The failure is **silent**... Concrete fix: fail closed \u2014 require the salt (`salt = os.environ[\"PII_SALT\"]`, raising on absence)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

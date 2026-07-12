@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19038,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.12008550000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7474,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7474,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7474,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7474,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1323,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1323,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 answered better: it caught both the cross-tenant leak and the exports.py nightly_export runtime break, while Report 2 caught only the leak and missed the exports.py regression.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`tenant_id` is passed in (and is populated from `current_tenant_id` via the new `GET /appointments/search` route in `backend/app/api.py`), but it is never referenced in the SQL or bound as a parameter. Every other read path in this codebase goes through `build_appointment_query` in `backend/app/db.py`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "has no `WHERE tenant_id = ...` clause at all, even though `tenant_id` is passed into the function as an argument (from `get_appointment_search` in `backend/app/api.py:19-23`, resolved via the `current_tenant_id` auth dependency) and is even selected in the output columns \u2014 it's just never used to filter.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`backend/app/db.py` line 7 vs. `backend/app/exports.py` line 8 ... every invocation of `nightly_export`, for every tenant, will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`, breaking the nightly per-tenant CSV export entirely",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the raw SQL interpolates `status.value` via f-string rather than binding it as a parameter (not currently exploitable, since FastAPI's `AppointmentStatus` enum validation constrains it before reaching this function",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I don't consider the f-string interpolation of `status.value` into the SQL ... a blocking security bug by itself \u2014 `status` is typed as `AppointmentStatus`, a `str, Enum` in `backend/app/schemas.py`, and FastAPI validates/coerces the query parameter against that enum before the handler runs, so an attacker cannot inject arbitrary text through it today.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

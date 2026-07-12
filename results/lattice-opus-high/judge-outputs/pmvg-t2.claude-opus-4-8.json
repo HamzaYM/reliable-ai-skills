@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 38814,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1785155,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8398,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8398,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8398,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8398,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 3256,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3256,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations and reach the same conclusions; Report 2 is marginally stronger on reproducibility by explicitly re-running \"at least twice,\" making them essentially comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "POST to a real external endpoint (`https://api.scorelab-models.example.com/v1/score`) using a secret `SCORELAB_API_KEY`... make every default/CI run hit a paid network endpoint, incurring per-call cost... The correct opt-in behavior (`live` deselected by default) should be preserved.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "they POST to a real remote endpoint (`https://api.scorelab-models.example.com/v1/score`) using a secret `SCORELAB_API_KEY`... The file's own docstring says \"These tests hit the real model endpoint and incur per-call cost,\"... the deselection is intended behavior, not a bug... Run them only opt-in (`-m live`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Before regenerating, I check *whether each delta is intended*... The **confidence** deltas... are *not* from reweighting... Only after the intended behavior is settled do I regenerate the golden, and then I **review the resulting diff**... to confirm every changed value matches expectation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "read the diff hunk-by-hunk and confirm every changed golden value traces to an *intended* change... Per the gate, an unexplained hunk is a potential regression, not a fixture update to launder.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite `docs/testing.md`'s figures; both are stale/unverifiable and the doc is not a source of truth... source both numbers from actually running the tools against the current tree, and note the doc discrepancy",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not cite the figures from `docs/testing.md`; I re-measured and both are stale... sourced from my own re-measurement, not the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I'd also note the regen script iterates a `set` with \"ordering is arbitrary,\" so it can produce noisy/unstable key ordering \u2014 worth fixing or sorting for clean diffs",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "then re-run in assert mode (default, no live) at least twice to confirm it's deterministic and green... `update_golden.py` builds the output dict by iterating a `set` (\"set ordering is arbitrary\"), so its *byte* output (key order) is nondeterministic across runs under hash randomization",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

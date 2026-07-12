@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 44082,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1391803,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9436,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9436,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9436,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9436,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 4578,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4578,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with strong commit-level evidence; Report 2 is slightly more thorough (e.g., noting the ASGI mismatch in serverless_handler.py and the driver gap), but on the graded expectations they are essentially comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "this migration was performed once under PLAT-31 (`git show 454a21f`, `597777b`)... `git show 454a21f`, `597777b`, `1712565`. This is the single most important check: it reveals the migration was already tried and reverted (PLAT-31), and why.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git log --oneline` in `carelog-api` shows commits `454a21f` \"Add Edgerunner serverless deploy for API (PLAT-31)\", `597777b` \"Open a dedicated Postgres connection per request in the serverless handler (PLAT-31)\", and `1712565` \"Revert Edgerunner migration\u2026 /reports/monthly exhausted Postgres max_connections in production\u2026\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "under per-request connections, \"normal dashboard load\" opened connections faster than Postgres recycled them \u2192 `FATAL: too many connections` \u2192 endpoint down (`1712565`). Cargobox bounds this (2 replicas \u00d7 15); serverless `per_request = true` scaling removes that bound entirely.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565`: \"serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres `max_connections` in production.\" The body adds that \"per-request connections opened faster than Postgres could recycle them and tripped the connection limit (`FATAL: too many connections`), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Current deployment ceiling: `deploy/cargobox.yaml` \u2014 `replicas: 2`, so today's DB-connection ceiling is bounded (2 \u00d7 (10+5) = up to 30). Understand this steady state before removing the container... Cut traffic over to Edgerunner and retire the always-on Cargobox container (`deploy/cargobox.yaml`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an Edgerunner deploy manifest \u2014 the reverted `deploy/edgerunner.toml` set `name = \"carelog-api\"`, `entry = \"backend/serverless_handler.py\"`, and `[scaling] per_request = true`. This replaces `deploy/cargobox.yaml`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "this is explicitly **not a decision for an individual engineer to silently re-attempt.** It should go to the owner of PLAT-31 / the platform decision, who reverted it as a production call \u2014 the prior attempt and revert are information they need. The database/infra owner should be in the room too, since the failure was a Postgres connection-limit exhaustion",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Who to involve:** the platform/infra owner of PLAT-31 (author of the reverted attempt... identify the real owner via the ticket); the DBA / owner of the Postgres instance and its `max_connections`; and leadership... Because this touches shared database capacity and has a prior production outage, it is explicitly not a solo decision.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

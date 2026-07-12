@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30736,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11344019999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4456,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4456,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4456,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4456,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 3260,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3260,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify the same root cause, commit, reproduction flaw, and recommendation with essentially equivalent rigor; Report 2 adds a bit more depth (classifier determinism, CI-check suggestion) but both fully satisfy all four expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The fix is a one-line change to **`ticket-scorer/config/scoring_config.yaml`**: change `expected_label_field: label` to `expected_label_field: gold_label`, so it matches the schema actually used in `fixtures/eval_set.jsonl`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The defect is in `ticket-scorer/config/scoring_config.yaml`, line 2: `expected_label_field: label`. ... The fix is a one-line config change: `expected_label_field: gold_label`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The regression began on **2026-06-17**, with commit `53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\". ... `pipeline/metrics/nightly_scores.csv` shows accuracy holding at 0.90\u20130.92 through `2026-06-16`, then dropping to exactly `0.00` starting `2026-06-17`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The regression began with commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17). ... `pipeline/metrics/nightly_scores.csv` corroborates this precisely: accuracy is ~0.90\u20130.92 every day through 2026-06-16, and is exactly `0.00` every day from 2026-06-17 onward",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`pipeline/score_one.py` \u2014 the script used for the spot-checks \u2014 never loads the config or any gold label; it just prints `predict_category(...)` for one ticket. It's structurally incapable of reproducing this bug... To correctly reproduce: run the nightly batch job itself (`pipeline/score_batch.py` via its actual entrypoint/config, not `score_one.py`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The engineer re-ran tickets through `pipeline/score_one.py`, which never reads `config/scoring_config.yaml` and never compares to any gold label at all \u2014 it just prints the raw predicted category... Correct reproduction: run the actual nightly entry point end-to-end, e.g. `python -m pipeline.score_batch`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I recommend against it. It would not fix anything \u2014 the scoring bug is entirely independent of which model produces predictions, since `gold = record.get(\"label\")` returns `None` regardless of what `prediction` is.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I recommend against it. There is no \"model\" involved at all in the sense the note implies \u2014 `classifier.py` is pure rule-based keyword matching with `model_id: ticket-classifier-v3` in the config being just a label string, not something that changes prediction behavior via an API call. Rolling back \"the model\" would not touch the actual defect (the mismatched config key)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r1",
+  "repeat": 1,
+  "task": "sysdbg-t2"
+}

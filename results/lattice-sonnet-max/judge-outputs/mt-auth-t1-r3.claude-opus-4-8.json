@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27609,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.20834399999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9186,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9186,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9463,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9186,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9186,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9463,
+            "output_tokens": 2422,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2422,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both nail the core diagnosis (a, b, c), but Report 2 additionally recommends an explicit application-layer tenant filter and a blocking boot-time role check, making it the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Per PostgreSQL's documented row-security semantics, RLS policies are not applied to a table's owner unless the table has additionally been altered with `FORCE ROW LEVEL SECURITY`. I grepped the entire repo for `FORCE ROW LEVEL SECURITY` and `BYPASSRLS` and found neither anywhere ... Since `juniper_owner` is confirmed not a superuser and not BYPASSRLS, the only mechanism by which it evades the policy is the standard owner exemption",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In Postgres, `ENABLE ROW LEVEL SECURITY` alone does **not** apply the policy to the table's owner \u2014 owners are exempt by default; `FORCE ROW LEVEL SECURITY` is required to also apply policies to the owner ... `.env.example:1`, `docker-compose.yml:5`, and `infra/main.tf:2` all set the runtime `DATABASE_URL` to `postgresql://juniper_owner:ownerpw@db:5432/juniper`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It became exploitable at commit `b2a23d2...`, titled `ROTA-214 run migrations from the api container on boot`. Its full diff changes exactly three lines across three files, all the same substitution (`juniper_app:apppw` \u2192 `juniper_owner:ownerpw`): - `.env.example` ... - `docker-compose.yml` ... - `infra/main.tf`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`b2a23d2` (2026-06-17, \"ROTA-214 run migrations from the api container on boot\") \u2014 the regression. `git show b2a23d2` is a 3-file, 3-line diff that changes exactly one thing in each file: `juniper_app:apppw` \u2192 `juniper_owner:ownerpw` in `.env.example`, `docker-compose.yml`, and `infra/main.tf`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Revert the runtime `DATABASE_URL` back to the `juniper_app` role in all three places ... Give the boot-time migration step ... its own separate, owner-privileged credential ... Add a migration (e.g. `0004_force_rls.sql`) with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Revert the runtime credential ... from `juniper_owner` back to `juniper_app`. ... The migration runner and the request-serving runtime should never share a credential. ... Add a new migration (e.g. `db/migrations/0004_force_rls.sql`) with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "In `backend/app/routes/appointments.py:16-19`, add an explicit `WHERE tenant_id = :tenant_id` bound from `claims[\"tenant_id\"]` ... it makes the leak impossible regardless of which DB role is connected or whether the RLS policy is correctly configured",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "In `backend/app/db.py`, add a startup check that queries the connected role's privileges ... and refuses to start \u2014 not just logs a warning \u2014 if the runtime role is the table owner, a superuser, or has `BYPASSRLS`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r3",
+  "repeat": 3,
+  "task": "mt-auth-t1"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30922,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16839400000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5270,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5270,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5270,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5270,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2384,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2384,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable: both hit (a), (b), (c) and miss (d); Report 2 is marginally cleaner on tracing golden diffs but neither performs a genuine multi-run reproducibility check.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "makes real network calls to an external model-scoring API using a `SCORELAB_API_KEY`, and \"incur[s] per-call cost\" (comment in the file)... enabling them is not warranted for *this* validation, though it could be a legitimate periodic/CI-scheduled check unrelated to this PR.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "these tests hit a real external model endpoint over the network, require a real API key (`SCORELAB_API_KEY`), and the module docstring says explicitly they \"incur per-call cost.\"... Leave it deselected; only run it explicitly, deliberately, and separately",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "An **unintended, unrelated change bundled into the same diff**: `round(item.get(\"confidence\", 0.5), 3)` \u2192 `round(..., 2)`... Blindly running `update_golden.py` would bake both the intended reweight *and* this precision regression into \"expected,\" masking a bug",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "diff the new `expected_scores.json` against the old one, and confirm every changed value... traces to an explained cause \u2014 not a rubber-stamp regen... \"Anything you can't explain is a regression, not a fixture update.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "run `ruff check .` and `pytest -m flaky --collect-only` (or grep markers) live, right before writing the PR, and report the numbers those commands actually produce \u2014 not a number lifted from a docs file that may not have been updated in step with the code.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the PR should state counts as measured against the current tree (\"1 flaky-marked test, 4 F401 warnings, as of this branch \u2014 re-run `ruff check` / `pytest --collect-only -m flaky` to confirm before merge\"), not copy the stale `docs/testing.md` numbers",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

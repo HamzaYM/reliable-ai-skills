@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27186,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13591450000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7069,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7069,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7069,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7069,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2123,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2123,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations; Report 1 is marginally more thorough (explicitly recommends a shadow run over mutating the shared nightly), but they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`config/scoring_config.yaml` was not updated** \u2014 it still contains `expected_label_field: label` (line 2). In `pipeline/score_batch.py:47`, the batch scorer does `gold = record.get(gold_field)`, i.e., `record.get(\"label\")`, which now returns `None` for every record ... The file to change is **`ticket-scorer/config/scoring_config.yaml`**: set `expected_label_field: gold_label`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The file to change is `ticket-scorer/config/scoring_config.yaml`. It still says `expected_label_field: label`, but since commit `53551e8` the eval set (`fixtures/eval_set.jsonl`) names its gold field `gold_label`. The batch scorer (`pipeline/score_batch.py:47`) looks up the gold answer with `record.get(gold_field)`, which silently returns `None` for every record",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (dated 2026-06-17). Evidence: `pipeline/metrics/nightly_scores.csv` shows accuracy of 0.90\u20130.92 every night from 2026-05-20 through 2026-06-16, then exactly 0.00 on 2026-06-17 ... `git show 53551e8 --stat` shows it changed only `fixtures/eval_set.jsonl` and `pipeline/score_batch.py`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit **`53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**, authored 2026-06-17 13:00 UTC. Evidence: (a) `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and 0.00 on 2026-06-17 ... (b) `git show 53551e8` shows that commit renamed `label` \u2192 `gold_label` in all 11 eval records and in `REQUIRED_KEYS`, while leaving `expected_label_field: label` in the config untouched",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`pipeline/score_one.py` calls `predict_category` and prints the prediction but **never reads the eval set or compares against a gold label**, so it can only ever show that predictions \"look correct\" ... The correct reproduction is to run the actual failing path, the batch scorer (`python -m pipeline.score_batch`), observe 0.0",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it re-ran tickets through `pipeline/score_one.py`, which only prints the predicted category and never reads the gold label or the config at all. The defect is in the batch scoring comparison, not the predictions ... The correct reproduction is to run the actual batch path \u2014 `python3 -m pipeline.score_batch` from the repo root",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "It cannot work: there is no model in the loop ... Swapping \"models\" would change nothing, and accuracy would stay 0.0 because every gold label would still be `None`. ... a candidate change should be evaluated in a shadow run, not by mutating the production nightly job.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it is a no-op that cannot affect the score. There is no model in the loop: the classifier is a keyword-rule stub, and the `model_id: ticket-classifier-v3` line in the config is never read by any code ... Rolling \"back to the previous model\" would change nothing, accuracy would stay 0.00",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

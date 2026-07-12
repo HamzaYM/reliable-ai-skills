@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19945,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1262675,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6926,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6926,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6926,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6926,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1800,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1800,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially identical substance; comparable, with Report 1 adding a bonus catch about the score_one() stub.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "a full run needs roughly **5,200 \u00d7 1,800 \u2248 9.36M tokens**.\n\n... **northpeak (primary, default):** 640,000 tokens remaining of a 10M window. That covers only ~355 transcripts (~7% of the dataset) \u2014 a shortfall of ~8.7M tokens.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the full run needs about **5,200 \u00d7 1,800 = 9,360,000 tokens (~9.4M)**. ... **Northpeak (primary/default):** 640,000 tokens remaining of a 10,000,000-token window. That covers only ~355 of the 5,200 transcripts (~7% of the run) before the job hits the limit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**ridgeline (secondary):** 10,800,000 tokens remaining of a 12M window \u2014 the ~9.36M-token run fits with ~1.4M tokens (~15%) of headroom. ... I'd launch directly against the secondary backend:\n\n```bash\ncd transcript-scoring && python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ridgeline has 10.8M tokens available and bills against its own separate allowance (`config/providers.yaml:1`), so shifting the whole run there gets the full dataset scored tonight without cutting scope",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** use the default path tonight. ... A single full run on ridgeline is the clean option.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Running `run_nightly.sh` as-is would exhaust northpeak's remaining 640k tokens after roughly 355 transcripts and strand the other ~4,845 with no primary capacity until 07:20Z \u2014 past the deadline. ... route the run to the secondary provider, not the default",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is ~3 hours stale, so I'd refresh telemetry (or at least accept ~15% headroom as the safety margin) before committing.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is ~3 hours stale (19:25Z vs. now 22:30Z) ... ridgeline's 10.8M should be re-verified at launch if telemetry can be refreshed, and the run monitored since the margin is ~15%.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

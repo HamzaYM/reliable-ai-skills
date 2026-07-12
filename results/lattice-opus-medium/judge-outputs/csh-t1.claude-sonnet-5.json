@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 11239,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0798576,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4317,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4317,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9679,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4317,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4317,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9679,
+            "output_tokens": 1081,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1081,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with nearly equivalent substance; report 2 adds the extra observation that the UI and backend defaults disagree, giving slightly more actionable detail, but overall the two are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "For a clinic that never opened the setting, the key is absent from the `settings` JSONB dict, so `.get(...)` returns `None`, and the function returns `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When the clinic has never set the key, `.get(...)` returns `None`, so the function returns `True`, and `run()` in `backend/app/jobs/reminders.py:25` proceeds to send SMS and email.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change it. In `slotwise/backend/app/feature_flags.py`, lines 10\u201313, the resolver should default off, e.g.:\n\n```python\ndef auto_send_reminders_enabled(tenant):\n    return bool(tenant.settings.get(\"auto_send_reminders\"))\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change it. The minimal fix is in `backend/app/feature_flags.py:11\u201313`: default unset to `False` (fail closed), e.g. `return bool(tenant.settings.get(\"auto_send_reminders\"))`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`auto_send_reminders_enabled` was added as a **structural copy-paste of `compact_calendar_view_enabled`** \u2014 same `if ... is None: return True` shape introduced earlier in `25509a7` (SLOT-190) for the calendar-view UI preference.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "SLOT-190 (`25509a7`) introduced `compact_calendar_view_enabled` with the `if ... is None: return True` shape for a purely cosmetic UI preference, where defaulting \"on\" is harmless. SLOT-214 (`aa4cf8d`) added `auto_send_reminders_enabled` as a line-for-line duplicate of that function with only the key name changed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add an env-level master gate** and AND it with the per-tenant value. Currently `reminders.py run()` (line 25) is gated *only* by the per-tenant flag \u2014 there is no environment kill-switch, so there's no single lever to enable/disable the feature during rollout or to roll back.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Add a global kill-switch / staged rollout gate.** Currently the per-tenant flag is the only gate (confirmed by grep) and `reminders.py` runs against `load_tenants()` with a stubbed `upcoming_appointments`. Before real sending, add an environment/config gate so the job can be enabled cautiously",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

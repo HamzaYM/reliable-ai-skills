@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36918,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2037215,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11774,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11774,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11774,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11774,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2820,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2820,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both are strong and nearly equivalent, but Report 2 is better overall because it explicitly states the pipeline has no migration step and demands a manual first migration, which Report 1 only gestures at.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 2 \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. ... **Set to `\"false\"`.** ... Line 4 \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. ... **Remove it (empty string).** ... Line 6 \u2014 `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"`. ... **Clear it (empty) or point it at a dedicated prod sink**; do not ship the staging path.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`:6` `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"` \u2014 the critical one. ... Remove entirely. ... `:7` `LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"` \u2014 a dead-fossil secret injection from a prior architecture; the scrub says don't recreate it in the new environment. Remove entirely.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "that value is **inlined into the JS bundle** \u2014 it is not runtime-configurable. ... `deploy-prod` (`:29-35`) deploys **the same digest** ... **So the API base URL in the shipped production bundle is `https://staging-api.example.com`** ... To fix: add `frontend/.env.production` with the prod API URL and build prod with `--mode production`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the production bundle ships with `https://staging-api.example.com` baked in, so real production users' browsers would call the staging API. ... Fix = add `frontend/.env.production` with the prod URL and build the prod-destined artifact with `--mode production` (a separate build, not a promoted staging digest)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**No migration step in the pipeline.** `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but there is no such step; migrations `0001\u20130003` exist. For the first launch the prod schema won't be created by the pipeline \u2014 it must be run as a manual first pass",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the `deploy-prod` job runs as `environment: production` (`deploy.yml:32`), so its OIDC `sub` will be `repo:acme-health/medislot:environment:production`. But `infra/prod/main.tf:3` still sets the trust condition to `...:environment:staging`. ... Fix: set `infra/prod/main.tf:3` to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` still says `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 copied verbatim ... Fix: set prod's `oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"` \u2014 its own scoped trust condition",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

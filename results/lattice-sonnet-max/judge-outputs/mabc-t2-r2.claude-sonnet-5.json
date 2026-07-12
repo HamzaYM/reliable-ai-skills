@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26908,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1400592,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10390,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10390,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10390,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10390,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2661,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2661,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger: it correctly identifies the shared RESULTS_DB fixed-path collision risk and prescribes per-engineer overrides, while Report 1 dismisses that same conftest.py detail as likely-dead code and misses the collision entirely; both reports are otherwise comparable on registry.py grouping and the F-06 policy-decision flag.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Three independent one-line edits in an 11-line file \u2014 cheap enough to be one engineer's single small commit rather than three people touching the same tiny file.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'd keep all three on one engineer rather than split by finding \u2014 the file is small enough that splitting three people onto it just creates avoidable diff/merge overhead for no parallelism benefit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 (parallel start): Groups 1-4 all start immediately afterward \u2014 none of them depend on each other... Group 3 \u2014 pipeline/registry.py... cheap enough to be one engineer's single small commit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 (fully parallel, start immediately): Batches A, B, C, D, and the verify-only half of E (F-08). All five touch disjoint files, so they can run concurrently... I'd keep all three on one engineer rather than split by finding",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 needs a number, not just direction, before it's assignable... This is a scoring-policy decision (it changes every future score's partial-credit boundary) rather than a mechanical bug fix; an engineer left to invent numbers under time pressure will produce an arbitrary, unreviewed policy change. Get explicit target thresholds from whoever owns rubric policy first.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 don't assign as \"tighten the thresholds.\"... This changes the actual scores the pipeline assigns to real saved model outputs... Whoever owns rubric/grading policy needs to supply target threshold values before this becomes code.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "tests/conftest.py:4 defines RESULTS_DB defaulting to a single fixed path, /var/tmp/llm-scoring/results.db, overridable only via an env var... any engineer whose fix adds a test that exercises scoring persistence (plausible for Batch D or E) needs to set their own RESULTS_DB \u2014 otherwise concurrent local test runs on the same machine could read/write the same file.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

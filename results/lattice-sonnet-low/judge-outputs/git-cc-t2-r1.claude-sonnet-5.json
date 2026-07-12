@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24703,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10837319999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5395,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5395,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9668,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5395,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5395,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9668,
+            "output_tokens": 2553,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2553,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 correctly identifies that scoring/scorer.py re-appears in the main-diff as duplicated weighted-scorer content (matching expectation c), while Report 2 incorrectly concludes the diff is already clean and entirely pairwise work, missing that key finding \u2014 making Report 1 the stronger, more accurate report overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. project documentation is explicit: \"Base every PR on the trunk,\" ... Targeting `main` is now both correct per the rule and the only viable option, since the original base branch's commits are stale duplicates of what's already on trunk.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. `feat/pairwise-metric` was built directly on top of `feat/weighted-scorer` (not on `main`), but `feat/weighted-scorer` has since been landed on `main`... So `main` is the only branch that makes sense as the PR target.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric` was branched from the tip of `feat/weighted-scorer` (`ac9d505`), not from `main` directly... `feat/weighted-scorer` is **not** a git ancestor of current `main`... yet its content is already on `main`... `feat/weighted-scorer` was squash-merged into `main` under a different commit/PR (#42)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So `feat/pairwise-metric` was branched from the tip of `feat/weighted-scorer`, not from `main`. That starting point (`feat/weighted-scorer`) has already been merged into `main`, but as a **squash merge**... none of `d6fdbc3`/`2d3029b`/`ac9d505` appear in `main`'s ancestry",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`: the whole diff (docstring rename, `WEIGHTS` dict, weighted `score()` refactor) is **identical, line for line**, to the change already merged into `main` via commit `1971f08`. None of it is pairwise work \u2014 it's inherited from `feat/weighted-scorer`... It shows up in the diff only because `feat/pairwise-metric` still has `feat/weighted-scorer`'s now-obsolete commits underneath its own",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That's it \u2014 2 files, 5 insertions, 0 deletions. **Yes, this entire diff is pairwise-metric work.** No weighted-scorer content appears in the diff because `feat/weighted-scorer`'s changes are already present in `main`... so they net out to zero when diffed.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase `feat/pairwise-metric` onto current `origin/main`**... **Re-run `git diff origin/main...feat/pairwise-metric`** after the rebase and confirm it now shows only the `pairwise_preference()` function and the grader-prompt line \u2014 i.e., pure pairwise-metric work, nothing from the weighted-scorer dependency.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Rebase `feat/pairwise-metric` onto `main`** (`git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... **Verify** post-rebase: confirm `git diff main feat/pairwise-metric` still shows exactly the same 2-file/5-line diff, confirm tests/build still pass, and confirm `git log --oneline main..feat/pairwise-metric` now shows only the 2 pairwise commits.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

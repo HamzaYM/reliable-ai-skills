@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23866,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0990477,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7354,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7354,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7354,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7354,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2847,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2847,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent substance; Report 1 goes slightly further by explicitly proposing a shadow-run as the correct verification method, while Report 2 relies solely on the 'model can't be root cause' argument.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "config/scoring_config.yaml was not updated \u2014 it still contains expected_label_field: label (line 2)...the batch scorer does gold = record.get(gold_field), i.e., record.get(\"label\"), which now returns None for every record...The file to change is ticket-scorer/config/scoring_config.yaml: set expected_label_field: gold_label.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It still says expected_label_field: label, but since commit 53551e8 the eval set (fixtures/eval_set.jsonl) names its gold field gold_label. The batch scorer (pipeline/score_batch.py:47) looks up the gold answer with record.get(gold_field), which silently returns None for every record...Changing the config line to expected_label_field: gold_label fixes it",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It began on 2026-06-17, introduced by commit 53551e8 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"...pipeline/metrics/nightly_scores.csv shows accuracy of 0.90\u20130.92 every night from 2026-05-20 through 2026-06-16, then exactly 0.00 on 2026-06-17...git show 53551e8 --stat shows it changed only fixtures/eval_set.jsonl and pipeline/score_batch.py",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit 53551e8 \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"...git show 53551e8 shows that commit renamed label \u2192 gold_label in all 11 eval records and in REQUIRED_KEYS, while leaving expected_label_field: label in the config untouched; (c) the commit date matches the first 0.00 in the CSV to the day.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "pipeline/score_one.py calls predict_category and prints the prediction but never reads the eval set or compares against a gold label, so it can only ever show that predictions \"look correct\" \u2014 it exercises the classifier, not the scoring...The correct reproduction is to run the actual failing path, the batch scorer (python -m pipeline.score_batch), observe 0.0",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the earlier investigation's reproduction method could never have detected the bug: it re-ran tickets through pipeline/score_one.py, which only prints the predicted category and never reads the gold label or the config at all...The correct reproduction is to run the actual batch path \u2014 python3 -m pipeline.score_batch from the repo root",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "a candidate change should be evaluated in a shadow run, not by mutating the production nightly job...It cannot work: there is no model in the loop \u2014 the classifier is deterministic keyword rules, and the model_id: ticket-classifier-v3 line in scoring_config.yaml isn't even read by any code",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The team should not act on it \u2014 it is a no-op that cannot affect the score. There is no model in the loop: the classifier is a keyword-rule stub, and the model_id: ticket-classifier-v3 line in the config is never read by any code",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

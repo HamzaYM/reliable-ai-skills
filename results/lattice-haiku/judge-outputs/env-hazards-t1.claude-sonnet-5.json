@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31916,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12012419999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4505,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4505,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4505,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4505,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 3686,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3686,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify the same root cause (cedar_owner bypassing RLS via DATABASE_URL), recommend the same two-role fix, and correctly diagnose the reset-script gap for cedar_app; they are comparable in substance, with Report 2 using terminology (\"table owner\") that maps more directly onto the expected mechanism and Report 1 offering slightly more actionable remediation detail (concrete diff, updated reset script).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to PostgreSQL using the `cedar_owner` role, which is a superuser created by the docker-compose initialization (POSTGRES_USER: cedar_owner). PostgreSQL superusers have the implicit `BYPASSRLS` privilege, which silently bypasses all row-level security policies without any error or warning.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The application connects to PostgreSQL as the `cedar_owner` role, which is the **table owner**. In PostgreSQL, Row Level Security (RLS) policies **do not apply to table owners** (or superusers).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "1. **Schema-owning role** (`cedar_owner`): Used ONLY for running migrations. ... 2. **Least-privilege application role** (`cedar_app`): Used by the running app at runtime. Has only DML permissions (SELECT, INSERT, UPDATE, DELETE on application tables)... This role explicitly DOES NOT have `BYPASSRLS`, so RLS policies are enforced.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The correct structure should be:\n\n- **Migration/bootstrap operations** (schema creation, role setup): Use `cedar_owner` role\n- **Application runtime** (queries, business logic): Use `cedar_app` role (limited permissions)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `reset-local-db.sh` script (`cedarline/scripts/reset-local-db.sh`) only recreates the database schema through migrations, but does not recreate the database roles. ... Since `create_app_role.sql` is not re-run, the `cedar_app` role never exists. The isolation test suite tries to connect as `cedar_app` and immediately fails with \"role does not exist.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `reset-local-db.sh` script destroys the database volume (`docker compose down -v`) and rebuilds it, but does NOT run the `create_app_role.sql` bootstrap script. ... it never executes `db/bootstrap/create_app_role.sql`, which is responsible for creating the `cedar_app` role.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

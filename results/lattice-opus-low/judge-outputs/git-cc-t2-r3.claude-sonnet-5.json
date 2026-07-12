@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23312,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1045116,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4522,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4522,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4522,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4522,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 2666,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2666,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations with concrete git evidence; Report 2 is marginally more rigorous, explicitly using git cherry -v and an explicit git fetch/confirm-tip step for freshness verification.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. `main` is the trunk, and the branch this work depends on \u2014 `feat/weighted-scorer` \u2014 has already landed on `main` via the squash commit `1971f08`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. ... So there is no longer any in-progress dependency branch to target \u2014 `main` is the correct base.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was cut from `feat/weighted-scorer`... its **content** is fully merged into `main` (identical trees, empty diff) via squash PR #42 (`1971f08`), but its **commits**... are **not** ancestors of `main` \u2014 `git branch --merged main` lists only `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was created from `feat/weighted-scorer`... the weighted work has been **squash-merged into `main`** as `1971f08 (#42)`... `git branch --merged main` does **not** list `feat/weighted-scorer`, and `git cherry -v main feat/weighted-scorer` marks W1/W2/W3 as `+` \u2014 so those three commits are **not literal ancestors** of `main`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the diff \u2014 three-dot `git diff main...feat/pairwise-metric`... touches 3 files... `scoring/scorer.py`: rewrites `score()` from flat to weighted... The `scoring/scorer.py` weighted rewrite and the `overlap()` helper are the **weighted-scorer** work (W1\u2013W3) that is already in `main`. It shows up only because the merge-base is the original base `65204ad`, not `main`'s tip",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Three-dot** `git diff main...feat/pairwise-metric`... is **not** clean: it touches 3 files... and **`scoring/scorer.py`**... That extra content is present **because the branch was cut from `feat/weighted-scorer` and `main` absorbed that same work via a squash merge**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase `feat/pairwise-metric` onto `main`** \u2014 `git rebase --onto main ac9d505 feat/pairwise-metric`... **Verify the diff is clean and correctly scoped**: after the rebase, `git diff main...feat/pairwise-metric` should equal the two-dot diff above \u2014 only the grader pairwise line and `pairwise_preference()`, with no weighted-scorer/scorer.py noise; `git log main..HEAD` should show only X1 and X2.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Update `main`** locally: `git fetch origin` and confirm `main` is at `1971f08` (#42)... **Rebase the pairwise commits onto `main`**... then **verify the result is clean**: `git log main..HEAD` should show only X1 and X2, and `git diff main...HEAD` should show only the 5-insertion pairwise diff in `grader.txt` and `metrics.py`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

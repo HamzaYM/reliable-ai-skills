@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 38327,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.21168399999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7744,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7744,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7744,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7744,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 3126,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3126,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is better: it covers all four expectations including the explicit call to confirm the first migration, whereas Report 2 misses the migration-confirmation point and weakens the sink/legacy-secret fixes to 'repoint' rather than remove.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"` (`medislot/infra/prod/app.auto.tfvars:2`)... Should be **omitted entirely**... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` (`:4`)... Remove the key entirely... Both keys should be **removed entirely** from prod... `LEGACY_BILLING_SECRET_ARN`... if it's a known-dead reference it should be dropped.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"` (`infra/prod/app.auto.tfvars:2`)... Should be `\"false\"` in prod... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` (`infra/prod/app.auto.tfvars:4`)... it must be removed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Both `deploy-staging` and `deploy-prod` jobs then deploy that **same digest**... Because Vite mode is hardcoded to `staging`... the frontend bundle deployed to production will have `https://staging-api.example.com` baked in permanently \u2014 this cannot be fixed at runtime since it's inlined at build time. This is exactly the \"rebuild per environment; don't promote a build artifact wholesale\" trap",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "that **same image digest** is deployed to both `deploy-staging` and `deploy-prod` jobs... So as committed, the production frontend deploy would ship a bundle baked with the staging API base URL (`https://staging-api.example.com`)... even if the `--mode` were fixed, there is no `.env.production` file to supply a correct value.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**No database migration step.**... `docs/prod-runbook.md:6` asserts \"Database migrations are applied automatically during deploy,\" but that document is stale... and there is no evidence in the pipeline to back the claim \u2014 per project documentation's first-apply trap, this must be confirmed explicitly, not assumed, before launch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`medislot/infra/prod/main.tf:3` \u2014 `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`... **production's deploy-role trust policy still trusts the staging GitHub Actions environment**... Must change to `repo:acme-health/medislot:environment:production` before any apply.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` sets the **exact same** value, `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 it was copied and not updated... This line must be changed to `repo:acme-health/medislot:environment:production` before applying.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

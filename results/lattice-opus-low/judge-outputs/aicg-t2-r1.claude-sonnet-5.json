@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26582,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1211256,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6916,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6916,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6916,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6916,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 2816,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2816,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very close in substance across all four questions; Report 2 slightly edges out Report 1 by explicitly calling for an allowlist-based approach to metadata logging (expectation c), which Report 1 only vaguely addresses via \"scrub metadata for PII.\"",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "This function is `try: return primary.complete(payload) except Exception as e: log_fallover(e); return secondary.complete(payload)`... `BadRequestError` \u2014 Not transient... Should not fall over. `AuthError` \u2014 ...Should not fall over; should surface/alert. `ContentPolicyError` \u2014 the most dangerous case here... This should be a hard stop, not a fallback. Concrete fix: branch on exception type. Fall over only for RateLimitError, RequestTimeoutError, ServerError. Let BadRequestError, AuthError, and especially ContentPolicyError propagate...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`BadRequestError`, `AuthError`, `ContentPolicyError` \u2014 definitively non-retryable rejections. Failing these over is **wrong and dangerous**... a payload the primary rejected outright... must never be rerouted to a second vendor... Concrete fix: replace the bare catch with an explicit denylist of non-retryable classes... and only fall over on the remaining classes.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Returns True whenever STAGE is anything other than the exact string \"production\"... this globally disables rate limiting outside one exact env value... On any Redis error, returns True. Assessment: fails open... (a) treat unknown/missing STAGE as production (fail toward enforcing limits)... (c) ...for a PII pipeline, failing closed... on RedisError is safer than unbounded calls.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This fails open and gates behavior on an environment-name check, both of which Guardrail 3 explicitly forbids. Wrong... On RedisError, returns True. This fails open... a safety gate must fail closed. Wrong. Concrete fix: default to fail-closed (return False on RedisError, and enforce limits regardless of stage)...",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Concrete fix: never log input_text (drop it, or log only a length/hash/redacted preview); log the pseudonymized id from ids.pseudonymize, not the raw id; scrub metadata for PII before logging.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "metadata is logged wholesale via a denylist-of-nothing approach; Guardrail's sensitive-data rule requires an allowlist of safe keys so a future field added by another engineer doesn't silently leak. Concrete fix: ... filter metadata through an explicit allowlist of known-safe keys, dropping everything else.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "if PII_SALT is unset (or empty), salt defaults to \"\", so the function silently computes an unsalted SHA-256 of the applicant id. Assessment: this fails open and silently... Concrete fix: fail closed \u2014 raise if PII_SALT is missing or below a minimum length, so the pipeline cannot run...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`.get(..., \"\")` silently falls back to an empty salt, so the output becomes an unsalted sha256(applicant_id)... This is exactly the \"fail closed on a missing required secret; never silently fall back to an unsalted path\" rule. It fails silently and open. Concrete fix: require the salt \u2014 salt = os.environ[\"PII_SALT\"] or an explicit check that raises if unset/empty \u2014 so the dependent path fails hard rather than degrading to unsalted hashing.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

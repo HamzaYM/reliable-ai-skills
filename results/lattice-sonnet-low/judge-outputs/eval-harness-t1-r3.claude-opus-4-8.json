@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 38567,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.184749,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5828,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5828,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5828,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5828,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2815,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2815,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports nail the bug, its consequences, and accuracy's gate semantics, but Report 1 additionally makes the explicit distinction that optional-axis failures can defensibly be renormalized over successful axes while accuracy cannot, giving it a slight edge.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "That `axis_scores` dict (now containing a `None` for the failed axis) is passed straight to `composite()` in `aggregate.py:6-13`. There:\n```python\nvalue = axis_scores.get(axis)\nif value is None:\n    value = 0.0\ntotal += weight * value\n```\nA missing/failed axis is silently treated as a real score of `0.0` and multiplied by that axis's weight into the weighted sum... a degraded record is indistinguishable in form from a fully-scored one.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A `None` axis score is silently treated as `0.0` and included in the weighted sum at full weight, exactly like a real score of 0 would be.... This is the exact same three-column form (`agent_id, reply_id, composite`) as a fully-scored row... There is no column, flag, or sentinel anywhere in the CSV that distinguishes \"all three axes scored\" from \"one axis silently failed and was scored as 0.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "leaderboard.py:12-17 reads scores.csv with no awareness of degraded rows \u2014 it sums every composite into sums[agent_id] and divides by counts[agent_id] unconditionally. A transient call failure (nothing to do with reply quality) drags an agent's mean composite down as if the agent had genuinely written a bad reply.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treating a *failed call* the same as a *genuine 0 score* conflates \"we don't know\" with \"this was bad,\"... `leaderboard.py:rankings()` ... takes an unweighted mean of `composite` per agent with no way to exclude or discount rows with call failures \u2014 a `None`-driven low composite pulls an agent's mean down exactly as if they had genuinely produced a bad reply.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Accuracy call fails (load-bearing/gating axis): do not compute or write a composite at all for that record. Write a row marked degraded/incomplete (e.g., a status column or a separate retry_queue)... Never write a numeric composite that a downstream mean/ranking could silently ingest as complete.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a failed accuracy call must not be silently treated as \"gate not triggered\" ... the safest behavior is to withhold composite/pass-fail determination entirely until accuracy is successfully re-scored, rather than let a failure decide the gate one way or the other.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Relevance or tone call fails (non-critical axes): if accuracy succeeded, it's acceptable to renormalize the composite over the axes that did succeed (redistribute weight...) and write the result \u2014 but flag the record... So the three axes should not be treated identically on failure: an accuracy-call failure needs a categorically different, more conservative response than a relevance- or tone-call failure.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31378,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2257264,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 17610,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 17610,
+        "cache_read_input_tokens": 193108,
+        "inference_geo": "not_available",
+        "input_tokens": 3282,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1306,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1306,
+            "cache_read_input_tokens": 45483,
+            "input_tokens": 2,
+            "output_tokens": 1052,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3294,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are nearly identical in substance and hit all four expectations with comparable specificity; Report 2 is marginally more actionable on staleness (proposes a fallback to a scoped/partial run) while Report 1 adds extra unrequested caveats (checkpointing risk), but neither materially outperforms the other on the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 ~1,800 tokens per scoring call \u2248 9.36M tokens for a full run... northpeak (primary): 640,000 tokens remaining of a 10M window \u2014 only ~7% of what the run needs.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 transcripts \u00d7 ~1,800 tokens per scoring call \u2248 9.36M tokens for the full run... northpeak (default/primary): 640,000 tokens remaining of a 10M window \u2014 only ~7% of what the run needs.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Instead I'd launch explicitly against the secondary backend:\n\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Instead I'd route the full run to the secondary backend, which has its own separate allowance with ample headroom:\n\n```bash\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run `run_nightly.sh` as-is. Launched against the default primary backend, the job would exhaust northpeak's remaining 640k tokens after roughly 350 of 5,200 transcripts (640,000 \u00f7 1,800 \u2248 355) and then stall or fail on rate/quota errors",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run the default path. Launching `run_nightly.sh` as-is would exhaust northpeak's remaining 640k tokens roughly 355 transcripts in (640,000 \u00f7 1,800) and then stall or fail the remaining ~93% of the run",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is ~3 hours stale (19:25Z vs the 22:30Z \"now\"), so I'd refresh/confirm ridgeline's remaining balance before committing 9.36M tokens",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is ~3 hours stale (19:25Z vs. now 22:30Z), so I'd refresh or re-check live balances first and fall back to a scoped/partial run if ridgeline's real headroom is lower than snapshotted",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r2",
+  "repeat": 2,
+  "task": "bama-t1"
+}

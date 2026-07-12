@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23588,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11725559999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6706,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6706,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6706,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6706,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 2642,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2642,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comparable on divisions/ordering/F-06 judgment call, but Report 1 correctly identifies the RESULTS_DB shared-path collision risk and mandates a distinct RESULTS_DB per engineer, while Report 2 explicitly (and incorrectly) dismisses it as \"harmless as-is,\" missing expectation (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer B \u2014 pipeline/registry.py: F-02 (aurora-1 mapping \u2014 see caveat in Q3), F-05 (DEFAULT_RUBRIC_VERSION \u2192 v3), F-09 (DEFAULT_DATASET \u2192 eval_set.jsonl). Three independent one-line config edits in one file.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Lane B \u2014 pipeline/registry.py (one engineer): F-02, F-05, F-09. Three one-line constant/dict edits in an 11-line file. Trivial but must go to a single owner \u2014 three people editing the same tiny file would conflict for no benefit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 (fully parallel, no code collisions): Engineer B's config edits (F-02*/F-05/F-09), Engineer D's prompt edits (F-03/F-10), and the failing tests first \u2014 F-11 (Engineer C) and F-12 (Engineer A).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Lanes A, B, C, D run fully in parallel in the first wave \u2014 they touch disjoint files, so there's no cross-lane conflict... Lane C \u2014 pipeline/rubric.py + rubric test (one engineer): F-01 then F-11.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 do not assign as a blind code edit. \"Tighten PARTIAL_CREDIT_THRESHOLDS so borderline answers score lower\" changes user-facing scoring output, and the finding gives no target numbers... escalate for the intended thresholds first, then implement; don't let an engineer pick numbers.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 a judgment call, not a mechanical fix... has no target values and silently recalibrates every score the pipeline produces, breaking comparability with past runs. This needs the eval/rubric owner to pick and sign off on the new numbers... it shouldn't be dropped on an engineer to guess.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Shared test resource. tests/conftest.py uses RESULTS_DB (default /var/tmp/llm-scoring/results.db). Parallel test runs from different worktrees would clobber a single shared DB. Mitigation: each engineer sets a distinct RESULTS_DB (project documentation: isolated test resource per batch).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The RESULTS_DB env var referenced in tests/conftest.py (defaults to /var/tmp/llm-scoring/results.db); harmless as-is but worth knowing exists.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

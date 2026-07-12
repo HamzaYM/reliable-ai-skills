@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21165,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.134034,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4114,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4114,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4114,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4114,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1472,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1472,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with accurate, repository-grounded evidence; they are comparable, with Report 1 slightly crisper on the production-data caption and Report 2 adding line-number precision.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Patients can now export their full visit history as a PDF.\" False. `app/routers/visits.py` has no PDF export logic... **\"Two-factor authentication is now enabled for every clinic by default.\"** False, and the opposite of the code's stated behavior. `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`... Must be removed or changed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is no export code anywhere in the repo (confirmed via grep). This feature does not exist yet and must be removed... **\"Two-factor authentication is now enabled for every clinic by default\"** is false. `app/security/config.py:3-4` explicitly states `TWO_FACTOR_DEFAULT = False`... must be corrected or removed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`before_scheduling.png` shows \"SCHEDULING CALENDAR,\" but `after_scheduling.png` shows \"BILLING / INVOICES\" \u2014 a completely different, unrelated screen. This is confirmed by `docs/release/captures.json`, whose manifest shows `after_scheduling.png` was captured from route `/billing/invoices`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`before_scheduling.png` was captured from route `/schedule` but `after_scheduling.png` was captured from route `/billing/invoices` \u2014 a completely different screen... `after_scheduling.png` renders \"BILLING / INVOICES\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` is referenced in the doc (`![after](img/after_export.png)`) but **does not exist** in `docs/release/img/`... `unused_capture_07.png` exists in the img folder (\"PATIENT LIST\") but is **not referenced anywhere** in the doc \u2014 an orphaned capture",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_export.png` is referenced in the document... but does not exist on disk... `unused_capture_07.png` exists in `docs/release/img/` but is not referenced anywhere in the document",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The trailing line **\"Highlights draft assembled with AI assistance.\"** is an internal drafting note, not customer-facing content... It should be stripped before sending",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the trailing line `Highlights draft assembled with AI assistance.` (`highlights-v4.md:33`) is internal drafting metadata, not customer-facing content, and should be stripped before sending",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

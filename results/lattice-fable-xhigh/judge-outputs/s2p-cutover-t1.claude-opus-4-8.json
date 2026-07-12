@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21548,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1800045,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11852,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11852,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11852,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11852,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1839,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1839,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent accuracy and file-level grounding; they are comparable, with Report 1 slightly more explicit on the legacy-billing secret while Report 2 more cleanly calls for its removal.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. ... `infra/prod/app.auto.tfvars:3` \u2014 `AUTH_RELAXED = \"true\"`. ... `infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. ... Fix: set `SHADOW_SCORING_SINK = \"\"` for launch",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"` (`infra/prod/app.auto.tfvars:2`) ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` (`infra/prod/app.auto.tfvars:4`) ... Both lines must be removed entirely; toggling the flag off is not sufficient. ... `LEGACY_BILLING_SECRET_ARN` ... remove the line",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "that URL is baked into the JavaScript bundle as a string literal ... the `deploy-prod` job deploys **\"the same already-built digest\"** to prod ... the production frontend, as this pipeline stands, ships with the **staging** API base URL hard-coded ... prod needs its own bundle built with `--mode production` plus a committed `frontend/.env.production`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this is a compile-time constant, not a runtime lookup ... `deploy-prod` deploys **the same already-built digest** to prod ... the production frontend would ship with the staging API base URL baked in ... Production needs its own build (a `.env.production` with the prod API URL, a `--mode production` build, its own image)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**No database migration step**, even though `docs/prod-runbook.md:6` ... claims \"Database migrations are applied automatically during deploy.\" Nothing in the workflow touches `backend/migrations/versions/0001_base.py`\u2013`0003_billing.py`, and a first prod release needs all three applied to a brand-new production database.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Nothing runs database migrations.** `docs/prod-runbook.md` claims \"Database migrations are applied automatically during deploy,\" but that runbook is self-declared 3 months stale ... A fresh production database needs `0001_base`, `0002_tenants`, and `0003_billing` ... applied, and as committed nothing will do that.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the copied `infra/prod/main.tf:3` still passes `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`. ... It must be `repo:acme-health/medislot:environment:production`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the production role's trust condition (`infra/prod/main.tf:3`) was copied unchanged and still reads `repo:acme-health/medislot:environment:staging`. ... Production needs its own role name and its own `environment:production` trust condition \u2014 never a condition shared with or inherited from staging.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

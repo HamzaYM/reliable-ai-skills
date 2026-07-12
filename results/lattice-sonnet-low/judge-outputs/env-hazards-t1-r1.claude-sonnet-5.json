@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14817,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0915222,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5433,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5433,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5433,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5433,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 1408,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1408,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify the same root cause, fix, and wipe/rebuild explanation with equivalent specificity; Report 2 adds an extra (optional) FORCE ROW LEVEL SECURITY suggestion but this doesn't change the substance\u2014overall the two are comparable in quality and completeness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Postgres table owners (and any role that created a table) are not subject to their own row-level-security policies unless FORCE ROW LEVEL SECURITY is set \u2014 and no migration in cedarline/db/migrations/0001_init.sql does that... `cedar_owner` bypasses the policy silently \u2014 no error, no warning \u2014 and `GET /clients` returns rows from every tenant, exactly the leak reported.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In Postgres, table owners bypass row security policies by default \u2014 `ENABLE ROW LEVEL SECURITY` does not restrict the owner unless `FORCE ROW LEVEL SECURITY` is also set (it is not, anywhere in `0001_init.sql`)... Mechanism in one sentence: the app runs as the table-owning role, RLS is enabled but not forced, so Postgres exempts the owner from the `tenant_isolation` policy and every `/clients` call returns rows from all tenants.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `cedarline/.env` (and `.env.example`) so the running application's `DATABASE_URL` uses `cedar_app`, not `cedar_owner`... Keep `cedar_owner` reserved exclusively for `cedarline/scripts/migrate.sh` (schema/migration operations) \u2014 never for serving requests.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the application's `DATABASE_URL` at the non-owning `cedar_app` role, not `cedar_owner`. `cedar_owner` should be reserved for running migrations/DDL only; it should never be the runtime credential in `.env`/`docker-compose`/deployment config.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It never re-runs `db/bootstrap/create_app_role.sql`. Because `docker compose down -v` deletes the named volume (`cedar_pgdata`), the entire Postgres cluster \u2014 including the `cedar_app` role, which lives in cluster-global catalogs, not in the `cedar` database or its schema \u2014 is destroyed and recreated from scratch. Migrations don't create `cedar_app`; only the bootstrap script does.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "As both `docs/local-setup.md` and `README.md` state, that bootstrap script is explicitly \"One-time bootstrap ... Not part of automatic database initialization; run by hand on first setup.\" So after a reset, `cedar_app` simply doesn't exist",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

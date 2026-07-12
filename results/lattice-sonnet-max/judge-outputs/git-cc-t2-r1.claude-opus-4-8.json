@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29515,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.193489,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7207,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7207,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7207,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7207,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2613,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2613,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct git analysis; Report 1 is marginally more thorough but they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. It's the only integration/trunk branch in the repository ... `feat/weighted-scorer` is not a viable target: as shown in Q2, its content is already on `main`, so targeting it would aim the PR at a branch that is itself stale/superseded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. This repo has exactly one trunk ... never stack a PR on a feature branch as its base. That rule is doubly important here because the branch this one was actually cut from, `feat/weighted-scorer`, is no longer a valid target at all",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was created from **`feat/weighted-scorer`**, not from `main`. ... `feat/weighted-scorer`'s commits are **not** an ancestor of `main` (`git merge-base --is-ancestor feat/weighted-scorer main` \u2192 false), but its content is already on `main`: `main`'s tip `1971f08` (\"Refactor scorer for weighted metrics (#42)\"...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`feat/pairwise-metric` was branched from `feat/weighted-scorer`** ... `feat/weighted-scorer` is a **dead base** ... `main`'s tip `1971f08` (\"Refactor scorer for weighted metrics (#42)\") ... `git merge-base --is-ancestor ac9d505 main` \u2192 **NO**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**3 files changed, 21 insertions(+), 3 deletions(-)** \u2014 `prompts/grader.txt` +1, `scoring/metrics.py` +10, `scoring/scorer.py` +13/-3 ... every change in `scoring/scorer.py`, plus 6 of the 10 insertions in `scoring/metrics.py` (the `overlap()` helper) \u2014 are `feat/weighted-scorer`'s content, present only because `feat/pairwise-metric` branched from `feat/weighted-scorer` and was never rebased after that work landed on `main` as #42.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "3 files changed, 21 insertions(+), 3 deletions(-), across **5 commits**: `W1`, `W2`, `W3` (weighted-scorer work: the `WEIGHTS`/`total` refactor in `scoring/scorer.py` and the `overlap()` helper ... present purely because `feat/pairwise-metric` was cut from `feat/weighted-scorer` before that branch's work reached `main` through a different, non-ancestor commit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... **Verify the result**: re-run `git diff main...feat/pairwise-metric --stat` (should now show only 2 files / 5 insertions / 0 deletions)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric`. This replays only the branch's own commits ... **Verify the result**: `git diff main feat/pairwise-metric` should now show exactly the 5-line pairwise-only change",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

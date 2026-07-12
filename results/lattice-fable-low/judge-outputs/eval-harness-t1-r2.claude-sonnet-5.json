@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25153,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0908357,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4167,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4167,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3257,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4167,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4167,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3257,
+            "output_tokens": 2918,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2918,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 hits all four expectations, correctly distinguishing that relevance/tone failures can be defensibly renormalized while accuracy failures cannot; Report 2 misses expectation (d) by explicitly rejecting axis-specific handling and treating all three axes uniformly.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In `grader/aggregate.py:9-12`, `composite()` does `value = axis_scores.get(axis); if value is None: value = 0.0` and folds that zero into the weighted sum ... So a failed axis is silently scored as 0.0, and the record written to `results/scores.csv` is byte-for-byte indistinguishable in form from a fully scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Inside `grader/aggregate.py:6-13`, `composite()` does `value = axis_scores.get(axis); if value is None: value = 0.0`, i.e. a failed axis is silently treated as a score of **zero**... The written record is a normal three-column CSV row (`agent_id, reply_id, composite`) \u2014 **identical in form to a fully scored row**.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A failed call is missing data, not a zero-quality reply; substituting 0.0 conflates the two. ... `rankings()` (leaderboard.py:9-17) sums and means every row's composite with no notion of degraded records, so an agent who happens to draw more transient API failures gets their mean composite dragged down and drops in rank.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`results/scores.csv` accumulates silently poisoned rows ... and `grader/leaderboard.py:12-16` sums and counts *every* row with no way to exclude them, so an agent's mean composite is dragged down in proportion to how many of *their* replies happened to hit a failing call.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "A failed **accuracy** call is a load-bearing loss: no composite comparable to fully-scored rows should be emitted at all, because you cannot know whether the reply passes the gate, and zeroing it fabricates a hard-fail-looking score.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "no axis should be imputed a score \u2014 the record simply isn't a valid measurement (and for the gate axis especially, \"unknown\" must not be conflated with \"failed the gate\").",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed **relevance or tone** call loses only an embellishment: it's defensible to renormalize the composite over the axes that did succeed (e.g., with tone missing, weight relevance 0.3/0.8 and accuracy 0.5/0.8) and flag the row as partial. ... The current code treats all three identically \u2014 zero-substitute and write \u2014 which is wrong for every axis but catastrophically wrong for accuracy",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the asymmetry doesn't justify axis-specific fallbacks: on *no* axis is \"the call failed\" evidence about the reply, so no axis should be imputed a score \u2014 the record simply isn't a valid measurement",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

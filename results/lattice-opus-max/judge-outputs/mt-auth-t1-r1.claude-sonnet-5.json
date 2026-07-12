@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18522,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1081813,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10268,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10268,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10268,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10268,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2147,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2147,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently hit all five expectations with essentially equivalent accuracy and citations; Report 2 is marginally more thorough (flags the unprotected `tenants` table and additional secondary findings) but this doesn't change expectation coverage \u2014 the two are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the running application connects to Postgres as `juniper_owner`, the table's owner, and a table owner bypasses Row-Level Security unless the table is set to `FORCE ROW LEVEL SECURITY` \u2014 which it is not... The runtime engine (`backend/app/db.py:6`) is built from `DATABASE_URL`, and in this deployment that URL names `juniper_owner` (`.env.example:1`, `docker-compose.yml:5`, `infra/main.tf:2`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In PostgreSQL, `ENABLE ROW LEVEL SECURITY` does not apply policies to the table's owning role. The owner (and superusers / `BYPASSRLS` roles) bypass all RLS policies unless the table also has `ALTER TABLE ... FORCE ROW LEVEL SECURITY`... every config surface sets that URL to the owner: `.env.example:1`, `docker-compose.yml:5`, and `infra/main.tf:2` all read `postgresql://juniper_owner:ownerpw@db:5432/juniper`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `b2a23d2` changed `DATABASE_URL` from `juniper_app` \u2192 `juniper_owner` in all three deployment configs at once: `.env.example`... `docker-compose.yml`... same substitution on the `api` service env; `infra/main.tf`: same substitution on the `database_url` variable default",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git show b2a23d2` \u2014 \"ROTA-214 run migrations from the api container on boot\"... It changed the runtime role in all three config files: `.env.example:1`... `docker-compose.yml:5`... `infra/main.tf:2` juniper_app:apppw \u2192 juniper_owner:ownerpw",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Primary fix \u2014 stop the app from connecting as the owner. Point the *runtime* `DATABASE_URL` back to the least-privilege `juniper_app` role in `.env.example:1`, `docker-compose.yml:5`, and `infra/main.tf:2`... Add a migration `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A. Immediate \u2014 stop the app connecting as the owner. Revert the runtime `DATABASE_URL` back to the low-privilege, non-owner role... B. Defense-in-depth \u2014 make the policy apply even to the owner. Add a migration... `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an application-level tenant filter to the query in `backend/app/routes/appointments.py:16-19` (`WHERE tenant_id = :tid`, using the verified `claims[\"tenant_id\"]`), as a belt-and-suspenders layer independent of RLS.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "C. Belt-and-suspenders app filter (optional but recommended). Add an explicit tenant predicate to `appointments.py:16-19`, e.g. `... WHERE tenant_id = current_setting('app.current_tenant')::uuid`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Add a boot-time assertion in the startup path (near `backend/app/db.py`) that queries the connected identity and refuses to start if the runtime role is a superuser, has `rolbypassrls`, or owns the tenant tables. Treat a failure as stop-the-line.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Boot-time / CI assertion on the runtime role. On startup, verify the app's connection is *not* the table owner and is not `BYPASSRLS`... Fail fast rather than serve.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r1",
+  "repeat": 1,
+  "task": "mt-auth-t1"
+}

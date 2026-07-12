@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31027,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2001805,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11575,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11575,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11575,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11575,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2753,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2753,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong on grouping, ordering, and F-06, but Report 2 additionally nails the shared RESULTS_DB test-database collision risk that Report 1 only mentions weakly, making Report 2 the better answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer C \u2192 `registry.py`: **F-05** (`DEFAULT_RUBRIC_VERSION` `rubric-v1`\u2192`v3`, line 9) and **F-09** ... right away; **F-02** (add the `aurora-1` mapping) ... All three touch the same 11-line file, so they cannot be split.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Batch A \u2014 Config (`pipeline/registry.py`): F-02, F-05, F-09.** ... **Same-file edits on `pipeline/registry.py`.** F-02, F-05, F-09 touch three distinct lines of one file ... still route through one owner (Batch A) to avoid conflicts.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Wave 1 \u2014 four engineers in parallel, disjoint files:** ... **Engineer B \u2192 `rubric.py` + its test:** **F-01** ... immediately followed by **F-11** (edge-case parse test) ... **Engineer C \u2192 `registry.py`:** **F-05** ... and **F-09** ... **F-02** ... All three touch the same 11-line file, so they cannot be split.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Wave 1 (parallel):** A, B, C, D run simultaneously ... **Batch C \u2014 Rubric (`pipeline/rubric.py` + `tests/`): F-01 + F-11.** ... **Batch A \u2014 Config (`pipeline/registry.py`): F-02, F-05, F-09.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06 \u2014 subjective, no spec.** ... changing them silently re-scores every borderline answer. This needs the reviewer to specify the new numbers and a scoring project documentation to measure the impact \u2014 a policy decision, not a mechanical fix.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06 \u2014 do not assign \"as written.\"** It changes user-facing scores and is underspecified (\"tighten them,\" no target numbers). It needs a product/data owner to set the new thresholds ... Escalate it as its own flagged batch",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Shared test-resource collision.** `conftest.py:4` defaults `RESULTS_DB` to one path (`/var/tmp/llm-scoring/results.db`). Engineers on Batches B and C ... running suites concurrently all hit the same DB \u2192 interference/flakiness. ... **A distinct `RESULTS_DB` per engineer.** Export a unique path ... so parallel test runs don't collide on the shared default",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

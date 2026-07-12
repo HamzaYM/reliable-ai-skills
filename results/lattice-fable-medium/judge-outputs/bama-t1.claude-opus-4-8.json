@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28097,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1329845,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6444,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6444,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6444,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6444,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2271,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2271,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are near-equivalent, but Report 1 edges ahead by explicitly stating it would re-check live capacity before relying on the ~3-hour-stale snapshot, which Report 2 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "so the run needs roughly **5,200 \u00d7 1,800 \u2248 9.36 million tokens**. ... **northpeak (the default backend): 640,000 tokens remaining** of a 10,000,000-token window \u2014 only about **7%** of what the run needs. ... the job would exhaust northpeak's remaining 640k tokens after roughly 350 transcripts",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That's **5,200 \u00d7 1,800 \u2248 9.36 million tokens** for the full run. ... northpeak (primary/default) | 10,000,000 | **640,000** ... It would exhaust northpeak's remaining allowance roughly 355 transcripts in and the job would fail or stall mid-run",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**ridgeline (secondary): 10,800,000 tokens remaining** of a 12,000,000-token window \u2014 comfortably above the ~9.36M requirement ... I'd route the whole run to the secondary backend ... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The secondary backend has 10.8M remaining, comfortably above the ~9.36M needed (~1.4M of headroom) ... Instead I'd launch directly against the secondary backend ... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run `run_nightly.sh` as-is. On the default path the job would exhaust northpeak's remaining 640k tokens ... I'd route the whole run to the secondary backend",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** run `run_nightly.sh` as-is. It would exhaust northpeak's remaining allowance roughly 355 transcripts in ... Instead I'd launch directly against the secondary backend",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is ~3 hours stale (generated 19:25Z vs. the current 22:30Z), so before committing ~9.4M tokens I'd refresh the telemetry (or otherwise re-check live remaining capacity) rather than trust the stale numbers",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

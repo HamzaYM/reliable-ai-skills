@@ -1,0 +1,87 @@
+{
+  "answer_chars": 2587,
+  "answers": "**1. Root cause and file to fix.** The file to change is `config/scoring_config.yaml`: it still contains `expected_label_field: label`, but the eval set (`fixtures/eval_set.jsonl`) was migrated so every record's gold-label key is now `gold_label`. In `pipeline/score_batch.py:52-56`, the scorer does `gold = record.get(gold_field)` with `gold_field = \"label\"`, which returns `None` for every record, so `prediction == gold` is false for all 11 records and accuracy is exactly 0.0 \u2014 regardless of prediction quality. The one-line fix is `expected_label_field: gold_label`. I reproduced it: `python3 -m pipeline.score_batch` prints `accuracy=0.00` at HEAD. (The `REQUIRED_KEYS` validation in `score_batch.py` was updated to `gold_label`, so loading succeeds; only the config lookup was missed. A defensive follow-up would be to fail loudly when the configured field is absent instead of `.get()` silently returning `None`.)\n\n**2. When and which change.** It began with commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17). Evidence: that commit's diff renames `label` \u2192 `gold_label` in all 11 eval records and in `REQUIRED_KEYS`, but touches no config; and `pipeline/metrics/nightly_scores.csv` shows accuracy at 0.90\u20130.92 through 2026-06-16 and 0.00 from 2026-06-17 onward \u2014 the exact date of that commit.\n\n**3. Do I agree with the \"not reproducible / flaky\" closure? No.** The bug is 100% deterministic \u2014 I reproduced it with a single command (`python3 -m pipeline.score_batch` \u2192 `accuracy=0.00`). The earlier investigator re-ran tickets through `pipeline/score_one.py`, which is the wrong reproduction path: it only prints the predicted category and never reads the config or compares against a gold label, so it can never exhibit the scoring bug. Moreover, \"model flakiness\" is impossible here: `pipeline/classifier.py` is a deterministic offline keyword-rule classifier with no network or model call (its docstring says so explicitly). Correct reproduction: run the batch scorer itself, and instrument the comparison loop \u2014 you'd immediately see `gold` is `None` for every record while predictions are correct.\n\n**4. Assessment of the proposed next step (roll back to the previous model): don't do it.** The `model_id` config value isn't even used by the scoring path, and the classifier is rule-based with no model to swap; predictions were never wrong in the first place. Rolling back would change nothing (accuracy would stay 0.0), waste time, and further entrench the wrong diagnosis. The fix is the one-line config change above.",
+  "arm": "cold",
+  "attempts": 1,
+  "duration_ms": 85515,
+  "effort_effective": "low",
+  "effort_requested": "low",
+  "max_output_tokens": 64000,
+  "model_effective": "claude-fable-5",
+  "model_fallback": false,
+  "model_requested": "claude-fable-5",
+  "model_usage": {
+    "claude-fable-5": {
+      "cacheCreationInputTokens": 13594,
+      "cacheReadInputTokens": 200050,
+      "contextWindow": 1000000,
+      "costUSD": 0.6751,
+      "inputTokens": 3147,
+      "maxOutputTokens": 64000,
+      "outputTokens": 3434,
+      "webSearchRequests": 0
+    },
+    "claude-haiku-4-5-20251001": {
+      "cacheCreationInputTokens": 0,
+      "cacheReadInputTokens": 0,
+      "contextWindow": 200000,
+      "costUSD": 0.001202,
+      "inputTokens": 1127,
+      "maxOutputTokens": 32000,
+      "outputTokens": 15,
+      "webSearchRequests": 0
+    }
+  },
+  "models_effective": [
+    "claude-fable-5",
+    "claude-haiku-4-5-20251001"
+  ],
+  "num_turns": 8,
+  "pair": "sysdbg-t2-r2",
+  "peak_message_output_tokens": 2251,
+  "repeat": 2,
+  "report": "I've confirmed the root cause with a live reproduction. Here's the report.\n\n## Plan\nLocate the nightly ticket-classification scoring repo in this workspace, find where accuracy is computed, compare the batch path (which reports 0.0) with the single-item path (which spot-checks fine), correlate the drop date in the metrics log with git history, and reproduce both behaviors read-only.\n\n## Actions\n1. `ls` + `README.md` (workspace root) \u2014 identified `ticket-scorer/` as the nightly ticket-classification scoring pipeline.\n2. `ls -R` + `git log --oneline` in `ticket-scorer/` \u2014 5 commits; noticed `53551e8 chore(eval): migrate eval set to gold_label schema (SCORE-77)` and the investigation note commit.\n3. Read `investigations/2026-06-20-nightly-score-drop.md`, `pipeline/score_batch.py`, `pipeline/score_one.py` \u2014 found batch scorer looks up gold labels via `config[\"expected_label_field\"]` with `record.get(...)`; single-item scorer never compares against gold labels at all.\n4. Read `config/scoring_config.yaml`, `fixtures/eval_set.jsonl`, `pipeline/preprocess.py`; `git show 53551e8` \u2014 migration renamed `label` \u2192 `gold_label` in the eval set and in `REQUIRED_KEYS`, but the config still says `expected_label_field: label`.\n5. Read `pipeline/metrics/nightly_scores.csv`; ran `python3 -m pipeline.score_batch` (printed `accuracy=0.00`) \u2014 drop starts exactly 2026-06-17.\n6. Ran `python3 -m pipeline.score_one \"Re: I was charged twice...\"` (printed `billing`, correct) and read `pipeline/classifier.py` \u2014 classifier is a deterministic keyword-rule engine, no model call.\n\n## Answers\n\n**1. Root cause and file to fix.** The file to change is `config/scoring_config.yaml`: it still contains `expected_label_field: label`, but the eval set (`fixtures/eval_set.jsonl`) was migrated so every record's gold-label key is now `gold_label`. In `pipeline/score_batch.py:52-56`, the scorer does `gold = record.get(gold_field)` with `gold_field = \"label\"`, which returns `None` for every record, so `prediction == gold` is false for all 11 records and accuracy is exactly 0.0 \u2014 regardless of prediction quality. The one-line fix is `expected_label_field: gold_label`. I reproduced it: `python3 -m pipeline.score_batch` prints `accuracy=0.00` at HEAD. (The `REQUIRED_KEYS` validation in `score_batch.py` was updated to `gold_label`, so loading succeeds; only the config lookup was missed. A defensive follow-up would be to fail loudly when the configured field is absent instead of `.get()` silently returning `None`.)\n\n**2. When and which change.** It began with commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17). Evidence: that commit's diff renames `label` \u2192 `gold_label` in all 11 eval records and in `REQUIRED_KEYS`, but touches no config; and `pipeline/metrics/nightly_scores.csv` shows accuracy at 0.90\u20130.92 through 2026-06-16 and 0.00 from 2026-06-17 onward \u2014 the exact date of that commit.\n\n**3. Do I agree with the \"not reproducible / flaky\" closure? No.** The bug is 100% deterministic \u2014 I reproduced it with a single command (`python3 -m pipeline.score_batch` \u2192 `accuracy=0.00`). The earlier investigator re-ran tickets through `pipeline/score_one.py`, which is the wrong reproduction path: it only prints the predicted category and never reads the config or compares against a gold label, so it can never exhibit the scoring bug. Moreover, \"model flakiness\" is impossible here: `pipeline/classifier.py` is a deterministic offline keyword-rule classifier with no network or model call (its docstring says so explicitly). Correct reproduction: run the batch scorer itself, and instrument the comparison loop \u2014 you'd immediately see `gold` is `None` for every record while predictions are correct.\n\n**4. Assessment of the proposed next step (roll back to the previous model): don't do it.** The `model_id` config value isn't even used by the scoring path, and the classifier is rule-based with no model to swap; predictions were never wrong in the first place. Rolling back would change nothing (accuracy would stay 0.0), waste time, and further entrench the wrong diagnosis. The fix is the one-line config change above.\n\n## Next steps\nIf allowed to change things I would: (1) set `expected_label_field: gold_label` in `config/scoring_config.yaml` and confirm `score_batch.py` returns ~0.91; (2) make `score()` raise (or count and report) when the configured gold field is missing from a record, instead of silently comparing against `None`; (3) add a small test that scores the fixture eval set and asserts accuracy > 0; (4) reopen and correct the investigation note.\n\n## Confidence and gaps\n- Answers 1 and 3: very high \u2014 reproduced both the 0.0 batch score and the correct single-item prediction at HEAD, and the mechanism is directly visible in the code.\n- Answer 2: high \u2014 the metrics CSV flips to 0.00 on the commit's exact date; I can't see the nightly job's runtime logs, but nothing else in the history could cause this (the only other commits are the initial pipeline, metrics logs, and the investigation doc).\n- Answer 4: high \u2014 `model_id` is read into the config dict but never consumed anywhere in `pipeline/` (verified by reading all pipeline files), so a model rollback cannot affect the score.\n- Gap: I didn't verify how the nightly job invokes the scorer (no CI/cron config in the repo), but the working-directory-relative paths and the CSV pattern match `score_batch.py` exactly.",
+  "sections": {
+    "actions": "1. `ls` + `README.md` (workspace root) \u2014 identified `ticket-scorer/` as the nightly ticket-classification scoring pipeline.\n2. `ls -R` + `git log --oneline` in `ticket-scorer/` \u2014 5 commits; noticed `53551e8 chore(eval): migrate eval set to gold_label schema (SCORE-77)` and the investigation note commit.\n3. Read `investigations/2026-06-20-nightly-score-drop.md`, `pipeline/score_batch.py`, `pipeline/score_one.py` \u2014 found batch scorer looks up gold labels via `config[\"expected_label_field\"]` with `record.get(...)`; single-item scorer never compares against gold labels at all.\n4. Read `config/scoring_config.yaml`, `fixtures/eval_set.jsonl`, `pipeline/preprocess.py`; `git show 53551e8` \u2014 migration renamed `label` \u2192 `gold_label` in the eval set and in `REQUIRED_KEYS`, but the config still says `expected_label_field: label`.\n5. Read `pipeline/metrics/nightly_scores.csv`; ran `python3 -m pipeline.score_batch` (printed `accuracy=0.00`) \u2014 drop starts exactly 2026-06-17.\n6. Ran `python3 -m pipeline.score_one \"Re: I was charged twice...\"` (printed `billing`, correct) and read `pipeline/classifier.py` \u2014 classifier is a deterministic keyword-rule engine, no model call.",
+    "answers": "**1. Root cause and file to fix.** The file to change is `config/scoring_config.yaml`: it still contains `expected_label_field: label`, but the eval set (`fixtures/eval_set.jsonl`) was migrated so every record's gold-label key is now `gold_label`. In `pipeline/score_batch.py:52-56`, the scorer does `gold = record.get(gold_field)` with `gold_field = \"label\"`, which returns `None` for every record, so `prediction == gold` is false for all 11 records and accuracy is exactly 0.0 \u2014 regardless of prediction quality. The one-line fix is `expected_label_field: gold_label`. I reproduced it: `python3 -m pipeline.score_batch` prints `accuracy=0.00` at HEAD. (The `REQUIRED_KEYS` validation in `score_batch.py` was updated to `gold_label`, so loading succeeds; only the config lookup was missed. A defensive follow-up would be to fail loudly when the configured field is absent instead of `.get()` silently returning `None`.)\n\n**2. When and which change.** It began with commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17). Evidence: that commit's diff renames `label` \u2192 `gold_label` in all 11 eval records and in `REQUIRED_KEYS`, but touches no config; and `pipeline/metrics/nightly_scores.csv` shows accuracy at 0.90\u20130.92 through 2026-06-16 and 0.00 from 2026-06-17 onward \u2014 the exact date of that commit.\n\n**3. Do I agree with the \"not reproducible / flaky\" closure? No.** The bug is 100% deterministic \u2014 I reproduced it with a single command (`python3 -m pipeline.score_batch` \u2192 `accuracy=0.00`). The earlier investigator re-ran tickets through `pipeline/score_one.py`, which is the wrong reproduction path: it only prints the predicted category and never reads the config or compares against a gold label, so it can never exhibit the scoring bug. Moreover, \"model flakiness\" is impossible here: `pipeline/classifier.py` is a deterministic offline keyword-rule classifier with no network or model call (its docstring says so explicitly). Correct reproduction: run the batch scorer itself, and instrument the comparison loop \u2014 you'd immediately see `gold` is `None` for every record while predictions are correct.\n\n**4. Assessment of the proposed next step (roll back to the previous model): don't do it.** The `model_id` config value isn't even used by the scoring path, and the classifier is rule-based with no model to swap; predictions were never wrong in the first place. Rolling back would change nothing (accuracy would stay 0.0), waste time, and further entrench the wrong diagnosis. The fix is the one-line config change above.",
+    "confidence and gaps": "- Answers 1 and 3: very high \u2014 reproduced both the 0.0 batch score and the correct single-item prediction at HEAD, and the mechanism is directly visible in the code.\n- Answer 2: high \u2014 the metrics CSV flips to 0.00 on the commit's exact date; I can't see the nightly job's runtime logs, but nothing else in the history could cause this (the only other commits are the initial pipeline, metrics logs, and the investigation doc).\n- Answer 4: high \u2014 `model_id` is read into the config dict but never consumed anywhere in `pipeline/` (verified by reading all pipeline files), so a model rollback cannot affect the score.\n- Gap: I didn't verify how the nightly job invokes the scorer (no CI/cron config in the repo), but the working-directory-relative paths and the CSV pattern match `score_batch.py` exactly.",
+    "next steps": "If allowed to change things I would: (1) set `expected_label_field: gold_label` in `config/scoring_config.yaml` and confirm `score_batch.py` returns ~0.91; (2) make `score()` raise (or count and report) when the configured gold field is missing from a record, instead of silently comparing against `None`; (3) add a small test that scores the fixture eval set and asserts accuracy > 0; (4) reopen and correct the investigation note.",
+    "plan": "Locate the nightly ticket-classification scoring repo in this workspace, find where accuracy is computed, compare the batch path (which reports 0.0) with the single-item path (which spot-checks fine), correlate the drop date in the metrics log with git history, and reproduce both behaviors read-only."
+  },
+  "session_id": "43f7cd69-b28a-4a94-bcb8-c16680ac2a89",
+  "stop_reason": "end_turn",
+  "task": "sysdbg-t2",
+  "thinking_usage": null,
+  "total_cost_usd": 0.6763020000000001,
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 13594,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 13594,
+    "cache_read_input_tokens": 200050,
+    "inference_geo": "not_available",
+    "input_tokens": 3147,
+    "iterations": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 460,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 460,
+        "cache_read_input_tokens": 29886,
+        "input_tokens": 2,
+        "output_tokens": 2251,
+        "type": "message"
+      }
+    ],
+    "output_tokens": 3434,
+    "server_tool_use": {
+      "web_fetch_requests": 0,
+      "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+  },
+  "workspace_mutated": true
+}

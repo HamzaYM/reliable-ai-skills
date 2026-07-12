@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 53228,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1746042,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9595,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9595,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9595,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9595,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 5282,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5282,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 correctly classifies RateLimitError/RequestTimeoutError/ServerError as legitimate failover candidates and non-production STAGE bypass as a violation (matching the expected security posture), while Report 2 explicitly endorses disabling rate limiting in non-production and calls RateLimitError failover inappropriate, missing two key expectations; both reports are strong and comparable on the logging and salt questions, but Report 1 better matches the expected answers overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Specifically: **`BadRequestError`** (malformed request) \u2014 should NOT fail over... **`ContentPolicyError`**... should NOT fail over... **`AuthError`** (auth failure) \u2014 should NOT fail over... These should be treated as definitive rejections and surfaced to the caller, not silently rerouted... Fix: Implement a denylist function that identifies definitively non-retryable errors and raises them without failover... if is_non_retryable(e): raise",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "RateLimitError | Falls back to secondary | **Inappropriate**. Rate limit means the vendor throttled the request. Falling back to secondary may hit the same limit. A rate limit should either retry after delay or reject rather than shift load to secondary.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Violation 1 (Guardrail 3): Fails open on STAGE check**... The code allows all requests in non-production (fail-open) based solely on an environment variable that is unreliable. A staging environment mimicking production should enforce the same rate limits. **Violation 2**... If Redis is unavailable... the rate limiter silently bypasses and returns `True`. This defeats the rate-limiting guardrail entirely... Fix: ...fail closed on Redis errors by raising rather than returning True.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path 1: Non-production environment**... Assessment: **Appropriate**. Disabling rate limits in dev/test environments avoids false positives during development.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Guideline: \"Keep sensitive data out of logs and audit metadata by **allowlist, not denylist**. Maintain an explicit allowlist of metadata keys that are safe to log; drop anything not on the list... Long or free-text content that must be referenced in a log should be hashed/truncated, never logged verbatim.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not log input_text at all, or log only a hash/fingerprint for correlation. Log only necessary operational metadata (timestamp, status, vendor, latency).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The code silently falls back to an unsalted hash when `PII_SALT` is missing. This is exactly the failure mode the guardrail forbids. Fix: ...if not salt: raise ValueError(\"PII_SALT environment variable is required and must not be empty\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Critical issue**: Using empty string as salt defeats the purpose of salting. Without salt: - Hash becomes `SHA256(applicant_id)` only... Fix: ...if not salt: raise ValueError(\"PII_SALT environment variable not set; cannot pseudonymize\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

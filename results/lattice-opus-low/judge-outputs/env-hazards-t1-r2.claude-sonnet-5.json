@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15336,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09036659999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4673,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4673,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9410,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4673,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4673,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9410,
+            "output_tokens": 1693,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1693,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent and hit all three expectations solidly; Report 2 is marginally more precise on (c) by explicitly noting the bootstrap file isn't mounted into docker-entrypoint-initdb.d, but this is a minor edge.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as the table-owning role `cedar_owner`, and RLS is only `ENABLE`d, never `FORCE`d. In Postgres, RLS policies are not applied to the table's owner (and not to superusers) unless the table is set to `FORCE ROW LEVEL SECURITY`. So the `tenant_isolation` policies never take effect for the running app... Change `DATABASE_URL` in `.env`/`.env.example`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The application... connects as **`cedar_owner`**. Per `docker-compose.yml`, `cedar_owner` is `POSTGRES_USER` \u2014 i.e. the cluster **superuser** \u2014 and it is also the **owner** of the tables... In PostgreSQL, row-level security policies are not enforced against a superuser, nor against the table's owner, unless the table is set to `FORCE ROW LEVEL SECURITY`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Run the application as the least-privilege, non-owning role. Change `DATABASE_URL` in `.env`/`.env.example`... to connect as `cedar_app`... Keep migrations running as the owner (`cedar_owner`)... Going forward: migrations/owner role for DDL, a separate non-owner app role for runtime with RLS enforced (`FORCE`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change `DATABASE_URL` in `.env`/`.env.example` so the application connects as the least-privilege `cedar_app` role... Keep `cedar_owner` (owner/superuser) for migrations only (`scripts/migrate.sh`) \u2014 never for the running app.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedar_app` is created only by `db/bootstrap/create_app_role.sql`, which is explicitly a one-time, by-hand step and is not part of migrations (stated in the file's header and in `docs/local-setup.md`)... `scripts/reset-local-db.sh` runs `docker compose down -v`, which deletes the `cedar_pgdata` volume \u2014 destroying the entire cluster including all roles. On `up`, the Postgres image recreates only `cedar_owner`... `reset-local-db.sh` then runs `migrate.sh` only, never the bootstrap.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_app` is created only by `db/bootstrap/create_app_role.sql`, which is explicitly \"Not part of automatic database initialization; run by hand on first setup\"... `scripts/reset-local-db.sh` runs `docker compose down -v` \u2014 the `-v` deletes that volume, destroying the entire cluster including the `cedar_app` role. It then only brings the DB back up and runs `./scripts/migrate.sh`... It never re-runs the bootstrap, and Postgres's own entrypoint init doesn't run it either (the bootstrap file isn't mounted into the init path, and init only fires on a fresh empty data dir anyway).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Blinded judge output",
+  "type": "object",
+  "required": ["expectations", "comparative_verdict"],
+  "additionalProperties": false,
+  "properties": {
+    "expectations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["expectation_id", "report_1", "report_2"],
+        "additionalProperties": false,
+        "properties": {
+          "expectation_id": {"type": "string"},
+          "report_1": {"$ref": "#/$defs/mark"},
+          "report_2": {"$ref": "#/$defs/mark"}
+        }
+      }
+    },
+    "comparative_verdict": {
+      "type": "string",
+      "description": "One line comparing the two reports. Reported but carries no score weight."
+    }
+  },
+  "$defs": {
+    "mark": {
+      "type": "object",
+      "required": ["hit", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "hit": {"type": "boolean"},
+        "evidence": {
+          "type": "string",
+          "description": "Verbatim quote from the report that satisfies the expectation; empty string when hit is false."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19950,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13704750000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8158,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8158,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8158,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8158,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1705,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1705,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with well-grounded, repo-specific evidence; they are comparable, with Report 1 and Report 2 each adding distinct extras (strict value coercion vs. UI/backend default mismatch).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminder messages **will be sent automatically**. The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`... the `is None` check at **line 11** is true, and **line 12 returns `True`**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminder messages **will be sent automatically** for it. The setting defaults to ON when unset.\n\nThe deciding code is `auto_send_reminders_enabled(tenant)` in `backend/app/feature_flags.py` (lines 10\u201313)... the line\u201111 condition is true, and **line 12 returns `True`**.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This flag governs **outbound patient messaging** (SMS + email), which is the category where null/missing must default to **off**... I would change it: `backend/app/feature_flags.py:12`, `return True` \u2192 `return False`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Defaulting to OFF (opt\u2011in) is the correct behavior for this feature... Where I'd change it: `backend/app/feature_flags.py:11-12` \u2014 make the unset case return `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`25509a7` (SLOT-190, Jun 10) created `feature_flags.py` with `compact_calendar_view_enabled`, using `is None \u2192 return True`. That grandfather-on default is reasonable there \u2014 it's a low-risk UI display preference... a display-preference flag and an outbound-messaging flag sit on opposite sides of the blast-radius line",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it was **copied verbatim from the calendar-view preference**... introduced `compact_calendar_view_enabled`... The default\u2011ON was reasonable for `compact_calendar_view` \u2014 a cosmetic in-app UI preference where \"on when unset\" harms nobody. Cloning the identical helper silently carried that \"default ON\" decision into a feature whose consequence is real outbound patient messaging",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add an env-level master switch and AND it with the per-tenant value.** There is currently **no** master/kill gate \u2014 `git grep` and `infra/main.tf` show the only gate is the per-tenant setting. A master switch gives a staged rollout",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`reminders.py` has only the per-tenant flag: no global kill switch, no environment gating (the sole infra config, `infra/main.tf`, defines an unused `environment` var)... Add operational guardrails to the batch job before wiring a real sender.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

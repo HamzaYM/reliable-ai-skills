@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29881,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1137117,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8766,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8766,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8766,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8766,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 3182,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3182,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 fully addresses all four expectations, including the axis-differentiated remedy (renormalize for relevance/tone, withhold for accuracy); Report 2 covers a-c well but explicitly rejects the axis-differentiated handling as 'axis-agnostic', missing expectation (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The `axis_scores` dict is then passed to `composite()` in `grader/aggregate.py:6-13`, which silently converts the missing axis to a score of zero: `value = axis_scores.get(axis)` / `if value is None: value = 0.0` / `total += weight * value` ... In form, that record is completely indistinguishable from a fully-scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Inside `grader/aggregate.py:6-13`, `composite()` iterates the weights and at lines 10\u201311 silently converts the missing axis to a score of zero: `if value is None: value = 0.0`, then folds it into the weighted sum... In form it is **indistinguishable** from a fully scored record",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It has no way to exclude or down-weight degraded rows, so every poisoned composite drags its agent's mean straight down. Agents whose replies happened to hit transient API failures get systematically mis-ranked below agents who got lucky \u2014 a ranking artifact of infrastructure flakiness, not reply quality.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "so each infrastructure failure drags the affected agent's mean down as if they'd written a terrible reply. Rankings become a function of which agents' rows happened to hit flaky calls, not of reply quality.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the accuracy call fails (load-bearing axis): do not write a comparable composite row to `scores.csv`. Either skip the row entirely and queue it for retry, or record it in a way the leaderboard structurally ignores",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a composite without an accuracy score is meaningless under the gate semantics, because you cannot know whether the reply passed the gate at all... the pipeline must **not write a composite row for that record to `results/scores.csv`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Relevance and tone are embellishments. If one of those fails, a reasonable degraded composite still exists: the remaining axes can be renormalized over their surviving weights... Accuracy is load-bearing... When the accuracy call fails, there is no defensible composite to emit at all",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The core principle \u2014 a failed call is missing data and must never be imputed as 0 \u2014 applies to all three axes equally, so in that sense the fix is axis-agnostic.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

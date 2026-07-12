@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30023,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1488204,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12378,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12378,
+        "cache_read_input_tokens": 68648,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2032,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2032,
+            "cache_read_input_tokens": 39497,
+            "input_tokens": 2,
+            "output_tokens": 1280,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3232,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify the same root cause, fix, and reset-workflow explanation with comparable depth and accuracy; report 2 is slightly more explicit about the docker-entrypoint-initdb.d point, but both fully satisfy all three expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as `cedar_owner`, which is both the cluster superuser and the owner of the tables, and such a role bypasses Row-Level Security. The responsible configuration is `cedarline/.env` (line 1)... Postgres does not apply RLS policies to (a) superusers, (b) roles with `BYPASSRLS`, or (c) a table's owner when the table is only `ENABLE`d and not `FORCE`d.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The running application connects to Postgres as **`cedar_owner`**, and that role is exactly the role for which Postgres bypasses row-level security... `cedar_owner` is both the superuser and the owner, and the tables are only `ENABLE`d, not `FORCE`d \u2014 so it qualifies for the bypass on two independent counts.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Split roles by purpose. Use the privileged owner/superuser `cedar_owner` only for DDL/migrations and the one-time role bootstrap; use the non-owner, non-superuser `cedar_app` for *all* request-time access. Never serve requests as the owner or superuser.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Structure going forward \u2014 enforce the two-role split:\n- **`cedar_owner`** (owner/superuser): used **only** for migrations. `scripts/migrate.sh` already uses it \u2014 keep it there and nowhere else.\n- **`cedar_app`** (non-superuser, non-owner, no `BYPASSRLS`): used for **all** application runtime queries.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedar_app` exists only because someone once ran the hand-run bootstrap `db/bootstrap/create_app_role.sql`... whose own header states it is \"One-time bootstrap ... Not part of automatic database initialization; run by hand on first setup.\"... `docker compose down -v` \u2014 the `-v` deletes the named volume `cedar_pgdata`... This destroys the whole cluster, **including the `cedar_app` role**... `./scripts/migrate.sh` \u2014 re-applies `db/migrations/*.sql` as `cedar_owner`... but **not** the role; `migrate.sh:3-4` only loops over `db/migrations/*.sql` and never touches `db/bootstrap/create_app_role.sql`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `cedar_app` role exists only because someone ran the one-time bootstrap `db/bootstrap/create_app_role.sql` (its own header calls it \"One-time bootstrap \u2026 Not part of automatic database initialization; run by hand on first setup.\"... `scripts/reset-local-db.sh:3` runs `docker compose down -v`. The `-v` flag **deletes the named volume `cedar_pgdata`**, wiping the entire cluster... **Nothing re-creates `cedar_app`** \u2014 the reset script never runs `create_app_role.sql`, and the bootstrap file is not mounted into the container's `docker-entrypoint-initdb.d`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

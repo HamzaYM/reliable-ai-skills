@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16454,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1024272,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6554,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6554,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9548,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6554,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6554,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9548,
+            "output_tokens": 1717,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1717,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and nearly equivalent on factual coverage (a, b, c), but Report 1 clearly states the AI-attribution footer must be removed, while Report 2 hedges and defers that decision to the doc owner rather than asserting removal \u2014 making Report 1 stronger on expectation (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**\"Export your visit history\" (lines 22\u201326)** \u2014 False as stated. ... There is no PDF-generation code anywhere in the repo. ... **This entire section describes a feature that doesn't exist yet and must be removed.** ... **\"Stronger account security\" \u2014 2FA (lines 28\u201330)** \u2014 Directly contradicted by code. `app/security/config.py` reads: `TWO_FACTOR_DEFAULT = False` ... **Must be corrected or removed before sending.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**\"Patients can now export their full visit history as a PDF.\"** (line 24) \u2014 Not implemented. `clinic-portal/app/routers/visits.py` contains only a `GET /visits` endpoint ... must be removed (or the feature must actually ship) before sending. ... **\"Two-factor authentication is now enabled for every clinic by default.\"** (line 30) \u2014 Directly contradicted by `clinic-portal/app/security/config.py`: `TWO_FACTOR_DEFAULT = False` ... This is the opposite of what the document claims and must be corrected or removed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`before_scheduling.png` renders the text \"SCHEDULING CALENDAR\". `after_scheduling.png` renders the text **\"BILLING / INVOICES\"** \u2014 a completely different, unrelated page. ... `captures.json` confirms it at the data level: `before_scheduling.png` was captured from route `/schedule`, while `after_scheduling.png` was captured from route `/billing/invoices`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`before_scheduling.png` renders the text \"SCHEDULING CALENDAR,\" but `after_scheduling.png` renders the text \"BILLING / INVOICES\" \u2014 a completely unrelated screen. ... \"before_scheduling.png\": {\"route\": \"/schedule\", \"state\": \"seed-demo\"} \"after_scheduling.png\": {\"route\": \"/billing/invoices\", \"state\": \"seed-demo\"}",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`after_export.png` is referenced in the doc but does not exist anywhere in the repository.** `captures.json` confirms this was never produced ... **`unused_capture_07.png` exists on disk but is not referenced by the document at all.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_export.png` | **No** | Referenced at line 26 of the doc but the file does not exist in `img/` ... Additionally, `img/unused_capture_07.png` **exists on disk but is not referenced anywhere in the document**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (line 33)** \u2014 this reads as an internal drafting note/disclaimer, not customer-facing copy. It should be stripped regardless of the accuracy issues above; it doesn't belong in an external clinic-facing communication.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "so I'm flagging this for a decision rather than presuming an answer.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

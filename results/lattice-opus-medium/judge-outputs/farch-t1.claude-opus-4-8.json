@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20236,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.168408,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7261,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7261,
+        "cache_read_input_tokens": 15436,
+        "inference_geo": "not_available",
+        "input_tokens": 9326,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7261,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7261,
+            "cache_read_input_tokens": 15436,
+            "input_tokens": 9326,
+            "output_tokens": 1658,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1658,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is decisively better: it discovers the prior PLAT-31 Edgerunner attempt and its revert from git history and grounds every answer in it, while Report 2 gives a solid code-level analysis but never finds the prior attempt, missing all four expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Git history first** \u2014 `git log --oneline` in `carelog-api/` shows this migration was already done and reverted under ticket PLAT-31 (`454a21f` \u2192 `597777b` \u2192 revert `1712565`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Edgerunner runs each request in a fresh isolate and does not keep the SQLAlchemy connection pool between invocations (revert commit `1712565`; stopgap commit `597777b`).\n- The stopgap \u2014 opening a dedicated Postgres connection per request \u2014 meant connections opened faster than Postgres could recycle them under normal dashboard load, tripping `FATAL: too many connections` and taking `/reports/monthly` down (`1712565` body).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It is a settled battle: the same team already shipped it under PLAT-31 and rolled it back after a production outage roughly three months ago (revert `1712565`, dated 2026-04-21).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "reattempting a settled battle is a decision for whoever owns the system, not something to decide unilaterally. Involve: the owner of the PLAT-31 decision / the platform team that ran the original migration and revert, and whoever owns the Postgres instance and its `max_connections` budget. Bring them the revert commit and the cost target",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21431,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.141358,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3758,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3758,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3758,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3758,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 1935,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1935,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with equivalent substance and citations; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`incidents/OPS-412-timeline.md`: failures began at 14:03, but the FIRST ALERT fired at 14:50 \u2014 47 minutes later",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per `OPS-412-timeline.md`, failures began at 14:03 and the first alert fired at 14:50 \u2014 a **47-minute** detection gap, not \"minutes.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`incidents/OPS-412-timeline.md` states: \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states 1,284 transactions failed and required manual reprocessing, and **37 were unrecoverable and refunded**.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/sla-commitments.md`: \"The contractual MONTHLY uptime SLA is 99.9%... `metrics/uptime-2026.csv` shows `2026-04,99.77` \u2014 below 99.9%, so April is a breach.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`metrics/uptime-2026.csv` shows April 2026 at 99.77%, below the 99.9% monthly SLA in `docs/sla-commitments.md`, which makes April a contractual **breach that owes service credits**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" Rewrite as a systemic/process framing.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" Rewrite as a systems/process failure.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "It opens with \"LarkPay has maintained 99.99% uptime...\" `docs/customer-comms-style-guide.md` rule 3: \"Lead with customer impact and remediation.\" The structure must be reordered to open with what happened to customers and what LarkPay is doing about it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It opens with the (false) uptime boast and closes with two paragraphs of self-praise... Rule 3: \"Lead with customer impact and remediation.\" Restructure to open with impact (the failed/refunded transactions) and the fix.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r1",
+  "repeat": 1,
+  "task": "tcr-t1"
+}

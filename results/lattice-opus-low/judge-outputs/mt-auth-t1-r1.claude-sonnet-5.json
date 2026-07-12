@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25726,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1106436,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4994,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4994,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4994,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4994,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 2886,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2886,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are nearly identical in analysis and quality, but Report 2 explicitly includes the required startup/boot-time blocking check (expectation e), which Report 1 only frames as a CI/infra guardrail, making Report 2 the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application now connects to Postgres as `juniper_owner`, which is the owner of the `appointments` table. In Postgres, table owners are exempt from their own table's row-level security policies unless the table is marked FORCE ROW LEVEL SECURITY. The migration db/migrations/0003_rls.sql only runs ALTER TABLE appointments ENABLE ROW LEVEL SECURITY and creates the tenant_isolation policy \u2014 it never runs ALTER TABLE appointments FORCE ROW LEVEL SECURITY.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The app connects to Postgres as `juniper_owner`, the role that owns the `appointments` table (db/migrations/0001_init.sql:1-16, granted via the DATABASE_URL in docker-compose.yml / .env.example). In Postgres, the owner of a table is exempt from that table's row-level security policies by default, unless the table is explicitly marked FORCE ROW LEVEL SECURITY.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit b2a23d2 \"ROTA-214 run migrations from the api container on boot\" (Fixture Bot, 2026-06-17)... it repointed the runtime DATABASE_URL from the low-privilege juniper_app role to the table-owner juniper_owner role in all three config surfaces: .env.example ... docker-compose.yml ... infra/main.tf",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit b2a23d2 \"ROTA-214 run migrations from the api container on boot\" (Fixture Bot, 2026-06-17). To let the API container run DDL migrations on boot, it repointed the runtime DATABASE_URL from the least-privilege juniper_app role to the owner juniper_owner role, in three places: .env.example ... docker-compose.yml ... infra/main.tf",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Primary (config): stop running the app as the table owner. Revert the runtime DATABASE_URL back to juniper_app in docker-compose.yml, infra/main.tf, and .env.example... Belt-and-suspenders (migration): add ALTER TABLE appointments FORCE ROW LEVEL SECURITY in db/migrations/0003_rls.sql",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary fix \u2014 revert the runtime connection to the least-privilege role: set DATABASE_URL back to juniper_app:apppw in docker-compose.yml, .env.example, and infra/main.tf... Add ALTER TABLE appointments FORCE ROW LEVEL SECURITY; (new migration) so the policy applies even to the owner.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Ideally also add an explicit WHERE tenant_id = current_setting('app.current_tenant')::uuid in backend/app/routes/appointments.py, so isolation doesn't depend on a single mechanism \u2014 but that's secondary to fixing the role.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an explicit application-level WHERE tenant_id = current_setting('app.current_tenant')::uuid (or bind the claim) in routes/appointments.py, so isolation does not hinge on RLS alone.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Boot-time guard: assert at startup that the runtime role is non-owner and has neither superuser nor BYPASSRLS; treat any warning as a hard failure, not a log line.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r1",
+  "repeat": 1,
+  "task": "mt-auth-t1"
+}

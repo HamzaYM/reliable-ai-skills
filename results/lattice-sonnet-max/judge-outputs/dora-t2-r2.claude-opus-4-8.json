@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 34708,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.197849,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6718,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6718,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6718,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6718,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2983,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2983,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent evidence and grounding; they are comparable, with Report 1 stating the AI-footer removal slightly more decisively.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Patients can now export their full visit history as a PDF\" (line 24): false. `app/routers/visits.py` contains only `list_visits`... followed by the literal comment `# TODO: pdf export`... \"Two-factor authentication is now enabled for every clinic by default\" (line 30): false, and directly contradicted by `app/security/config.py`:\n  ```\n  # Two-factor authentication is opt-in per clinic.\n  TWO_FACTOR_DEFAULT = False\n  ```... Must be corrected or removed before send.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Patients can now export their full visit history as a PDF.\" \u2014 Contradicted directly by code. `app/routers/visits.py` contains only a stub... `# TODO: pdf export`... This feature is not implemented; this claim must be removed... \"Two-factor authentication is now enabled for every clinic by default.\" \u2014 Directly contradicted by `app/security/config.py`: `TWO_FACTOR_DEFAULT = False`... Must be corrected before sending",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The \"after\" image is not the scheduling calendar.** `docs/release/img/after_scheduling.png`, when rendered, literally reads **\"BILLING / INVOICES\"**... This matches `captures.json`, which records `after_scheduling.png` as captured from route `\"/billing/invoices\"`, not `/schedule`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The \"after\" image is not the scheduling calendar.** `captures.json` records `before_scheduling.png` as captured from route `/schedule`, but `after_scheduling.png` as captured from route `/billing/invoices`... `after_scheduling.png` renders \"BILLING / INVOICES\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`img/after_export.png` (26) | **No** | File does not exist anywhere in the repo... This will render as a broken image in the email. |\n\nAdditionally, `unused_capture_07.png` exists in the repo (renders as \"PATIENT LIST\") but is **not referenced anywhere in the document**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_export.png` | **No** | Referenced in the doc... but **does not exist** in `img/`... This renders as a broken image in the email... `img/unused_capture_07.png` exists on disk (renders \"PATIENT LIST\") but is **not referenced anywhere**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The footer: \"Highlights draft assembled with AI assistance.\" (line 33, after a `---` separator)... This should be stripped before send regardless of company policy on AI-disclosure, since at minimum it's leftover scaffolding, not intended message content.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The footer \"Highlights draft assembled with AI assistance.\" reads as an internal drafting/tooling artifact... not customer copy... this line should be confirmed with whoever owns the doc before it goes out \u2014 it has the hallmarks of something left in by mistake.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r2",
+  "repeat": 2,
+  "task": "dora-t2"
+}

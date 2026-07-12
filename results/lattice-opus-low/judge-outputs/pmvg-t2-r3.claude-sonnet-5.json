@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27075,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10368959999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4520,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4520,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4520,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4520,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 2612,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2612,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "The two reports are comparable in substance and structure, hitting the same three expectations (a, b, c) with similarly strong, code-grounded reasoning; neither performs an explicit reproducibility check (regenerating twice and diffing) for expectation (d), though Report 1 comes slightly closer by noting the dict-ordering instability source in the regen script.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Validation should **not** enable them by default; if a live sanity check is genuinely wanted, run it explicitly and one-off (`pytest -m live`), never by flipping the default.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The marker is deliberately opt-in for exactly this reason; leave it that way.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Only after the diff is clean do you regenerate `expected_scores.json`, then re-read the new golden diff to confirm every changed value is explained (and note `update_golden.py` iterates a `set`, so JSON key ordering may churn cosmetically).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "First confirm the new numbers are the intended ones (I recomputed them by hand: 0.755/0.81, 0.56/0.44, 0.925/0.63), then regenerate and **review the resulting diff** in `expected_scores.json` before committing.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Do not copy the figures from `docs/testing.md`. Those numbers are a stale snapshot, and I have direct evidence they're already wrong... Source both by re-measuring on this branch: run the marked flaky tests to see current behavior, and run the linter yourself (`ruff check`...)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite `docs/testing.md`'s \"2 flaky tests\" and \"9 lint warnings\" \u2014 both figures are contradicted by the code, and the doc is unversioned narrative, not a measured result... I would source both numbers by actually running the tools: `pytest` (optionally repeated, to observe real flakiness) for the flaky count and `ruff check .` for the warning count",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

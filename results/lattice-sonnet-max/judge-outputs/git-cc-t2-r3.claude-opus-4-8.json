@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21844,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.172209,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6981,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6981,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9491,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6981,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6981,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9491,
+            "output_tokens": 1853,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1853,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct, well-grounded analysis; they are comparable, with Report 1 marginally deeper on commit-level attribution.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The branch this work actually depends on, `feat/weighted-scorer`, is not a valid target: its content has already landed on `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. It's this repository's trunk... the branch this work was actually built on (`feat/weighted-scorer`) turns out to already be a \"dead base\"... targeting it instead of `main` would produce a PR against a branch whose distinct identity no longer matters.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric` was created from commit `ac9d505`... its *content* already exists on `main` under a completely different, later commit: `1971f08 \"Refactor scorer for weighted metrics (#42)\"`... it is **not** an ancestor of `main`... The `feat/weighted-scorer` ref itself is still present, unchanged, on the shared origin",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/pairwise-metric` was forked from `feat/weighted-scorer` at commit `ac9d505`... it is **not a git ancestor of `main`**... its content **is** fully present in `main`: `main`'s tip, `1971f08` (\"Refactor scorer for weighted metrics (#42)\")... still exists as a ref on origin",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "scoring/scorer.py  | 13 ++++++++++---... The other 16 inserted / 3 deleted lines are the `feat/weighted-scorer` dependency's changes, present in this diff purely because `feat/pairwise-metric` was branched from that work before it was merged into `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Three-dot diff... It additionally includes the entire `scoring/scorer.py` rewrite (+10/-3, 100% from `feat/weighted-scorer`'s `W1`)... present in the branch not because of any error... but purely because of when the branch was forked",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... Re-run `git diff --stat main...feat/pairwise-metric` and confirm it now shows only `prompts/grader.txt` (+1) and `scoring/metrics.py` (+4)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto origin/main feat/weighted-scorer feat/pairwise-metric`... Re-verify: `git diff origin/main...feat/pairwise-metric --stat` should now show only the 2-file/+5 diff",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

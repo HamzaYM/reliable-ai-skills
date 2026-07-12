@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36654,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.17341779999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11538,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11538,
+        "cache_read_input_tokens": 105616,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1333,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1333,
+            "cache_read_input_tokens": 39356,
+            "input_tokens": 2,
+            "output_tokens": 1264,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4559,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reach the same correct diagnosis and cite the same evidence for all four expectations; Report 1 additionally proposes a concrete isolated-verification method (shadow/parallel run), while Report 2 adds a sharper explanation of why the earlier note's revert-based fix would appear to work for the wrong reason \u2014 the two are comparable in overall quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The file to change is **`ticket-scorer/config/scoring_config.yaml`**. It declares `expected_label_field: label`, but the evaluation set now stores the gold label under the key `gold_label`. ... Fix: set `expected_label_field: gold_label`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The file to change is **`config/scoring_config.yaml`** \u2014 line 2, `expected_label_field: label` must become `expected_label_field: gold_label`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`pipeline/metrics/nightly_scores.csv` shows 0.91 through 2026-06-16, then 0.00 starting 2026-06-17 and every night after. The introducing change is commit **`53551e8`, \"chore(eval): migrate eval set to gold_label schema (SCORE-77),\" dated 2026-06-17**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/metrics/nightly_scores.csv`: `2026-06-16,0.91` then `2026-06-17,0.00`, flat at 0.00 thereafter. The change that introduced it is commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77),\" dated 2026-06-17**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The note's reproduction was invalid because it used the **wrong entry point**: `score_one.py`/`score_single()` only returns `predict_category(normalize_simple(text))` \u2014 it never loads the config, never reads a gold label, and never compares prediction to gold. The bug lives entirely in `score_batch.score()`'s gold lookup, so spot-checking individual predictions can *never* surface it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py` only returns `predict_category(...)` \u2014 it never loads the eval set and never compares against a gold label. So re-running failing tickets through it exercises only the (healthy, unchanged) classifier and can *never* surface a scoring/label-comparison bug.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "It also runs against the debugging discipline of not flipping model/config on a shared production runner just to observe an effect (a shadow/parallel run is the tool for genuine model comparisons) \u2014 but here it's moot, because there is nothing to switch. ... There is no model in this pipeline to switch \u2014 the classifier is a deterministic keyword stub and `model_id` is a dead config string. Swapping \"the model\" would not touch the gold-field lookup",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is no model in the loop. `classifier.py` is a deterministic keyword stub and never reads `model_id`... Changing the model or `model_id` has zero effect on predictions or on the score. The defect lives entirely in the scoring/comparison step (config field name vs. migrated data field name), which is independent of any model.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

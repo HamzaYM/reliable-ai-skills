@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14929,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1131127,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11964,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11964,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11964,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11964,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1716,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1716,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify all four core defects (unsafe failover classification, fail-open rate limiting on both STAGE and Redis error, raw PII in audit logs, silent unsalted pseudonymization) with concrete, equivalent fixes \u2014 the reports are comparable in substance and depth.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "catch only `(RateLimitError, RequestTimeoutError, ServerError)` for fallover; re-raise `BadRequestError` and `AuthError` (and alert on `AuthError`); route `ContentPolicyError` to a quarantine/manual-review outcome without contacting the secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "add an explicit non-retryable denylist function, e.g. `def is_non_retryable(exc): return isinstance(exc, (BadRequestError, AuthError, ContentPolicyError))`, re-raise when it matches, and fail over only otherwise",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "for a pipeline shipping sensitive data to external vendors, fail-closed is the safer default... an environment check should fail closed or be validated at startup, not string-compared per call",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A safety gate should fail closed everywhere, with only a narrow, explicitly named local-dev override (e.g. `RATE_LIMIT_DISABLED=1`), never an `is-this-production` test... It should fail closed: catch `RedisError`, log it, and return `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "remove `input_text` entirely, replacing it with non-identifying derivatives if the audit needs them (length, SHA-256 of the text, document type); allowlist specific metadata keys rather than dumping the whole dict",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "never log `input_text` \u2014 replace it with a content hash and length (e.g. `sha256(input_text)[:16]` plus `len(input_text)`); and filter `metadata` through an explicit **allowlist** of known-safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "fail fast \u2014 raise at import/startup if `PII_SALT` is missing or empty rather than defaulting to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "fail closed \u2014 `salt = os.environ[\"PII_SALT\"]` plus a check that it's non-empty, raising (ideally at process startup, not per-record) with a clear error when absent",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

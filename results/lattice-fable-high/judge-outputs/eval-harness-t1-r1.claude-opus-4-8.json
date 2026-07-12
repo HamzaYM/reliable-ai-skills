@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21588,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.14575149999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8627,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8627,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8627,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8627,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1845,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1845,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 1 answers better because it correctly distinguishes handling for the gate axis versus the optional axes (expectation d), whereas Report 2 explicitly argues they need no different handling.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In `grader/aggregate.py:6-13`, `composite()` converts that `None` into a hard zero and still applies the axis's full weight ... that record is **byte-for-byte indistinguishable** from a fully scored row",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In `grader/aggregate.py:6-13`, `composite()` looks up each axis and, at lines 10-11, silently substitutes `0.0` for a `None` value before applying the weight ... In form, the written record is **indistinguishable** from a fully scored one",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the file mixes genuine composites with artificially deflated ones and gives readers no way to tell them apart ... each failure-deflated composite drags the affected agent's mean down as if the agent had written a terrible reply",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it conflates \"measurement unavailable\" with \"measured as zero.\" ... `rankings()` (lines 9-17) sums `float(comp)` for every row and divides by the row count \u2014 every corrupted row both drags the agent's sum down heavily and still counts in the denominator",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "When **accuracy** fails, there is no defensible composite to emit at all ... The record must be treated as unscored/degraded, not approximated.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When any axis call fails after reasonable retries, the pipeline should **not write a composite score for that record at all** ... skip writing the row to `results/scores.csv`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "When **relevance or tone** fails, the load-bearing signal survived. It is reasonable to renormalize the weights over the axes that succeeded ... When **accuracy** fails, there is no defensible composite to emit at all. You cannot renormalize around the gate axis",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

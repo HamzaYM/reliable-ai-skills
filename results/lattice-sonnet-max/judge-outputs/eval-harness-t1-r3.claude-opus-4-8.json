@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36836,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.20940399999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7868,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7868,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9311,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7868,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7868,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9311,
+            "output_tokens": 3022,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3022,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover the core bug and its ranking impact well, but Report 1 additionally articulates that relevance/tone failures can be defensibly renormalized while accuracy cannot, fully satisfying expectation (d), whereas Report 2 misses that distinction \u2014 making Report 1 the stronger answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A missing axis is silently treated as a real score of `0.0` \u2014 the numerically worst possible score on that axis \u2014 and contributes `weight * 0.0` to the weighted sum exactly as a genuine 0/10 verdict would. The result is `round(total, 3)`, a normal-looking float.... **In form, a degraded record is byte-for-byte identical to a fully-scored one**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A missing axis is coerced to `0.0` and folded into the weighted sum exactly as if the model had graded that axis a literal 0 ... **So the record written for a failed-axis reply is structurally identical, in form, to a fully-scored one**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It conflates \"no signal\" (the model was never consulted, or its answer was lost to a network blip) with \"worst possible signal\" ... Since a degraded row counts identically in both the numerator (contaminated value) and the denominator (as a full row) versus a real row, an agent whose replies happen to hit more axis-call failures gets systematically pulled down",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It conflates \"we don't know this axis's score because the call errored\" with \"this axis was graded and scored the worst possible value\" ... Every failure-affected row is added straight into that agent's sum and count, dragging down `sums[a]/counts[a]` with no way to detect or exclude it afterward",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the accuracy call fails (the load-bearing/gating axis): do not compute or write a numeric composite for that row into `results/scores.csv` at all. Write it instead to a distinct incomplete/pending-retry destination (or the same file with an explicit status such as `incomplete:accuracy_pending`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Given accuracy's gate role specifically: a reply whose accuracy call fails should almost certainly be excluded/flagged entirely rather than defaulted in either direction",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If relevance or tone fails (the embellishment axes): this is the acceptable-to-degrade case. Renormalize the composite over the weights of the axes that did succeed ... and write the row \u2014 but with an explicit marker ... a failed accuracy call should be treated as \"we don't know if this should have hard-failed\" (must not silently resolve to a number at all), while a failed relevance/tone call is a much lower-stakes case where renormalizing over the remaining axes is defensible",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

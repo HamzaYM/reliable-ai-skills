@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21601,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1586585,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9726,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9726,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9726,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9726,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1885,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1885,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with correct commands and reasoning; they are comparable, with Report 1 slightly more exhaustive but no substantive difference in coverage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Target **`main`**. `main` is the trunk ... The tempting alternative \u2014 basing the PR on `feat/weighted-scorer`, the branch this work was stacked on \u2014 is exactly the trap to avoid",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`main`.** ... You should **not** target `feat/weighted-scorer`: its content is already merged, it's effectively stale/slated for deletion, and PRs shouldn't be opened against an already\u2011merged feature branch.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was branched from **`feat/weighted-scorer`, at commit `ac9d505` ... Main's tip, `1971f08 \"Refactor scorer for weighted metrics (#42)\"`, is a **squash merge** of the weighted-scorer work ... none of `feat/weighted-scorer`'s commits (`d6fdbc3`, `2d3029b`, `ac9d505`) are ancestors of `main`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was branched from **`feat/weighted-scorer` at commit `ac9d505`** ... `feat/weighted-scorer` has been **squash\u2011merged into `main`** as `1971f08` (#42) \u2014 its *changes* are in `main`, but the *original commits are not ancestors of `main`*.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py` +13/\u22123 \u2014 the entire weighted refactor ... \u2014 **weighted-scorer work** \u274c ... Because the merge-base therefore stays pinned at the pre-#42 commit `65204ad`, both the three-dot diff and the commit range re-include all the weighted-scorer content",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`scoring/scorer.py` (13 changed): ... **entirely weighted\u2011scorer work** (W1), already in `main`. \u274c ... the merge\u2011base of `main` and the branch is the old base `65204ad`; the 3\u2011dot diff therefore replays *every* change since base and drags the already\u2011merged weighted\u2011scorer work back into the PR",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "git rebase --onto main ac9d505 feat/pairwise-metric ... `git log --oneline main..HEAD` should show exactly X1 and X2; `git diff main...HEAD` should show only the pairwise changes (`grader.txt` +1, `metrics.py` +4); `git merge-base --is-ancestor main HEAD` should now succeed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto main ac9d505 feat/pairwise-metric` ... `git diff --stat main...feat/pairwise-metric` should show only `prompts/grader.txt | 1` and `scoring/metrics.py | 4` \u2014 `scorer.py` and `overlap` gone.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

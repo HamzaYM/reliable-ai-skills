@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 43161,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.218971,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15742,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15742,
+        "cache_read_input_tokens": 156070,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1292,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1292,
+            "cache_read_input_tokens": 43601,
+            "input_tokens": 2,
+            "output_tokens": 1231,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4726,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable depth; Report 2 adds extra detail (missing checkout steps, privilege-leak framing of the OIDC issue) but both fully satisfy the graded criteria.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "AUTH_RELAXED = \"true\" ... Relaxed authentication in production is a critical security hole. Set to false. PRESET_ADMIN_ACCOUNTS ... a pre-provisioned QA super-admin account is a backdoor. SHADOW_SCORING_SINK ... Critically, config.py:18-22 record_shadow_observation writes to the sink whenever a sink URI is set, regardless of SHADOW_SCORING_ENABLED. LEGACY_BILLING_SECRET_ARN ... Confirm and set the prod billing secret ARN.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "AUTH_RELAXED = \"true\" - relaxed authentication in production ... PRESET_ADMIN_ACCOUNTS ... a preset test account granted superadmin ... SHADOW_SCORING_SINK ... shadow scoring is effectively armed in prod, and it would write production observation records into the staging S3 bucket. LEGACY_BILLING_SECRET_ARN ... a dead-fossil secret injection from a prior architecture",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "So the API base URL in the shipped production bundle is https://staging-api.example.com -- the production frontend would call the staging API. There is no .env.production file in the repo ... To fix: add frontend/.env.production with the prod API URL and build prod with --mode production",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Result: the production bundle ships with https://staging-api.example.com baked in, so real production users' browsers would call the staging API ... Fix = add frontend/.env.production with the prod URL and build the prod-destined artifact with --mode production (a separate build, not a promoted staging digest)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The runbook says migrations auto-apply during deploy, but nothing here creates/points at a prod Postgres, and the migrations themselves (0001-0003) are empty stubs. The prod DB and its connection config must exist for a first launch and are not visible in this config.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No migration step in the pipeline. docs/prod-runbook.md:6 claims \"Database migrations are applied automatically during deploy,\" but there is no such step; migrations 0001-0003 exist. For the first launch the prod schema won't be created by the pipeline -- it must be run as a manual first pass",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the prod deploy job runs as environment: production (deploy.yml:32), so its OIDC subject is ...:environment:production, which will not match this staging trust condition. Change staging -> production.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: set prod's oidc_sub_condition = \"repo:acme-health/medislot:environment:production\" -- its own scoped trust condition, per project documentation (a stricter env needs its own, never an inherited/shared one).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

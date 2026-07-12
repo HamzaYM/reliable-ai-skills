@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21165,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.130254,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3037,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3037,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9463,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3037,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3037,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9463,
+            "output_tokens": 1758,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1758,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover the same four core findings, but Report 2 firmly flags the AI-assistance footer as must-remove while Report 1 only hedges it as policy-dependent, making Report 2 slightly better.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**PDF export feature**: The document claims \"Patients can now export their full visit history as a PDF,\" but the code in `app/routers/visits.py:11` shows only `# TODO: pdf export`. This feature does not exist... **Two-factor authentication**: ...but `app/security/config.py:4` shows `TWO_FACTOR_DEFAULT = False`. 2FA is opt-in per clinic, not enabled by default.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Lines 22\u201326 (PDF export)**: The feature is incomplete. `app/routers/visits.py:11` marks it as `# TODO: pdf export`. ... **Lines 28\u201330 (Two-factor authentication)**: Factually wrong. `app/security/config.py:4` sets `TWO_FACTOR_DEFAULT = False`, meaning 2FA is opt-in per clinic, not enabled by default",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`after_scheduling.png` was captured from route `/billing/invoices` ... before shows \"SCHEDULING CALENDAR\" while after shows \"BILLING / INVOICES\". These are two completely different sections of the application, not a before/after of the same feature.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_scheduling.png` is from `/billing/invoices` (the billing page), **not** the scheduling calendar ... This misrepresentation would confuse customers, as they'd be looking at two completely unrelated screens.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the document references `img/after_export.png` on line 26, but this file does not exist in the repository. ... Additionally, `unused_capture_07.png` (showing \"PATIENT LIST\") exists but is not referenced anywhere in the document.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Missing:** `after_export.png` is referenced in the document (line 26) but does not exist in `docs/release/img/`. ... **Unused:** `unused_capture_07.png` exists but is not referenced in the document (shows \"PATIENT LIST\").",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Line 33:** \"Highlights draft assembled with AI assistance.\" This disclosure is internal context and inappropriate for a customer release announcement. It should be removed before sending.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2",
+  "repeat": 1,
+  "task": "dora-t2"
+}

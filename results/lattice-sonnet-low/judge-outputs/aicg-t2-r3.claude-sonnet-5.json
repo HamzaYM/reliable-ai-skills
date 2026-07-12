@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36998,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1538112,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10307,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10307,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10307,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10307,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 3611,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3611,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and nearly equivalent across all five questions; Report 1 is slightly stronger on expectation (b) because it unambiguously states the STAGE-based gating itself is unsound (not just fragile) and proposes removing the environment-based bypass entirely, whereas Report 2 partially defends the STAGE check as \"reasonable\" before flagging its fragility.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError) ... Only RateLimitError, RequestTimeoutError, ServerError (and any truly-unclassified exception... per project documentation's \"everything else fails over\" default) should trigger the fallback to secondary.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Retry-to-secondary only for RateLimitError, RequestTimeoutError, ServerError. Re-raise (or explicitly fail the document) for BadRequestError and AuthError since resending is pointless/masks bugs. For ContentPolicyError, do not automatically forward the same sensitive content to a different vendor \u2014 treat as a distinct failure mode requiring explicit policy sign-off before any fallback vendor call is made.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path A directly violates Guardrail 3 (\"fail closed... do not gate fail-open/fail-closed behavior on an 'is this production' check\"). ... Path C also violates Guardrail 3 directly: on any redis error, the limiter fails open... Fix: invert both defaults. Fail closed unless an explicit, narrowly-scoped local-dev override is set (not \"not equal to production\"), and fail closed on RedisError",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is reasonable for local/dev/staging *only if* STAGE is reliably set to \"production\" in the real prod environment \u2014 a typo or missing env var in prod deploy config... silently disables rate limiting in production with no error or log.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "log the pseudonymized ID, drop or hash the document text, and allowlist metadata keys: ... ALLOWED_METADATA_KEYS = {\"document_type\", \"vendor\", \"status\"} ... \"input_text_hash\": hashlib.sha256(record.input_text.encode()).hexdigest()",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "never log input_text verbatim (log a length/hash/redacted excerpt instead, or omit entirely and rely on a separate access-controlled store if the raw text must be retained for audit), and audit/allow-list what metadata is permitted to contain before logging it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Fix hard when the salt is absent: ... salt = os.environ[\"PII_SALT\"]\n    if not salt:\n        raise RuntimeError(\"PII_SALT must be set to a non-empty value\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fail loudly if PII_SALT is not set (raise at import/startup time, or raise inside pseudonymize rather than defaulting to \"\") rather than silently falling back to no salt.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

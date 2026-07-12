@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21109,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.17226399999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7124,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7124,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9491,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7124,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7124,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9491,
+            "output_tokens": 1798,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1798,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully nail expectations (a)-(c); Report 2 additionally identifies the missing environment-level gate and recommends adding one, making it the stronger answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **are sent automatically** \u2014 the feature defaults to *on*, not off.\n\nThe decision is made in `backend/app/feature_flags.py`, function `auto_send_reminders_enabled`, lines 10\u201313:",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **are sent automatically**. The decision is made in `auto_send_reminders_enabled` at `backend/app/feature_flags.py:10-13`:",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Where I'd change it: `backend/app/feature_flags.py:12` \u2014 change `return True` to `return False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change `backend/app/feature_flags.py:11-12`, inverting the None-branch to return `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the default was arrived at by **pattern-matching the shape of an adjacent, low-stakes helper** ... the two flags are not equivalent in risk (cosmetic UI preference vs. outbound patient communication with cost/consent implications)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it was inherited by copy-paste from an unrelated, lower-risk flag. `compact_calendar_view_enabled` ... sit in different risk categories (a cosmetic UI preference vs. an automated action that contacts patients), and the default that's correct for one is wrong for the other.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Add an env-level master switch / kill switch. `infra/main.tf` defines only a generic `environment` variable \u2014 there is no global toggle to disable reminders across all tenants at once ... a per-tenant automated-messaging flag should be ANDed with an env-level master",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

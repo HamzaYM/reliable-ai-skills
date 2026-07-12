@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35399,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1691807,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11637,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11637,
+        "cache_read_input_tokens": 106089,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1237,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1237,
+            "cache_read_input_tokens": 39551,
+            "input_tokens": 2,
+            "output_tokens": 1103,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4223,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations including the missing global/env-level gate point (d), while Report 2 omits that point entirely, making Report 1 more complete overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will be sent automatically**. The decision point is `auto_send_reminders_enabled()` in `backend/app/feature_flags.py:10-13`... if the key is absent from the tenant's `settings` JSONB... and the function returns `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **are sent automatically**. The decision is made in `auto_send_reminders_enabled` at `slotwise/backend/app/feature_flags.py:10-13`... if the key is absent from `tenant.settings`... the function returns `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change `backend/app/feature_flags.py:11-12` from:\n```python\n    if tenant.settings.get(\"auto_send_reminders\") is None:\n        return True\n```\nto return `False` when the value is `None`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Where I'd change it: `slotwise/backend/app/feature_flags.py:11-12`, flip the default to `False` (or, more explicitly, `return bool(tenant.settings.get(\"auto_send_reminders\", False))`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "aa4cf8d \"Add automatic appointment reminders (SLOT-214)\" \u2014 added auto_send_reminders_enabled immediately below it, with the identical three-line is None \u2192 return True shape. The diff shows this was a pure structural copy of the calendar-view resolver, not a re-derived decision for the new flag's risk profile... An outbound-messaging flag was given the same default-on project documentation as a UI cosmetic preference",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "auto_send_reminders_enabled was added in commit aa4cf8d... by copying the exact if ... is None: return True shape of compact_calendar_view_enabled... default-on is defensible for \"should the calendar look compact,\" where getting it wrong costs nothing, but the same reasoning was applied unreflectively to \"should we message patients on the clinic's behalf,\" where getting it wrong means unauthorized outbound communication to real people.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Decide whether there should be an env-level master switch in addition to the per-tenant flag (project documentation's recipe step 3 recommends AND-ing a per-tenant value with an env-level master for anything with real-world side effects) \u2014 currently there is none; I found no reference to reminders/auto_send in `infra/main.tf` or `README.md`, so the per-tenant JSONB flag is the *only* gate with no global kill switch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

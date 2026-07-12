@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19461,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.141119,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4505,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4505,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4505,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4505,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1599,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1599,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify all three root causes and fixes; they are comparable, with Report 1 giving marginally more procedural detail.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to PostgreSQL using the `cedar_owner` role, which is a superuser created by the docker-compose initialization... PostgreSQL superusers have the implicit `BYPASSRLS` privilege, which silently bypasses all row-level security policies without any error or warning.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The application connects to PostgreSQL as the `cedar_owner` role, which is the **table owner**. In PostgreSQL, Row Level Security (RLS) policies **do not apply to table owners** (or superusers).... The configuration causing this is in `.env`: DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "1. **Schema-owning role** (`cedar_owner`): Used ONLY for running migrations.... 2. **Least-privilege application role** (`cedar_app`): Used by the running app at runtime.... This role explicitly DOES NOT have `BYPASSRLS`, so RLS policies are enforced.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The application should connect using the **restricted application role** (`cedar_app`), not the owner role.... Migration/bootstrap operations... Use `cedar_owner` role... Application runtime... Use `cedar_app` role (limited permissions)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "When `reset-local-db.sh` executes: docker compose down -v ... Since `create_app_role.sql` is not re-run, the `cedar_app` role never exists. The isolation test suite tries to connect as `cedar_app` and immediately fails with \"role does not exist.\"... After `reset-local-db.sh`, manually run: psql ... -f db/bootstrap/create_app_role.sql",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `reset-local-db.sh` script destroys the database volume (`docker compose down -v`) and rebuilds it, but does NOT run the `create_app_role.sql` bootstrap script.... it never executes `db/bootstrap/create_app_role.sql`, which is responsible for creating the `cedar_app` role.... the role doesn't exist, causing a connection error",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

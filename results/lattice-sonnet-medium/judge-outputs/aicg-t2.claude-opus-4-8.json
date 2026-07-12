@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21038,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2036325,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13843,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13843,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13843,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13843,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1921,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1921,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations with correct findings and concrete fixes; they are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "it catches bare `Exception`, logs a warning via `log_fallover`, and unconditionally retries on `secondary`. ... `BadRequestError` \u2014 **inappropriate to blindly retry on secondary.** ... `ContentPolicyError` \u2014 **inappropriate and risky to retry on secondary.** ... `AuthError` \u2014 **inappropriate to retry on secondary and inappropriate to swallow.** ... Retry-worthy transient errors (`RateLimitError`, `RequestTimeoutError`, `ServerError`) should fall over to secondary. `BadRequestError` and `ContentPolicyError` should NOT be retried against a different vendor \u2014 they should be raised/surfaced",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is a single bare `except Exception`, so **all six classes are handled identically**: log a warning and fail over to `secondary.complete(payload)` ... `BadRequestError` ... `ContentPolicyError` ... `AuthError` ... The remaining three \u2014 `RateLimitError`, `RequestTimeoutError`, `ServerError` \u2014 are legitimately transient/retryable ... replace the bare `except Exception` with an explicit denylist function ... so non-retryable errors propagate to the caller instead of silently rerouting the payload",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A \u2014 non-production stage:** ... Returns `True` unconditionally, bypassing rate limiting entirely. ... **Path C \u2014 production, Redis failure:** any `RedisError` ... is caught and `allow` returns `True`, i.e. **fails open**. ... Path C should fail closed, not open \u2014 catch `RedisError`, log it, and return `False` ... Path A's stage check should be inverted to an explicit allow-list or made more defensive",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A \u2014 non-production stage:** ... Returns `True` unconditionally, bypassing the limiter entirely. ... **Path C \u2014 production, redis raises `RedisError`:** caught, returns `True` ... Replace the environment-name string comparison with a narrow, explicitly-named opt-out ... Change the `except RedisError` branch to `return False` (fail closed)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`input_text` is the full applicant document body ... written verbatim into logs. ... `metadata` is logged with no allow-list/redaction ... the audit log ... should not log `input_text` at all ... `metadata` should go through an explicit allow-list of non-sensitive fields rather than being dumped wholesale.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`input_text` is the applicant's actual intake document content \u2014 logged **verbatim, in full** ... `metadata` is logged wholesale with no allowlist. ... this should be an explicit allowlist of keys known to be safe, not \"log the whole dict.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`salt` comes from the `PII_SALT` environment variable, defaulting to the **empty string** if unset. ... If `PII_SALT` is unset ... it quietly falls back to an unsalted `sha256(applicant_id)`. ... `PII_SALT` should be required, not optional \u2014 fail fast at startup/import time if it's missing rather than silently defaulting to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "read via `os.environ.get(\"PII_SALT\", \"\")` \u2014 note the default value of `\"\"` (empty string) ... the function does **not** fail. It silently falls back to `salt = \"\"`, which reduces the output to an unsalted `SHA-256(applicant_id)`. ... `salt = os.environ[\"PII_SALT\"]  # raises KeyError if unset \u2014 fail hard`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

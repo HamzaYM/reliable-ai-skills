@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33345,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.219094,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9310,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9310,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9310,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9310,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2796,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2796,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 1 edges ahead because it correctly flags AuthError as a definitive rejection that should not fail over, whereas Report 2 explicitly misclassifies AuthError as fallover-appropriate.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "it catches the bare `Exception` type around `primary.complete(payload)`, so every one of the six vendor exceptions ... is handled identically ... `BadRequestError` \u2014 **inappropriate** ... `ContentPolicyError` \u2014 **inappropriate** ... `AuthError` \u2014 **inappropriate** ... Retry-worthy transient classes (`RateLimitError`, `RequestTimeoutError`, `ServerError`) should fall over to secondary. `AuthError` and `BadRequestError` should be re-raised ... `ContentPolicyError` should not automatically retry against a different vendor",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A** (line 12-13): `os.environ.get(\"STAGE\") != \"production\"` is true \u2192 returns `True` unconditionally, with no rate limiting at all ... **Path C** (line 17-18): `redis.incr` raises `RedisError` \u2192 returns `True`, i.e. **fail open** ... This should fail closed ... not silently return `True` on every Redis error.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A \u2014 `STAGE != \"production\"`** ... returns `True` unconditionally ... any environment that isn't spelled exactly `\"production\"` ... gets **unlimited, unrate-limited calls** ... **Path C \u2014 production, Redis raises `RedisError`**: caught and returns `True`, i.e., **fails open** ... In the `except RedisError` branch, return `False` (fail closed)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`record.input_text` (the full raw document text sent to the LLM), and `record.metadata` ... drop `input_text` from the audit record entirely (or replace with a non-reversible fingerprint ...) ... `metadata` should also be reviewed field-by-field for PII before logging.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`record.input_text` \u2014 the **full raw document text** logged verbatim ... `record.metadata` \u2014 an arbitrary, unvalidated dict logged wholesale with no allowlist ... ALLOWED_METADATA_KEYS = {\"document_type\", \"vendor\", \"status\"} ... \"input_text_hash\": hashlib.sha256(record.input_text.encode()).hexdigest()",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "When that variable is **not set**, `salt` silently defaults to the empty string `\"\"`, and the function proceeds without error ... The result is `sha256(applicant_id)` with no salt at all ... **Fix:** Fail loudly if `PII_SALT` is not set ... rather than silently defaulting to `\"\"`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When `PII_SALT` is unset, `os.environ.get(\"PII_SALT\", \"\")` silently falls back to `\"\"` ... it just hashes `applicant_id` unsalted ... if not salt: raise RuntimeError(\"PII_SALT is not configured; refusing to pseudonymize without a salt\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

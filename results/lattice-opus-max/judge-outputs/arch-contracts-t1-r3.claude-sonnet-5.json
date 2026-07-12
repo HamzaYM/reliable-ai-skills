@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17959,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0980243,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9649,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9649,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9649,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9649,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1748,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1748,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable depth and evidence; Report 2 adds a slightly sharper observation (zero call sites for gateway accessors) but the two are essentially equivalent in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund provider calls should live in **`backend/app/billing/gateway.py`**... The code does **not** follow that pattern everywhere today. Two places talk to the provider directly instead of going through the gateway: **`backend/app/api/invoices.py:14-17`**... **`backend/app/workers/dunning.py:9-13`**... There is one more file that imports the provider \u2014 **`backend/app/billing/errors.py:6`** \u2014 but it imports only the SDK's error classes, does not make any provider *call*, and is the explicitly sanctioned boundary exception... so it is not a violation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in the single vendor-boundary module, **`backend/app/billing/gateway.py`**... two are undocumented violations that build their own client and call the provider directly: **`backend/app/api/invoices.py`**... **`backend/app/workers/dunning.py`**... One is the boundary (`gateway.py`), one is the single *documented, legitimate* exception (`errors.py`, which imports only the SDK's error types \u2014 `errors.py:6\u20139`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual serializer `InvoiceOut` (`models/invoice.py:15-28`) has a **6th field, `external_ref`**, which is populated by the charge endpoint (`invoices.py:17`) and returned. This drifted in `MEDB-214` (c23da88), which added `external_ref` to the model and endpoint (and the DB column, `migrations/0006_add_invoice_external_ref.sql`) but did not update the doc.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The code returns `InvoiceOut.from_model(invoice)` (`invoices.py:18`), and `InvoiceOut` (`models/invoice.py:15\u201328`) carries **six** fields \u2014 it adds **`external_ref`** (line 22, serialized at lines 26\u201328). So \"exactly\" is wrong: the response includes `external_ref`. This is backed by migration `0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Timing principle: update the doc in the *same* change that alters the corresponding code, so doc and code stop drifting... Concretely: fix the stale field/webhook facts immediately; reconcile the gateway rule by consolidating the two bypasses onto the gateway as the first step of the refund work.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "On timing: the doc governs schema, wire shape, and the SDK boundary, so the rule is that it must change **in the same commit as the code that changes what it governs** \u2014 and be called out in that commit/PR summary... the honest fix is to reconcile the doc **now** (as its own small correction, or bundled into the first refund commit)... and then to keep the doc updated in-commit going forward.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The code in `webhooks.py:10-19` actually recognizes **5**... so both the number \"4\" and the enumeration are wrong... **Drop the brittle exact-count framing.** \"handles 4 \u2026 types\" ... goes stale every time a branch is added \u2014 which is exactly what happened. State it as \"recognizes the following event types: \u2026\" with the list as the authoritative part",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So both the count (\"4\") and the enumerated list are stale \u2014 the code handles 5... **Better, stop hard-coding the count.** \"handles 4 \u2026 types\" is precisely the drifting-number anti-pattern... I'd drop the literal count and instead point at the single source of truth (the dispatch in `webhooks.py`), or describe the property",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

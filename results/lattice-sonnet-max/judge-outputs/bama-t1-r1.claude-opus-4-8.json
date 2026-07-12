@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24197,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.155639,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4724,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4724,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9491,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4724,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4724,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9491,
+            "output_tokens": 2093,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2093,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent grounding; comparable overall (Report 1 adds an out-of-scope stub-pipeline finding, Report 2 is slightly tighter on citations).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 1,800 avg tokens/scoring call = **9,360,000 tokens** needed for a full run ... **northpeak (primary/default)**: 640,000 tokens remaining out of a 10,000,000 window (94% already used this window) ... short by roughly 8.72M tokens, i.e. it can't come close to covering the run.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 \u00d7 1,800 = **9,360,000 tokens** for a complete re-score ... northpeak (primary/default) | 10,000,000 | 640,000 | Covers only ~355 of 5,200 transcripts (~6.8%); short by 8,720,000 tokens",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**ridgeline (secondary)**: 10,800,000 tokens remaining out of a 12,000,000 window ... That comfortably covers the 9,360,000 needed ... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ridgeline (secondary) | 12,000,000 | 10,800,000 | Covers the full job ... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Don't launch on the default backend.** Even once real calls are wired up, I would not run the plain `run_nightly.sh` / default-`primary` path ... I'd run explicitly against secondary ... I would run the *entire* dataset on one backend rather than splitting",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run `run_nightly.sh`/`score_batch.py` unmodified, since that silently targets northpeak and would exhaust its 640,000-token remaining budget after roughly 355 of 5,200 transcripts ... `score_batch.py` has no offset/resume parameter (only `--limit`, which always takes the first N IDs)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is already ~3 hours stale (`generated_at` 19:25 UTC vs. \"now\" 22:30 UTC per the task) \u2014 I'd want a fresher read of ridgeline's remaining balance immediately before launch, not the cached one.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The usage snapshot is a point-in-time cache file, not a live query ... I'd re-pull current numbers immediately before launching rather than trust the ~3-hour-old figures at face value ... snapshot timestamp `2026-07-09T19:25:00Z`, ~3h05m before the stated \"now\"",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

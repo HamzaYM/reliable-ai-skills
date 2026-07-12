@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17155,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0855696,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3245,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3245,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3245,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3245,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 1914,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1914,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all four expectations, including the snapshot-staleness caveat that Report 1 omits entirely; otherwise both reports are very similar in substance and numbers.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full run size, using the manifest's authoritative figures: 5,200 transcripts \u00d7 1,800 tokens/call = \u22489,360,000 tokens (`data/manifest.json`). Per-vendor remaining capacity from `.cache/usage_snapshot.json`: northpeak (primary, the default target): only 640,000 tokens remaining (of 10,000,000).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So the full run needs roughly 5,200 \u00d7 1,800 = 9,360,000 tokens (~9.36M). From `.cache/usage_snapshot.json`: northpeak (the default backend): window_total_tokens 10,000,000 but only 640,000 remaining",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline (secondary): 10,800,000 tokens remaining (of 12,000,000). That comfortably covers the ~9.36M run with ~1.44M to spare... I'd route the full run to the secondary backend instead: `python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ridgeline (secondary): window_total_tokens 12,000,000 with 10,800,000 remaining \u2014 comfortably above the ~9.36M needed... I'd route the heavy work to the backend with headroom: python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not launch the default path. I'd route the full run to the secondary backend instead",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run the default command as-is. Sending the full ~9.36M-token job to the default primary (northpeak) with only 640K remaining would fail/throttle partway through and miss the 07:00 review",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is stamped `2026-07-09T19:25:00Z`, ~3 hours before the assumed current time (22:30 UTC), so it may be stale \u2014 I'd re-check current budgets (or run a small `--limit` canary against ridgeline first) before launching the full job.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r2",
+  "repeat": 2,
+  "task": "bama-t1"
+}

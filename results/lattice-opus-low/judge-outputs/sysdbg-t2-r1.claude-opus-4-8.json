@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21528,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.141038,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3993,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3993,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9353,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3993,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3993,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9353,
+            "output_tokens": 1829,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1829,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are essentially equivalent, correctly hitting all four expectations with the same root cause, commit, and reasoning; Report 2 adds a slightly stronger isolated-verification framing but the difference is negligible.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The config `config/scoring_config.yaml` still says `expected_label_field: label`, but the eval set `fixtures/eval_set.jsonl` was migrated so every record now stores its gold label under `gold_label`. Because `record.get(\"label\")` returns `None` for every record, the comparison `prediction == gold` is `prediction == None`, which is `False` for all records \u2014 so accuracy is exactly 0.00.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The SCORE-77 migration renamed every eval record's key from `label` to `gold_label` (and updated `REQUIRED_KEYS`), but `config/scoring_config.yaml` still says `expected_label_field: label`. So `record.get(\"label\")` returns `None` for every record ... **The file to change is `config/scoring_config.yaml`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The introducing change is commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**, authored Wed Jun 17 2026. `git show 53551e8` shows it renamed the eval-set key `label`\u2192`gold_label` (and updated `REQUIRED_KEYS` in `score_batch.py`) but left `config/scoring_config.yaml`'s `expected_label_field: label` untouched. The commit date and the CSV step-change coincide exactly.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the first `0.00` row in `pipeline/metrics/nightly_scores.csv` (prior day 2026-06-16 was 0.91). The introducing change is commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** ... it renamed `label`\u2192`gold_label` in `fixtures/eval_set.jsonl` and in `REQUIRED_KEYS`, but touched nothing in `config/scoring_config.yaml`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "they re-ran tickets through `pipeline/score_one.py`, which only calls `predict_category` and prints the prediction \u2014 it never loads the eval set and never compares against a gold label. The bug lives entirely in the batch scorer's gold-field lookup, so a single-item run can never exhibit it. To correctly reproduce: run `pipeline/score_batch.py` (the batch path)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The note re-ran tickets through `score_one.py`, which calls `predict_category(...)` and prints the prediction \u2014 it never loads gold labels or compares anything. So it can never exhibit the bug regardless of the defect. ... To correctly reproduce: run the actual batch path, e.g. `python -m pipeline.score_batch` from the repo root against the current `fixtures/eval_set.jsonl`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The note's suggested next step \u2014 \"switch the nightly runner back to the previous model to confirm whether the score recovers\" \u2014 should not be acted on. It rests on the false premise that a model is involved; the classifier is a deterministic offline keyword matcher with no model call, so swapping models cannot change the result.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It also violates the playbook's warning against flipping model/config on a shared runner to \"see what happens.\" ... It rests on the false premise that a model is involved; there is no model to roll back",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r1",
+  "repeat": 1,
+  "task": "sysdbg-t2"
+}

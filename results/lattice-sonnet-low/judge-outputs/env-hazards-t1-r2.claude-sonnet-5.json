@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25346,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11074919999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5205,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5205,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5205,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5205,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2781,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2781,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify all three root causes and fixes with equivalent depth and accuracy; Report 1 adds extra (optional) detail like FORCE ROW LEVEL SECURITY and SET LOCAL, while Report 2 adds an optional startup-assertion suggestion \u2014 neither extra is required by the expectations, making the two reports comparable in coverage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the owner of a table always bypasses row-level security policies unless the table has FORCE ROW LEVEL SECURITY explicitly set \u2014 and 0001_init.sql never sets FORCE ROW LEVEL SECURITY on either table... cedarline/.env configures the running FastAPI app's own DATABASE_URL to also be cedar_owner, not the dedicated cedar_app role",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "DATABASE_URL is set to postgresql://cedar_owner:ownerpw@localhost:5432/cedar \u2014 the schema-owning Postgres role that ran the migrations... In Postgres, a table owner (and any role with BYPASSRLS, which table owners effectively have with respect to their own tables) is exempt from row-level security policies by default, regardless of any SET app.current_tenant = ... executed per-request in deps.py",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change the application's DATABASE_URL (in cedarline/.env and .env.example, and whatever env cedarline runs on) to connect as cedar_app, not cedar_owner. The app should never hold the owning/migration credentials at runtime... Keep migrations running as the owning role (cedar_owner) \u2014 that separation (owner runs DDL, unprivileged app role runs DML under RLS) is the right model",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change cedarline/.env (and .env.example, and any deployed equivalent) so the running application's DATABASE_URL uses the least-privilege cedar_app role/password... cedar_owner: used only by scripts/migrate.sh / migration tooling, never referenced by the running backend. cedar_app: the only role the FastAPI app (app/db.py, app/deps.py) ever connects with",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The role cedar_app is created solely by db/bootstrap/create_app_role.sql, which per its own comment and docs/local-setup.md/README.md is a \"one-time... run by hand\" step, and it is not invoked by reset-local-db.sh. So after a wipe+rebuild, cedar_app no longer exists in the fresh cluster... the teammate needs to manually re-run psql \"postgresql://cedar_owner:ownerpw@localhost:5432/cedar\" -f db/bootstrap/create_app_role.sql after every wipe",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It never re-runs cedarline/db/bootstrap/create_app_role.sql. That bootstrap file's own header states it is \"Not part of automatic database initialization; run by hand on first setup,\" and docs/local-setup.md confirms creating cedar_app is a separate manual step... To fix it, someone must manually re-run psql \"postgresql://cedar_owner:ownerpw@localhost:5432/cedar\" -f db/bootstrap/create_app_role.sql after every reset",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

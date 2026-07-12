@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 37196,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.241659,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10674,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10674,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10674,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10674,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 3153,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3153,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover grouping, ordering, and the F-06 judgment call equally well, but Report 1 correctly identifies the shared RESULTS_DB path collision risk and the need to override it, which Report 2 dismisses as dead config \u2014 making Report 1 slightly stronger overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Engineer A \u2014 config & prompts:** F-02, F-05, F-09 (`pipeline/registry.py`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Group 2 \u2014 `pipeline/registry.py`** (F\u201102, F\u201105, F\u201109 \u2014 3 findings, one 11-line file).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Wave 1 (parallel, 3 engineers, start immediately):** ... **Engineer B \u2014 rubric parsing:** F-01 (fix `Rubric.parse` truncation) then F-11 (add the edge-case test). ... **Engineer C \u2014 batch runner:** owns `pipeline/run_batch.py` outright: dedup'd F-04/F-13 (pagination arithmetic) \u2192 F-12 (new pagination-boundary test ...)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Groups 1\u20134 touch four disjoint files, so they can genuinely start **in parallel, wave 1** ... Group 3 (F\u201111) ... F\u201111 (new edge-case test) should be written alongside/against the fixed behavior ... **Group 2 \u2014 `pipeline/registry.py`** (F\u201102, F\u201105, F\u201109 ...) one engineer",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`PARTIAL_CREDIT_THRESHOLDS = (0.35, 0.65)` (`score.py:3`) directly determines the score every saved model output receives \u2014 this is the pipeline's actual product output, not incidental logic. \"Tighten\" is a rubric/quality-bar policy call ... I would route this to whoever owns the scoring rubric for explicit new values ... before any code is touched.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is a scoring-policy call with pipeline-wide blast radius (it changes every score the pipeline emits) ... This needs sign-off from whoever owns rubric/scoring policy, not an engineer's best guess",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "one shared `tests/conftest.py` defining `RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\")` ... `RESULTS_DB` is a single hardcoded path outside any per-engineer isolation ... so if it comes into use, concurrent local test runs across engineers' machines could stomp on the same file unless each overrides the env var.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

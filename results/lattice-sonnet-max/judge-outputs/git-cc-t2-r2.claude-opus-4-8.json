@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24836,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.182089,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7239,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7239,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9491,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7239,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7239,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9491,
+            "output_tokens": 2145,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2145,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and correct, hitting every expectation with strong evidence; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. It's the trunk (`remotes/origin/HEAD -> origin/main`... the only other candidate \u2014 `feat/weighted-scorer`, the branch `feat/pairwise-metric` was literally built from \u2014 is disqualified",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. ... `feat/weighted-scorer` is a feature branch, not an integration branch, and (per Q2) its work has already landed in `main`, so it is not a valid target.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric`'s first unique commit, `7b2e100`... has parent `ac9d505` \u2014 exactly the tip of `feat/weighted-scorer`... So the branch was created from `feat/weighted-scorer`, not from `main`... `feat/weighted-scorer` is a **dead base** \u2014 a ref that still exists... but whose content has already landed on `main` through a different commit... squash-merged into `main` via a PR \u2014 its commits (W1\u2013W3) were rewritten into a single new commit rather than preserved as ancestors.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`feat/pairwise-metric` was branched from the tip of `feat/weighted-scorer`**, not from `main`... `feat/weighted-scorer` was already reviewed and squash-merged into `main` as PR #42. Its content is fully in `main`; it just isn't connected in `main`'s ancestry graph because squash-merge always produces a brand-new commit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`, the full +13/-3... \u2014 100% from `feat/weighted-scorer` (W1+W2). Already on `main` verbatim... the remaining 16 insertions/3 deletions are stale carry-over from the `feat/weighted-scorer` dependency, present only because `feat/pairwise-metric` branched from it before PR #42 squash-merged it into `main`, and has never been rebased since",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "of the 21 lines a PR would currently display, only 5... are actually pairwise-metric work. The other 16 (all of `scorer.py`, and `overlap()` in `metrics.py`)... **This content is present only because `feat/pairwise-metric` branched off `feat/weighted-scorer` before the latter was squash-merged, and was never rebased afterward**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric`, or equivalently cherry-pick... After rebasing, confirm the fix worked... `git diff main..<branch>` should show exactly 2 files/5 insertions (grader.txt +1, metrics.py +4, nothing in scorer.py); `git log main..<branch> --oneline` should show exactly the 2 commits",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Rebase the branch onto current `main`... `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... **Re-verify the cleaned-up state**: `git log --oneline main..feat/pairwise-metric` should show only the 2 commits (X1, X2), and `git diff main...feat/pairwise-metric` should show only the 2-file/5-line diff.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31937,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1466064,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9607,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9607,
+        "cache_read_input_tokens": 23558,
+        "inference_geo": "not_available",
+        "input_tokens": 10954,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9607,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9607,
+            "cache_read_input_tokens": 23558,
+            "input_tokens": 10954,
+            "output_tokens": 3269,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3269,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 fully satisfies all four expectations, including explicit same-commit documentation policy endorsement and recommending dropping the hardcoded webhook count; Report 2 covers the factual findings well but only updates the count to 5 rather than recommending removal of the hardcoded count, and doesn't explicitly reject deferring the doc fix to a follow-up ticket.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Refund support should live in `medibill/backend/app/billing/gateway.py` as a new accessor function... `medibill/backend/app/api/invoices.py` (lines 4, 14-15): Directly imports `chargekit`... `medibill/backend/app/workers/dunning.py` (lines 2, 9-10): Directly imports `chargekit`...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Refund support should live in `backend/app/billing/gateway.py`... `backend/app/api/invoices.py:4,14`... `backend/app/workers/dunning.py:2,9`... The code correctly follows the pattern in `backend/app/billing/gateway.py` (line 6 imports chargekit there) and `backend/app/billing/errors.py` (line 6 imports chargekit errors, which is documented as the exception).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The `InvoiceOut` response model includes an additional field: `external_ref: str | None` (line 22)... This field was added via migration `0006_add_invoice_external_ref.sql` but never documented.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `InvoiceOut` serializer includes all five of those fields *plus* `external_ref` (line 22)... Root cause: `external_ref` was added in migration `0006_add_invoice_external_ref.sql` after the docs were written",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Timing: These corrections must go into the git history before the refund feature is merged, not after. The documentation must be the source of truth that the code follows, not a lagging artifact. Per the project documentation project documentation, \"Any change to schema, API/wire shape, route surface, or a documented invariant updates the contract document in the same commit.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The documentation should be updated before merging the refund feature.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Update ARCHITECTURE.md to state \"The integration handles 5 webhook event types: payment_succeeded, payment_failed, payment_pending, refund_created, dispute_opened\" or drop the count entirely and describe the property instead (per the project documentation project documentation guidance on not citing counts that drift).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "What I would change: Revise line 17 of `docs/ARCHITECTURE.md` from: \"The integration handles 4 webhook event types...\" To: \"The integration handles 5 webhook event types: payment_succeeded, payment_failed, payment_pending, refund_created, dispute_opened.\"",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

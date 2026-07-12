@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 51513,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2463414,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 18396,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 18396,
+        "cache_read_input_tokens": 62048,
+        "inference_geo": "not_available",
+        "input_tokens": 9702,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 14376,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 14376,
+            "cache_read_input_tokens": 33034,
+            "input_tokens": 2,
+            "output_tokens": 1271,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5883,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover all five expectations with comparable citations and specifics; Report 2 is slightly more explicit about the remediation/impact-ordering issue and folds the SLA-breach disclosure critique in more directly, but the two are essentially equivalent in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Per `larkpay-comms/incidents/OPS-412-timeline.md:3-6`: failures began at 14:03, but the first page didn't fire until 14:50 (47 minutes later)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per `incidents/OPS-412-timeline.md`: failures began at 14:03, but the first page didn't fire until 14:50 (47 minutes later)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md:9-10` states 1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states 1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md:3-5` sets the monthly SLA at 99.9%, with any month below that a breach owing service credits. `larkpay-comms/metrics/uptime-2026.csv:6` shows April 2026 at 99.77%, i.e., a confirmed breach.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/sla-commitments.md` sets the monthly SLA at 99.9%; April's actual figure of 99.77% (`metrics/uptime-2026.csv`) is below that threshold, meaning this is a contractual breach entitling customers to service credits.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md:5` (\"Never assign blame to an individual\") explicitly bars this framing. The draft should describe the change/process failure, not point at \"the on-call engineer.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" The draft states \"The outage was caused by the on-call engineer deploying an untested config change\" \u2014 this both names a role and pins fault on a single person.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md:7` requires leading with impact and remediation. The current draft opens with an uptime boast (line 3) and closes with more culture-and-track-record language (lines 16-19: \"reliability as the first feature,\" \"vast majority of requests... served normally\") \u2014 this reads as hedging/self-promotion rather than a direct account",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It opens with an uptime boast and only vaguely references impact (\"some checkout requests failed\"), never disclosing the real numbers (1,284 failed/reprocessed, 37 unrecoverable refunds) or any remediation for those specific customers... This needs restructuring to lead with what happened to affected customers and what LarkPay is doing to make them whole.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r1",
+  "repeat": 1,
+  "task": "tcr-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32549,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.14637550000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10438,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10438,
+        "cache_read_input_tokens": 66125,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2615,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2615,
+            "cache_read_input_tokens": 36974,
+            "input_tokens": 2,
+            "output_tokens": 1358,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3995,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reach the same correct diagnosis, root cause, culprit commit, and rejection of the flakiness explanation with near-identical supporting evidence; they are comparable in substance, with Report 1 slightly more explicit about a 'no flip on shared/production job' policy and Report 2 slightly tighter and more concise.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`config/scoring_config.yaml` still says `expected_label_field: label`, but every eval record in `fixtures/eval_set.jsonl` now keys its gold answer as `gold_label`... The file that should be changed is **`config/scoring_config.yaml`**: change `expected_label_field: label` \u2192 `expected_label_field: gold_label`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The root cause is a **field-name mismatch between the config and the eval data in the batch scorer's gold-label lookup**. The file to change is **`ticket-scorer/config/scoring_config.yaml`**: change `expected_label_field: label` to `expected_label_field: gold_label`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It began on **2026-06-17**, introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (dated 2026-06-17). Evidence: - `nightly_scores.csv`: last good row `2026-06-16,0.91`; first bad row `2026-06-17,0.00` \u2014 a clean cliff on that exact date.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It began on **2026-06-17**, introduced by commit **`53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (dated Wed Jun 17 2026). Evidence: `nightly_scores.csv` shows `2026-06-16,0.91` immediately followed by `2026-06-17,0.00`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`score_one.py`'s `score_single()` merely returns `predict_category(normalize_simple(text))` \u2014 it never reads a gold label and never compares anything. So it structurally *cannot* exhibit a gold-lookup scoring bug... How to reproduce correctly: run the **batch** path end-to-end against the eval set (`python3 -m pipeline.score_batch`) \u2192 0.00.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`score_one.py` only prints a prediction and never compares it to a gold label, so it structurally cannot exhibit a scoring bug that lives in the gold-label comparison... Correct reproduction: (a) run the batch scorer itself and observe deterministic 0.00",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "There is no model in the loop to switch \u2014 the classifier is a deterministic offline keyword stub, and `model_id` in the config is never referenced by any code. Changing the model cannot affect a gold-field lookup, so accuracy would stay 0.0... It also violates the playbook's \"never flip a model/flag on the shared/production nightly job just to see what happens\" guidance, when the real cause is a one-line config mismatch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No model participates in scoring: the classifier is a deterministic keyword stub, and `model_id: ticket-classifier-v3` is dead config that nothing reads. Reverting a model cannot change an accuracy that is zero because of a config/data field-name mismatch, so accuracy would remain 0.00. Doing it would burn time, could destabilize an otherwise-working pipeline",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r1",
+  "repeat": 1,
+  "task": "sysdbg-t2"
+}

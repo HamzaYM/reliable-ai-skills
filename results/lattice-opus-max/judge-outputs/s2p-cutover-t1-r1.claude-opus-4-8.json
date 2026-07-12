@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31247,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1978135,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11627,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11627,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11627,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11627,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2646,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2646,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations and are closely comparable; Report 2 is marginally stronger on the migration gap and on explicitly calling for removal of the legacy secret.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 6 \u2014 `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"`** \u2192 must be emptied or repointed to a **prod** bucket... Line 2 \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`** \u2192 should be `\"false\"`... Line 4 \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** \u2192 should be removed/empty",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Line 6 \u2014 `SHADOW_SCORING_SINK = ...`: ... **Remove both this line and line 5 entirely.** ... Line 7 \u2014 `LEGACY_BILLING_SECRET_ARN = ...`: a dead-fossil secret injection ... **Remove the line entirely.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the shipped production bundle's API base URL is `https://staging-api.example.com`, sourced from `frontend/.env.staging:1`. The production frontend would call the **staging** API. There is no `.env.production`, and the build is never re-run for prod",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the API base URL baked into the production bundle is `https://staging-api.example.com`, sourced from `frontend/.env.staging`. ... The prod-facing fix is to build a prod artifact from a prod env file (e.g. `.env.production` with the real prod API URL) instead of promoting the staging digest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/prod-runbook.md:6` says \"Database migrations are applied automatically during deploy,\" but there is **no migration step in the workflow and no Alembic invocation in code**... For a first prod launch the prod DB starts empty and needs `0001`\u2192`0003` applied; the committed pipeline contains no verifiable mechanism to do so.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No database-migration step exists in the pipeline. ... `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but nothing in `deploy.yml` ... runs them. For a first prod launch the database is empty, so the schema will **not** be created automatically; a manual first migration pass is needed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` was copied verbatim and still reads `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`. The prod deploy role therefore trusts the **staging** environment, not production... **Fix:** set `infra/prod/main.tf:3` to `oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the prod deploy role's `oidc_sub_condition` is still `repo:acme-health/medislot:environment:staging` (`infra/prod/main.tf:3`, unchanged from staging per the diff). ... The fix is to set the prod `oidc_sub_condition` to `repo:acme-health/medislot:environment:production`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

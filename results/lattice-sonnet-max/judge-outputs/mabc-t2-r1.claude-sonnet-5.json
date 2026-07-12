@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 43305,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1680372,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10674,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10674,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9708,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10674,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10674,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9708,
+            "output_tokens": 4411,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4411,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations, including correctly flagging the RESULTS_DB collision risk and recommending an env-var override, whereas Report 2 explicitly dismisses that same finding as \"dead config\" and \"not required,\" missing expectation (d); on (a)-(c) the two are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "| pipeline/registry.py | F-02, F-05, F-09 | ... Engineer A \u2014 config & prompts: F-02, F-05, F-09 (`pipeline/registry.py`) + F-03, F-10 ... I bundled registry + prompts into one engineer rather than splitting further",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Group 2 \u2014 pipeline/registry.py (F\u201102, F\u201105, F\u201109 \u2014 3 findings, one 11-line file)... three people rebasing against the same tiny file at once is avoidable overhead.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 (parallel, 3 engineers, start immediately): Engineer A \u2014 config & prompts: F-02, F-05, F-09 ... Engineer B \u2014 rubric parsing: F-01 ... then F-11 ... Engineer C \u2014 batch runner: owns pipeline/run_batch.py outright",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Groups 1\u20134 touch four disjoint files, so they can genuinely start in parallel, wave 1 ... F\u201111 (new edge-case test) should be written alongside/against the fixed behavior, TDD-style, by the same engineer.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "\"Tighten\" is a rubric/quality-bar policy call, and picking numbers is exactly the kind of guess the project documentation ... says to escalate rather than make. I would route this to whoever owns the scoring rubric for explicit new values (or a target pass-rate to back-solve from) before any code is touched.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is a scoring-policy call with pipeline-wide blast radius (it changes every score the pipeline emits) and currently zero regression test guards the existing behavior. This needs sign-off from whoever owns rubric/scoring policy, not an engineer's best guess, and should land with a new test locking in the agreed values.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A private override for RESULTS_DB (tests/conftest.py:4), e.g. exporting RESULTS_DB=/tmp/<name>-results.db, instead of relying on the shared default /var/tmp/llm-scoring/results.db, so that if a test ever does write there, parallel engineers don't collide.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not required, but worth knowing about: tests/conftest.py:4 defines RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\"). I grepped for other uses and found none \u2014 it's currently dead config, so no one needs to stand up a real results database to run today's suite.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

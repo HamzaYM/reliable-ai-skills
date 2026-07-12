@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29224,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1264477,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10519,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10519,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10519,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10519,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 3249,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3249,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comparably thorough and hit all four expectations with concrete file/line citations; Report 2 is marginally more decisive on removing the legacy secret and on the migration remediation ask, but the difference is minor.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\" ... Change to \"false\". AUTH_RELAXED = \"true\" ... Change to \"false\". PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" \u2014 pre-seeds a QA account as superadmin in production. Change to \"\" (empty...)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\" (infra/prod/app.auto.tfvars:2) ... Remove the line entirely ... AUTH_RELAXED = \"true\" ... Remove entirely ... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" ... Remove entirely",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "that URL is baked into the JavaScript bundle at build time \u2014 it is not a runtime setting. ... The deploy-prod job (lines 29-35) deploys that same digest to prod. Consequence: the production frontend, as configured, would ship with the staging API base URL hard-coded into it ... fixing this requires both adding that file with the production API URL and changing the pipeline \u2014 either a separate production build/image or a runtime-injected config",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "VITE_-prefixed variables are inlined into the bundle at build time ... the resulting digest is deployed first to staging (line 28) and then \u2014 the same, already-built digest \u2014 to prod (lines 34-35). Consequence: the production frontend would ship with https://staging-api.example.com baked into its JavaScript, with no runtime fix possible. ... Prod needs its own build (--mode production with a new frontend/.env.production pointing at the prod API)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No migration step is visible anywhere in the pipeline, yet docs/prod-runbook.md ... claims \"Database migrations are applied automatically during deploy.\" With three migrations pending for a brand-new prod database ... and no deploy.sh to inspect, there is no verifiable mechanism that would apply them on first launch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No migration step: the workflow contains no reference to migrations (grep confirms), despite docs/prod-runbook.md:6 claiming \"Database migrations are applied automatically during deploy.\" The runbook ... its claim is contradicted by the live workflow \u2014 on a fresh prod database, migrations 0001_base\u20130003_billing would need a first manual pass or an added pipeline step.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the not-yet-applied infra/prod/main.tf:3 still trusts \u2026environment:staging. So as committed, production CI cannot authenticate (its token won't match the trust condition), while staging jobs would be trusted by the production deploy role \u2014 the inverse of what's wanted. ... Change to repo:acme-health/medislot:environment:production so only jobs running in the production GitHub environment (with its approval gates) can assume the prod deploy role.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 was copied unedited and still provisions the prod deploy role to trust \u2026:environment:staging. So as written, the production job can never assume the prod role ... Prod needs its own role name and its own environment:production trust condition, not one shared or OR'd with staging.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

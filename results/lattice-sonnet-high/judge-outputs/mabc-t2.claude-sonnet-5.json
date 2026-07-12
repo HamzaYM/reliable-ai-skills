@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29168,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13378310000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11846,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11846,
+        "cache_read_input_tokens": 29147,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11846,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11846,
+            "cache_read_input_tokens": 29147,
+            "input_tokens": 2,
+            "output_tokens": 3138,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3138,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent substance; Report 1 additionally surfaces a bonus finding (a pre-existing failing test) not required by the rubric, but on the stated expectations the two are comparable in quality and completeness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Batch B \u2014 Registry (pipeline/registry.py, 11 lines): F-02, F-05, F-09... I'd give all three to one engineer rather than three, since splitting an 11-line file three ways only creates review/merge overhead with no parallelism benefit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Group C \u2014 pipeline/registry.py, one engineer, but low-risk enough to parallelize internally: F-02 ... F-05 ... F-09. All three are one-line, non-overlapping edits in an 11-line file. I'd still hand this to a single engineer as one small PR rather than three engineers",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Ordering: because every batch owns a disjoint file ... there is no dependency forcing one batch to wait on another, so all of A\u2013D can run in the same wave, in parallel ... The only ordering that matters is within a batch (fix before its test; core bug before cosmetic cleanup in the same function).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ordering across groups: Group A first (it's the only bug causing silent data loss on real data), Groups B, C, D in parallel alongside or right after A (they don't touch run_batch.py and have no dependency on it), Group E last since it's blocked on a policy answer",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 ... the finding names no target values ... this needs a rubric/product owner to supply actual numbers before any code changes ... I'd escalate this one and pull it out of the wave rather than assign it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06's target thresholds aren't specified. ... Handing this to an engineer as-is means they'll pick numbers themselves, which is a grading-policy decision (it changes which saved answers get partial credit), not an engineering judgment call. I'd get explicit target thresholds ... from whoever owns the rubric before assigning implementation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "tests/conftest.py:4 defines RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\") \u2014 a single hardcoded filesystem path with no per-worktree isolation ... if engineers add tests ... while running pytest concurrently in separate worktrees on the same machine, they'd collide on that shared path ... an overridden RESULTS_DB env var pointing at a per-engineer/per-worktree scratch path, instead of the shared default",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "tests/conftest.py defines RESULTS_DB defaulting to /var/tmp/llm-scoring/results.db, a path outside the repo. ... engineers running tests concurrently on the same machine/CI runner without overriding RESULTS_DB per-engineer could collide on that file ... they should export a per-engineer RESULTS_DB env var pointing at a local/temp path rather than relying on the shared default",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

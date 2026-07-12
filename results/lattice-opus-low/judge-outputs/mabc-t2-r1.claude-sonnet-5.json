@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 57764,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2701068,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 21190,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 21190,
+        "cache_read_input_tokens": 64316,
+        "inference_geo": "not_available",
+        "input_tokens": 9564,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 14898,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 14898,
+            "cache_read_input_tokens": 35304,
+            "input_tokens": 2,
+            "output_tokens": 1080,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6332,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Tied overall (3 of 4 hits each): Report 1 correctly keeps F-11 in the early concurrent stage but only flags RESULTS_DB as 'harmless,' missing the required override instruction, while Report 2 explicitly defers F-11 to a later Wave 2 (missing the staging requirement) but correctly identifies and mandates a distinct RESULTS_DB per engineer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer B \u2014 `registry.py`: F-02 (`aurora-1` endpoint), F-05 (default rubric version \u2192 v3), F-09 (default dataset \u2192 `eval_set.jsonl`). Three trivial one-liners in an 11-line file; one owner avoids three-way conflicts.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "grouping by primary file is what makes parallelism collision-free \u2014 `run_batch.py` (4 findings) and `registry.py` (3) are the two high-contention files, so each gets exactly one owner.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Ordering across streams: they are largely independent and can run fully in parallel. ... Engineer C \u2014 rubric.py: F-01 (join multi-line criteria), then F-11 (edge-case parsing test). ... Registry (B) and prompts (D-prompts) are risk-free and can go first/anytime.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 2 \u2014 the two test findings, after their target fix lands: F-11 (rubric edge-case parsing) depends on F-01, so it goes to Engineer B, written *after* the F-01 fix.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 is a judgment/policy change, not a bug. ... This needs the reviewer/product owner to specify the new numbers and needs golden-output/regression review, not a lone engineer picking values. Flag for a decision before coding.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 a behavior change, not a settled bug; escalate, don't just assign. ... That's a scoring-policy decision, not a mechanical fix. It should be flagged to whoever owns the rubric/scoring policy for a decision",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The `RESULTS_DB` env var (`tests/conftest.py`) defaults to `/var/tmp/llm-scoring/results.db`; harmless for current tests but worth being aware of if new tests touch it.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "A distinct `RESULTS_DB` per engineer \u2014 `tests/conftest.py` defaults all runs to `/var/tmp/llm-scoring/results.db`; parallel runs need separate values so they don't collide on one test resource.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

@@ -1,0 +1,154 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "The regression began 2026-06-17 13:00 UTC, introduced by commit `53551e8031cfb03aaeda4ba0c8bf22b9aa849cbe` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"). That commit renamed the JSON key `label` \u2192 `gold_label` in every line of `fixtures/eval_set.jsonl` but did not update the corresponding `expected_label_field: label` setting in `config/scoring_config.yaml`. This lines up exactly with the incident report's \"around 2026-06-17\" onset date, and I reproduced 0.0 accuracy directly from this state.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 89974,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 1.057558,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 23227,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 23227,
+          "cache_read_input_tokens": 226348,
+          "inference_geo": "not_available",
+          "input_tokens": 12572,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 1088,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 1088,
+              "cache_read_input_tokens": 40470,
+              "input_tokens": 2,
+              "output_tokens": 2833,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 4819,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "introduced by commit `53551e8...` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"). That commit renamed the JSON key `label` \u2192 `gold_label` in every line of `fixtures/eval_set.jsonl` but did not update the corresponding `expected_label_field: label` setting in `config/scoring_config.yaml`. This lines up exactly with the incident report's \"around 2026-06-17\" onset date",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "b",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    },
+    {
+      "adjudicator_mark": {
+        "evidence": "Commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"), dated 2026-06-17, per `git log`/`git show` in `ticket-scorer`. It renamed the `label` key to `gold_label` across every record in `fixtures/eval_set.jsonl` but did not update the corresponding `expected_label_field` setting in `config/scoring_config.yaml` (last touched in the original `6940e94` commit, which set it to `label`). This date (2026-06-17) lines up almost exactly with \"about three weeks ago\" and with the drop window noted in the earlier investigation (\"around 2026-06-17\").",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 22965,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.24571099999999998,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 3249,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 3249,
+          "cache_read_input_tokens": 18331,
+          "inference_geo": "not_available",
+          "input_tokens": 9340,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 3249,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 3249,
+              "cache_read_input_tokens": 18331,
+              "input_tokens": 9340,
+              "output_tokens": 1380,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 1380,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "Commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"), dated 2026-06-17... It renamed the `label` key to `gold_label` across every record in `fixtures/eval_set.jsonl` but did not update the corresponding `expected_label_field` setting in `config/scoring_config.yaml`... lines up almost exactly with... the drop window noted in the earlier investigation",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "b",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "sysdbg-t2"
+}

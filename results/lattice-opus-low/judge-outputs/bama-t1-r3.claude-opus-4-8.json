@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22798,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.129808,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2898,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2898,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2898,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2898,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 1817,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1817,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with the same core reasoning; Report 1 is marginally more thorough (cites the 10M window total and explicitly names --limit chunking), but they are essentially comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**northpeak** (default): 10M window total, **640,000 remaining** \u2192 the 9.36M run needs ~14.6\u00d7 what's left. Nowhere near enough; it would exhaust and fail.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full run = 5,200 \u00d7 1,800 = **9,360,000 tokens** ... **northpeak (default/primary):** only **640,000 tokens remaining** in-window ... short by ~8.72M, i.e. northpeak has under 7% of what's required.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Ridgeline has 10.8M remaining and fits the job ... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ridgeline has 10.8M remaining, which covers the run with margin ... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run the default path. I'd route the full re-score to the secondary backend ... consider chunking with `--limit`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** launch the default path. Run against the secondary backend instead",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the snapshot is from 19:25Z, ~3 hours old at 22:30Z, and ridgeline's 1.44M headroom (~13%) is thin, so I'd re-check live remaining before launch",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is ~3 hours stale (generated 19:25Z vs. the 22:30Z current time), so I'd want to confirm ridgeline's headroom is still current before firing",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

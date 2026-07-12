@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23567,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0764337,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2946,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2946,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3257,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2946,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2946,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3257,
+            "output_tokens": 2504,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2504,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover all four expectations with essentially equivalent substance and figures; they are comparable in completeness, with Report 1 offering slightly more actionable detail (e.g., a suggested --limit 50 sanity run) but this doesn't change the expectation hits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 ~1,800 tokens per scoring call \u2248 9.36M tokens for a full run ... northpeak: 640,000 tokens remaining of a 10M window \u2014 only ~7% of what the run needs.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 transcripts \u00d7 ~1,800 tokens/call \u2248 9.36M tokens for the full run ... northpeak (primary): only 640,000 tokens remaining of a 10M window \u2014 about 7% of what the run needs.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline: 10,800,000 tokens remaining of a 12M window (resets 09:10 UTC) \u2014 comfortably covers the ~9.36M-token run with ~1.4M to spare... Instead I'd route the full run to the secondary vendor",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ridgeline (secondary): 10.8M tokens remaining of 12M \u2014 comfortably above the ~9.36M requirement... Instead I'd route the run to the secondary backend explicitly",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run the default command. Launching `run_nightly.sh` as-is would hit Northpeak's 640k remaining allowance almost immediately (the run needs ~15\u00d7 that), likely stalling or erroring partway through with no results by 07:00.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run the default script. Launched as-is, the job would exhaust northpeak's 640k remaining tokens after roughly 350 transcripts (640,000 / 1,800) and then fail or stall, with no reset until 07:20 \u2014 guaranteeing results are not ready by 07:00.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is ~3 hours stale (19:25 vs. now 22:30), so I'd refresh or re-check live usage before committing ~9.4M tokens",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the snapshot is ~3 hours old, so I'd refresh/verify remaining quota before launch",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

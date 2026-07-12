@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35247,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.171443,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4279,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4279,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 12115,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4279,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4279,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 12115,
+            "output_tokens": 2367,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2367,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with correct citations; Report 1 is marginally stronger on the doc-maintenance policy (explicitly framing drift as a bug and requiring doc updates in the same commit) and on unambiguously calling for the hardcoded webhook count to be dropped, so they are comparable with a slight edge to Report 1.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**New refund calls should live in `medibill/backend/app/billing/gateway.py`** \u2014 a `refund(...)` accessor next to `charge()` and `create_customer()` ... A full `grep -rn \"chargekit\"` over medibill shows exactly two violations:\n   - `backend/app/api/invoices.py:4,14-16` \u2014 the `/invoices/{invoice_id}/charge` route constructs its own `chargekit.Client` and calls `client.charge(...)` directly.\n   - `backend/app/workers/dunning.py:2,9` \u2014 the dunning worker constructs a fresh `chargekit.Client` inside its loop and calls `.charge(...)` directly.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls belong in `medibill/backend/app/billing/gateway.py` ... with `app/billing/errors.py` as the only sanctioned exception (it imports only the SDK's exception classes, `errors.py:6-9`) ... A grep for `chargekit` finds two violations:\n   - `medibill/backend/app/api/invoices.py:14-16` ... builds its own `chargekit.Client(...)` and calls `client.charge(...)` directly, bypassing the gateway.\n   - `medibill/backend/app/workers/dunning.py:9-13` \u2014 the dunning retry worker constructs `chargekit.Client(...)` inline per overdue invoice and calls `.charge(...)` directly.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "*Invoice API response* (`ARCHITECTURE.md:11-12`): claims the response contains \"exactly the fields: id, tenant_id, amount_cents, currency, status\". False \u2014 `InvoiceOut` in `backend/app/models/invoice.py:16-22` includes a sixth field, `external_ref`, and the charge route returns `InvoiceOut.from_model(invoice)` (`api/invoices.py:18`) with `external_ref` populated at line 17. Migration `backend/migrations/0006_add_invoice_external_ref.sql` shows this field was added later and the doc was never updated.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/ARCHITECTURE.md:11-12` says the response contains \"exactly the fields: id, tenant_id, amount_cents, currency, status.\" In reality `InvoiceOut` (`backend/app/models/invoice.py:16-22`), which is what the charge endpoint returns (`invoices.py:18`), also carries a sixth field, `external_ref`, added along with migration `backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**The doc should be corrected before or with the first refund commit, and the correction must land in the same commit/PR as any code it describes changing \u2014 drift is a bug, not deferred housekeeping.** ... (c) when refund support adds a `refund()` accessor, a refund field/endpoint, or a new handled event, update `ARCHITECTURE.md` in that same commit and call it out in the PR summary.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It should be updated as part of the refund feature's first PR \u2014 before or alongside the new code, not after \u2014 because the refund work will be designed against this document and it currently misleads on all three sections.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the code handles 5, including `payment_pending` (`webhooks.py:14`). Beyond fixing it, I would change *how* it's stated: drop the hardcoded count entirely. A literal number is guaranteed to drift the moment a handler is added (as it already has, and as refund work likely will again). State the property and point at the source of truth instead",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The handler at `backend/app/api/webhooks.py:10-19` actually handles **5** ... The claim is stale, and beyond fixing the count I would change *how* it is stated: an exact hardcoded enumeration in prose is guaranteed to drift every time a case is added. I would either point readers at `app/api/webhooks.py` as the source of truth",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

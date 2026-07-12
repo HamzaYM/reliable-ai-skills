@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29459,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.158558,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4098,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4098,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4098,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4098,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 2487,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2487,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both correctly diagnose the None\u21920.0 substitution and its ranking corruption, but Report 1 is stronger because it makes the required gate-vs-optional-axis distinction (renormalize for relevance/tone, block the composite for accuracy) that Report 2 misses by treating all axis failures uniformly.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Inside `composite` (`aggregate.py:6-13`), a `None` axis is silently coerced to `0.0`:\n```python\nvalue = axis_scores.get(axis)\nif value is None:\n    value = 0.0\ntotal += weight * value\n```\nSo the failed axis contributes `weight * 0.0 = 0` to the weighted sum... **The written record is byte-for-byte indistinguishable in form from a fully-scored one**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Inside `composite()` (`aggregate.py:9-12`), `value = axis_scores.get(axis)` returns `None`, and `if value is None: value = 0.0` coerces the missing axis to **zero**... **In form it is indistinguishable**: `results/scores.csv` shows plain `agent,reply,number` rows with no flag, null, or marker separating a partial record from a complete one.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It has no way to tell a real low score from a failure-deflated one, so failure-corrupted rows are folded into the mean and even inflate `counts`. Agents that happened to hit more per-axis failures get systematically dragged down in the mean composite... A zero-valued axis is being treated as a real measurement when in fact no measurement exists.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A transient infrastructure failure (one axis call not returning) is conflated with a genuine score of 0 on that axis... In `leaderboard.py`, `rankings()` treats every row equally \u2014 it does `sums[agent] += float(comp)` and `counts[agent] += 1` for that damaged row (lines 13-15), so the fabricated-low composite is folded into the agent's mean",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**For a failed accuracy call (load-bearing gate):** do not write a normal-looking composite. Mark the record as degraded/incomplete (e.g., a status column, or write the composite as empty/null rather than a float)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a missing accuracy value must not be silently treated as a real low score... Do **not** write a plain composite for it. Either skip writing the row entirely, or write it with an explicit failure/`null` marker (e.g. a status column or empty composite)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**For a failed non-load-bearing axis (relevance/tone):** renormalize the composite over the axes that actually returned \u2014 i.e., divide by the sum of the weights that succeeded \u2014 and write the row flagged as complete... **For a failed accuracy call (load-bearing gate):** do not write a normal-looking composite.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

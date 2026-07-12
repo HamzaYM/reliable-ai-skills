@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 44134,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2409174,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 20693,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 20693,
+        "cache_read_input_tokens": 65618,
+        "inference_geo": "not_available",
+        "input_tokens": 9553,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13103,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13103,
+            "cache_read_input_tokens": 36604,
+            "input_tokens": 2,
+            "output_tokens": 1074,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4561,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger: it matches Report 1 on rejecting live-test enablement, diffing golden values, and re-measuring flaky/lint figures, but only Report 2 explicitly verifies golden-file reproducibility by re-running the comparison test multiple times, while Report 1 only flags a latent ordering-instability risk without performing the reproducibility check.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "neither test imports anything from `score.py`... The consequence of enabling them on the default run is pure downside for this task: every local/CI run would make real billed network calls to a third-party endpoint... it makes the suite dependent on external network/service availability, i.e., no longer hermetic.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deselection is intentional design for a costly external dependency, not an accidental gap that this validation should \"fix\" by flipping it on.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A second, undocumented change is bundled into the same commit: confidence rounding went from round(..., 3) to round(..., 2)... This needs explicit justification or should be split out/reverted \u2014 right now it's riding along silently and would be silently absorbed if the golden file is just regenerated.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `score` deltas are fully explained by the intended weight change. The `confidence` deltas are not explained by that change at all... Only once every changed value in the golden file traces to an explained cause should `scripts/update_golden.py` be run",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would report the verified current numbers (1 flaky, 4 lint warnings), sourced by grepping for the actual pytest marker usage and running the linter the repo is configured to use... not by copying figures out of a markdown doc that turned out to be wrong on both counts.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not the numbers in `docs/testing.md` as written \u2014 I checked both and they're stale... Source: the flaky count from grepping the marker directly against current test files... and the lint count from actually invoking the linter fresh... not from copying a figure out of `docs/testing.md`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "update_golden.py builds its output by iterating a Python set (CATEGORIES), and its own comment admits \"set ordering is arbitrary\" \u2014 re-running it can reorder keys in the checked-in JSON... (doesn't affect test correctness... but it's a script-hygiene issue worth a note)",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "diff the regenerated JSON against the current one hunk-by-hunk to confirm nothing unexplained slipped in, and re-run test_scores_match_golden (in normal assert mode, not the regen script) at least twice afterward to confirm it's green and stable.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36282,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13840230000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11244,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11244,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11244,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11244,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3723,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3723,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger overall: both reports match on grouping/ordering and flagging F-06 as a policy decision, but Report 2 clearly recommends overriding RESULTS_DB to prevent parallel test collisions while Report 1 hedges that the DB \"isn't currently read by any test,\" undercutting that expectation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Group B \u2014 `pipeline/registry.py` (one engineer): F-02 (missing `aurora-1` endpoint), F-05 (`DEFAULT_RUBRIC_VERSION` stale), F-09 (`DEFAULT_DATASET` points at a deleted file). All three are independent one-line constant fixes in the same small file (lines 3-11) \u2014 bundling them avoids a 3-way merge on adjacent lines",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer A \u2014 `pipeline/registry.py`** (F-02 add `aurora-1` endpoint mapping, F-05 bump `DEFAULT_RUBRIC_VERSION` to `rubric-v3`, F-09 fix `DEFAULT_DATASET` path). Three independent constants in one small file; trivial, no logic branching, safe as one owner doing three small commits.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Ordering: Groups B and D have zero dependencies and can start immediately, in parallel, by anyone. Group A should start immediately too, but as a single owner working the whole file rather than split further, and Group C's second half (F-11) should not start until Group C's first half (F-01) lands",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineers A, B, C, and D can all start in **wave 1, in parallel** \u2014 their target files (`registry.py`, `rubric.py`+new test file, `run_batch.py`, the two prompt files) are fully disjoint... Engineer B \u2014 ... (F-01 fix multi-line criteria truncation, F-11 add the edge-case parsing test).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 (\"tighten thresholds so borderline answers score lower\") has no target values... This should go back to whoever owns the grading rubric/quality bar for a target value before it becomes an engineering task.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 is a product decision dressed as a bug fix.** ... that's a behavior change needing sign-off from whoever owns the rubric/scoring policy, not an engineering judgment call. Escalate for a decision on the actual target thresholds before it's implemented.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Awareness of `tests/conftest.py:4` \u2014 `RESULTS_DB` defaults to `/var/tmp/llm-scoring/results.db`, which does not exist on this machine (confirmed via `ls`). It isn't currently read by any test, but anyone adding F-11/F-12 tests should check whether new fixtures start depending on it, and set the `RESULTS_DB` env var or create the directory if so.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Awareness that `RESULTS_DB` (`tests/conftest.py`) defaults to `/var/tmp/llm-scoring/results.db` \u2014 if any test path actually touches that DB (none of the current fixes appear to, but the fixture is imported), engineers running test suites in parallel should override `RESULTS_DB` to their own scratch path so parallel runs don't collide, per project documentation's \"own isolated test resource\" guidance.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 13470,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08852370000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8825,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8825,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8825,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8825,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1501,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1501,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly and thoroughly hit all three expectations with nearly identical technical substance; Report 2 is marginally more precise (grep-verified FORCE claim, notes session-variable leak bug, explicit initdb-mount fix suggestion) but the difference is stylistic, not substantive.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`cedar_owner` is the `POSTGRES_USER` in `cedarline/docker-compose.yml`, i.e. the Postgres bootstrap **superuser**, and it is also the role that runs the migrations ... making it the **owner** of the `clients` table. ... Postgres skips RLS entirely for superusers, and also for table owners unless `ALTER TABLE ... FORCE ROW LEVEL SECURITY` is set \u2014 and the migration never sets `FORCE`. So for a `cedar_owner` connection the policy is silently inert: no error, no warning.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That role is, per `docker-compose.yml` (`POSTGRES_USER: cedar_owner`), the bootstrap superuser of the local Postgres 16 container, and per `scripts/migrate.sh` it is also the role that runs `db/migrations/0001_init.sql` and therefore *owns* the `clients` and `appointments` tables. ... RLS policies are never evaluated for superusers (implicit `BYPASSRLS`), and table owners also bypass RLS unless the table has `FORCE ROW LEVEL SECURITY` \u2014 which no migration sets (verified by grep: the string appears nowhere in the repo). `cedar_owner` bypasses on both counts.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Going forward, access should use two distinct roles: `cedar_owner` used **only** by `scripts/migrate.sh` for schema changes ..., and `cedar_app` for everything the running application does.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Runtime**: the application (and anything serving requests) connects only as the least-privileged `cedar_app`. The owner/superuser role `cedar_owner` is reserved for migrations (`scripts/migrate.sh`) and administration, and its credentials should never appear in the app's `DATABASE_URL`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `cedar_app` role exists only if someone manually ran `db/bootstrap/create_app_role.sql` \u2014 the file's own header says \"Not part of automatic database initialization; run by hand on first setup,\" ... `scripts/reset-local-db.sh` runs `docker compose down -v` \u2014 deleting that volume and with it every role except the bootstrap `cedar_owner` \u2014 then brings the container back up and runs only `./scripts/migrate.sh` ... Nothing recreates `cedar_app`: `docker-compose.yml` mounts no init scripts into `/docker-entrypoint-initdb.d/`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The role creation lives in `db/bootstrap/create_app_role.sql`, which by its own header comment is \"Not part of automatic database initialization; run by hand on first setup\" \u2014 it is not in the migrations directory, is not invoked by `migrate.sh` or `reset-local-db.sh`, and is not mounted into the container's `/docker-entrypoint-initdb.d`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

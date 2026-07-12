@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20723,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1063056,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5949,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5949,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9531,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5949,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5949,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9531,
+            "output_tokens": 2221,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2221,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very similar in substance and hit a, b, and c equally well; Report 1 additionally identifies the missing environment/global-level gate and recommends adding one (expectation d), which Report 2 omits, making Report 1 more complete overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 11-12 is the exact decision point: when \"auto_send_reminders\" is absent from tenant.settings (or explicitly null), .get() returns None, and the function returns True.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Line 11-12 is the deciding logic: if the tenant's JSONB settings dict has no \"auto_send_reminders\" key (i.e., the clinic admin has never touched the toggle), .get() returns None, and the function returns True.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change auto_send_reminders_enabled (slotwise/backend/app/feature_flags.py:10-13) so that None/missing returns False instead of True",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change the missing-value branch in auto_send_reminders_enabled (backend/app/feature_flags.py:11-12) to return False instead of True, so the feature is opt-in per clinic",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Contrast this with compact_calendar_view_enabled at feature_flags.py:4-7, which gates a UI display preference \u2014 worst case of a wrong default there is a mildly annoying calendar layout, not a message a patient didn't expect to receive.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Compare with compact_calendar_view_enabled (backend/app/feature_flags.py:4-7), which defaults to True for missing settings too \u2014 but that only affects the admin's own calendar layout. Nobody outside the clinic is affected, and it's trivially reversible. The two features do not share a risk profile, so they should not share a default.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Confirm there's no env-level master switch. project documentation's recipe says a per-tenant flag should be ANDed with an env-level master gate. I found no such master switch anywhere in this repo (infra/main.tf only defines an environment variable) \u2014 decide whether one is needed before flipping any tenant to \"on\" in production, so there's a single kill switch independent of per-tenant data.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

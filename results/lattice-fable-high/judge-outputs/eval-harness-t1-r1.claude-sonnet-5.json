@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 67900,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2596185,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 16334,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 16334,
+        "cache_read_input_tokens": 226345,
+        "inference_geo": "not_available",
+        "input_tokens": 12,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4206,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4206,
+            "cache_read_input_tokens": 41277,
+            "input_tokens": 2,
+            "output_tokens": 1165,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5936,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 answers all four expectations, correctly distinguishing the gate axis (accuracy) from the optional axes and prescribing that a failed accuracy call must not be written as a completed score, while Report 2 explicitly rejects that distinction and treats all three axes identically, missing expectations (c) and (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "value = axis_scores.get(axis)\nif value is None:\n    value = 0.0\ntotal += weight * value ... In form, that record is **byte-for-byte indistinguishable** from a fully scored row: the CSV has exactly three columns (agent_id, reply_id, composite) either way, with no status or completeness marker.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`composite()` looks up each axis and, at lines 10-11, silently substitutes `0.0` for a `None` value before applying the weight ... In form, the written record is **indistinguishable** from a fully scored one: `results/scores.csv` has exactly three columns (`agent_id, reply_id, composite`) with no per-axis columns, no status flag, and no error marker.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the file mixes genuine composites with artificially deflated ones and gives readers no way to tell them apart ... each failure-deflated composite drags the affected agent's mean down as if the agent had written a terrible reply. Which agents get penalized is determined by which rows happened to hit transient API failures \u2014 i.e., by luck, not reply quality.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No, it is incorrect: it conflates \"measurement unavailable\" with \"measured as zero.\" ... `rankings()` (lines 9-17) sums `float(comp)` for every row and divides by the row count \u2014 every corrupted row both drags the agent's sum down heavily and still counts in the denominator.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the accuracy call fails (or all axes fail): do not write a composite row to `results/scores.csv` at all. Instead, record the failure elsewhere \u2014 e.g., append `agent_id, reply_id, failed_axes` to a separate `results/failures.csv`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "When accuracy fails, there is no defensible composite to emit at all. You cannot renormalize around the gate axis... When relevance or tone fail, the load-bearing signal survived. It is reasonable to renormalize the weights over the axes that succeeded (e.g., accuracy 0.5 and tone 0.2 rescaled to sum to 1) and emit a composite, provided the record is explicitly flagged as partial",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That said, the asymmetry doesn't mean failed accuracy calls need *different* failure handling than the other axes \u2014 it means the current behavior is worst for accuracy, and the principle is the same for all three: an unmeasured axis must never be scored as zero.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

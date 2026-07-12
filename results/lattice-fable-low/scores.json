@@ -1,0 +1,1534 @@
+{
+  "aggregate": {
+    "cold_hits": 65,
+    "cold_pct": 95.6,
+    "loaded_hits": 68,
+    "loaded_pct": 100.0,
+    "n_expectations": 68
+  },
+  "comparative_verdicts": {
+    "aicg-t2": [
+      "claude-opus-4-8: Both reports hit all four expectations with correct file/function citations and concrete fixes; they are comparable in quality. | claude-sonnet-5: Both reports hit all four expectations with concrete, correct fixes; Report 2 is slightly crisper and more direct on the rate-limiter fail-closed fix, but overall the two are comparable in substance and coverage.",
+      "claude-opus-4-8: Both reports fully hit all four expectations with correct file/function citations, root causes, and concrete fixes; they are comparable, with Report 1 slightly more precise on the metadata-allowlist prescription. | claude-sonnet-5: Both reports hit all four expectations with comparable depth and concrete fixes; Report 1 is slightly more assertive on the Redis fail-open fix while Report 2 hedges more, but overall quality is comparable.",
+      "claude-opus-4-8: Both reports are strong and nearly equivalent, but Report 1 edges ahead because it firmly prescribes failing closed on Redis errors while Report 2 equivocates (\"whether fail-open is acceptable is a policy call\"), missing expectation (b). | claude-sonnet-5: Report 1 is stronger: it commits to an explicit fail-closed fix for the Redis-unavailable case in the rate limiter, while Report 2 hedges by calling fail-open \"a policy call\" and only suggests logging; both reports are otherwise comparable in depth and correctness on the router, audit, and pseudonymize questions."
+    ],
+    "arch-contracts-t1": [
+      "claude-opus-4-8: Both reports hit all four expectations; Report 2 is marginally stronger on the same-commit doc rule and source-of-truth framing, but they are effectively comparable. | claude-sonnet-5: Both reports hit all four expectations with near-identical substance; Report 2 adds a bit more supporting detail (README as authority, test coverage gap) but this doesn't change expectation coverage \u2014 the two are comparable in quality.",
+      "claude-opus-4-8: Both reports hit every expectation with correct citations; Report 1 is marginally stronger on the doc-maintenance policy (explicitly framing drift as a bug and requiring doc updates in the same commit) and on unambiguously calling for the hardcoded webhook count to be dropped, so they are comparable with a slight edge to Report 1. | claude-sonnet-5: Both reports hit all four expectations with nearly identical substance and citations; they are comparable in completeness, though Report 1 additionally flags the doc's payment-integration claim more explicitly as a third discrepancy while Report 2 folds it in similarly.",
+      "claude-opus-4-8: Both reports hit every expectation; Report 1 is marginally stronger because it explicitly frames doc-code drift as a bug and endorses same-commit doc updates as a going-forward norm, but the two are essentially comparable. | claude-sonnet-5: Both reports hit all four expectations with nearly equivalent substance and citations; report 2 is marginally more explicit in recommending doc correction \"before or alongside the first refund PR\" but overall the two are comparable in quality."
+    ],
+    "bama-t1": [
+      "claude-opus-4-8: Both reports are near-identical and strong on a\u2013c, but Report 1 additionally flags the snapshot's staleness and commits to re-checking live limits, making it slightly better. | claude-sonnet-5: Report 1 is slightly better: it explicitly notes the usage snapshot is ~3 hours stale and commits to re-checking live usage before launch (expectation d), which Report 2 omits entirely despite citing the same snapshot timestamp.",
+      "claude-opus-4-8: Both reports hit all four expectations with essentially identical substance; they are comparable, with Report 1 adding minor extra caveats (checkpointing risk). | claude-sonnet-5: Both reports are nearly identical in substance and hit all four expectations with comparable specificity; Report 2 is marginally more actionable on staleness (proposes a fallback to a scoped/partial run) while Report 1 adds extra unrequested caveats (checkpointing risk), but neither materially outperforms the other on the stated expectations.",
+      "claude-opus-4-8: Both reports hit every expectation with essentially the same substance and citations; they are comparable, with Report 2 adding a minor exhaustion-point calculation and Report 1 adding a --limit sanity-run suggestion. | claude-sonnet-5: Both reports cover all four expectations with essentially equivalent substance and figures; they are comparable in completeness, with Report 1 offering slightly more actionable detail (e.g., a suggested --limit 50 sanity run) but this doesn't change the expectation hits."
+    ],
+    "consent-t2": [
+      "claude-opus-4-8: Both reports hit all four expectations with equivalent substance and correct citations; they are comparable, with Report 1 marginally more detailed. | claude-sonnet-5: Both reports are substantively equivalent and hit all four expectations with accurate, well-cited evidence; Report 1 is slightly more explicit in flatly refusing the shared-table write (\"do not do it\") while Report 2 gives marginally more actionable test-harness detail (referencing tests/test_jobs.py), but neither is clearly superior overall.",
+      "claude-opus-4-8: Both reports hit all four expectations with accurate citations; they are comparable, with Report 1 marginally crisper and Report 2 adding a useful --dry-run suggestion. | claude-sonnet-5: Both reports are essentially equivalent in substance and accuracy, correctly hitting all four expectations with proper file/line citations; Report 2 adds a few extra observations (noting tests/test_jobs.py, suggesting renaming --test) but this does not change expectation coverage.",
+      "claude-opus-4-8: Both reports hit all four expectations with correct citations; comparable overall, with Report 1 slightly tighter and Report 2 adding minor extra observations. | claude-sonnet-5: Both reports hit all four expectations with comparable depth and citation quality; Report 2 adds slightly more nuance (e.g., noting _connect() raises NotImplementedError, suggesting erasure should log to consent_audit) but Report 1's answer to (c) is less hedged and more directly prescriptive."
+    ],
+    "csh-t1": [
+      "claude-opus-4-8: Both reports hit all four expectations; Report 2 is marginally stronger on the global-gate point by confirming nothing exists in infra, but they are comparable. | claude-sonnet-5: Both reports hit all four expectations with substantively equivalent findings; Report 2 is slightly more concrete on point (d) (specific env var, infra file check) but the difference is marginal.",
+      "claude-opus-4-8: Comparable \u2014 both reports hit all four expectations with correct citations; Report 1 is marginally sharper on the missing global gate, Report 2 slightly more detailed on rollout stubs, but overall equivalent. | claude-sonnet-5: Both reports hit all four expectations with substantively similar findings; Report 1 states the missing global-gate point slightly more explicitly (\"Currently there is no gate at all besides the per-tenant value\"), while Report 2 is otherwise comparably thorough (and adds a sharper note on the reminders.py stub data).",
+      "claude-opus-4-8: Both nail (a)-(c) equivalently, but Report 2 additionally identifies the missing global/environment-level gate and recommends adding one, which Report 1 omits \u2014 making Report 2 the more complete answer. | claude-sonnet-5: Report 2 covers all four expectations, including the missing global/environment-level gate recommendation (d), which Report 1 omits entirely \u2014 Report 1 is otherwise comparably strong but incomplete on that point."
+    ],
+    "dora-t2": [
+      "claude-opus-4-8: Both reports hit all four expectations; Report 1 is marginally stronger by flagging the AI-assistance footer for removal firmly rather than hedging as Report 2 does. | claude-sonnet-5: Report 1 answers the task better overall \u2014 it matches Report 2 on expectations (a), (b), and (c), but clearly flags the AI-assistance footer as something that must be removed (d), whereas Report 2 hedges and defers to the document owner instead of stating removal is required.",
+      "claude-opus-4-8: Both reports hit every expectation with equivalent evidence and grounding; they are comparable. | claude-sonnet-5: Both reports hit all four expectations with comparable, well-grounded evidence; report 2 adds slightly more granular detail (e.g., line numbers, reminders-image cross-check) but the substance is equivalent.",
+      "claude-opus-4-8: Both reports hit every expectation with equivalent evidence; they are comparable in quality. | claude-sonnet-5: Both reports are substantively equivalent, hitting all four expectations with comparable evidence and grounding; report 2 is slightly more thorough/organized but neither is clearly superior in substance."
+    ],
+    "env-hazards-t1": [
+      "claude-opus-4-8: Both reports fully satisfy all three expectations with correct file-level grounding; they are comparable, with Report 1 slightly more detailed on go-forward automation but Report 2 equally complete. | claude-sonnet-5: Both reports hit all three expectations with essentially equivalent substance; Report 2 adds a bit more nuance (GRANT/default-privileges ordering, SET LOCAL suggestion) but this is extra credit beyond what's required.",
+      "claude-opus-4-8: Both reports fully and correctly answer all three expectations with specific files/config; they are comparable, with Report 2 slightly more explicit but Report 1 equally complete. | claude-sonnet-5: Both reports independently identify the same root causes and fixes with comparable accuracy and detail; report 2 adds a bit more precision on superuser vs. owner bypass and a bonus catch about SET not accepting bind parameters, but both fully satisfy all three expectations.",
+      "claude-opus-4-8: Both reports fully and correctly answer all three questions with equivalent grounding; they are comparable. | claude-sonnet-5: Both reports are substantively equivalent, correctly identifying all three root causes and fixes with nearly identical specificity; Report 2 adds a touch more detail on transaction-scoped SET LOCAL, but this doesn't affect the graded expectations."
+    ],
+    "eval-harness-t1": [
+      "claude-opus-4-8: Both reports are strong and nearly equivalent, but Report 1 also arrives at the required distinction that relevance/tone failures can defensibly be scored over surviving axes while accuracy cannot, giving it the edge. | claude-sonnet-5: Both reports correctly diagnose the None\u21920.0 substitution bug and its corrupting effect on scores.csv/leaderboard.py, but only Report 1 explicitly draws the required distinction that a relevance/tone failure can defensibly be handled by renormalizing over the succeeded axes while an accuracy (gate) failure cannot be scored at all \u2014 Report 2 treats all axis failures uniformly (\"On any axis failure, the pipeline should not write a numeric composite for that row\"), making Report 1 the stronger, more complete answer.",
+      "claude-opus-4-8: Report 1 answered better: both nail the bug and rankings impact, but only Report 1 arrives at the required gate-vs-optional distinction (renormalize for relevance/tone, never for accuracy), which Report 2 explicitly rejects. | claude-sonnet-5: Report 1 hits all four expectations, correctly distinguishing that relevance/tone failures can be defensibly renormalized while accuracy failures cannot; Report 2 misses expectation (d) by explicitly rejecting axis-specific handling and treating all three axes uniformly.",
+      "claude-opus-4-8: Both reports are strong and correct, but Report 2 additionally distinguishes the handling of gate vs. optional axes (renormalize for relevance/tone, refuse for accuracy), making it the more complete answer. | claude-sonnet-5: Both reports correctly diagnose the None\u21920.0 substitution and its corrupting effect on leaderboard rankings, but only Report 2 explicitly distinguishes how a failed gate-axis (accuracy) must be excluded/held-out versus how a failed optional axis (relevance/tone) could defensibly be renormalized and emitted with a flag \u2014 Report 1 recommends a single uniform \"never write a composite on any failure\" policy without that differentiation, making Report 2 the more complete answer."
+    ],
+    "farch-t1": [
+      "claude-opus-4-8: Both reports fully satisfy all four expectations with equivalent grounding in the git history and code; they are comparable. | claude-sonnet-5: Both reports are substantively equivalent, hitting the same three expectations (a, b, d) and missing the same one (c); Report 2 is slightly more precise (e.g., explicitly citing `git show 1712565` and noting reports.py's direct dependency on the module-level engine) but the difference is marginal.",
+      "claude-opus-4-8: Comparable \u2014 both reports discover the prior reverted attempt, cite the exact commits, state the max_connections root cause, and tie the sign-off recommendation to that history; Report 2 is marginally more explicit on ownership. | claude-sonnet-5: Both reports hit all four expectations with solid commit citations; Report 2 is marginally more precise (explicitly names /reports/monthly in the failure narrative and states the team 'returned to' Cargobox), but the two are comparable in substance.",
+      "claude-opus-4-8: Both reports hit every expectation and are comparable; Report 2 is marginally more complete on decision-ownership and alternatives. | claude-sonnet-5: Both reports independently discover the prior Edgerunner attempt and revert, cite the same commits and root cause, and ground their recommendation in that history equally well; report 2 is slightly more precise with line-level citations but the two are comparable in substance."
+    ],
+    "git-cc-t2": [
+      "claude-opus-4-8: Comparable \u2014 both nail all four points; Report 2 is marginally more rigorous by checking freshness against origin/main with an explicit ancestry test. | claude-sonnet-5: Both reports hit all four expectations with comparable rigor; Report 2 is marginally more explicit about fetch freshness and ancestry verification, but the two are essentially equivalent in substance.",
+      "claude-opus-4-8: Both reports fully satisfy all four expectations with correct git reasoning; comparable, with Report 2 adding a merge-conflict check as a slight extra. | claude-sonnet-5: Both reports hit all four expectations with comparable depth and correct git forensics; Report 2 adds a merge-tree conflict check and explicit fetch/sync freshness step, giving it a slight edge in rigor, but substantively they are equivalent.",
+      "claude-opus-4-8: Both reports hit every expectation with correct commits and commands; comparable, with Report 2 marginally more rigorous (uses origin/main as the fetched tip and an explicit git branch --contains ancestry check). | claude-sonnet-5: Both reports independently reach the same correct conclusions on all four points with comparable command-level detail; report 2 is marginally more precise by rebasing onto origin/main (the fetched tip) and confirming ancestry via git branch --contains, but the substantive difference is minor."
+    ],
+    "mabc-t2": [
+      "claude-opus-4-8: Both reports are strong and comparable on grouping, ordering, and the F-06 escalation, but Report 1 answers the task better because it identifies the shared results-database collision in tests/conftest.py as a concrete parallelism hazard requiring a per-engineer RESULTS_DB override, whereas Report 2 treats it only as an optional path/writability preference. | claude-sonnet-5: Both reports are similar in structure and quality; Report 1 is stronger on expectation (d), explicitly identifying the shared RESULTS_DB default as a concurrency-corruption risk and requiring an override, while Report 2 only mentions RESULTS_DB as an optional setup step without connecting it to collision risk.",
+      "claude-opus-4-8: Both reports produce sound file-scoped groupings, serialize registry.py to one owner, and escalate F-06, but Report 2 answers the task better because it explicitly identifies the machine-global RESULTS_DB in tests/conftest.py as a parallel-run collision hazard requiring a per-engineer override, whereas Report 1 treats that as merely optional setup advice. | claude-sonnet-5: Both reports handle grouping, ordering, and the F-06 escalation equally well, but Report 2 clearly and mandatorily flags the shared RESULTS_DB collision risk (and states a private RESULTS_DB is required per engineer) while Report 1 only mentions it as an \"optional\" step without stating the collision/corruption risk explicitly, making Report 2 the stronger overall report.",
+      "claude-opus-4-8: Both reports hit all four expectations; Report 1 is marginally stronger because it explicitly notes that separate checkouts alone would still collide on the shared results database, while Report 2 compensates with sharper per-engineer setup detail \u2014 overall comparable. | claude-sonnet-5: Both reports hit all four expectations with comparable substance; Report 1 states the checkout-insufficiency nuance for the results-DB collision slightly more explicitly, while Report 2 adds extra scrutiny (F-02 endpoint URL, non-git working copy) not required by the rubric \u2014 overall they are roughly equal in quality."
+    ],
+    "mmar-t1": [
+      "claude-opus-4-8: The two reports are essentially comparable: both nail the cross-tenant leak and both correctly defuse the raw-SQL string as non-exploitable, and both miss the broken nightly_export caller in exports.py; Report 2 is marginally stronger only for its independent non-LLM verification step. | claude-sonnet-5: Both reports correctly identify the cross-tenant leak (a) and correctly avoid over-flagging the SQL string as exploitable injection (c); neither caught the exports.py/nightly_export breakage (b), making them comparable in substance, though report 2 adds slightly more rigor (direct grep verification, README invariant citation).",
+      "claude-opus-4-8: Report 2 answered the task better: it caught the broken nightly_export caller that Report 1 missed entirely, and it correctly adjudicated the raw-SQL f-string as non-blocking rather than listing it among the merge blockers. | claude-sonnet-5: Report 2 is more complete: it independently catches the nightly_export breakage (expectation b), which Report 1 misses entirely, while both correctly identify the tenant-isolation leak and correctly avoid over-flagging the SQL string as exploitable.",
+      "claude-opus-4-8: Report 2 answered the task better: it matched Report 1 on the tenant-scoping leak and the correct SQL-injection adjudication, but additionally caught the breaking `build_appointment_query` signature change against the untouched `exports.py` caller, which Report 1 missed entirely. | claude-sonnet-5: Report 2 is stronger \u2014 it catches the same tenant-scoping and SQL-string issues as Report 1 but additionally identifies the exports.py breaking-change defect that Report 1 misses entirely."
+    ],
+    "mt-auth-t1": [
+      "claude-opus-4-8: Both reports hit all five expectations; Report 2 is marginally stronger on application-layer defense-in-depth and the blocking boot check, while Report 1 is more accurate about the offending commit touching all three config files (Report 2 wrongly calls it a one-line docker-compose diff) \u2014 overall comparable. | claude-sonnet-5: Both reports correctly diagnose the owner/FORCE RLS root cause and recommend the same three-part remediation; Report 1 more precisely attributes all three config files (.env.example, docker-compose.yml, infra/main.tf) to the ROTA-214 commit, while Report 2 inaccurately claims the commit's diff was only a one-line docker-compose.yml change, leaving infra/main.tf's role attributed ambiguously.",
+      "claude-opus-4-8: Both reports hit all five expectations with correct mechanism and commit attribution; Report 2 is marginally stronger for explicitly flagging that the \"no superuser/BYPASSRLS\" comment is a red herring and adding a boot-time canary query, but they are effectively comparable. | claude-sonnet-5: Both reports independently hit all five expectations with essentially equivalent depth and correct technical grounding; Report 2 is marginally more thorough (explicit db.py citation, stronger framing of the app-layer filter as primary rather than optional, plus a bonus canary-query idea) but the substantive content is comparable.",
+      "claude-opus-4-8: Comparable \u2014 both reports hit all five expectations with correct mechanism, commit, and remediation; Report 2 is marginally sharper on framing the fix as a role misconfiguration, while Report 1 is marginally stronger on CI enforcement detail. | claude-sonnet-5: Both reports hit all five expectations with essentially equivalent substance; Report 2 states the app-layer tenant filter and boot-time assertion slightly more assertively (not hedged as \"optional\") and adds a CI/review-guard angle, but the difference is marginal."
+    ],
+    "pmvg-t2": [
+      "claude-opus-4-8: Both reports hit all four expectations with nearly identical substance; Report 1 is marginally stronger on reproducibility by explicitly prescribing multiple post-regeneration runs, but they are essentially comparable. | claude-sonnet-5: Report 1 is stronger: both match on (a), (b), and (c), but only Report 1 performs and states a concrete reproducibility check (rerunning the suite twice post-regeneration) for (d), while Report 2 only flags the nondeterminism risk without verifying reproducibility.",
+      "claude-opus-4-8: Both reports hit all four expectations and reach the same correct conclusions; Report 1 is marginally stronger via its explicit \"re-run twice\" reproducibility step, but they are essentially comparable. | claude-sonnet-5: Report 1 is stronger: it explicitly performs a reproducibility check (re-running the comparison twice) and states the need to diff the regenerated golden file line-by-line against intended causes, both of which Report 2 only gestures at without describing an actual verification step.",
+      "claude-opus-4-8: Both reports are strong and nearly identical in substance, but Report 2 edges ahead by explicitly proposing a concrete reproducibility check (running the suite twice) alongside naming the set-ordering instability source. | claude-sonnet-5: Both reports are strong and nearly identical on expectations a, b, and c, but Report 2 explicitly performs and states a reproducibility check (re-running the suite/regeneration twice to confirm determinism) tied to the set-ordering instability, which Report 1 only names as a cosmetic issue without acting on it \u2014 making Report 2 the more complete answer."
+    ],
+    "s2p-cutover-t1": [
+      "claude-opus-4-8: Comparable \u2014 both reports HIT all four expectations; Report 1 is marginally more explicit about removing leftover values and running the first migration manually. | claude-sonnet-5: Report 1 is slightly stronger: it explicitly calls for running the first migration manually where Report 2 only flags the runbook as untrustworthy without an explicit action item; otherwise the two reports are comparable in depth and accuracy.",
+      "claude-opus-4-8: Both reports hit every expectation with equivalent, correctly grounded findings; they are comparable, with Report 1 marginally more detailed on the OIDC role-collision reasoning. | claude-sonnet-5: Both reports hit all four expectations with comparable depth and accuracy; Report 1 is marginally stronger on the legacy secret (explicitly calling for removal) while Report 2 is marginally stronger on the shadow-sink fix (explicit empty-string value), making them roughly equivalent overall.",
+      "claude-opus-4-8: Comparable \u2014 both reports correctly hit all four expectations; Report 2 is marginally crisper on the migration and secret-removal points. | claude-sonnet-5: Both reports hit all four expectations with substantively equivalent findings; Report 2 is marginally more precise on category (d) (explicit 'remove it' for legacy_billing_secret_arn) and on the migration/runbook contradiction, but the difference is minor."
+    ],
+    "sysdbg-t2": [
+      "claude-opus-4-8: The two reports are essentially equivalent \u2014 both correctly diagnose all four points with the same evidence; comparable. | claude-sonnet-5: Both reports independently reach the same correct diagnosis, root cause, timeline, and reject the flaky-model conclusion with equivalent evidence and quality; they are comparable, with Report 2 additionally verifying the fix by actually running the batch scorer.",
+      "claude-opus-4-8: Both reports hit all four expectations with equivalent substance; they are comparable. | claude-sonnet-5: Both reports correctly identify the root cause, the introducing commit, and refute the flaky-closure; Report 2 is slightly stronger on point (d), explicitly naming the shared-nightly-runner experiment-in-production risk and proposing local/offline verification, while Report 1 only implies the model-swap futility without addressing the shared-environment risk.",
+      "claude-opus-4-8: Both reports hit all four expectations with equivalent root-cause and evidence; they are comparable, with Report 2 slightly more explicit on the shadow-run verification. | claude-sonnet-5: Both reports independently and correctly identify the same root cause, timeline, flaw in the earlier investigation, and correct assessment of the proposed rollback; they are comparable in substance, with Report 1 offering slightly more forensic detail (e.g., normalizer divergence, REQUIRED_KEYS bypass) and Report 2 more explicitly naming the anti-pattern in point 4."
+    ],
+    "tcr-t1": [
+      "claude-opus-4-8: Both reports hit all five expectations; they are comparable, with Report 2 slightly more granular (splitting style rules and detection-gap remediation). | claude-sonnet-5: Both reports hit all five expectations with correct citations and figures; Report 2 is slightly more thorough (adds rule 2 violation, hedging/rule 4, outage duration, and weaker remediation) but on the graded expectations they are comparable.",
+      "claude-opus-4-8: Both reports hit all five expectations; Report 1 is slightly more thorough (extra detail on mitigation and missing basics), but the two are comparable in covering the required points. | claude-sonnet-5: Both reports hit the core factual findings (a-d) nearly identically, but Report 1 more precisely captures the structural/ordering defect (e) \u2014 noting the remediation commitment is a single sentence buried at the end and explicitly recommending restructuring \u2014 while Report 2 only vaguely flags the rule-3 violation without pinpointing the buried remediation line or recommending a fix.",
+      "claude-opus-4-8: Both reports hit all five expectations with essentially identical substance and citations; they are comparable, with Report 1 slightly more detailed on remediation gaps. | claude-sonnet-5: Both reports hit all five expectations with near-identical evidence and citations; Report 1 is slightly more thorough (adds internal-name exposure, hedging, and remediation-gap points), but on the scored expectations the two are comparable."
+    ]
+  },
+  "excluded_tasks": [],
+  "hit_rates": {
+    "aicg-t2": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 0.6666666666666666,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "arch-contracts-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "bama-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 0.6666666666666666,
+        "loaded": 1.0
+      }
+    },
+    "consent-t2": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "csh-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 0.6666666666666666,
+        "loaded": 1.0
+      }
+    },
+    "dora-t2": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "env-hazards-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "eval-harness-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 0.0,
+        "loaded": 1.0
+      }
+    },
+    "farch-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "git-cc-t2": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "mabc-t2": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 0.3333333333333333,
+        "loaded": 1.0
+      }
+    },
+    "mmar-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 0.0,
+        "loaded": 0.6666666666666666
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "mt-auth-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 0.6666666666666666
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "e": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "pmvg-t2": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 0.6666666666666666,
+        "loaded": 1.0
+      }
+    },
+    "s2p-cutover-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "sysdbg-t2": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
+    "tcr-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "d": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "e": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    }
+  },
+  "judge_disagreement": {
+    "adjudication": {
+      "adjudication_rate_pct": 2.5,
+      "effort": "medium",
+      "model": "claude-fable-5",
+      "n_adjudicated": 10,
+      "n_disputed_slot_marks": 10,
+      "n_slot_marks": 408,
+      "n_unresolved": 0,
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator"
+    },
+    "by_arm": {
+      "cold": 7,
+      "loaded": 3
+    },
+    "by_slot": {
+      "report_1": 2,
+      "report_2": 8
+    },
+    "disagreement_rate_pct": 4.4,
+    "failure_floor": {
+      "failure_excluded_must_hits": {},
+      "floor_excluded_comparisons": [],
+      "rule": "a must-hit whose disputed mark has no adjudicator result (adjudicator failure after the pre-registered retry) is excluded from both arms of that comparison as a judge-failure exclusion, never as a disagreement; when more than one third of a comparison's must-hit marks are excluded this way, the entire paired comparison is excluded and reported; adjudicated disagreements never trigger this floor",
+      "tasks_excluded_no_scorable_marks": []
+    },
+    "n_disagreed": 9,
+    "n_marks": 204,
+    "per_task": {
+      "aicg-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 12
+      },
+      "arch-contracts-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 12
+      },
+      "bama-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 12
+      },
+      "consent-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 12
+      },
+      "csh-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 12
+      },
+      "dora-t2": {
+        "disagreed_must_hits": [
+          "d"
+        ],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 1,
+        "n_disagreed": 1,
+        "n_disputed_slot_marks": 1,
+        "n_marks": 12
+      },
+      "env-hazards-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 9
+      },
+      "eval-harness-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 12
+      },
+      "farch-t1": {
+        "disagreed_must_hits": [
+          "c"
+        ],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 2,
+        "n_disagreed": 1,
+        "n_disputed_slot_marks": 2,
+        "n_marks": 12
+      },
+      "git-cc-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 12
+      },
+      "mabc-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 12
+      },
+      "mmar-t1": {
+        "disagreed_must_hits": [
+          "c"
+        ],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 1,
+        "n_disagreed": 1,
+        "n_disputed_slot_marks": 1,
+        "n_marks": 9
+      },
+      "mt-auth-t1": {
+        "disagreed_must_hits": [
+          "b"
+        ],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 1,
+        "n_disagreed": 1,
+        "n_disputed_slot_marks": 1,
+        "n_marks": 15
+      },
+      "pmvg-t2": {
+        "disagreed_must_hits": [
+          "b",
+          "d"
+        ],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 3,
+        "n_disagreed": 3,
+        "n_disputed_slot_marks": 3,
+        "n_marks": 12
+      },
+      "s2p-cutover-t1": {
+        "disagreed_must_hits": [
+          "c"
+        ],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 1,
+        "n_disagreed": 1,
+        "n_disputed_slot_marks": 1,
+        "n_marks": 12
+      },
+      "sysdbg-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 12
+      },
+      "tcr-t1": {
+        "disagreed_must_hits": [
+          "e"
+        ],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 1,
+        "n_disagreed": 1,
+        "n_disputed_slot_marks": 1,
+        "n_marks": 15
+      }
+    },
+    "unit": "per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator"
+  },
+  "judge_repeats": 1,
+  "preregistered": true,
+  "repeats": 3,
+  "repeats_detail": {
+    "mean_over_repeats": {
+      "cold_rate_pct": 94.1,
+      "delta_pp": 4.9,
+      "loaded_rate_pct": 99.0
+    },
+    "note": "replicated cell: endpoint verdicts use the mean rates over repeats; repeat-level values are retained above, and every repeat ran in its own isolated workspace with no shared session state",
+    "per_repeat": {
+      "r1": {
+        "cold_hits": 64,
+        "cold_rate_pct": 94.1,
+        "delta_pp": 2.9,
+        "loaded_hits": 66,
+        "loaded_rate_pct": 97.1,
+        "n_expectations": 68,
+        "tasks": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 2,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 4,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      },
+      "r2": {
+        "cold_hits": 65,
+        "cold_rate_pct": 95.6,
+        "delta_pp": 4.4,
+        "loaded_hits": 68,
+        "loaded_rate_pct": 100.0,
+        "n_expectations": 68,
+        "tasks": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      },
+      "r3": {
+        "cold_hits": 63,
+        "cold_rate_pct": 92.6,
+        "delta_pp": 7.4,
+        "loaded_hits": 68,
+        "loaded_rate_pct": 100.0,
+        "n_expectations": 68,
+        "tasks": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    }
+  },
+  "skills": {
+    "adversarial-review/multi-model-adversarial-review": {
+      "cold_hits": 2,
+      "loaded_hits": 3,
+      "n_must_hits": 3,
+      "pass": true,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 1
+    },
+    "architecture-and-contracts/architecture-contracts-as-law": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "auth-and-tenancy/multi-tenant-auth-reference": {
+      "cold_hits": 5,
+      "loaded_hits": 5,
+      "n_must_hits": 5,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "campaign-execution/multi-agent-batch-campaigns": {
+      "cold_hits": 3,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 1
+    },
+    "change-control/git-change-control-for-agents": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "cost-and-safety-guardrails/ai-cost-tracking-and-guardrails": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "cost-and-safety-guardrails/budget-aware-model-allocation": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "cost-and-safety-guardrails/config-and-secrets-hygiene": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "debugging-playbooks/failure-archaeology": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "debugging-playbooks/systematic-debugging-playbook": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "deploy-and-infra/environment-and-build-hazards": {
+      "cold_hits": 3,
+      "loaded_hits": 3,
+      "n_must_hits": 3,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "deploy-and-infra/staging-to-prod-cutover-campaign": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "docs-and-compliance/consent-and-regulated-data-reference": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "docs-and-compliance/docs-of-record-and-arbitration": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "evals-and-scoring/llm-eval-harness-and-scoring-pipeline": {
+      "cold_hits": 3,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 1
+    },
+    "tiered-review/tiered-consultancy-review": {
+      "cold_hits": 5,
+      "loaded_hits": 5,
+      "n_must_hits": 5,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "validation-gates/pre-merge-validation-gate": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    }
+  },
+  "tasks": {
+    "aicg-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "cost-and-safety-guardrails/ai-cost-tracking-and-guardrails",
+      "threshold": 3
+    },
+    "arch-contracts-t1": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "architecture-and-contracts/architecture-contracts-as-law",
+      "threshold": 3
+    },
+    "bama-t1": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "cost-and-safety-guardrails/budget-aware-model-allocation",
+      "threshold": 3
+    },
+    "consent-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "docs-and-compliance/consent-and-regulated-data-reference",
+      "threshold": 3
+    },
+    "csh-t1": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "cost-and-safety-guardrails/config-and-secrets-hygiene",
+      "threshold": 3
+    },
+    "dora-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [
+        "d"
+      ],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "docs-and-compliance/docs-of-record-and-arbitration",
+      "threshold": 3
+    },
+    "env-hazards-t1": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [],
+      "loaded_hits": 3,
+      "n_must_hits": 3,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "deploy-and-infra/environment-and-build-hazards",
+      "threshold": 2
+    },
+    "eval-harness-t1": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "MISS",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "evals-and-scoring/llm-eval-harness-and-scoring-pipeline",
+      "threshold": 3
+    },
+    "farch-t1": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [
+        "c"
+      ],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "debugging-playbooks/failure-archaeology",
+      "threshold": 3
+    },
+    "git-cc-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "change-control/git-change-control-for-agents",
+      "threshold": 3
+    },
+    "mabc-t2": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "MISS",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "campaign-execution/multi-agent-batch-campaigns",
+      "threshold": 3
+    },
+    "mmar-t1": {
+      "cold_hits": 2,
+      "disagreed_must_hits": [
+        "c"
+      ],
+      "loaded_hits": 3,
+      "n_must_hits": 3,
+      "pass": true,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "MISS",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "adversarial-review/multi-model-adversarial-review",
+      "threshold": 2
+    },
+    "mt-auth-t1": {
+      "cold_hits": 5,
+      "disagreed_must_hits": [
+        "b"
+      ],
+      "loaded_hits": 5,
+      "n_must_hits": 5,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "e": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "auth-and-tenancy/multi-tenant-auth-reference",
+      "threshold": 4
+    },
+    "pmvg-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [
+        "b",
+        "d"
+      ],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "validation-gates/pre-merge-validation-gate",
+      "threshold": 3
+    },
+    "s2p-cutover-t1": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [
+        "c"
+      ],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "deploy-and-infra/staging-to-prod-cutover-campaign",
+      "threshold": 3
+    },
+    "sysdbg-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "debugging-playbooks/systematic-debugging-playbook",
+      "threshold": 3
+    },
+    "tcr-t1": {
+      "cold_hits": 5,
+      "disagreed_must_hits": [
+        "e"
+      ],
+      "loaded_hits": 5,
+      "n_must_hits": 5,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "e": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "tiered-review/tiered-consultancy-review",
+      "threshold": 4
+    }
+  }
+}

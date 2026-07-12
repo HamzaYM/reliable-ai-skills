@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21739,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.144118,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3949,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3949,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 12115,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3949,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3949,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 12115,
+            "output_tokens": 1406,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1406,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answered the task better: it matched Report 1 on the tenant-scoping leak and the correct SQL-injection adjudication, but additionally caught the breaking `build_appointment_query` signature change against the untouched `exports.py` caller, which Report 1 missed entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Cross-tenant data leak: the search query has no `tenant_id` filter.** `backend/app/appointments.py`, `search_appointments` (new function, branch `feat/appointment-search`). ... the `WHERE` clause filters only on status and the text query. The `tenant_id` parameter is accepted by the function and passed in by the route (`api.py`, `get_appointment_search`), but never used. Any authenticated user of any clinic who calls `GET /appointments/search` receives matching appointments from **every** tenant",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Cross-tenant data leak in the search query \u2014 `backend/app/appointments.py`, `search_appointments` (branch version, lines 9\u201317).** ... There is **no `tenant_id` predicate**: the function receives `tenant_id` from the `current_tenant_id` auth dependency (`backend/app/api.py`) and then ignores it. Any authenticated user of any clinic who calls `GET /appointments/search` gets matching appointments \u2014 including patient-identifying `notes` \u2014 from **every tenant** in the database.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**The change breaks the nightly export with a `TypeError` \u2014 `backend/app/db.py:7` vs `backend/app/exports.py:9` (on the branch).** The branch changes `build_appointment_query` to `def build_appointment_query(session, tenant_id, filters):` with **no default** for `filters`, but `exports.py` (untouched by the diff) still calls `build_appointment_query(session, tenant_id)`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Today this is not directly exploitable, because `status` is `AppointmentStatus`, a three-value `str` Enum (`backend/app/schemas.py`) that FastAPI validates before the handler runs (anything else gets a 422), and the free-text `q` *is* correctly bound as a parameter.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "at the HTTP layer it is **not currently exploitable**, because `status` is typed as `AppointmentStatus`, a three-member `str` Enum (`backend/app/schemas.py`), so FastAPI rejects anything else with a 422 ... it violates the parameterization the same statement already uses for `:q`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

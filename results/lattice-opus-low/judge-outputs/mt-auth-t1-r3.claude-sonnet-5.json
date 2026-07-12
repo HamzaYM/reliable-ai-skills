@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 48454,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1409316,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5037,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5037,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5037,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5037,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 4888,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4888,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 gives a cleaner, more precisely targeted answer matching the expected root-cause mechanism and correctly identifies the specific commit/change that introduced the leak, while Report 2 conflates the owner-exemption mechanism with a superuser-bypass claim and cannot pin an introducing commit (its repo history shows the leak present since the first commit rather than a later regression), making Report 1 the stronger of the two overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In PostgreSQL, a table's owner is exempt from that table's row-level security policies unless the table is declared with FORCE ROW LEVEL SECURITY. Migration db/migrations/0003_rls.sql only runs ENABLE ROW LEVEL SECURITY (line 1) \u2014 it never runs FORCE.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Compounding it: the migration never issues FORCE ROW LEVEL SECURITY, so even a non-superuser owner connection would bypass it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit b2a23d2 \u2014 \"ROTA-214 run migrations from the api container on boot\" (Fixture Bot, 2026-06-17) \u2014 introduced it... it repointed the runtime DATABASE_URL from juniper_app:apppw to juniper_owner:ownerpw in all three config sources: .env.example, docker-compose.yml, and infra/main.tf.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Stop running the runtime as the table owner. Point the runtime DATABASE_URL back to juniper_app:apppw in docker-compose.yml, .env.example, and infra/main.tf... Defense in depth \u2014 add FORCE. In a new migration, ALTER TABLE appointments FORCE ROW LEVEL SECURITY;",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary: point the runtime at the least-privilege role. Change .env:1 / .env.example:1 (and the real deployment secret) DATABASE_URL to use cedar_app instead of cedar_owner... Belt-and-suspenders at the DB: add ALTER TABLE clients FORCE ROW LEVEL SECURITY; and ALTER TABLE appointments FORCE ROW LEVEL SECURITY;",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Optionally, add an explicit WHERE tenant_id = current_setting('app.current_tenant')::uuid in the appointments query as an application-layer backstop, but RLS should remain the primary control.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Defense in depth: add an explicit WHERE tenant_id = :tenant in main.py:13 (and all queries), so isolation doesn't rest on a single mechanism.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "A startup/health assertion that fails fast if the runtime connection has BYPASSRLS or is the table owner of tenant-scoped tables.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Boot-time guard: in app startup (near backend/app/db.py), assert the connected role has neither superuser nor rolbypassrls (SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user) and refuse to start otherwise",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r3",
+  "repeat": 3,
+  "task": "mt-auth-t1"
+}

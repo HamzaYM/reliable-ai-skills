@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33668,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1085592,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3095,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3095,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3095,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3095,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 3479,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3479,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent: same token math, same conclusion to route the full run to ridgeline/secondary, and both fail to flag that the usage snapshot is a ~3-hour-old point-in-time read that should be re-verified before launch.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Manifest (data/manifest.json) gives transcript_count: 5200 and avg_tokens_per_scoring_call: 1800, so a full run needs roughly 5,200 \u00d7 1,800 \u2248 9,360,000 tokens... northpeak (default/primary): only 640,000 tokens remaining of its 10,000,000 window... Running the default command tonight as-is would run out of northpeak budget almost immediately",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Required: 5,200 transcripts \u00d7 1,800 tokens/call = 9,360,000 tokens (manifest.json). Northpeak (default/primary): only 640,000 tokens remaining out of a 10,000,000 window (usage_snapshot.json) \u2014 short by about 8.72M tokens (only ~6.8% of what's needed).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline (secondary): 10,800,000 tokens remaining of its 12,000,000 window \u2014 comfortably covers the ~9.36M token full run with about 1.44M tokens of headroom",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ridgeline (secondary): 10,800,000 tokens remaining out of 12,000,000 \u2014 comfortably covers the 9.36M token requirement, leaving roughly 1.44M tokens of headroom",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run run_nightly.sh unmodified tonight. I'd launch with --provider secondary explicitly",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run scripts/run_nightly.sh as-is, since its default routes to Northpeak, which lacks sufficient remaining budget by more than an order of magnitude for tonight's job.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

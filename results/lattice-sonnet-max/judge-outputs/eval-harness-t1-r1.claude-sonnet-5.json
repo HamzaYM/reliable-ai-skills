@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21210,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11911619999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8152,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8152,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8152,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8152,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2160,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2160,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent substance; Report 2 states the distinction in (d) slightly more crisply with explicit parallel bullets, but Report 2 also fabricates quotes from a nonexistent \"project documentation\" source, which is a fabrication concern outside the scored expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "value = axis_scores.get(axis)\nif value is None:\n    value = 0.0\ntotal += weight * value ... A row where one axis failed has **the identical shape** to a row where all three axes succeeded: two strings and one rounded float.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if value is None: value = 0.0 (lines 9-11) \u2014 i.e., a missing/failed axis is silently treated as a score of **0** ... the record written for a partial failure is **a plain float in the exact same column position as a fully-scored row** \u2014 same CSV shape, same value type, same range.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It silently conflates \"the grader failed to produce a score\" (an infrastructure/transient problem) with \"the grader scored this a flat 0/10\" (the worst possible quality judgment). ... `rankings()` (`leaderboard.py:9-17`) sums `comp` per `agent_id` and divides by the row count for that agent \u2014 every row counts equally toward both sum and count, whether or not it was degraded by a failure.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a zero is a real, comparable data point; a missing score is not, and conflating them corrupts every downstream aggregate ... `leaderboard.py:9-17` then reads `scores.csv` with no awareness that any row could be degraded \u2014 it does `sums[agent_id] += float(comp)` for every row unconditionally and divides by row count.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "a row with a failed accuracy call is a row whose pass/fail status is unknown and probably shouldn't be scored or ranked at all until it's re-graded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Accuracy fails (load-bearing / gate axis): do not write a composite value into the same column fully-scored rows use \u2014 no `0.0`, and no other numeric placeholder that `leaderboard.py` would average in as if it were real. Instead, write the record as explicitly degraded/incomplete (e.g., an added status column, or leaving the composite cell empty/null)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed relevance or tone call is comparatively lower-stakes \u2014 the README itself calls those \"quality embellishments\" \u2014 so approximating or omitting them is more defensible than doing the same for the axis explicitly designated as the gate. ... excluding just that axis and re-weighting the composite over the axes that did return (e.g., accuracy+tone only, rescaled so weights sum to 1) \u2014 but that's a product decision",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Relevance or tone fails (non-load-bearing / \"quality embellishments\"): renormalize the composite over the weights of the axes that *did* succeed... Accuracy fails (load-bearing / gate axis): do not write a composite value into the same column fully-scored rows use",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

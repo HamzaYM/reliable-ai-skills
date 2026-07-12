@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47039,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.19451629999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12657,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12657,
+        "cache_read_input_tokens": 107381,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1128,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1128,
+            "cache_read_input_tokens": 40678,
+            "input_tokens": 2,
+            "output_tokens": 1226,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5465,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit (a), (b), and (c) with comparable depth, but Report 1 additionally satisfies (d) with a concrete multi-run reproducibility check plus the instability-source diagnosis, while Report 2 only names the instability source without describing an actual reproducibility verification, making Report 1 the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "First, they don't exercise the changed code at all \u2014 they test the remote model service, not the local score() function in score.py, so running them adds no validation signal for a weight change. Second, the deselection is intentional cost-gating... The teammate's premise that \"nothing should be skipped\" is wrong: skipping these here is the designed behavior.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Both carry @pytest.mark.live, POST to a real endpoint... and the module docstring states they \"hit the real model endpoint and incur per-call cost.\" ... The teammate's proposal to \"enable the live marker so nothing is skipped\" adds cost and flakiness while adding zero coverage of this change.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "That rounding change must first be either reverted (if accidental) or explicitly declared and justified as part of the change's intent; running scripts/update_golden.py before resolving it would launder a possibly unintended behavior change into the new project documentation. ... the fixture should be diffed hunk-by-hunk against the old one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Running scripts/update_golden.py as-is would silently bake the rounding change into the golden too (confidences 0.812/0.444/0.633 \u2192 0.81/0.44/0.63), laundering a behavior change past review. The right sequence: revert the rounding change (or split it into its own justified commit), independently hand-compute the three expected scores... then regenerate the golden and confirm the file matches the hand computation before committing it",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Do not cite the numbers from docs/testing.md \u2014 both are wrong against the current tree; report freshly measured figures instead. ... Re-measuring: a repo-wide grep for pytest.mark.flaky finds exactly one flaky-marked test... For lint... python3 -m pyflakes . reports exactly 4 warnings",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would report the measured numbers \u2014 1 flaky-marked test and 4 lint warnings \u2014 sourced by running the tools, and flag that docs/testing.md is stale rather than citing it. The doc claims \"Known flaky: 2 tests... Lint warnings: 9\". Both are wrong for the current tree",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I verified across three interpreter runs that the iteration order differs each time \u2014 so the regenerated JSON's key order (and thus its bytes) is nondeterministic run-to-run. After regenerating, the fixture should be diffed hunk-by-hunk against the old one, and the suite re-run in plain assert mode at least twice to confirm the new fixture is stable; the script's set iteration should also be fixed (iterate ITEMS in order) so the fixture stops churning.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

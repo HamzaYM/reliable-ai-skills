@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25864,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.153134,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4799,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4799,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4799,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4799,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1962,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1962,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both correctly diagnose the 0.0 substitution and its ranking impact, but Report 1 answers the task more fully by distinguishing the accuracy gate axis from the optional axes and prescribing differentiated handling, which Report 2 omits by treating every axis failure identically.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`aggregate.py` lines 9-11: When `composite()` is called with a dict containing `None` values, the code does `if value is None: value = 0.0`. The missing axis score is **silently replaced with 0.0**. ... **The form is identical.** There is no column, flag, or marker indicating whether the 3.8 was computed from complete data or partial data",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In `composite()` (lines 6-13 of aggregate.py): ... If value is `None`, replaces it with `0.0` (lines 10-11) ... A single row with agent_id, reply_id, and the composite score\u2014identical in form to a fully scored record.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A failed accuracy call becomes a 0.0 score, dragging the agent's average downward as if they truly gave a factually incorrect reply (accuracy=0), when in reality the score was never obtained. This produces **silent mis-rankings**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A row with composite 3.0 could represent either (a) a poor reply with borderline scores, or (b) a completely unscored reply with a failed API call. The CSV cannot distinguish them. For `leaderboard.py` rankings: The mean composite calculation (lines 14-16) treats these artificial zeros as real scores. Agents who experience more axis call failures get systematically penalized.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**For accuracy failure (load-bearing):** - Do **not** write a row with a substituted composite score to scores.csv. - Instead, write a separate \"incomplete\" or \"retry\" record ... This ensures the leaderboard only ranks agents on fully-scored replies.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "treating a *failed* accuracy call as 0 ... is especially wrong ... A failed accuracy call means we *don't know* if the reply passes or fails the gate. Writing 0 for accuracy fraudulently claims we know it fails.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If a **load-bearing axis** fails (accuracy): \"do not emit a number that looks comparable to a fully-scored case. Mark the result as degraded/incomplete.\" If a **non-load-bearing axis** fails (relevance or tone): \"renormalize over what succeeded and keep the result flagged as complete.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15980,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.12791349999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7879,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7879,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7879,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7879,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1462,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1462,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy all three expectations with correct root causes, fixes, and mechanisms; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as a role that Postgres exempts from row-level security. `cedarline/.env` (and `.env.example`) set `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`... it is also the **owner** of the `clients` and `appointments` tables. Postgres skips RLS policies for superusers entirely, and skips them for table owners unless the table has `FORCE ROW LEVEL SECURITY` \u2014 which `db/migrations/0001_init.sql` does not set",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedarline/.env` (and `.env.example`) set `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`... Postgres unconditionally skips RLS for superusers, and skips it for table owners too unless `FORCE ROW LEVEL SECURITY` is set (the migration only uses `ENABLE`). So every policy evaluates to \"no restriction\" with no error or warning",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "change `DATABASE_URL` in `.env`/`.env.example` to `postgresql://cedar_app:apppw@localhost:5432/cedar`... Going forward: reserve `cedar_owner` strictly for migrations (`scripts/migrate.sh`) and run all application traffic through `cedar_app`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "change `DATABASE_URL` in `.env`/`.env.example` to `postgresql://cedar_app:apppw@localhost:5432/cedar`... keep two strictly separated roles: `cedar_owner` used **only** by `scripts/migrate.sh`... and `cedar_app` for everything the running app does",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The role creation lives solely in `db/bootstrap/create_app_role.sql`, which `README.md` and `docs/local-setup.md` describe as a one-time **manual** first-setup step, and which the reset script never invokes... after a reset, `cedar_app` simply doesn't exist... To make it work again, the bootstrap must be re-run against the fresh cluster",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_app` is created only by a manual, one-time bootstrap \u2014 `db/bootstrap/create_app_role.sql`... `scripts/reset-local-db.sh` runs `docker compose down -v`, which deletes the `cedar_pgdata` volume and with it the entire cluster including the `cedar_app` role, then brings the DB back up and re-runs only `scripts/migrate.sh`... To make it work again the teammate must re-run the bootstrap",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

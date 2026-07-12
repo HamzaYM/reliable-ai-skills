@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25794,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13351020000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8769,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8769,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9544,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8769,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8769,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9544,
+            "output_tokens": 2904,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2904,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify the same root cause, fix, and reset-gap mechanism with comparable precision and file-level specificity; Report 2 adds minor extra findings (auth gap, connection-close hygiene) but both fully satisfy all three expectations equally well.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "cedarline/.env and .env.example both set: DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar ... Table owners bypass RLS by default unless the table also has FORCE ROW LEVEL SECURITY set \u2014 and 0001_init.sql never sets FORCE ROW LEVEL SECURITY on either table.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is the only DATABASE_URL the application ever sees ... PostgreSQL's row-level security is, by design, never applied to a table's owner unless the table is additionally marked FORCE ROW LEVEL SECURITY \u2014 and 0001_init.sql only issues ENABLE ROW LEVEL SECURITY, never FORCE.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Stop the app from ever connecting as cedar_owner. Change cedarline/.env / .env.example and backend/app/db.py so the running application ... connects only via cedar_app's credentials. Concretely: rename the ambiguous single DATABASE_URL into two explicit variables, e.g. APP_DATABASE_URL=postgresql://cedar_app:apppw@localhost:5432/cedar (consumed by backend/app/db.py) and ADMIN_DATABASE_URL / MIGRATIONS_DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar (consumed only by scripts/migrate.sh and the one-time bootstrap).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "change DATABASE_URL in cedarline/.env (and .env.example) so the running application connects as cedar_app, not cedar_owner ... Separate roles by responsibility, strictly. cedar_owner should be used only by migration/DDL tooling ... cedar_app should be the only credential the API service itself ever uses, and it should stay non-owner/non-superuser so RLS keeps applying to it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "db/bootstrap/create_app_role.sql is explicitly a manual, one-time step ... 'Not part of automatic database initialization; run by hand on first setup.' ... reset-local-db.sh ... down -v deletes the named volume cedar_pgdata ... migrate.sh only loops over db/migrations/*.sql ... it never touches db/bootstrap/create_app_role.sql ... after reset-local-db.sh runs, the fresh cluster has cedar_owner (recreated by Postgres/POSTGRES_USER) and the schema ..., but no cedar_app role at all.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "cedar_app is created by exactly one file, cedarline/db/bootstrap/create_app_role.sql, whose own header comment says: 'One-time bootstrap: dedicated application role. Not part of automatic database initialization; run by hand on first setup.' ... migrate.sh then loops only over db/migrations/*.sql ... and never invokes db/bootstrap/create_app_role.sql ... Net effect: after a reset, the cedar database, schema, tables, and RLS policies all come back, but cedar_app does not.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

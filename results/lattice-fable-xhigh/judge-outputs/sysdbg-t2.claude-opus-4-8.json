@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21762,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1352155,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7369,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7369,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7369,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7369,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1970,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1970,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "The two reports are essentially equivalent in substance and both hit all four expectations; Report 1 is marginally stronger on the isolated-verification/shared-runner point.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The file to change is `ticket-scorer/config/scoring_config.yaml`. Line 2 still reads `expected_label_field: label`, but the eval set `fixtures/eval_set.jsonl` was migrated so every record's gold field is now named `gold_label`. The batch scorer (`pipeline/score_batch.py:42-48`) looks up the gold answer with `gold = record.get(gold_field)` ... `record.get(\"label\")` returns `None` for every record",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The file to change is `ticket-scorer/config/scoring_config.yaml`. It still says `expected_label_field: label`, but every record in `fixtures/eval_set.jsonl` now keys its gold label as `gold_label`. The batch scorer (`pipeline/score_batch.py:42-48`) reads that config value and then looks up the gold label with `record.get(gold_field)` ... the missing `label` key silently yields `None` for every record",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "introduced by commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\" ... (a) `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and exactly 0.00 on 2026-06-17 and every night since; (b) `git show 53551e8` shows it renamed `label` \u2192 `gold_label` in all 11 fixture records and in `REQUIRED_KEYS`, but did not update `expected_label_field` in `config/scoring_config.yaml`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit `53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\" ... (a) `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and exactly 0.00 on 2026-06-17 and every night since; (b) `git show 53551e8` shows it renamed `label` \u2192 `gold_label` in all of `fixtures/eval_set.jsonl` and updated `REQUIRED_KEYS` in `pipeline/score_batch.py`, but did not touch `config/scoring_config.yaml`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The earlier investigator reproduced with the wrong tool: `pipeline/score_one.py` only prints the classifier's prediction and never reads the eval set, the config, or any gold label ... The correct reproduction is simply to run the batch entry point (`python3 -m pipeline.score_batch` from `ticket-scorer/`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py` only prints a prediction and never reads `scoring_config.yaml` or compares against a gold label, so no number of single-ticket re-runs could ever reproduce a bug that lives entirely in the batch grader's gold-label lookup ... Correct reproduction: run `python3 -m pipeline.score_batch`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the predictions are already correct; the failure is the gold-label lookup, so any model producing identical predictions would still score 0.0 ... It is also a \"flip a config on the shared environment to see what happens\" experiment, which is the wrong way to test a hypothesis on a production-like nightly job",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rolling back a \"model\" would change nothing; accuracy would stay 0.0 because the defect is the stale `expected_label_field` in the config",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2",
+  "repeat": 1,
+  "task": "sysdbg-t2"
+}

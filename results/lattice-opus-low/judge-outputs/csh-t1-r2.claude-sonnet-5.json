@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19649,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0897696,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3687,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3687,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9418,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3687,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3687,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9418,
+            "output_tokens": 2046,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2046,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with substantively equivalent citations and reasoning; Report 1's global-gate recommendation is slightly more assertive/concrete than Report 2's softer \"consider,\" but overall the two are comparable in coverage and quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The decision is in `backend/app/feature_flags.py`, `auto_send_reminders_enabled`, line 11\u201312: if tenant.settings.get(\"auto_send_reminders\") is None: return True ... the function returns True.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In `auto_send_reminders_enabled` (`backend/app/feature_flags.py:11\u201312`), `if ... is None: return True` \u2014 the function returns `True`. ... So **the deciding line is `feature_flags.py:12` (`return True`).**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change `backend/app/feature_flags.py:11\u201312` to return `False` on the `None` branch (making the whole resolver effectively `return bool(tenant.settings.get(\"auto_send_reminders\"))`), so a clinic must explicitly turn reminders on.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change `feature_flags.py:11\u201312` for `auto_send_reminders_enabled` to default to `False` (e.g. `return bool(tenant.settings.get(\"auto_send_reminders\"))`, dropping the `is None \u2192 True` branch)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`git show aa4cf8d` (SLOT-214) adds `auto_send_reminders_enabled` as a line-for-line clone of the existing `compact_calendar_view_enabled`, differing only in the setting key. ... Inheriting its `None \u2192 True` default was **not a sound basis**: the two flags are in opposite risk categories.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`compact_calendar_view_enabled` was introduced in SLOT-190 (`25509a7`) with a deliberate default-ON ... SLOT-214 (`aa4cf8d`) added `auto_send_reminders_enabled` as a line-for-line clone of that function ... the default-ON was appropriate for a harmless view preference but was inherited without re-evaluation for a feature that sends real messages to patients, where the risk profile is the opposite",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an env-level master gate** and AND it with the per-tenant value. There is currently none \u2014 `grep` found no `getenv`/`environ` and `reminders.py:25` gates solely on the per-tenant flag, so there is no single kill-switch and no staged rollout control.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "consider a global kill-switch / dry-run given `reminders.run()` sends unconditionally once the flag passes.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

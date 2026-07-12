@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30867,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1324602,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7868,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7868,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9516,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7868,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7868,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9516,
+            "output_tokens": 3200,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3200,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 fully satisfies all four expectations, including the explicit renormalize-for-non-gate-axes vs. exclude-for-accuracy distinction (d); Report 2 covers a, b, and c well but never states that computing the composite over only the succeeded axes is defensible for a relevance/tone failure, treating all axis failures with the same generic write/don't-write options.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A missing axis is silently treated as a real score of `0.0` \u2014 the numerically worst possible score on that axis \u2014 and contributes `weight * 0.0` to the weighted sum exactly as a genuine 0/10 verdict would. The result is `round(total, 3)`, a normal-looking float.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A missing axis is coerced to `0.0` and folded into the weighted sum exactly as if the model had graded that axis a literal 0 \u2014 the floor of the observed scale... So the record written for a failed-axis reply is structurally identical, in form, to a fully-scored one",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Since a degraded row counts identically in both the numerator (contaminated value) and the denominator (as a full row) versus a real row, an agent whose replies happen to hit more axis-call failures gets systematically pulled down for reasons unrelated to reply quality",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Every failure-affected row is added straight into that agent's sum and count, dragging down `sums[a]/counts[a]` with no way to detect or exclude it afterward, since the corruption is already baked into a single float before it's persisted.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the accuracy call fails (the load-bearing/gating axis): do not compute or write a numeric composite for that row into results/scores.csv at all. Write it instead to a distinct incomplete/pending-retry destination",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a reply whose accuracy call fails should almost certainly be excluded/flagged entirely rather than defaulted in either direction \u2014 you can't assume it would have passed or failed the gate, and letting relevance/tone \"fill in\" for a missing accuracy verdict defeats the purpose of having a gate.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If relevance or tone fails (the embellishment axes): this is the acceptable-to-degrade case. Renormalize the composite over the weights of the axes that did succeed (e.g., if relevance fails, use accuracy 0.5/(0.5+0.2) and tone 0.2/(0.5+0.2)) and write the row",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

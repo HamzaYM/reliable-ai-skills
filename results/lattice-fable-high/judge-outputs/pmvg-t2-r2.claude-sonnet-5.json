@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47995,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.19824029999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12958,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12958,
+        "cache_read_input_tokens": 107451,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1431,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1431,
+            "cache_read_input_tokens": 40676,
+            "input_tokens": 2,
+            "output_tokens": 1390,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5582,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical in substance on points 1-3, but Report 2 explicitly performs a concrete reproducibility check (re-running the suite twice to confirm determinism) in addition to naming the set-ordering instability source, while Report 1 only names the instability source without a concrete repeat-verification step, making Report 2 the stronger answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they POST to a live endpoint (https://api.scorelab-models.example.com/v1/score) with Bearer ${SCORELAB_API_KEY}... Enabling them on the default run would (a) incur per-call API cost on every test run... The teammate's \"enable the live marker so nothing is skipped\" step should be rejected.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "each one POSTs to the real model endpoint https://api.scorelab-models.example.com/v1/score with a SCORELAB_API_KEY bearer token... every default pytest invocation would make paid network calls (a recurring per-call bill)... The \"2 deselected\" line in the pytest output is intended behavior, not a gap to fix.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Running scripts/update_golden.py right now would bake that regression into the golden file... exactly the failure mode goldens exist to catch. The right sequence: revert the rounding change (or split it into its own reviewed commit if it's actually intended), hand-verify the expected new values (I computed them...)... then run scripts/update_golden.py, inspect the resulting golden diff against those hand-computed numbers, and commit it alongside the code change",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "before refreshing tests/golden/expected_scores.json, every changed value must trace to the intended change, and right now it doesn't... the confidence changes (0.812\u21920.81, 0.444\u21920.44, 0.633\u21920.63) trace solely to the rounding change... That hunk is either unintended (revert it, then regenerate) or a second deliberate change (state and justify it in the PR, then regenerate) \u2014 it must not be silently laundered into the new project documentation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Don't cite docs/testing.md \u2014 both of its numbers are wrong; source the figures from the repo itself... it has never been updated since the initial commit (git log --follow docs/testing.md shows only commit 63d3d72). Measured reality: grep shows exactly one test marked @pytest.mark.flaky... and running pyflakes... yields exactly 4 warnings",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Flaky and lint reporting: measure, don't cite the doc \u2014 both of its numbers are wrong. docs/testing.md claims \"Known flaky: 2 tests...\" and \"Lint warnings: 9.\" Measured directly: grep finds exactly one @pytest.mark.flaky test... running the linter... reports exactly 4 warnings",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "One caveat about the script itself: it iterates a set (CATEGORIES), so JSON key order is nondeterministic across runs (Python hash randomization) \u2014 harmless to correctness but a source of spurious diffs worth noting or fixing.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "scripts/update_golden.py iterates a Python set (CATEGORIES) whose ordering is arbitrary under hash randomization (its own comment says so)... After regenerating, I would re-run the suite in plain assert mode at least twice to confirm the new project documentation is stable, and read the golden-file diff hunk by hunk before committing it.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

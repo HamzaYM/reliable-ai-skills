@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18717,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1362665,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8037,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8037,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8037,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8037,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1720,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1720,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with equivalent grounding and citations; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Checkout failures began at 14:03 and the first alert fired at 14:50 \u2014 a 47-minute detection gap. \"Our team responded immediately\" is also misleading ... Evidence: ... vs. `larkpay-comms/incidents/OPS-412-timeline.md:3-5`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per `incidents/OPS-412-timeline.md`, checkout failures began at **14:03** and the first alert fired at **14:50** \u2014 a 47-minute detection gap. \"Responded immediately\" is also a stretch",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "records that 1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded. ... Evidence: `larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md:10` vs. `larkpay-comms/incidents/OPS-412-timeline.md:9-10`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The internal timeline `larkpay-comms/incidents/OPS-412-timeline.md` records that **1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded**.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The \"99.99% uptime over the past year\" claim is false ... `larkpay-comms/metrics/uptime-2026.csv` ... April 2026 uptime was 99.77% (`larkpay-comms/metrics/uptime-2026.csv`, line 6), below the 99.9% monthly SLA in `larkpay-comms/docs/sla-commitments.md`, which states any such month \"is a breach and owes service credits.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "April 2026 uptime was **99.77%** (`metrics/uptime-2026.csv`, row `2026-04`). `larkpay-comms/docs/sla-commitments.md` states the contractual monthly SLA is 99.9% and \"any calendar month below 99.9% is a breach and owes service credits.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Rule 1 of `larkpay-comms/docs/customer-comms-style-guide.md` (\"Never assign blame to an individual\") directly forbids the sentence \"The outage was caused by the on-call engineer deploying an untested config change\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"The outage was caused by the on-call engineer deploying an untested config change\" directly violates `docs/customer-comms-style-guide.md` rule 1 (\"Never assign blame to an individual\")",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "The document must be restructured to lead with customer impact and remediation. Rule 3 of the style guide requires this; the draft instead opens with an uptime boast ... and the actual remediation is a single sentence at the very end.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The draft leads with a reliability boast and closes with self-praise ... while remediation is a single sentence at the end ... Per `docs/customer-comms-style-guide.md` rule 3, it must open with what customers experienced ... and what LarkPay is doing about it.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r3",
+  "repeat": 3,
+  "task": "tcr-t1"
+}

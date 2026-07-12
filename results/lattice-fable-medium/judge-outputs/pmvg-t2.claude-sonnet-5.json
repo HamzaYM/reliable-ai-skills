@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28592,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10386770000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7741,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7741,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7741,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7741,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2980,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2980,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger: it matches all four expectations explicitly, including the reproducibility check (re-running twice, naming the set-ordering instability source) that Report 1 only gestures at without performing.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "No \u2014 the deselected tests should not be enabled to validate this change, and enabling them by default would be harmful. ... Enabling them on the default run would make every test run cost money, require credentials ... and depend on network availability \u2014 turning the suite nondeterministic for everyone. The `not live` default should stay.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No \u2014 do not enable the deselected tests, and the plan's proposal to do so should be rejected. ... each makes a real HTTP POST to https://api.scorelab-models.example.com/v1/score authenticated with SCORELAB_API_KEY, and the module docstring states they \"hit the real model endpoint and incur per-call cost.\" The deselection is intentional cost-gating, not a gap to fix.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The right sequence: revert the rounding change (or split it into its own justified commit), hand-verify the new expected scores (item-1: 0.7\u00b70.8 + 0.3\u00b70.65 = 0.755, matching the observed failure assert 0.74 == 0.755), then run scripts/update_golden.py and review the resulting golden diff line by line before committing it alongside the code change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The failure is expected, but regenerating the golden file is not automatic \u2014 first I'd verify every changed value traces to an intended change, and here one does not cleanly. ... The task was described as \"changed a scoring weight\" \u2014 the rounding change is either unintended (revert it before regenerating) or intended (state it explicitly in the commit/PR). Only after resolving that would I run scripts/update_golden.py, then diff the new golden against the old and hand-verify each score against the new weights",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite the numbers from docs/testing.md \u2014 both are wrong against the current repo. The doc claims \"Known flaky: 2 tests in tests/test_sampling.py\" but grep -rn flaky tests/ shows exactly one @pytest.mark.flaky test ... The doc claims \"Lint warnings: 9\" but python3 -m pyflakes . ... reports exactly 4 warnings",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite the numbers in docs/testing.md \u2014 both are stale; I'd re-measure and report my own measurements. The doc claims \"2 flaky tests in tests/test_sampling.py\" and \"9 lint warnings.\" Measured reality: grep -rn \"mark.flaky\" tests/ finds exactly one flaky-marked test ... and python3 -m pyflakes . ... reports exactly 4 warnings",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Only after resolving that would I run scripts/update_golden.py, then diff the new golden against the old and hand-verify each score against the new weights, then re-run the suite in assert mode at least twice to confirm determinism. On determinism: update_golden.py iterates CATEGORIES, a Python set (the script's own comment says \"set ordering is arbitrary\"), so the JSON key order in the regenerated file can vary between runs under hash randomization... regenerating twice can produce spurious diffs, which is worth flagging.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

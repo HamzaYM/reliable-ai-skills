@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22807,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1236603,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11837,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11837,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11837,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11837,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2471,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2471,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover all four expectations thoroughly and correctly; Report 2 is marginally stronger on category (a) by explicitly calling for removal (not just disabling) of the legacy billing secret reference, but overall the two are comparable in substance and accuracy.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\"... Change to \"false\"... AUTH_RELAXED = \"true\"... Change to \"false\"... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... Remove the entry entirely... SHADOW_SCORING_SINK... Fix: set SHADOW_SCORING_SINK = \"\" for launch",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\"... Remove the line entirely... AUTH_RELAXED = \"true\"... Remove the line entirely... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... Remove the line entirely... Both lines must be removed entirely; toggling the flag off is not sufficient.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production frontend, as this pipeline stands, ships with the staging API base URL hard-coded... either the URL must become runtime-injected configuration, or prod needs its own bundle built with --mode production plus a committed frontend/.env.production.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this is a compile-time constant, not a runtime lookup... deploy-prod deploys the same already-built digest to prod... Production needs its own build (a .env.production with the prod API URL, a --mode production build, its own image)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No database migration step, even though docs/prod-runbook.md:6 (\"last updated: 3 months ago\") claims \"Database migrations are applied automatically during deploy.\" Nothing in the workflow touches backend/migrations/versions/0001_base.py\u20130003_billing.py, and a first prod release needs all three applied to a brand-new production database.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "docs/prod-runbook.md claims \"Database migrations are applied automatically during deploy,\" but that runbook is self-declared 3 months stale, and nothing verifiable backs the claim... A fresh production database needs 0001_base, 0002_tenants, and 0003_billing (backend/migrations/versions/) applied, and as committed nothing will do that.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the copied infra/prod/main.tf:3 still passes oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"... It must be repo:acme-health/medislot:environment:production to match the environment: production the deploy-prod job runs under",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the production role's trust condition (infra/prod/main.tf:3) was copied unchanged and still reads repo:acme-health/medislot:environment:staging... Production needs its own role name and its own environment:production trust condition \u2014 never a condition shared with or inherited from staging.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

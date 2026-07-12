@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 10743,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08623320000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5590,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5590,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9668,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5590,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5590,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9668,
+            "output_tokens": 999,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 999,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent and hit all three expectations with correct, well-grounded detail; Report 1 is marginally more thorough on file/line citations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In Postgres, the owner of a table (and any superuser) bypasses row-level security by default, regardless of `FORCE ROW LEVEL SECURITY` being set or not \u2014 and this migration doesn't even set `FORCE`... the owning role sees every row unconditionally, silently, with no error.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "row-level security policies are never applied to the table's owner unless the table also has `FORCE ROW LEVEL SECURITY` set (it does not here \u2014 only `ENABLE ROW LEVEL SECURITY`, which exempts the owner by default)... every query the app runs...silently bypasses the RLS policy entirely.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `DATABASE_URL` used by the running application (`cedarline/backend/app/db.py`) to point at `cedar_app`, not `cedar_owner`... `cedar_owner` should be reserved exclusively for schema/migration operations... two separate connection strings/config values going forward, not one shared `DATABASE_URL`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the application's `DATABASE_URL` at `cedar_app`, not `cedar_owner`... Structurally, migrations (schema/DDL, run as the owning/admin role) and application runtime access (DML, run as a restricted non-owner role subject to RLS) should be strictly separated",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `cedar_app` role is created exclusively by `cedarline/db/bootstrap/create_app_role.sql`, which its own header comment says is \"Not part of automatic database initialization; run by hand on first setup\" \u2014 it is not invoked from `docker-compose.yml`, not from `scripts/migrate.sh`, and not from `scripts/reset-local-db.sh`. So after the volume is wiped, `reset-local-db.sh` recreates the schema (via `migrate.sh`) but never recreates the `cedar_app` role",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Nowhere in `reset-local-db.sh` is `db/bootstrap/create_app_role.sql` re-run. That script is explicitly documented as a manual, one-time step (`create_app_role.sql:1-2`, and `docs/local-setup.md:6` lists it only under \"First time\" setup, not under \"Reset your local db\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

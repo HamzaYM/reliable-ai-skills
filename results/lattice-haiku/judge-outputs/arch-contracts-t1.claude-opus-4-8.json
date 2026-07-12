@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25666,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.168738,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5953,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5953,
+        "cache_read_input_tokens": 15436,
+        "inference_geo": "not_available",
+        "input_tokens": 10733,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5953,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5953,
+            "cache_read_input_tokens": 15436,
+            "input_tokens": 10733,
+            "output_tokens": 1913,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1913,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is stronger: both nail the direct-call sites and the external_ref gap, but Report 1 also explicitly ties the doc fix to the same commit and recommends dropping the hardcoded webhook count, which Report 2 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Refund support should live in `medibill/backend/app/billing/gateway.py` ... `medibill/backend/app/api/invoices.py` (lines 4, 14-15): Directly imports `chargekit` ... `medibill/backend/app/workers/dunning.py` (lines 2, 9-10): Directly imports `chargekit`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Refund support should live in `backend/app/billing/gateway.py` ... `backend/app/api/invoices.py:4,14` ... `backend/app/workers/dunning.py:2,9` ... `backend/app/billing/errors.py` (line 6 imports chargekit errors, which is documented as the exception)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the `InvoiceOut` response model includes an additional field: `external_ref: str | None` (line 22) ... This field was added via migration `0006_add_invoice_external_ref.sql` but never documented.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `InvoiceOut` serializer includes all five of those fields *plus* `external_ref` (line 22) ... `external_ref` was added in migration `0006_add_invoice_external_ref.sql` after the docs were written",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "These corrections must go into the git history *before* the refund feature is merged, not after ... \"Any change to schema, API/wire shape, route surface, or a documented invariant updates the contract document **in the same commit**.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "or drop the count entirely and describe the property instead (per the project documentation project documentation guidance on not citing counts that drift).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

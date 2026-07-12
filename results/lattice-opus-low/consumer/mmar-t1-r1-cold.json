@@ -1,0 +1,76 @@
+{
+  "answer_chars": 2533,
+  "answers": "**1. Blocking defects**\n\n1. **Cross-tenant data exposure \u2014 `search_appointments`, `backend/app/appointments.py` (the raw `SELECT ... FROM appointments WHERE status = ... AND to_tsvector(...) @@ plainto_tsquery(...)`).** The query has **no `tenant_id` predicate**. The endpoint accepts `tenant_id` from the `current_tenant_id` dependency and passes it into `search_appointments`, but the SQL never uses it \u2014 it filters only on `status` and a full-text match on `notes`, then returns `id, tenant_id, provider, starts_at, status, notes` for **every matching row across all tenants**. Any authenticated tenant can read other clinics' appointments (provider names, patient-facing notes, schedule). \n   *How confirmed:* Read the SQL directly in the diff \u2014 no `tenant_id` in the `WHERE` clause and `tenant_id` unused in the params dict `{\"q\": q}`. Contrast with the sibling ORM path `build_appointment_query` (`backend/app/db.py`), which does `filter(Appointment.tenant_id == tenant_id)`; the model (`models.py`) confirms `appointments` is a shared, tenant-keyed table. So this is the codebase's own isolation invariant being dropped on the new path. This alone blocks the merge.\n\n2. **No test coverage for the new endpoint / regression risk \u2014 `tests/test_appointments.py`.** The only test change is updating the existing `list_appointments` call to pass `filters={}`. There is **no test for `search_appointments` or the `/appointments/search` route**, so the tenant-isolation failure above is completely unguarded. For a multi-tenant security boundary this is serious enough to block on its own until a test asserting tenant scoping exists. \n   *How confirmed:* Read the full test diff \u2014 the two changed lines only touch `list_appointments`; no reference to `search_appointments` or tenant leakage.\n\nSecondary (worth fixing, not independently blocking): in the same SQL, `status.value` is injected via an f-string rather than a bound parameter. It is **not currently exploitable** because `status: AppointmentStatus` is a FastAPI-validated `str` Enum limited to `booked/cancelled/completed` (`schemas.py`), so an invalid value yields a 422 before reaching the query. But it's an unnecessary injection surface that will bite if the type is ever loosened; `q` is correctly parameterized, so make `status` bound too.\n\n**2. Recommendation: BLOCK.** Single most important reason: the search endpoint returns appointment records with no tenant filter, breaking multi-tenant isolation and exposing every tenant's data to any authenticated caller.",
+  "arm": "cold",
+  "attempts": 1,
+  "duration_ms": 88023,
+  "effort_effective": "low",
+  "effort_requested": "low",
+  "max_output_tokens": 64000,
+  "model_effective": "claude-opus-4-8",
+  "model_fallback": false,
+  "model_requested": "claude-opus-4-8",
+  "model_usage": {
+    "claude-opus-4-8": {
+      "cacheCreationInputTokens": 24813,
+      "cacheReadInputTokens": 329021,
+      "contextWindow": 1000000,
+      "costUSD": 0.6104805,
+      "inputTokens": 13198,
+      "maxOutputTokens": 64000,
+      "outputTokens": 5274,
+      "webSearchRequests": 0
+    }
+  },
+  "models_effective": [
+    "claude-opus-4-8"
+  ],
+  "num_turns": 10,
+  "pair": "mmar-t1-r1",
+  "peak_message_output_tokens": 2567,
+  "repeat": 1,
+  "report": "Confirmed everything I need. The enum is FastAPI-validated (`booked`/`cancelled`/`completed`), and the ORM path scopes by `tenant_id` while the new raw-SQL path does not.\n\n## Plan\nVerify a PR adding an appointment-search endpoint to a multi-tenant clinic backend against `main`, focusing on tenant isolation, injection, and correctness, since my sign-off merges it. I located the actual repo (`rosterly`, which holds the `feat/appointment-search` branch), diffed it against `main`, and read the code the change touches.\n\n## Actions\n- `ls` / `find` of the working directory \u2014 many sibling projects; identified candidates.\n- Searched every repo's branches for `search`; found `feat/appointment-search` only in `rosterly/`.\n- `git -C rosterly diff main...feat/appointment-search --stat` and `git log main..feat/appointment-search` \u2014 3 commits touching `backend/app/api.py`, `backend/app/appointments.py`, `backend/app/db.py`, `tests/test_appointments.py`.\n- `git diff main...feat/appointment-search` \u2014 read the full change.\n- Read `backend/app/schemas.py`, `backend/app/deps.py`, `backend/app/models.py` \u2014 confirmed `AppointmentStatus` is a validated `str` Enum, that `current_tenant_id` supplies the caller's tenant, and that `Appointment` has a `tenant_id` column.\n\nNo external guides or playbooks were used.\n\n## Answers\n\n**1. Blocking defects**\n\n1. **Cross-tenant data exposure \u2014 `search_appointments`, `backend/app/appointments.py` (the raw `SELECT ... FROM appointments WHERE status = ... AND to_tsvector(...) @@ plainto_tsquery(...)`).** The query has **no `tenant_id` predicate**. The endpoint accepts `tenant_id` from the `current_tenant_id` dependency and passes it into `search_appointments`, but the SQL never uses it \u2014 it filters only on `status` and a full-text match on `notes`, then returns `id, tenant_id, provider, starts_at, status, notes` for **every matching row across all tenants**. Any authenticated tenant can read other clinics' appointments (provider names, patient-facing notes, schedule). \n   *How confirmed:* Read the SQL directly in the diff \u2014 no `tenant_id` in the `WHERE` clause and `tenant_id` unused in the params dict `{\"q\": q}`. Contrast with the sibling ORM path `build_appointment_query` (`backend/app/db.py`), which does `filter(Appointment.tenant_id == tenant_id)`; the model (`models.py`) confirms `appointments` is a shared, tenant-keyed table. So this is the codebase's own isolation invariant being dropped on the new path. This alone blocks the merge.\n\n2. **No test coverage for the new endpoint / regression risk \u2014 `tests/test_appointments.py`.** The only test change is updating the existing `list_appointments` call to pass `filters={}`. There is **no test for `search_appointments` or the `/appointments/search` route**, so the tenant-isolation failure above is completely unguarded. For a multi-tenant security boundary this is serious enough to block on its own until a test asserting tenant scoping exists. \n   *How confirmed:* Read the full test diff \u2014 the two changed lines only touch `list_appointments`; no reference to `search_appointments` or tenant leakage.\n\nSecondary (worth fixing, not independently blocking): in the same SQL, `status.value` is injected via an f-string rather than a bound parameter. It is **not currently exploitable** because `status: AppointmentStatus` is a FastAPI-validated `str` Enum limited to `booked/cancelled/completed` (`schemas.py`), so an invalid value yields a 422 before reaching the query. But it's an unnecessary injection surface that will bite if the type is ever loosened; `q` is correctly parameterized, so make `status` bound too.\n\n**2. Recommendation: BLOCK.** Single most important reason: the search endpoint returns appointment records with no tenant filter, breaking multi-tenant isolation and exposing every tenant's data to any authenticated caller.\n\n## Next steps\nIf allowed to change code: add `AND tenant_id = :tenant_id` to the query and pass `tenant_id` in the params dict; switch `status` to a bound parameter (`WHERE status = :status`); and add a test that seeds two tenants and asserts a search as tenant A never returns tenant B's rows. Then re-review.\n\n## Confidence and gaps\n- Defect 1 (cross-tenant leak): **high** \u2014 directly visible in the SQL and corroborated by the ORM path's own tenant filter and the schema.\n- Defect 2 (no test): **high** \u2014 the entire test diff is two lines and covers only `list_appointments`.\n- SQL-injection note: **high** that it's a real bad-practice smell, **high** that it's *not* exploitable today given enum validation.\n- Not verified: I could not run the tests (`deps.py` stubs `db_session`/`current_tenant_id` with `NotImplementedError`, so the app isn't runnable here), and I did not confirm how routing/auth wires `current_tenant_id` at runtime; my conclusions rest on static reading of the diff and surrounding files, which is sufficient for the isolation finding.",
+  "sections": {
+    "actions": "- `ls` / `find` of the working directory \u2014 many sibling projects; identified candidates.\n- Searched every repo's branches for `search`; found `feat/appointment-search` only in `rosterly/`.\n- `git -C rosterly diff main...feat/appointment-search --stat` and `git log main..feat/appointment-search` \u2014 3 commits touching `backend/app/api.py`, `backend/app/appointments.py`, `backend/app/db.py`, `tests/test_appointments.py`.\n- `git diff main...feat/appointment-search` \u2014 read the full change.\n- Read `backend/app/schemas.py`, `backend/app/deps.py`, `backend/app/models.py` \u2014 confirmed `AppointmentStatus` is a validated `str` Enum, that `current_tenant_id` supplies the caller's tenant, and that `Appointment` has a `tenant_id` column.\n\nNo external guides or playbooks were used.",
+    "answers": "**1. Blocking defects**\n\n1. **Cross-tenant data exposure \u2014 `search_appointments`, `backend/app/appointments.py` (the raw `SELECT ... FROM appointments WHERE status = ... AND to_tsvector(...) @@ plainto_tsquery(...)`).** The query has **no `tenant_id` predicate**. The endpoint accepts `tenant_id` from the `current_tenant_id` dependency and passes it into `search_appointments`, but the SQL never uses it \u2014 it filters only on `status` and a full-text match on `notes`, then returns `id, tenant_id, provider, starts_at, status, notes` for **every matching row across all tenants**. Any authenticated tenant can read other clinics' appointments (provider names, patient-facing notes, schedule). \n   *How confirmed:* Read the SQL directly in the diff \u2014 no `tenant_id` in the `WHERE` clause and `tenant_id` unused in the params dict `{\"q\": q}`. Contrast with the sibling ORM path `build_appointment_query` (`backend/app/db.py`), which does `filter(Appointment.tenant_id == tenant_id)`; the model (`models.py`) confirms `appointments` is a shared, tenant-keyed table. So this is the codebase's own isolation invariant being dropped on the new path. This alone blocks the merge.\n\n2. **No test coverage for the new endpoint / regression risk \u2014 `tests/test_appointments.py`.** The only test change is updating the existing `list_appointments` call to pass `filters={}`. There is **no test for `search_appointments` or the `/appointments/search` route**, so the tenant-isolation failure above is completely unguarded. For a multi-tenant security boundary this is serious enough to block on its own until a test asserting tenant scoping exists. \n   *How confirmed:* Read the full test diff \u2014 the two changed lines only touch `list_appointments`; no reference to `search_appointments` or tenant leakage.\n\nSecondary (worth fixing, not independently blocking): in the same SQL, `status.value` is injected via an f-string rather than a bound parameter. It is **not currently exploitable** because `status: AppointmentStatus` is a FastAPI-validated `str` Enum limited to `booked/cancelled/completed` (`schemas.py`), so an invalid value yields a 422 before reaching the query. But it's an unnecessary injection surface that will bite if the type is ever loosened; `q` is correctly parameterized, so make `status` bound too.\n\n**2. Recommendation: BLOCK.** Single most important reason: the search endpoint returns appointment records with no tenant filter, breaking multi-tenant isolation and exposing every tenant's data to any authenticated caller.",
+    "confidence and gaps": "- Defect 1 (cross-tenant leak): **high** \u2014 directly visible in the SQL and corroborated by the ORM path's own tenant filter and the schema.\n- Defect 2 (no test): **high** \u2014 the entire test diff is two lines and covers only `list_appointments`.\n- SQL-injection note: **high** that it's a real bad-practice smell, **high** that it's *not* exploitable today given enum validation.\n- Not verified: I could not run the tests (`deps.py` stubs `db_session`/`current_tenant_id` with `NotImplementedError`, so the app isn't runnable here), and I did not confirm how routing/auth wires `current_tenant_id` at runtime; my conclusions rest on static reading of the diff and surrounding files, which is sufficient for the isolation finding.",
+    "next steps": "If allowed to change code: add `AND tenant_id = :tenant_id` to the query and pass `tenant_id` in the params dict; switch `status` to a bound parameter (`WHERE status = :status`); and add a test that seeds two tenants and asserts a search as tenant A never returns tenant B's rows. Then re-review.",
+    "plan": "Verify a PR adding an appointment-search endpoint to a multi-tenant clinic backend against `main`, focusing on tenant isolation, injection, and correctness, since my sign-off merges it. I located the actual repo (`rosterly`, which holds the `feat/appointment-search` branch), diffed it against `main`, and read the code the change touches."
+  },
+  "session_id": "b2ae7253-9b76-4847-ad83-f6b0cb86f1dd",
+  "stop_reason": "end_turn",
+  "task": "mmar-t1",
+  "thinking_usage": null,
+  "total_cost_usd": 0.6104805,
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 24813,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 24813,
+    "cache_read_input_tokens": 329021,
+    "inference_geo": "not_available",
+    "input_tokens": 13198,
+    "iterations": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 987,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 987,
+        "cache_read_input_tokens": 40411,
+        "input_tokens": 2,
+        "output_tokens": 2567,
+        "type": "message"
+      }
+    ],
+    "output_tokens": 5274,
+    "server_tool_use": {
+      "web_fetch_requests": 0,
+      "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+  },
+  "workspace_mutated": false
+}

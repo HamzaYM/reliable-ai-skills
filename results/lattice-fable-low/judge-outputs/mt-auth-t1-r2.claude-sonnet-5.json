@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24275,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10620660000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5125,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5125,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9521,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5125,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5125,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9521,
+            "output_tokens": 2546,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2546,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently hit all five expectations with essentially equivalent depth and correct technical grounding; Report 2 is marginally more thorough (explicit db.py citation, stronger framing of the app-layer filter as primary rather than optional, plus a bonus canary-query idea) but the substantive content is comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In Postgres, table owners are exempt from RLS unless the table has `ALTER TABLE \u2026 FORCE ROW LEVEL SECURITY`, and no migration sets `FORCE` (grep across the repo finds none). So every query runs with RLS silently disabled... Note the owner is not a superuser and has no `BYPASSRLS` (comment in `db/migrations/0001_init.sql:1-3`) \u2014 the bypass comes purely from table ownership + missing `FORCE`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In PostgreSQL, `ENABLE ROW LEVEL SECURITY` does **not** apply policies to the table's owner unless you also run `ALTER TABLE \u2026 FORCE ROW LEVEL SECURITY`, and `0003_rls.sql` never does. The migration's comment (\"not a superuser, no BYPASSRLS\") is true but irrelevant \u2014 plain table ownership is a third, quieter bypass path.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\", 2026-06-17). It changed exactly three lines, swapping the runtime `DATABASE_URL` from `postgresql://juniper_app:apppw@db:5432/juniper` to `postgresql://juniper_owner:ownerpw@db:5432/juniper` in `.env.example`, `docker-compose.yml`, and `infra/main.tf`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It became exploitable on 2026-06-17 with commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\").` git show b2a23d2` shows the entire change: it flipped `DATABASE_URL` from `postgresql://juniper_app:apppw@\u2026` to `postgresql://juniper_owner:ownerpw@\u2026` in `.env.example`, `docker-compose.yml`, and `infra/main.tf`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "revert the runtime credential. Restore `DATABASE_URL=postgresql://juniper_app:apppw@db:5432/juniper`... Run migrations as `juniper_owner` via a separate one-shot step... Belt-and-suspenders: add a migration `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary fix \u2014 restore least privilege: ... point the API's `DATABASE_URL` back to `juniper_app`. Run migrations with a *separate* credential... Belt-and-suspenders in the schema: add a migration with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Optionally also add an explicit `WHERE tenant_id = :tid` in `backend/app/routes/appointments.py` so isolation doesn't hinge on a single layer.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Defense in depth in the app: add `WHERE tenant_id = :tenant_id` (from `claims[\"tenant_id\"]`) to the query in `backend/app/routes/appointments.py:16-19`, so isolation never depends on a single mechanism.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Add a startup/CI guard: on boot, assert the connected role is not the table owner and lacks `BYPASSRLS` (e.g. `SELECT current_user`, check `pg_tables.tableowner`/`pg_roles.rolbypassrls`), refusing to serve traffic otherwise; and a schema check that RLS is enabled **and forced** on all tenant-scoped tables.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Startup assertion: at engine creation (`backend/app/db.py`) or app boot, assert the connected role cannot bypass RLS... plus a `pg_tables.tableowner != current_user` check). Fail hard, don't warn.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r2",
+  "repeat": 2,
+  "task": "mt-auth-t1"
+}

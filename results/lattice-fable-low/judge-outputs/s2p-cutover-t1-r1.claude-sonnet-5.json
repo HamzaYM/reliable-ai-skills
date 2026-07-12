@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 34577,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1126477,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6345,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6345,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3097,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6345,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6345,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3097,
+            "output_tokens": 3431,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3431,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is slightly stronger: it explicitly calls for running the first migration manually where Report 2 only flags the runbook as untrustworthy without an explicit action item; otherwise the two reports are comparable in depth and accuracy.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Remove both keys entirely... Don't recreate it in prod; remove the key. ... AUTH_RELAXED = \"true\" \u2014 relaxed authentication... Remove the key entirely",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "AUTH_RELAXED = \"true\" \u2014 relaxed auth in a multi-tenant medical SaaS is a critical security hole; must be \"false\". ... PRESET_ADMIN_ACCOUNTS ... remove (set to \"\") or replace with a real, governed break-glass account.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production frontend would ship with the staging API URL `https://staging-api.example.com` hard-baked in, with no runtime fix possible. Production needs its own build (`--mode production` + a `frontend/.env.production` pointing at the prod API), not a promoted staging artifact.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Consequence: the production frontend would ship with the staging API URL hard-coded in its JavaScript... Fixing this means either a separate `vite build --mode production` (plus a `.env.production` with the prod API URL) producing a distinct artifact, or switching to a runtime-injected API base URL",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No database migration step anywhere in the workflow, despite `docs/prod-runbook.md:6` claiming \"Database migrations are applied automatically during deploy.\"... the three migrations in `backend/migrations/versions/`... would need a manual first pass against the new prod database.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3`, `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 the production deploy role trusts the **staging** GitHub environment. Must change to `repo:acme-health/medislot:environment:production`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Production as committed (`infra/prod/main.tf:3`) uses the **identical staging** sub condition, while the `deploy-prod` job runs under `environment: production`... It should be changed to `repo:acme-health/medislot:environment:production`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

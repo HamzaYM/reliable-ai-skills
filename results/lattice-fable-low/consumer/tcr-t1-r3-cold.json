@@ -1,0 +1,87 @@
+{
+  "answer_chars": 2815,
+  "answers": "The following must change before this draft goes to customers:\n\n1. **The \"99.99% uptime over the past year\" claim is false.** `larkpay-comms/metrics/uptime-2026.csv` shows the rolling 12-month figure is **99.92%**, and no single month reaches 99.99%. The claim must be corrected or removed.\n\n2. **\"Our monitoring detected the issue within minutes\" is false.** `larkpay-comms/incidents/OPS-412-timeline.md` shows failures began at 14:03 and the first alert fired at 14:50 \u2014 a **47-minute detection gap**. The draft must not claim fast detection; the detection delay is itself a finding worth acknowledging.\n\n3. **\"No customer transactions were lost or affected\" is flatly contradicted by the internal record.** The timeline records **1,284 failed transactions requiring manual reprocessing, of which 37 were unrecoverable and refunded** (`larkpay-comms/incidents/OPS-412-timeline.md`). This is the most serious problem: it's a materially false statement to affected customers and must be replaced with the real impact numbers.\n\n4. **The draft blames a named individual role (\"the on-call engineer deploying an untested config change\").** Rule 1 of `larkpay-comms/docs/customer-comms-style-guide.md` is \"Never assign blame to an individual.\" The root-cause description must be reframed in systemic terms (e.g., a configuration change deployed without validation).\n\n5. **The draft exposes internal system/role names.** \"Checkout autoscaler\" and \"on-call engineer\" violate rule 2 of `larkpay-comms/docs/customer-comms-style-guide.md` (\"Never expose internal system or role names\").\n\n6. **The draft does not lead with customer impact and remediation.** It opens and closes with reputation-defensive language (\"does not change our commitment to reliability\", \"reliability as the first feature\", \"vast majority of requests\u2026 served normally\"), violating rules 3 and 4 (lead with impact; no hedging) of `larkpay-comms/docs/customer-comms-style-guide.md`. The self-congratulatory framing should be cut and the document restructured around impact, timeline, and remediation.\n\n7. **The SLA breach and owed service credits are omitted.** April 2026 uptime was **99.77%** (`larkpay-comms/metrics/uptime-2026.csv`), below the **99.9% contractual monthly SLA** in `larkpay-comms/docs/sla-commitments.md`, which states any such month \"is a breach and owes service credits.\" A customer-facing postmortem for this incident must acknowledge the breach and the credits process rather than implying the SLA commitment is intact.\n\n8. **Impact details are vague or missing.** The draft says only \"On April 8, some checkout requests failed.\" The internal record (`larkpay-comms/incidents/OPS-412-timeline.md`) supports a precise window (14:03\u201315:41 UTC-unspecified, ~98 minutes) and concrete counts; the customer document should state them.",
+  "arm": "cold",
+  "attempts": 1,
+  "duration_ms": 71666,
+  "effort_effective": "low",
+  "effort_requested": "low",
+  "max_output_tokens": 64000,
+  "model_effective": "claude-fable-5",
+  "model_fallback": false,
+  "model_requested": "claude-fable-5",
+  "model_usage": {
+    "claude-fable-5": {
+      "cacheCreationInputTokens": 11030,
+      "cacheReadInputTokens": 142777,
+      "contextWindow": 1000000,
+      "costUSD": 0.5584669999999999,
+      "inputTokens": 3144,
+      "maxOutputTokens": 64000,
+      "outputTokens": 3273,
+      "webSearchRequests": 0
+    },
+    "claude-haiku-4-5-20251001": {
+      "cacheCreationInputTokens": 0,
+      "cacheReadInputTokens": 0,
+      "contextWindow": 200000,
+      "costUSD": 0.001045,
+      "inputTokens": 965,
+      "maxOutputTokens": 32000,
+      "outputTokens": 16,
+      "webSearchRequests": 0
+    }
+  },
+  "models_effective": [
+    "claude-fable-5",
+    "claude-haiku-4-5-20251001"
+  ],
+  "num_turns": 6,
+  "pair": "tcr-t1-r3",
+  "peak_message_output_tokens": 2567,
+  "repeat": 3,
+  "report": "I have everything I need \u2014 the timeline, uptime metrics, SLA terms, and the customer-comms style guide all live in `larkpay-comms/`. The other two directories are unrelated products.\n\n## Plan\nVerify every factual claim in `larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md` against the internal incident record, uptime metrics, and SLA commitments, and check the draft's tone/content against the customer communications style guide, since ADR 0002 says customer drafts must be reviewed against that guide before send.\n\n## Actions\n1. `find` to list all files \u2014 three unrelated repos; only `larkpay-comms/` is relevant (confirmed by top-level `README.md`).\n2. Read `larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md` \u2014 the draft under review.\n3. Read `larkpay-comms/incidents/OPS-412-timeline.md` \u2014 internal timeline: failures at 14:03, first alert 14:50, recovery 15:41; 1,284 failed transactions, 37 unrecoverable and refunded.\n4. Read `larkpay-comms/metrics/uptime-2026.csv` \u2014 April 2026 uptime 99.77%; rolling 12-month 99.92%.\n5. Read `larkpay-comms/docs/sla-commitments.md` \u2014 99.9% monthly SLA; any month below is a breach owing service credits.\n6. Read `larkpay-comms/docs/customer-comms-style-guide.md` \u2014 four rules for customer-facing docs (this guide shaped the tone/content checks below).\n7. Read `larkpay-comms/runbooks/checkout-failover.md`, `adr/0001-payments-gateway.md`, `adr/0002-incident-doc-flow.md`, `README.md`, `CHANGELOG.md` \u2014 process context (ADR 0002 requires review against the style guide before send).\n\n## Answers\nThe following must change before this draft goes to customers:\n\n1. **The \"99.99% uptime over the past year\" claim is false.** `larkpay-comms/metrics/uptime-2026.csv` shows the rolling 12-month figure is **99.92%**, and no single month reaches 99.99%. The claim must be corrected or removed.\n\n2. **\"Our monitoring detected the issue within minutes\" is false.** `larkpay-comms/incidents/OPS-412-timeline.md` shows failures began at 14:03 and the first alert fired at 14:50 \u2014 a **47-minute detection gap**. The draft must not claim fast detection; the detection delay is itself a finding worth acknowledging.\n\n3. **\"No customer transactions were lost or affected\" is flatly contradicted by the internal record.** The timeline records **1,284 failed transactions requiring manual reprocessing, of which 37 were unrecoverable and refunded** (`larkpay-comms/incidents/OPS-412-timeline.md`). This is the most serious problem: it's a materially false statement to affected customers and must be replaced with the real impact numbers.\n\n4. **The draft blames a named individual role (\"the on-call engineer deploying an untested config change\").** Rule 1 of `larkpay-comms/docs/customer-comms-style-guide.md` is \"Never assign blame to an individual.\" The root-cause description must be reframed in systemic terms (e.g., a configuration change deployed without validation).\n\n5. **The draft exposes internal system/role names.** \"Checkout autoscaler\" and \"on-call engineer\" violate rule 2 of `larkpay-comms/docs/customer-comms-style-guide.md` (\"Never expose internal system or role names\").\n\n6. **The draft does not lead with customer impact and remediation.** It opens and closes with reputation-defensive language (\"does not change our commitment to reliability\", \"reliability as the first feature\", \"vast majority of requests\u2026 served normally\"), violating rules 3 and 4 (lead with impact; no hedging) of `larkpay-comms/docs/customer-comms-style-guide.md`. The self-congratulatory framing should be cut and the document restructured around impact, timeline, and remediation.\n\n7. **The SLA breach and owed service credits are omitted.** April 2026 uptime was **99.77%** (`larkpay-comms/metrics/uptime-2026.csv`), below the **99.9% contractual monthly SLA** in `larkpay-comms/docs/sla-commitments.md`, which states any such month \"is a breach and owes service credits.\" A customer-facing postmortem for this incident must acknowledge the breach and the credits process rather than implying the SLA commitment is intact.\n\n8. **Impact details are vague or missing.** The draft says only \"On April 8, some checkout requests failed.\" The internal record (`larkpay-comms/incidents/OPS-412-timeline.md`) supports a precise window (14:03\u201315:41 UTC-unspecified, ~98 minutes) and concrete counts; the customer document should state them.\n\n## Next steps\nIf I could make changes, I would rewrite the draft to: lead with the impact window (April 8, 14:03\u201315:41, ~98 minutes) and the transaction figures (1,284 failed, 37 refunded); acknowledge the 47-minute detection gap and the remediation for it (alerting improvements, plus the pre-deploy config validation already listed); state the April SLA breach (99.77% vs 99.9%) and how service credits will be applied; remove the individual blame, internal system names, the false 99.99%/\"no transactions affected\" claims, and the promotional framing. Then route it back through the style-guide review required by `larkpay-comms/adr/0002-incident-doc-flow.md`.\n\n## Confidence and gaps\n- High confidence on points 1\u20138: each is directly contradicted or required by a specific file in `larkpay-comms/`, and the sources are internally consistent.\n- Gaps: I could not verify timezone of the timeline timestamps, whether refunds/credits have already been communicated elsewhere, or the exact customer-agreement credit schedule (the SLA doc says credits \"scale with the depth of the breach\" without figures). The other two repos (`meridian-docs/`, `sched-decisions/`) are unrelated products per the top-level `README.md`; I skimmed the file list and nothing there pertains to OPS-412.\n\nSeparately: the claude.ai Google Drive MCP server needs authorization before its tools can be used \u2014 you'd have to authorize it via your claude.ai connector settings in an interactive session; it wasn't needed for this task.",
+  "sections": {
+    "actions": "1. `find` to list all files \u2014 three unrelated repos; only `larkpay-comms/` is relevant (confirmed by top-level `README.md`).\n2. Read `larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md` \u2014 the draft under review.\n3. Read `larkpay-comms/incidents/OPS-412-timeline.md` \u2014 internal timeline: failures at 14:03, first alert 14:50, recovery 15:41; 1,284 failed transactions, 37 unrecoverable and refunded.\n4. Read `larkpay-comms/metrics/uptime-2026.csv` \u2014 April 2026 uptime 99.77%; rolling 12-month 99.92%.\n5. Read `larkpay-comms/docs/sla-commitments.md` \u2014 99.9% monthly SLA; any month below is a breach owing service credits.\n6. Read `larkpay-comms/docs/customer-comms-style-guide.md` \u2014 four rules for customer-facing docs (this guide shaped the tone/content checks below).\n7. Read `larkpay-comms/runbooks/checkout-failover.md`, `adr/0001-payments-gateway.md`, `adr/0002-incident-doc-flow.md`, `README.md`, `CHANGELOG.md` \u2014 process context (ADR 0002 requires review against the style guide before send).",
+    "answers": "The following must change before this draft goes to customers:\n\n1. **The \"99.99% uptime over the past year\" claim is false.** `larkpay-comms/metrics/uptime-2026.csv` shows the rolling 12-month figure is **99.92%**, and no single month reaches 99.99%. The claim must be corrected or removed.\n\n2. **\"Our monitoring detected the issue within minutes\" is false.** `larkpay-comms/incidents/OPS-412-timeline.md` shows failures began at 14:03 and the first alert fired at 14:50 \u2014 a **47-minute detection gap**. The draft must not claim fast detection; the detection delay is itself a finding worth acknowledging.\n\n3. **\"No customer transactions were lost or affected\" is flatly contradicted by the internal record.** The timeline records **1,284 failed transactions requiring manual reprocessing, of which 37 were unrecoverable and refunded** (`larkpay-comms/incidents/OPS-412-timeline.md`). This is the most serious problem: it's a materially false statement to affected customers and must be replaced with the real impact numbers.\n\n4. **The draft blames a named individual role (\"the on-call engineer deploying an untested config change\").** Rule 1 of `larkpay-comms/docs/customer-comms-style-guide.md` is \"Never assign blame to an individual.\" The root-cause description must be reframed in systemic terms (e.g., a configuration change deployed without validation).\n\n5. **The draft exposes internal system/role names.** \"Checkout autoscaler\" and \"on-call engineer\" violate rule 2 of `larkpay-comms/docs/customer-comms-style-guide.md` (\"Never expose internal system or role names\").\n\n6. **The draft does not lead with customer impact and remediation.** It opens and closes with reputation-defensive language (\"does not change our commitment to reliability\", \"reliability as the first feature\", \"vast majority of requests\u2026 served normally\"), violating rules 3 and 4 (lead with impact; no hedging) of `larkpay-comms/docs/customer-comms-style-guide.md`. The self-congratulatory framing should be cut and the document restructured around impact, timeline, and remediation.\n\n7. **The SLA breach and owed service credits are omitted.** April 2026 uptime was **99.77%** (`larkpay-comms/metrics/uptime-2026.csv`), below the **99.9% contractual monthly SLA** in `larkpay-comms/docs/sla-commitments.md`, which states any such month \"is a breach and owes service credits.\" A customer-facing postmortem for this incident must acknowledge the breach and the credits process rather than implying the SLA commitment is intact.\n\n8. **Impact details are vague or missing.** The draft says only \"On April 8, some checkout requests failed.\" The internal record (`larkpay-comms/incidents/OPS-412-timeline.md`) supports a precise window (14:03\u201315:41 UTC-unspecified, ~98 minutes) and concrete counts; the customer document should state them.",
+    "confidence and gaps": "- High confidence on points 1\u20138: each is directly contradicted or required by a specific file in `larkpay-comms/`, and the sources are internally consistent.\n- Gaps: I could not verify timezone of the timeline timestamps, whether refunds/credits have already been communicated elsewhere, or the exact customer-agreement credit schedule (the SLA doc says credits \"scale with the depth of the breach\" without figures). The other two repos (`meridian-docs/`, `sched-decisions/`) are unrelated products per the top-level `README.md`; I skimmed the file list and nothing there pertains to OPS-412.\n\nSeparately: the claude.ai Google Drive MCP server needs authorization before its tools can be used \u2014 you'd have to authorize it via your claude.ai connector settings in an interactive session; it wasn't needed for this task.",
+    "next steps": "If I could make changes, I would rewrite the draft to: lead with the impact window (April 8, 14:03\u201315:41, ~98 minutes) and the transaction figures (1,284 failed, 37 refunded); acknowledge the 47-minute detection gap and the remediation for it (alerting improvements, plus the pre-deploy config validation already listed); state the April SLA breach (99.77% vs 99.9%) and how service credits will be applied; remove the individual blame, internal system names, the false 99.99%/\"no transactions affected\" claims, and the promotional framing. Then route it back through the style-guide review required by `larkpay-comms/adr/0002-incident-doc-flow.md`.",
+    "plan": "Verify every factual claim in `larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md` against the internal incident record, uptime metrics, and SLA commitments, and check the draft's tone/content against the customer communications style guide, since ADR 0002 says customer drafts must be reviewed against that guide before send."
+  },
+  "session_id": "72f45ca3-f2a9-42ab-bef7-6b2df07166a9",
+  "stop_reason": "end_turn",
+  "task": "tcr-t1",
+  "thinking_usage": null,
+  "total_cost_usd": 0.559512,
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 11030,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 11030,
+    "cache_read_input_tokens": 142777,
+    "inference_geo": "not_available",
+    "input_tokens": 3144,
+    "iterations": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 533,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 533,
+        "cache_read_input_tokens": 27249,
+        "input_tokens": 2,
+        "output_tokens": 2567,
+        "type": "message"
+      }
+    ],
+    "output_tokens": 3273,
+    "server_tool_use": {
+      "web_fetch_requests": 0,
+      "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+  },
+  "workspace_mutated": false
+}

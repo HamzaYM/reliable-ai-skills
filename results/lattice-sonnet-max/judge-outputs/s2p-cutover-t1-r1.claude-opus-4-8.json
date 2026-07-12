@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 44805,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.247379,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10388,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10388,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9491,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10388,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10388,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9491,
+            "output_tokens": 3497,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3497,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and closely comparable, but Report 2 edges ahead by firmly stating the pipeline has no migration step and that the runbook's automatic-migration claim is unsupported, whereas Report 1 only hedged that claim as unverifiable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`... Must be `\"false\"`. ... `AUTH_RELAXED = \"true\"`... Must be `\"false\"`. ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`... Should be removed or set to `\"\"`. ... `SHADOW_SCORING_SINK`... either blank the sink or fix the code",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"`... it should be omitted from the prod tfvars entirely. ... `AUTH_RELAXED = \"true\"`... Must be removed ... `PRESET_ADMIN_ACCOUNTS`... Must be omitted entirely ... Both keys should be omitted from prod, not toggled. ... `LEGACY_BILLING_SECRET_ARN`... It should not be recreated in prod",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production bundle will call `https://staging-api.example.com` for every API request \u2014 this value is frozen into the static JS at build time, so it cannot be corrected post-deploy without a rebuild",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the frontend bundle shipped to production would point at `https://staging-api.example.com`, because there is no separate production build step and no `.env.production` to source a correct value from even if one were added",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Nothing in the pipeline runs database migrations. ... nor any step in `deploy.yml` invoking one. Yet `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy\" \u2014 a claim the committed pipeline doesn't support.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` has the **exact same string**, `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`... The correct fix is changing `infra/prod/main.tf:3` to `\"repo:acme-health/medislot:environment:production\"` before applying.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` has the identical string, `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 not updated to `environment:production`... a `deploy-staging` job's OIDC token could potentially assume the *production* deploy role",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

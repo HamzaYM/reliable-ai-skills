@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20784,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1429915,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8270,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8270,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8270,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8270,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1895,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1895,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with accurate citations; they are comparable, with Report 1 marginally more detailed.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminder messages **will be sent automatically** for it. The deciding code is `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, lines 10\u201313: line 11 checks `tenant.settings.get(\"auto_send_reminders\") is None`, and line 12 \u2014 `return True` \u2014 is the exact line that decides it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will be sent automatically**. The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, specifically lines 11\u201312:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "a missing/null/malformed value should mean **off**... The change I would make is in `backend/app/feature_flags.py` lines 11\u201312: replace the `is None \u2192 return True` branch so a missing value resolves to `False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change `backend/app/feature_flags.py:11-12` so the `None` case returns `False` (or, more simply, `return bool(tenant.settings.get(\"auto_send_reminders\"))`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Commit `25509a7`... created `feature_flags.py` with one function, `compact_calendar_view_enabled`, whose `is None \u2192 return True` default is reasonable for a cosmetic calendar-view preference... That was not a sound basis: the two flags are in different risk categories. Inheriting a UI preference's \"grandfather existing tenants in as on\" semantics into a flag that fires outbound SMS/email",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Default-on is defensible for `compact_calendar_view` \u2014 a reversible, tenant-internal display preference where the product wants the new view by default. Copying that default onto a flag that gates outbound patient messaging imports the wrong risk profile",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add an environment-level master kill switch** ANDed with the per-tenant value. Today `reminders.py` has no gate other than the tenant setting, and `infra/main.tf` defines nothing for this feature \u2014 there is no single switch that turns reminders off globally",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Add a global kill switch.** The batch job in `reminders.py` has no environment-level gate \u2014 the only control is per-tenant. Before a real rollout you want a way to stop all sends immediately without editing every tenant's settings.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

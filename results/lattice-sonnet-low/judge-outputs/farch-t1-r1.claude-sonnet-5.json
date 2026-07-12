@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 11442,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08756820000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6069,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6069,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6069,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6069,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 890,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 890,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very similar in substance and quality, correctly identifying the prior Edgerunner attempt, root cause, and recommendation to involve the prior decision-owner; neither explicitly frames the container config as a deliberate reversion versus never-set-up.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "this repo shows this migration was already attempted once (commits `454a21f` \u2192 `597777b` \u2192 `1712565`) and reverted after a production incident",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per this repo's own history (see commits `454a21f` \u2192 `597777b` \u2192 `1712565`), the mechanical steps are... this exact sequence was already executed once in this repository and reverted \u2014 see Answer 3 below",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565`'s message states plainly: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565` in `carelog-api`: \"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres `max_connections` in production, back to Cargobox container deploy (PLAT-31).\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Do not proceed with this migration yet, and specifically do not repeat the same technical approach \u2014 this exact migration was already tried in this repo (PLAT-31) and reverted after taking `/reports/monthly` down in production via Postgres connection exhaustion... Who should be involved: whoever owns the PLAT-31 ticket thread / made the original revert decision",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treat this as \"reopen a settled battle,\" not a fresh migration \u2014 the fact that it failed in production once, specifically on `/reports/monthly`, is information leadership needs before signing off on cost savings... Who should be involved: whoever owns PLAT-31 / the original incident",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

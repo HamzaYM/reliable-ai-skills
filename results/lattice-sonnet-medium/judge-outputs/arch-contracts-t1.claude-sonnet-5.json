@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31973,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.18068040000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 16761,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 16761,
+        "cache_read_input_tokens": 61588,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2575,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2575,
+            "cache_read_input_tokens": 37887,
+            "input_tokens": 2,
+            "output_tokens": 1276,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3799,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical on findings (a)-(c), but Report 2 fulfills expectation (d) by explicitly recommending dropping the hardcoded count in favor of pointing to the source code, while Report 1 merely updates the count from 4 to 5 without addressing future drift.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... The code does **not** follow that pattern everywhere today... `medibill/backend/app/workers/dunning.py:2,9-13`... `medibill/backend/app/api/invoices.py:4,14-16`... The only sanctioned exception is `medibill/backend/app/billing/errors.py:6`, which imports `chargekit.errors` for exception re-export \u2014 that one matches what the docs describe as the exception.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... `medibill/backend/app/billing/errors.py:6` \u2014 the documented exception (imports only `chargekit.errors`). \u2714\ufe0f\n- `medibill/backend/app/api/invoices.py:4` and `:14`... \u274c Undocumented violation.\n- `medibill/backend/app/workers/dunning.py:2` and `:9-13`... \u274c Undocumented violation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the actual `InvoiceOut` dataclass (`medibill/backend/app/models/invoice.py:16-22`) has a sixth field, `external_ref: str | None`... and is backed by a real schema column added in `medibill/backend/migrations/0006_add_invoice_external_ref.sql:1`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual `InvoiceOut` dataclass (medibill/backend/app/models/invoice.py:16-22) has six fields, including `external_ref: str | None`... This field was added in commit `c23da88`... along with the matching migration `0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it should be corrected **before** refund work starts, not after... Both fixes are cheap (doc edits, or a small refactor of two files) and should be done in the same change window as the refund work, ideally as a precursor commit/PR, so the refund PR is reviewed against ground truth rather than stale docs.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/ARCHITECTURE.md` should be corrected now, before the refund feature is built on top of it, not bundled silently into the refund PR... Going forward, any commit that changes the invoice response shape, adds a provider call site, or changes the webhook event set must update this file in the same commit, per project documentation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "What I'd change: update the doc to say \"5 webhook event types\" and add `payment_pending` to the list.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "don't restate a specific count at all \u2014 per project documentation's \"don't cite a number: read the source\" guidance, an explicit count (4) sitting next to the code is guaranteed to drift again the next time a handler is added, exactly as it just did. Either list the event types without asserting a count, or point at `webhooks.py`'s `if kind == ...` chain as the single source of truth for the current set.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

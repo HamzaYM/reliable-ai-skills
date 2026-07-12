@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 38307,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19080850000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9848,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9848,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9848,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9848,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 3123,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3123,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both cover (a)-(c) equally well, but Report 2 is stronger because it explicitly states the shared-results-database collision and per-engineer RESULTS_DB override (expectation d), which Report 1 only mentions in passing and undercuts.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer C \u2014 registry (`pipeline/registry.py`):** F-02 (add `aurora-1` to `MODEL_ENDPOINTS`), F-05 (`DEFAULT_RUBRIC_VERSION` \u2192 v3), F-09 (`DEFAULT_DATASET` \u2192 `fixtures/eval_set.jsonl`). Three trivial edits, but all in one 11-line file \u2014 splitting them across people guarantees conflicts, so one person does all three in one commit.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Batch B \u2014 registry/config (Engineer 2):** F-02 (add `aurora-1` to `MODEL_ENDPOINTS`), F-05 (`DEFAULT_RUBRIC_VERSION` \u2192 `rubric-v3`), F-09 ... All three are edits to the same 11-line `pipeline/registry.py`; splitting them across people guarantees conflicts, and together they're small.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Engineer B \u2014 rubric parsing (`pipeline/rubric.py`):** F-01 ... plus F-11 (edge-case parsing tests). ... Ordering: all four streams can start **simultaneously** ... Engineer C \u2014 registry ... one person does all three in one commit.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Batch C \u2014 rubric parsing (Engineer 3):** F-01 ... and F-11 (edge-case parsing tests ...). ... **all four run as a single parallel wave** ... Batch B \u2014 registry/config (Engineer 2) ... splitting them across people guarantees conflicts",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 is a calibration decision, not a fix.** ... Any number an engineer picks is policy, changes historical comparability of scores, and needs a product/eval-owner sign-off. I'd route it to whoever owns the rubric for concrete values first",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 ... not a bug fix; it is a scoring-policy change ... any change to `(0.35, 0.65)` alters the score of every borderline answer in every future run, breaking comparability ... That is a product/eval-owner decision. I would escalate F-06 for a decision",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "A shared test resource.** `tests/conftest.py:4` defaults `RESULTS_DB` to a fixed machine-wide path, `/var/tmp/llm-scoring/results.db`. Four engineers (or CI jobs) running pytest concurrently on one machine would share and clobber that database. Each needs a private `RESULTS_DB` value.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

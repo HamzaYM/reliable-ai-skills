@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 44904,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.237914,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9917,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9917,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9917,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9917,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 3306,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3306,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four core expectations; Report 2 is marginally stronger for decisively prescribing fail-closed on the Redis path, while Report 1 hedges there, but they are broadly comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The fix is to catch only the transient/vendor-availability classes (`RateLimitError`, `RequestTimeoutError`, `ServerError`) for fallover, and let `BadRequestError`, `ContentPolicyError`, and `AuthError` propagate (or be handled by dedicated branches)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "so `RateLimitError`/`RequestTimeoutError`/`ServerError` (and any other transient error) still fail over, but `BadRequestError`/`ContentPolicyError`/`AuthError` propagate instead of silently routing PII to a second vendor.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path A \u2014 `STAGE` env var is anything other than the literal string `\"production\"`... returns `True` unconditionally, bypassing rate limiting entirely... ideally default to the safe (limiting-enabled) behavior when `STAGE` is unset rather than the permissive one. ... Path C \u2014 ... returns `True`, i.e., fails open on infra failure ... failing open means a Redis outage silently removes all protection",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: invert both defaults. Fail closed unless an explicit dev-only flag is set, and fail closed on `RedisError`:\n```python\n... except RedisError:\n        return False\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It logs the entire document body (`input_text`) verbatim \u2014 full sensitive personal information \u2014 into logs... The fix: log the pseudonymized id... drop `input_text` entirely... and log an explicit allow-list of non-sensitive `metadata` fields rather than the whole dict.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`input_text` is logged verbatim \u2014 this is the full sensitive intake document content... drop `input_text` entirely or store only a hash/length, and replace `record.metadata` with an explicit allowlisted subset",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` **silently defaults to the empty string** if `PII_SALT` is unset... produces `SHA-256(applicant_id)` with no salt at all... Fix: fail loudly rather than defaulting \u2014 e.g., `salt = os.environ[\"PII_SALT\"]` (raising `KeyError` if unset)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if `PII_SALT` is unset, `os.environ.get(\"PII_SALT\", \"\")` silently defaults to the empty string, and the function proceeds to compute a plain unsalted `sha256(applicant_id)`... Concrete fix: fail hard instead of defaulting",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

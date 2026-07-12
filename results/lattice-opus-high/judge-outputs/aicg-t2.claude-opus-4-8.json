@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32750,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.20235750000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11873,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11873,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11873,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11873,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2723,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2723,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with concrete file/function citations and fixes; they are comparable, with Report 2 marginally crisper on the fail-closed prescriptions.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "BadRequestError \u2014 the request itself is malformed (4xx). Retrying the same payload on the secondary will fail the same way. Inappropriate ... ContentPolicyError \u2014 the primary refused on content-policy grounds. Routing around a policy refusal to a second vendor is inappropriate ... AuthError \u2014 a credential/configuration failure. Silently falling over masks a broken deployment ... Inappropriate \u2014 this should surface loudly, not be swallowed. ... fail over only for genuinely transient classes and let the rest propagate",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError) ... replace the blanket except Exception with an explicit denylist of definitively non-retryable errors that re-raises instead of failing over, and fall over only on the rest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "os.environ.get(\"STAGE\") != \"production\" \u2192 return True. ... rate limiting is disabled outside production via a brittle exact-string match ... This is a fail-open footgun ... In production, redis.incr raises RedisError \u2192 return True. Assessment: fail-open on any Redis outage ... make the production check robust (e.g. explicit allow-list of non-prod stages, or default-to-enforce)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Path A \u2014 STAGE unset or not exactly \"production\" \u2192 returns True. ... a safety gate must fail closed everywhere ... Fix: invert the logic to fail closed by default ... Path D \u2014 production, redis.incr raises RedisError \u2192 returns True. Wrong \u2014 fails open. ... this must fail closed: except RedisError: return False.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "input_text is the FULL intake document, which per the task and README contains sensitive personal information. Writing entire sensitive documents to logs is a serious data-protection violation ... metadata is logged wholesale ... drop input_text entirely ... replace the raw metadata dump with an explicit allow-list of known-safe, non-PII fields",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "record.input_text \u2014 the full intake document text verbatim. This is the sensitive PII itself, dumped into logs uncontrolled. record.metadata \u2014 the entire metadata blob, logged as-is with no allowlist. ... do not log input_text at all ... replace the raw metadata with {k: record.metadata[k] for k in AUDIT_METADATA_ALLOWLIST if k in record.metadata} against an explicit allowlist constant",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "read via os.environ.get(\"PII_SALT\", \"\") \u2014 i.e. it defaults to the empty string. ... the output degrades to sha256(applicant_id) \u2014 an unsalted plain hash, with no error, warning, or log. ... require the salt \u2014 raise/refuse (fail closed) if PII_SALT is unset or empty rather than defaulting to \"\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If PII_SALT is unset, os.environ.get(\"PII_SALT\", \"\") defaults to the empty string, so the function silently hashes \"\" + applicant_id, i.e. an unsalted SHA-256 of the raw ID. ... treat a missing/empty PII_SALT as a hard error at startup or in the function, e.g.: ... raise RuntimeError(\"PII_SALT is required; refusing to pseudonymize without a salt\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

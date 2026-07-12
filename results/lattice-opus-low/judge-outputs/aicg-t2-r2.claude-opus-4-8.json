@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 40669,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.20576800000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6719,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6719,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6719,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6719,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 3327,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3327,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations; Report 2 is slightly more precise on the metadata allowlist, while Report 1 adds extra defects, but the graded substance is equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Because the handler catches the base `Exception`, **all six are treated identically** \u2014 logged as a warning and retried once on the secondary vendor. ... `BadRequestError` \u2014 *inappropriate*. ... `ContentPolicyError` \u2014 *inappropriate and risky*. ... `AuthError` \u2014 *inappropriate*. ... branch on exception type \u2014 retry only transient classes (`RateLimitError`/`RequestTimeoutError`/`ServerError`), re-raise or return a structured error for `BadRequestError`/`ContentPolicyError`/`AuthError`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It catches `Exception` \u2014 the single broadest class \u2014 so **every** error class the primary can raise ... is handled identically: log a warning and resend the same payload to the secondary vendor. ... `BadRequestError`, `ContentPolicyError`, `AuthError`: failing over is **wrong**. These are definitively non-retryable. ... replace the blanket catch with an explicit non-retryable denylist, e.g. NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`if os.environ.get(\"STAGE\") != \"production\": return True` ... rate limiting is silently disabled outside a precisely-named stage. ... `except RedisError: return True` \u2014 if Redis errors, allow. *Assessment:* **fail-open**. A Redis outage disables all rate limiting silently ... failing closed (or at least alerting) is usually the safer default",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Returns True whenever `STAGE` is anything other than the literal `\"production\"` ... This gates fail-open on an environment-name check ... It should fail *closed* by default ... **Path C** \u2014 `except RedisError: return True`. If Redis is unavailable, the limiter **fails open** ... the safety gate should fail *closed* when its backing store is down. Fix: `return False` on `RedisError`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the **full `input_text` of the intake document** into the application log at INFO. Since the documents contain sensitive personal information, this dumps PII directly into logs ... do **not** log `input_text` at all (log a length/hash or redacted summary if needed); scrub `metadata` for embedded PII",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`input_text` is logged verbatim** \u2014 the full intake document text (the sensitive PII itself) goes into the application logs on every call. ... **`metadata` is dumped wholesale** ... log metadata by an explicit **allowlist** of safe keys and drop everything else ... drop `input_text` or replace it with a truncated hash ... replace `record.metadata` with `{k: record.metadata[k] for k in ALLOWED_KEYS if k in record.metadata}`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "if `PII_SALT` is **unset or empty, it silently defaults to `\"\"`**, so the output becomes `sha256(applicant_id)` \u2014 an unsalted hash. ... there is no error, warning, or startup check to signal this ... require `PII_SALT` explicitly (raise/refuse to start if unset or empty) rather than defaulting to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**When the dependency is unsatisfied it silently falls back to an empty string salt** (`\"\"` default), producing an *unsalted* SHA-256 of the raw applicant id. ... a missing `PII_SALT` should make the dependent path fail hard, not silently degrade. ... salt = os.environ[\"PII_SALT\"]  # raise KeyError if unset",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

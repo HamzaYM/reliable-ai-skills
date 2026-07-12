@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12151,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0829313,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8281,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8281,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8281,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8281,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1353,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1353,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable rigor and evidence; Report 2 is slightly more precise on code citations (line numbers) and gives a more actionable fix recommendation for the scheduling image, but the substance is equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**\"Export your visit history \u2014 Patients can now export their full visit history as a PDF.\" ... `app/routers/visits.py` has `# TODO: pdf export` and its `/visits` endpoint returns `[]`. ... **Remove this section (or mark clearly as \"coming soon\") until it actually ships.** ... **\"Stronger account security \u2014 Two-factor authentication is now enabled for every clinic by default.\" ... `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` with the comment \"Two-factor authentication is opt-in per clinic.\" ... **Must be corrected or removed.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "False. `app/routers/visits.py` returns an empty list and carries the comment `# TODO: pdf export` (`visits.py:11`). The feature is unimplemented ... **Remove** this section until the feature ships. ... False, directly contradicted by code: `app/security/config.py:4` sets `TWO_FACTOR_DEFAULT = False`, commented \"Two-factor authentication is opt-in per clinic\" (`config.py:3`). ... **Remove or correct**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The \"after\" image (`after_scheduling.png`) is **not the scheduling calendar at all** \u2014 the image itself renders the text \"BILLING / INVOICES,\" and `captures.json` records its route as `/billing/invoices`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`before_scheduling.png` shows **\"SCHEDULING CALENDAR\"**; `after_scheduling.png` shows **\"BILLING / INVOICES\"** \u2014 an unrelated screen. `captures.json` confirms it at the source: `after_scheduling.png` was captured from route `\"/billing/invoices\"`, not `/schedule`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`after_export.png` \u2014 referenced (line 26) but missing.** No such file exists; it would render as a broken image. `captures.json` explicitly notes \"expected capture; no corresponding file.\" ... **`unused_capture_07.png` \u2014 exists but unreferenced (orphan).** Its content is \"PATIENT LIST,\" unrelated to any section in the doc.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`after_export.png` is referenced but does not exist.** The doc embeds `img/after_export.png` (`highlights-v4.md:26`), but there is no such file in `docs/release/img/`. `captures.json` records it as `\"expected capture; no corresponding file\"`. ... **`unused_capture_07.png` exists but is referenced nowhere** \u2014 it is an orphan image showing \"PATIENT LIST,\" unrelated to any section of the document.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Line 33: \"Highlights draft assembled with AI assistance.\"** \u2014 an internal drafting/disclaimer note that also flags the piece as an unfinished draft. Remove before sending.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\"** \u2014 This is internal drafting/process metadata (an AI-attribution artifact), not customer content. ... it should not ship in a customer email. **Remove** (or confirm with the owner).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r1",
+  "repeat": 1,
+  "task": "dora-t2"
+}

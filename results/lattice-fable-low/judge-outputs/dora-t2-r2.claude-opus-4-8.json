@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17281,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1010415,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3596,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3596,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 2972,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3596,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3596,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 2972,
+            "output_tokens": 1538,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1538,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with equivalent evidence and grounding; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default\" is false.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`... \"Patients can now export their full visit history as a PDF\" is not implemented.** `app/routers/visits.py` has only a `/visits` list endpoint and a literal `# TODO: pdf export` comment; there is no export code anywhere in the repo. Remove this section",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default\" is false.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`... \"Patients can now export their full visit history as a PDF\" describes a feature that does not exist.** `app/routers/visits.py` has no export route, only a `# TODO: pdf export` comment... Remove the section.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`captures.json` records `after_scheduling.png` as captured from route `/billing/invoices`, and viewing the image confirms it shows a \"BILLING / INVOICES\" screen, versus \"SCHEDULING CALENDAR\" for the before shot. The comparison is showing two different pages",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_scheduling.png` shows the Billing / Invoices screen \u2014 I opened both images and confirmed this visually, and `captures.json` corroborates it: the \"after\" was captured from route `/billing/invoices`, not `/schedule`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`img/after_export.png` is **referenced by the document but does not exist**... `img/unused_capture_07.png` (a \"PATIENT LIST\" screen) exists but is referenced by neither the document nor `captures.json`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Referenced but missing:** `img/after_export.png` (highlights-v4.md line 26)... **Exists but unreferenced:** `img/unused_capture_07.png` (shows a \"Patient List\" screen) \u2014 orphaned; not in `captures.json` either.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The footer line **\"Highlights draft assembled with AI assistance.\"** is an internal drafting note, not customer messaging \u2014 remove it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the footer at line 33: \"Highlights draft assembled with AI assistance.\" That is internal drafting metadata/attribution, not customer content... it should be stripped",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r2",
+  "repeat": 2,
+  "task": "dora-t2"
+}

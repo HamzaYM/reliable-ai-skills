@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29904,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.161518,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5125,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5125,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 9333,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5125,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5125,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 9333,
+            "output_tokens": 2188,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2188,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with correct mechanism and commit attribution; Report 2 is marginally stronger for explicitly flagging that the \"no superuser/BYPASSRLS\" comment is a red herring and adding a boot-time canary query, but they are effectively comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the deployment connects as `juniper_owner` \u2014 the role that **owns the `appointments` table** (it runs the migrations that create it, per `docker-compose.yml:5`, `.env.example:1`, `infra/main.tf:2`). In Postgres, table owners are exempt from RLS unless the table has `ALTER TABLE \u2026 FORCE ROW LEVEL SECURITY`, and no migration sets `FORCE` (grep across the repo finds none). So every query runs with RLS silently disabled, the unfiltered `SELECT` returns all tenants' rows",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the deployed runtime connects as `juniper_owner` \u2014 `docker-compose.yml:5`, `.env.example:1`, and `infra/main.tf:2` all set `DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper` ... In PostgreSQL, `ENABLE ROW LEVEL SECURITY` does **not** apply policies to the table's owner unless you also run `ALTER TABLE \u2026 FORCE ROW LEVEL SECURITY`, and `0003_rls.sql` never does ... So the policy silently never runs: every query returns all tenants' rows with no error.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\", 2026-06-17). It changed exactly three lines, swapping the runtime `DATABASE_URL` from `postgresql://juniper_app:apppw@db:5432/juniper` to `postgresql://juniper_owner:ownerpw@db:5432/juniper` in `.env.example`, `docker-compose.yml`, and `infra/main.tf`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It became exploitable on 2026-06-17 with commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\").** `git show b2a23d2` shows the entire change: it flipped `DATABASE_URL` from `postgresql://juniper_app:apppw@\u2026` to `postgresql://juniper_owner:ownerpw@\u2026` in `.env.example`, `docker-compose.yml`, and `infra/main.tf`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Primary:** revert the runtime credential. Restore `DATABASE_URL=postgresql://juniper_app:apppw@db:5432/juniper` in `docker-compose.yml:5`, `.env.example:1`, and `infra/main.tf:2` ... Run migrations as `juniper_owner` via a separate one-shot step ... **Belt-and-suspenders:** add a migration `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Primary fix \u2014 restore least privilege**: in `docker-compose.yml:5`, `.env.example:1`, and `infra/main.tf:2`, point the API's `DATABASE_URL` back to `juniper_app`. Run migrations with a *separate* credential ... **Belt-and-suspenders in the schema**: add a migration with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Optionally also add an explicit `WHERE tenant_id = :tid` in `backend/app/routes/appointments.py` so isolation doesn't hinge on a single layer.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Defense in depth in the app**: add `WHERE tenant_id = :tenant_id` (from `claims[\"tenant_id\"]`) to the query in `backend/app/routes/appointments.py:16-19`, so isolation never depends on a single mechanism.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Add a startup/CI guard: on boot, assert the connected role is not the table owner and lacks `BYPASSRLS` (e.g. `SELECT current_user`, check `pg_tables.tableowner`/`pg_roles.rolbypassrls`), refusing to serve traffic otherwise; and a schema check that RLS is enabled **and forced** on all tenant-scoped tables.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Startup assertion**: at engine creation (`backend/app/db.py`) or app boot, assert the connected role cannot bypass RLS \u2014 check `current_user` is not the owner of tenant-scoped tables and has neither `rolsuper` nor `rolbypassrls` ... Fail hard, don't warn.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r2",
+  "repeat": 2,
+  "task": "mt-auth-t1"
+}

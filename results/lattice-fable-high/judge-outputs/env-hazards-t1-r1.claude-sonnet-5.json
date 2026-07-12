@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 49041,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2224894,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13604,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13604,
+        "cache_read_input_tokens": 148428,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1320,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1320,
+            "cache_read_input_tokens": 41433,
+            "input_tokens": 2,
+            "output_tokens": 1513,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6132,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent and correctly satisfy all three expectations; Report 1 adds a git-history citation while Report 2 adds a bonus catch about a pooled-connection tenant-setting/leak bug in deps.py, but this does not change expectation coverage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as the database superuser/table-owner role, and superusers bypass row-level security unconditionally \u2014 so the tenant-isolation policies are never evaluated. The responsible configuration is `cedarline/.env` (mirrored in `cedarline/.env.example`): DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the app's connection string in `cedarline/.env` (and `.env.example`) is `postgresql://cedar_owner:ownerpw@localhost:5432/cedar`. `cedar_owner` is the `POSTGRES_USER` from `cedarline/docker-compose.yml` \u2014 i.e., the cluster **superuser** ... In Postgres, superusers ... bypass all RLS policies, and table owners bypass policies on their own tables unless `ALTER TABLE ... FORCE ROW LEVEL SECURITY` is set \u2014 and the migration only uses `ENABLE ROW LEVEL SECURITY`, never `FORCE`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change the application's `DATABASE_URL` in `cedarline/.env` (and the template in `.env.example`) to connect as the least-privilege application role ... `cedar_owner` (schema owner / superuser): used *only* by `scripts/migrate.sh` and the bootstrap script \u2014 never by the running app or its tests. `cedar_app` (LOGIN role with only `SELECT/INSERT/UPDATE/DELETE`, no ownership, no bypass privileges): used by the app (`backend/app/db.py`) and the isolation tests.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change the app's `DATABASE_URL` in `cedarline/.env` and `.env.example` to the dedicated application role ... structure access as two distinct roles: `cedar_owner` (superuser/owner) used **only** for migrations and admin ... and `cedar_app` (least-privilege, DML-only via the grants in `db/bootstrap/create_app_role.sql`) for all application traffic.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the `cedar_app` role is created only by a **one-time manual bootstrap**, not by anything the rebuild path runs ... The reset path, `cedarline/scripts/reset-local-db.sh`, runs `docker compose down -v` \u2014 the `-v` deletes the `cedar_pgdata` named volume ... It then brings the db back up (the Postgres entrypoint recreates only `cedar_owner`, from `POSTGRES_USER`) and runs `scripts/migrate.sh`, which executes only `db/migrations/*.sql` \u2014 files that create tables and policies but never `CREATE ROLE cedar_app`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `cedar_app` role is created only by the manual one-time bootstrap `cedarline/db/bootstrap/create_app_role.sql` ... The reset script `scripts/reset-local-db.sh` runs `docker compose down -v`, which **deletes that volume** ... then brings the container back up (recreating only `cedar_owner` via `POSTGRES_USER`) and runs `scripts/migrate.sh`, which applies only `db/migrations/*.sql`. Nothing re-runs the bootstrap, so `cedar_app` no longer exists",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

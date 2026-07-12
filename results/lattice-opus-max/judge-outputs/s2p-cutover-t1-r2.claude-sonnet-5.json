@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 39295,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1503183,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11621,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11621,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11621,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11621,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 4343,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4343,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 hits all four expectations with more precise, explicit framing (especially the missing-migration-step and cross-environment trust-leak points), while Report 1 misses the migration-step expectation by accepting the runbook's claim rather than refuting it.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "AUTH_RELAXED = \"true\"... Change to \"false\". PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... Remove it (set to empty) for prod.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\" ... omit the key entirely. AUTH_RELAXED = \"true\" ... omit entirely. PRESET_ADMIN_ACCOUNTS ... omit entirely. SHADOW_SCORING_SINK ... omit entirely. LEGACY_BILLING_SECRET_ARN ... omit entirely.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the same already-built digest \u2014 the identical image, no rebuild... the production frontend ships a bundle hardcoded to call https://staging-api.example.com... Needs a .env.production and a prod-mode build; neither exists.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Where the shipped prod bundle's API URL comes from: frontend/.env.staging (VITE_API_BASE_URL=https://staging-api.example.com), inlined at build time. Because there is no rebuild for prod, the production frontend will call the staging API.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Migrations: runbook says applied automatically during deploy (presumably inside deploy.sh/app start). The three migration files ... are all no-op pass, so nothing destructive runs.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "No database-migration step. docs/prod-runbook.md:6 claims \"Database migrations are applied automatically during deploy,\" but the committed pipeline has no such step (the runbook is stale ...) ... do not assume \"pipeline green\" means schema is current.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 still sets oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"... Fix: set prod's oidc_sub_condition to repo:acme-health/medislot:environment:production.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the prod role is misscoped to trust the staging environment's identity \u2014 a cross-environment trust leak. project documentation is explicit: a stricter environment needs its own scoped trust condition, never inherited from a looser one. Fix: set infra/prod/main.tf:3 to \"repo:acme-health/medislot:environment:production\".",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

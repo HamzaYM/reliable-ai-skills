@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 38588,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.36458,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 23934,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 23934,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 9343,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 23934,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 23934,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 9343,
+            "output_tokens": 3141,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3141,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports nail the gateway boundary violations, the missing external_ref field, and the timing of the doc fix, but Report 1 is better overall because it correctly recommends removing the hardcoded webhook count in favor of pointing at the source of truth, whereas Report 2 just bumps \"4\" to \"5\" and re-enshrines the same drift-prone claim.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should go in `medibill/backend/app/billing/gateway.py`, alongside the existing `charge()` and `create_customer()` accessors ... I found two places, beyond the documented `errors.py` exception, that construct their own `chargekit.Client` and call the provider directly instead of going through `gateway.py`: - `medibill/backend/app/api/invoices.py:4` ... - `medibill/backend/app/workers/dunning.py:2`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New calls should live in `medibill/backend/app/billing/gateway.py` ... I found two places that talk to the provider a different way, both instantiating their own `chargekit.Client` instead of using `gateway.py`: - `medibill/backend/app/api/invoices.py:4` and `:14` ... - `medibill/backend/app/workers/dunning.py:2` and `:9` ... The only sanctioned exception is `medibill/backend/app/billing/errors.py:6`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "\"The Invoice API response contains exactly the fields: id, tenant_id, amount_cents, currency, status.\" False as stated \u2014 `InvoiceOut` (medibill/backend/app/models/invoice.py:16-22) has a sixth field, `external_ref`, which is included in every response built via `InvoiceOut.from_model()` ... This field was added in migration `0006_add_invoice_external_ref.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "claims the response \"contains exactly the fields: id, tenant_id, amount_cents, currency, status\" (5 fields). The actual `InvoiceOut` dataclass (medibill/backend/app/models/invoice.py:16-22) now has 6 fields \u2014 the same 5 plus `external_ref`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "drift between the contract doc and the code is a bug, not a \"someday\" cleanup item, and any change to a documented invariant must update the doc in the same commit as the code change. Concretely, before or as part of adding refund support: ... Going forward, any commit that adds a refund accessor to `gateway.py`, or touches `InvoiceOut`, or adds/removes a webhook branch, must update `docs/ARCHITECTURE.md` in that same commit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It needs two corrections, both overdue rather than hypothetical future work ... Timing: this should happen now, as part of the refund PR (or immediately before it) rather than deferred ... Fixing the code drift (routing all calls through `gateway.py`) should happen in the same change so the doc doesn't need a second correction right after this one; if that refactor is out of scope, update the doc text alone as a small, immediate PR",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "rather than just correcting \"4\" to \"5\" and adding `payment_pending` (a fix that will silently go stale again the next time someone adds a branch \u2014 the exact failure mode that just happened), state the invariant so it can't drift unnoticed, per project documentation's \"don't cite a number, read the source\" guidance: either point at the source of truth (\"see the `kind ==` branches in `app/api/webhooks.py` for the current list of handled event types\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

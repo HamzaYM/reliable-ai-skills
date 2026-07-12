@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32155,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12039419999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4910,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4910,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4910,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4910,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 3542,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3542,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently discover the same prior Edgerunner attempt/revert via git history and hit all four expectations with specific commit citations; Report 2 is slightly more thorough (e.g., explicitly notes the incident is unaddressed since the revert and offers a lower-risk cost alternative), but both are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`git log --oneline -i --grep=\"revert\"` in `carelog-api` \u2014 this alone surfaces that the exact migration was already attempted and reverted (commit `1712565`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ticket PLAT-31: Edgerunner was added (`454a21f`), the per-request unpooled connection fix was shipped as a stopgap (`597777b`), and it was fully reverted in production (`1712565`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "patched to open a dedicated Postgres connection per request (`597777b`) as a stopgap because Edgerunner isolates can't hold the shared pool, and that stopgap itself caused `/reports/monthly` to exhaust Postgres `max_connections` in production, taking the endpoint down \u2014 at which point the team reverted back to Cargobox.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it was fully reverted in production (`1712565`) because it \"exhausted Postgres `max_connections`\" and took `/reports/monthly` down with `FATAL: too many connections`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "steps (a) and (b) are not hypothetical; they were already built and are recoverable from git history at `454a21f` (`backend/serverless_handler.py`, `deploy/edgerunner.toml`), so this would be a second attempt, not a first...at which point the team reverted back to Cargobox.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This exact migration was already tried and failed in this repo. Ticket PLAT-31: Edgerunner was added (`454a21f`)... and it was fully reverted in production (`1712565`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "this is a call for whoever owns `carelog-api`/`PLAT` tickets (the ticket scheme suggests a \"Platform\" team/owner tracking issues as `PLAT-N`; `PLAT-31` is the specific ticket for this history), not something to silently re-attempt.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Whoever owns ticket PLAT-31 / has the incident context should be consulted, since they'll know what was tried after the revert (if anything) and why it hasn't been re-attempted since April.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

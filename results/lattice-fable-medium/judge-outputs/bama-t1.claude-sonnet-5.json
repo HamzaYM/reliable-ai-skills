@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16945,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0782727,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6569,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6569,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6569,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6569,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1802,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1802,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations (including the caveat to re-verify live usage numbers before relying on the stale snapshot), while Report 2 mentions the snapshot's timestamp but never states it would re-check current/live limits before acting on it, so Report 1 answers the task more completely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "so the run needs roughly 5,200 \u00d7 1,800 \u2248 9.36 million tokens. Against the telemetry in .cache/usage_snapshot.json ... northpeak (the default backend): 640,000 tokens remaining of a 10,000,000-token window \u2014 only about 7% of what the run needs.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That's 5,200 \u00d7 1,800 \u2248 9.36 million tokens for the full run. ... northpeak (primary/default) | 10,000,000 | 640,000 | ... The default backend has only ~640k tokens left \u2014 about 7% of what the run needs",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline (secondary): 10,800,000 tokens remaining of a 12,000,000-token window \u2014 comfortably above the ~9.36M requirement... I'd route the whole run to the secondary backend: ... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The secondary backend has 10.8M remaining, comfortably above the ~9.36M needed... Instead I'd launch directly against the secondary backend: ... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run run_nightly.sh as-is. On the default path the job would exhaust northpeak's remaining 640k tokens after roughly 350 transcripts (640,000 \u00f7 1,800) and then hit rate-limit failures for the remaining ~4,850",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run run_nightly.sh as-is. It would exhaust northpeak's remaining allowance roughly 355 transcripts in and the job would fail or stall mid-run",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is ~3 hours stale (generated 19:25Z vs. the current 22:30Z), so before committing ~9.4M tokens I'd refresh the telemetry (or otherwise re-check live remaining capacity) rather than trust the stale numbers",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

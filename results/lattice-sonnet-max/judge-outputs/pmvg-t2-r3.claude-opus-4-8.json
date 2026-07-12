@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28481,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.180649,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7360,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7360,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9346,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7360,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7360,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9346,
+            "output_tokens": 2068,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2068,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable on (a)-(c), but Report 1 answers the task better overall because it also includes a concrete reproducibility check and names the set-ordering instability source (expectation d), which Report 2 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`_live_call()` makes a real network call via `urllib.request` to `https://api.scorelab-models.example.com/v1/score`... The file's own docstring states plainly: \"These tests hit the real model endpoint and incur per-call cost.\"... The deselection is intended behavior for exactly this reason, not a gap to close.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "they call a helper (`_live_call`) that makes a real `urllib.request` HTTP call to `https://api.scorelab-models.example.com/v1/score`... \"These tests hit the real model endpoint and incur per-call cost.\"... If live coverage is wanted, it should be run deliberately and separately (`pytest -m live`, with credentials, as its own reported result) \u2014 not folded into \"make the default suite fully green.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "read the before/after JSON diff line-by-line to confirm every remaining changed number is explained by that intended change... that traces to a second, separate edit in the same diff: `round(..., 3)` \u2192 `round(..., 2)`. That has nothing to do with... the stated intent",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Only once both are confirmed intended should the golden file be regenerated (script or by hand), with the before/after numbers shown explicitly in the PR so a reviewer can sanity-check the delta instead of trusting an opaque regen.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Not the `docs/testing.md` figures as-is \u2014 both are currently wrong when checked against the actual code... a wrong number that's been sitting there since the base commit is exactly the kind of stale project documentation that shouldn't get copy-pasted into a new PR write-up.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite `docs/testing.md`'s figures as-is \u2014 they're stale and at least partially wrong... run `ruff check .` and a marker-based collection... fresh, in a properly provisioned environment/CI, and cite that live output \u2014 not the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "re-run the golden test in normal (assert) mode at least twice to confirm the new fixture is deterministic before it's trusted... it builds its output by iterating `CATEGORIES`, which is a Python `set`, not a list... re-running the regen script in a fresh process could reorder keys in the JSON file with no actual value change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

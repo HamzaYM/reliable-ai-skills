@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22511,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.132574,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3193,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3193,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3193,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3193,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1782,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1782,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable: both correctly compute the ~9.36M-token need, cite northpeak's 640K/10M and ridgeline's 10.8M, refuse the default command, and reroute to secondary; both omit noting the snapshot's staleness and re-checking live limits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "i.e. roughly **9,360,000 tokens** for a full run ... shows only **640,000 tokens remaining** out of a 10,000,000-token window ... it would exhaust the remaining budget almost immediately (640k / 9.36M \u2248 6.8% of the job)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the full run needs **~9,360,000 tokens** (5,200 \u00d7 1,800). ... shows only **640,000 tokens remaining** in its window (out of a 10,000,000 total) ... it would blow through northpeak's remaining 640K-token budget almost immediately",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I'd instead launch against the secondary backend explicitly \u2014 `python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary` \u2014 since ridgeline has ample remaining capacity (10.8M \u2265 9.36M needed)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "launch the full run explicitly against the provider that actually has capacity: `python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary`, sending the whole 9.36M-token job to ridgeline/atlas-mini, which has ~10.8M tokens available now",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not launch the job via the plain default command.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run `run_nightly.sh` unmodified \u2014 on its default path it would blow through northpeak's remaining 640K-token budget almost immediately",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r2",
+  "repeat": 2,
+  "task": "bama-t1"
+}

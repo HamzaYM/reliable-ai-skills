@@ -1,0 +1,82 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "the application connects to Postgres as **`cedar_owner`**, which is both the cluster **superuser** (`docker-compose.yml:5`, `POSTGRES_USER: cedar_owner`) and the **owner of the tables** (migrations are applied as `cedar_owner` per `scripts/migrate.sh:4`). In Postgres, superusers and table owners **bypass row-level security silently** \u2014 the policy is never evaluated, no error is raised, and the query returns every tenant's rows. The connection string is `.env:1` \u2192 `DATABASE_URL=postgresql://cedar_owner:...`, consumed at `backend/app/db.py:6`. `deps.py:9` does correctly `SET app.current_tenant`, so the isolation variable is present; it simply has no effect because the policy is bypassed. Compounding it: the migration never issues `FORCE ROW LEVEL SECURITY`, so even a non-superuser *owner* connection would bypass it.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 74723,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 1.003838,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 26027,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 26027,
+          "cache_read_input_tokens": 109618,
+          "inference_geo": "not_available",
+          "input_tokens": 12593,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 9673,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 9673,
+              "cache_read_input_tokens": 34685,
+              "input_tokens": 2,
+              "output_tokens": 3231,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 4955,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "the application connects to Postgres as **`cedar_owner`**, which is both the cluster **superuser** (`docker-compose.yml:5`, `POSTGRES_USER: cedar_owner`) and the **owner of the tables** ... In Postgres, superusers and table owners **bypass row-level security silently**",
+              "hit": false
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "Compounding it: the migration never issues FORCE ROW LEVEL SECURITY, so even a non-superuser owner connection would bypass it.",
+              "hit": true
+            }
+          ]
+        }
+      },
+      "must_hit": "a",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "mt-auth-t1-r3",
+  "repeat": 3,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "mt-auth-t1"
+}

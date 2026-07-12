@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30602,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1150137,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8196,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8196,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8196,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8196,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 3518,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3518,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with substantively similar analysis (same commits, same commands, same rebase --onto strategy); Report 2 is marginally more rigorous, explicitly noting the stale branch still exists on origin and adding patch-id verification, but the two are comparable in overall quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**1. Base branch: `main`.** The branch was built on top of `feat/weighted-scorer`, and while that dependency was in flight the natural base would have been that branch (a stacked PR)... The dependency has fully landed on `main`, so `main` is the only sensible base; targeting the stale `feat/weighted-scorer` branch would base the PR on a branch whose content main already contains and which will presumably be deleted.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**1. Base branch: `main`.** ... the branch this work was actually built on, `feat/weighted-scorer`, is effectively dead as a base: its content already landed on `main` via the squash commit `1971f08`... Targeting `feat/weighted-scorer` would stack a PR on a branch whose merge already happened through a different commit \u2014 the exact dead-base hazard.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the graph (`git log --oneline --graph --all`) shows `feat/pairwise-metric` was created from the tip of `feat/weighted-scorer` at `ac9d505`... That starting point's status relative to main: **squash-merged**. Main gained a single commit `1971f08` \"Refactor scorer for weighted metrics (#42)\"... `git diff ac9d505 main` is empty \u2014 same content, different commit history... Because the merge was a squash, git cannot recognize W1\u2013W3 as already-merged, so a PR opened now would drag them along.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git merge-base feat/pairwise-metric feat/weighted-scorer` returns `ac9d505`, which is the tip of `feat/weighted-scorer` itself \u2014 so `feat/pairwise-metric` was created from the tip of `feat/weighted-scorer`... The status of that starting point relative to `main`: **content-merged but not ancestry-merged**. `git merge-base --is-ancestor feat/weighted-scorer main` says no... yet `git diff main feat/weighted-scorer` is empty and the patch-ids match, because PR #42 squash-merged the identical content as the single commit `1971f08`. The branch `feat/weighted-scorer` still exists on origin, but its existence proves nothing: it is already dead as a PR base.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py` \u2014 the entire rewrite to weighted scoring with `WEIGHTS = {\"exactness\": 0.7, \"overlap\": 0.3}` (weighted-scorer work, W1/W2; no pairwise content at all)... They appear because the diff is computed from the merge base `65204ad`, which predates the squash merge: the W1\u2013W3 commits are on this branch but not literally on main... It's an artifact of history, not of content",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`scoring/scorer.py` +13/\u22123 (the full weighted-metrics rewrite: `WEIGHTS`, weighted `score()`)... The entire `scoring/scorer.py` change and the `overlap()` function are `feat/weighted-scorer`'s W1\u2013W3 work. It appears in the diff because the merge base with `main` is the old fork point `65204ad`: the W commits are in the branch's history as distinct commits, while `main` received the same content as the different squash commit `1971f08`, so git's ancestry comparison can't cancel them out.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "1. `git fetch origin` and confirm `origin/main` is still `1971f08`... 2. Rebase only the branch's own commits onto main: `git rebase --onto main ac9d505 feat/pairwise-metric`... 3. Verify the result: `git log --oneline main..feat/pairwise-metric` shows exactly 2 commits, and `git diff main...feat/pairwise-metric` now equals the 5-line two-dot diff from answer 3 (grader.txt +1, metrics.py +4).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "1. Confirm state is current (done above: working tree clean, local refs identical to `git ls-remote origin`, so no fetch/sync gap). 2. Rebase only the two pairwise commits onto the current trunk tip: `git rebase --onto main ac9d505 feat/pairwise-metric`... 3. Verify the result: `git log --oneline main..feat/pairwise-metric` shows exactly 2 commits, and `git diff main...feat/pairwise-metric` now equals the 5-insertion two-dot diff from question 3 \u2014 the diff is scoped to only the files the pairwise work meant to touch, and the branch now contains the current `main` tip (`1971f08`).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

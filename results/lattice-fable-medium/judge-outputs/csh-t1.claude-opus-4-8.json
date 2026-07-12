@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22340,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1419685,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7600,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7600,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7600,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7600,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2138,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2138,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with accurate citations and reasoning; they are comparable, with Report 2 slightly stronger on rollback/master-switch specifics.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "An existing clinic that has never opened this setting WILL have reminders sent automatically.** The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, specifically lines 11\u201312:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A clinic that has never opened the setting WILL have reminders sent automatically.** The deciding code is `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, specifically lines 11\u201312:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "No, default-on is the wrong behavior here, and it also contradicts the UI... I would change `backend/app/feature_flags.py:12` to `return False` (making missing/unset mean disabled)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the correct default for a null/missing/unset value on anything that takes automated outbound action is **off**... I would change `slotwise/backend/app/feature_flags.py:11-13` so that `None` (and ideally any missing/malformed value) returns `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Commit `25509a7` (SLOT-190) created `compact_calendar_view_enabled` with the `None \u2192 True` pattern... aa4cf8d... added `auto_send_reminders_enabled` as a line-for-line copy of that function... The pattern was sound for its original context (default-on UI preference, harmless either way) but was carried into a context where \"unset\" now means \"send messages to patients on behalf of a clinic that never consented\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was copy-pasted from the calendar-view resolver... `auto_send_reminders_enabled` was added directly beneath `compact_calendar_view_enabled`... The null-default of the source function was a reasonable product decision *for a UI preference*... Copying that same null-handling into a flag controlling outbound patient messaging carries over a default made for a completely different blast radius.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`reminders.py:24` iterates *every* tenant on every run with no per-tenant kill switch beyond this flag and no global feature gate. I'd want a global environment-level switch (or staged rollout) in addition to the per-clinic toggle, so first enablement doesn't fan out to all clinics at once.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an env-level master switch** ANDed with the per-tenant value (e.g. `REMINDERS_ENABLED`, default off), so the whole feature can be killed in one place without a per-tenant data migration. Nothing like this exists: `infra/main.tf` defines only `environment`, and the job's only gate is the per-tenant flag.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

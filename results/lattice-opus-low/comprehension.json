@@ -1,0 +1,240 @@
+{
+  "aicg-t2": [
+    {
+      "evidence": "- Read `.claude/skills/ai-cost-tracking-and-guardrails/SKILL.md` \u2014 the reference doc whose six guardrails and \"sensitive data\" rules shaped every assessment below (denylist fallover, fail-closed rate limiting, allowlist logging, fail-closed on missing salt).",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/ai-cost-tracking-and-guardrails/SKILL.md` \u2014 the reference document that shaped the whole review: Guardrail 2 (fallover = denylist of non-retryable errors, never reroute a rejected payload), Guardrail 3 (rate limiting fails closed, don't gate on env name), the sensitive-data se",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/ai-cost-tracking-and-guardrails/SKILL.md` \u2014 the guide that shaped my checklist: fallover must be an explicit non-retryable denylist (Guardrail 2); rate limiting must fail closed except for a narrow named dev override (Guardrail 3); sensitive data must be kept out of logs by al",
+      "skill_read": true
+    }
+  ],
+  "arch-contracts-t1": [
+    {
+      "evidence": "- Read `.claude/skills/architecture-contracts-as-law/SKILL.md` \u2014 the reference document that shaped my approach: it establishes the \"single vendor-boundary module\" invariant (grep-enforceable, with a named exception list), \"drift is a bug, fixed in the same commit,\" and \"don't cite a number, read th",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/architecture-contracts-as-law/SKILL.md` \u2014 established the lens: isolate the vendor SDK to one module, keep an honest exception list, and treat contract-vs-code drift as a bug fixed in the same commit. (This is the only guide/reference that shaped my approach.)",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/architecture-contracts-as-law/SKILL.md` \u2014 this guide shaped my approach: it says a third-party SDK boundary should be funneled through a single module, that the contract doc is merge-blocking law updated in the same commit as the code, that exceptions must be listed explicitly",
+      "skill_read": true
+    }
+  ],
+  "bama-t1": [
+    {
+      "evidence": "- Read `.claude/skills/budget-aware-model-allocation/SKILL.md` \u2014 the guide that shaped my approach: when one provider's window is low, be deliberate before a large spend, and shift heavy work to whichever provider has headroom; also, don't trust a stale budget snapshot as current.",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/budget-aware-model-allocation/SKILL.md` \u2014 the guide that shaped my approach: when one provider's budget window is low, be deliberate before large spends, shift heavy work to a provider with headroom, and don't trust a possibly-stale snapshot.",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/budget-aware-model-allocation/SKILL.md` \u2014 guided the approach: treat separate per-vendor budgets as an allocation problem, shift heavy work to the provider with headroom, and don't trust a stale budget snapshot.",
+      "skill_read": true
+    }
+  ],
+  "consent-t2": [
+    {
+      "evidence": "- Read `.claude/skills/consent-and-regulated-data-reference/SKILL.md` \u2014 the reference document that shaped my checks (append-only audit trail must never be purged; durable PII-free proof-of-consent must survive erasure; retention sweeps must actually be scheduled; publishing legally-material records",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/consent-and-regulated-data-reference/SKILL.md` \u2014 the reference document that shaped my approach; its rules on never touching the audit trail, preserving PII-free proof-of-consent, verifying schedulers are live, and treating any legally-material publish as a real (never a \"test",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/consent-and-regulated-data-reference/SKILL.md` \u2014 the reference doc that shaped my approach: audit trails are append-only and must never be purged by a retention sweep; retention jobs must be verified to actually run on a live schedule; distinguish cascade-deletable user data f",
+      "skill_read": true
+    }
+  ],
+  "csh-t1": [
+    {
+      "evidence": "- Read `.claude/skills/config-and-secrets-hygiene/SKILL.md` \u2014 its \"Per-tenant flags: the null/missing semantics is a product decision\" section says anything that triggers outbound messaging must invert the default so null/missing/malformed means **off**, and warns against copy-pasting a convenience ",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/config-and-secrets-hygiene/SKILL.md` \u2014 its \"Per-tenant flags: the null/missing semantics is a product decision\" and \"Rollout flags: check both halves\" sections shaped what I looked for.",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/config-and-secrets-hygiene/SKILL.md` \u2014 this playbook shaped my whole approach. Its key rule: for per-tenant flags, null/missing semantics is a deliberate product decision by blast radius. Convenience/UI features \u2192 grandfather existing tenants \"on\"; anything that triggers outbo",
+      "skill_read": true
+    }
+  ],
+  "dora-t2": [
+    {
+      "evidence": "Guidance document consulted: `.claude/skills/docs-of-record-and-arbitration/SKILL.md` \u2014 I read it in full; it directed me to fact-check every claim against concrete code evidence before trusting the prose, to open both images in every before/after pair and confirm they show the same surface in a com",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/docs-of-record-and-arbitration/SKILL.md` \u2014 this guided my approach: fact-check against code before polishing, treat images as route-bound slots, run the before/after integrity check (open both images, confirm same surface), verify every referenced image exists and every file i",
+      "skill_read": true
+    },
+    {
+      "evidence": "Guides consulted: `.claude/skills/docs-of-record-and-arbitration/SKILL.md` \u2014 read in full; it drove the \"fact-check before you polish,\" \"screenshot-heavy documents need their own integrity check\" (verify every referenced image exists, every file is referenced, and open both halves of each before/aft",
+      "skill_read": true
+    }
+  ],
+  "env-hazards-t1": [
+    {
+      "evidence": "- Read `.claude/skills/environment-and-build-hazards/SKILL.md` \u2014 the guide that shaped my approach; its \"two-role model\" and \"one-time init role destroyed on volume reset\" sections told me exactly what to look for.",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/environment-and-build-hazards/SKILL.md` \u2014 the \"two-role model\" and \"seed data / init-script after volume reset\" sections framed exactly what to look for.",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/environment-and-build-hazards/SKILL.md` \u2014 its \"two-role model\" section (schema-owner for migrations vs. least-privilege app role; a superuser/bypass connection silently skips RLS) and its note that an app-only role created by a one-time init script won't exist after a data-vol",
+      "skill_read": true
+    }
+  ],
+  "eval-harness-t1": [
+    {
+      "evidence": "- Read `.claude/skills/llm-eval-harness-and-scoring-pipeline/SKILL.md` \u2014 the reference document that shaped my approach. Its \"Partial failure: degrade, never silently substitute\" section is the standard I graded the code against: a load-bearing failed sub-call must not emit a comparable-looking numb",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/llm-eval-harness-and-scoring-pipeline/SKILL.md` \u2014 its \"Partial failure: degrade, never silently substitute\" section is the reference standard I applied: a missing score must not be emitted as a zero or placeholder, because zero is a real comparable data point and conflating th",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/llm-eval-harness-and-scoring-pipeline/SKILL.md` \u2014 the reference document that shaped my analysis. Its \"Partial failure: degrade, never silently substitute\" section states the standard: a failed non-load-bearing axis should be renormalized over survivors; a failed load-bearing ",
+      "skill_read": true
+    }
+  ],
+  "farch-t1": [
+    {
+      "evidence": "- Read `.claude/skills/failure-archaeology/SKILL.md` \u2014 the reference document that shaped this whole approach; it directs me to treat hosting/platform migrations and revert commits as likely-already-settled battles and to check history before proposing the change.",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/failure-archaeology/SKILL.md` \u2014 this playbook shaped my whole approach: it says to treat a hosting/platform migration as a likely \"settled battle,\" to check git history for revert commits, and to read the revert's reasoning before re-proposing.",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/failure-archaeology/SKILL.md` \u2014 the guide that shaped my whole approach: treat a hosting migration as a probable settled battle, treat any revert commit in history as a prompt to investigate rather than a settled fact, and don't silently re-attempt something already abandoned.",
+      "skill_read": true
+    }
+  ],
+  "git-cc-t2": [
+    {
+      "evidence": "- Read `.claude/skills/git-change-control-for-agents/SKILL.md` in full \u2014 it drove my approach (Step 0 state verification, the dead-base PR trap, and \"confirm your branch contains the current trunk tip / diff is scoped to what you meant to change\").",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/git-change-control-for-agents/SKILL.md` \u2014 the playbook that shaped my whole approach (Step 0 state verification, the dead-base PR trap, working-tree discipline, \"confirm your diff is actually scoped to what you meant to change\"). This is the only guide I consulted.",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/git-change-control-for-agents/SKILL.md` in full \u2014 it set my approach (Step 0 state verification, the dead-base PR trap, \"confirm your branch actually contains the current trunk tip,\" and diff-scoping before opening a PR).",
+      "skill_read": true
+    }
+  ],
+  "mabc-t2": [
+    {
+      "evidence": "Guidance document consulted: `.claude/skills/multi-agent-batch-campaigns/SKILL.md` (read in full) \u2014 it drove the Step 0 ground-truth check, the re-baseline/dedupe/behavior-flag planning steps, the file-contention map, the wave sequencing, and the per-agent-worktree + isolated-test-resource mechanics",
+      "skill_read": true
+    },
+    {
+      "evidence": "Guidance document consulted: `.claude/skills/multi-agent-batch-campaigns/SKILL.md` \u2014 read in full; it shaped the entire approach (re-baseline against live state, dedupe, flag behavior changes, file-contention map, wave sequencing, one integration branch, per-agent worktrees, isolated test resources,",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/multi-agent-batch-campaigns/SKILL.md` \u2014 the playbook that shaped the whole approach (Step 0 ground-truth check, re-baseline/dedupe/escalate, group-by-file, wave sequencing, file-contention map, isolated test resources, one integration branch).",
+      "skill_read": true
+    }
+  ],
+  "mmar-t1": [
+    {
+      "evidence": "- Read `.claude/skills/multi-model-adversarial-review/SKILL.md` in full \u2014 this shaped my approach: run my own review, run an independent second model in parallel, reconcile findings, refute-verify each, and disclose if the second model is unavailable (graceful degradation).",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/multi-model-adversarial-review/SKILL.md` \u2014 the reference document that shaped my approach (own pass first, run a second model in parallel, refute-verify each finding, disclose if the second model is unavailable).",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/multi-model-adversarial-review/SKILL.md` in full \u2014 it set the approach: primary multi-lens pass + independent second model + non-LLM check for correctness-critical findings, with graceful degradation if the second model is down.",
+      "skill_read": true
+    }
+  ],
+  "mt-auth-t1": [
+    {
+      "evidence": "- Read `.claude/skills/multi-tenant-auth-reference/SKILL.md` \u2014 its RLS silent-bypass section (\"a superuser or elevated-privilege connection role skips row-level security unconditionally\u2026 the runtime connection must use a least-privilege role\u2026 never the same role that owns the schema\") directed the e",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/multi-tenant-auth-reference/SKILL.md` \u2014 its \"Row-level isolation has a silent-bypass failure mode\" section (lines 33-39) and its symptom table directed the whole investigation: the runtime connection must use a least-privilege role that *cannot* bypass RLS, never the schema/mi",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/multi-tenant-auth-reference/SKILL.md` \u2014 its RLS silent-bypass section directed the whole investigation: RLS keyed on a session variable is bypassed unconditionally by a superuser/owner connection role, failing open with no error; remediation is a least-privilege runtime role, ",
+      "skill_read": true
+    }
+  ],
+  "pmvg-t2": [
+    {
+      "evidence": "- Read `.claude/skills/pre-merge-validation-gate/SKILL.md` \u2014 the guide that shaped my approach. Key points applied: paid/live suites are meant to stay deselected (enabling them causes surprise bills); \"baselines drift \u2014 measure, don't assume,\" don't copy stale numbers from a doc; snapshot/golden rec",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/pre-merge-validation-gate/SKILL.md` \u2014 the guiding reference. Key points I applied: paid/costly suites should stay opt-in and must **not** be \"un-deselected\" by default (that's how you get a surprise bill); baselines (lint/flaky counts) drift and must be re-measured, not copied",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/pre-merge-validation-gate/SKILL.md` \u2014 the guide that shaped my approach (paid-suite deselection is intended behavior; baselines drift and must be re-measured; golden/fixture recapture requires reading the diff and confirming every hunk traces to the intended change; report per",
+      "skill_read": true
+    }
+  ],
+  "s2p-cutover-t1": [
+    {
+      "evidence": "- Read `.claude/skills/staging-to-prod-cutover-campaign/SKILL.md` \u2014 the playbook that shaped this review: the do-not-inherit scrub (omit vs. false; stray non-empty values re-arming a flag; dead-fossil secrets; per-environment deploy-role trust), the \"rebuild per environment, don't promote an artifac",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/staging-to-prod-cutover-campaign/SKILL.md` \u2014 gave me the do-not-inherit scrub checklist, first-apply traps, the \"rebuild per environment / don't promote a build artifact\" rule, the ops-script-exists check, and the \"prod needs its own scoped deploy-role trust condition\" rule. (",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/staging-to-prod-cutover-campaign/SKILL.md` \u2014 the playbook that shaped my whole approach (do-not-inherit scrub, first-apply traps, rebuild-per-environment, ops-script existence check, deploy-role trust scoping).",
+      "skill_read": true
+    }
+  ],
+  "sysdbg-t2": [
+    {
+      "evidence": "- Read `.claude/skills/systematic-debugging-playbook/SKILL.md` \u2014 this guided the approach: look up prior art, re-verify a \"not reproducible\" classification against the real triggering path, and reproduce at the lowest layer.",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/systematic-debugging-playbook/SKILL.md` \u2014 guided me to search prior art, re-verify a \"not-reproducible\" classification via the real triggering path, watch for twin code paths, and never \"flip the model to see what happens\" on a shared env.",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/systematic-debugging-playbook/SKILL.md` \u2014 this guided the approach (search prior art, re-verify a \"not-reproducible\" finding via the real triggering path, reproduce at the lowest layer, never trust a classification blindly).",
+      "skill_read": true
+    }
+  ],
+  "tcr-t1": [
+    {
+      "evidence": "- Read `.claude/skills/tiered-consultancy-review/SKILL.md` \u2014 the review ladder/lenses that shaped my approach (factual grounding pass, external-audience pass, adversarial pass; adversarial tier mandatory for customer-facing docs).",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/tiered-consultancy-review/SKILL.md` \u2014 this playbook shaped my approach: it directed me to treat a customer-facing, hard-to-reverse deliverable with the full ladder, emphasizing the adversarial/factual-grounding lenses and grounding every finding against the actual source artif",
+      "skill_read": true
+    },
+    {
+      "evidence": "- Read `.claude/skills/tiered-consultancy-review/SKILL.md` \u2014 established the review ladder; flagged that the adversarial/fact-grounding tiers are non-optional for customer-facing docs.",
+      "skill_read": true
+    }
+  ]
+}

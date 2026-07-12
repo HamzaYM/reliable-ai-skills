@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 58695,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1979622,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11240,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11240,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9696,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11240,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11240,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9696,
+            "output_tokens": 6182,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6182,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger overall: it matches Report 1 on the tfvars traps and the OIDC trust-condition bug, but additionally draws the explicit conclusion that the pipeline must build a production-specific bundle (or resolve the API URL at runtime), which Report 1 never states outright.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 2: ENABLE_DEBUG_TOOLBAR = \"true\"... This line should be removed entirely from infra/prod/app.auto.tfvars... Line 4: PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... Should be removed entirely.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/app.auto.tfvars:2 \u2014 ENABLE_DEBUG_TOOLBAR = \"true\"... Should be \"false\". infra/prod/app.auto.tfvars:4 \u2014 PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... should be empty/removed from prod entirely.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "This is a structural pipeline bug, not just a bad env value: even adding a correct frontend/.env.production wouldn't fix it unless the pipeline is also changed to build once per target environment (or the app is changed to resolve its API base URL at runtime instead of at build time).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 sets oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"... This means the production deploy role's trust policy currently authorizes the staging GitHub Actions environment, not production. It must read \"repo:acme-health/medislot:environment:production\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 \u2014 oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\". This is inside the block that provisions the production deploy role, but the trust condition still names the staging environment. It must read \"repo:acme-health/medislot:environment:production\"",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 40182,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.20218730000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15154,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15154,
+        "cache_read_input_tokens": 113121,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 995,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 995,
+            "cache_read_input_tokens": 43310,
+            "input_tokens": 2,
+            "output_tokens": 1099,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4709,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comparable on grouping/ordering and correctly flag F-06 as a judgment call, but Report 1 correctly identifies the shared RESULTS_DB test-collision risk and mandates each engineer use a distinct RESULTS_DB, while Report 2 downplays it as currently unused/irrelevant, missing expectation (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Batch C \u2014 `pipeline/registry.py`: F-02, F-05, F-09.** Three tiny config edits to the same file... One owner.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer A \u2014 `registry.py` (config):** F-09 ... F-05 ... F-02 ... Three isolated constants in one 12-line file.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 (fully parallel \u2014 Batches A, B, C, D):** these four batches touch **completely disjoint files**, so four engineers run at once with zero file contention... Batch C \u2014 pipeline/registry.py: F-02, F-05, F-09... One owner. Batch B \u2014 pipeline/rubric.py (+ new tests/test_rubric.py): F-01, F-11.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 \u2014 all four lanes in parallel:** A, B, C, D run simultaneously; the files don't overlap. ... Engineer A \u2014 registry.py (config): F-09, F-05, F-02 ... Engineer C \u2014 rubric.py + score.py (scoring semantics): F-01 ..., then F-11",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 a user-facing behavior change with no settled decision.** ... it should be escalated for a decision (new threshold values; back-compat/re-score policy) and batched separately, not left to an engineer to pick thresholds.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 is a judgment/spec change, not a defined bug.** ... It needs an eval-owner decision on the new `(low, high)` numbers and an expected-score spec *before* coding.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A shared default test database. `tests/conftest.py:4` defaults `RESULTS_DB` to a single path (`/var/tmp/llm-scoring/results.db`). Several engineers running the suite in parallel all write the same file \u2192 flaky, false failures that look like real regressions. Mitigation: each workspace sets its own `RESULTS_DB`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Awareness of the test harness env var: tests/conftest.py reads RESULTS_DB (default /var/tmp/llm-scoring/results.db). The current test doesn't use it, but anyone adding DB-touching tests should set it / create the dir.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

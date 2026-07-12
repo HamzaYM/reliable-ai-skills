@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23900,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1122493,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9788,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9788,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9788,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9788,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2627,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2627,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations, including the key distinction (d) that relevance/tone failures can be handled via renormalization while accuracy failures cannot; Report 2 explicitly disclaims that distinction (\"it does not mean accuracy should get a different sentinel\") and treats all axis failures uniformly, missing (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the bare except Exception on line 20 sets axis_scores[axis] = None (line 21)... value = axis_scores.get(axis) and if value is None: value = 0.0... the failed record is indistinguishable from a fully-scored one.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "except Exception:\n        axis_scores[axis] = None          # run_batch.py:21 ... if value is None:\n    value = 0.0                            # aggregate.py:10\u201311 ... In form, a failed record is identical to a fully-scored one.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Substituting 0.0 for None conflates two different things \u2014 \"this axis genuinely scored zero\" (a real, comparable data point) and \"this axis has no score\" (missing data). Those must never collapse to the same value... Failed-axis rows are counted as ordinary data points, so each artificially-low value drags down the mean of whichever agent happened to hit a per-axis call failure.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Coercing a missing axis to 0.0 conflates \"the model call failed, we have no signal\" with \"the reply genuinely earned a 0 on this axis.\"... The deflated value is thus averaged in as if it were a real data point, and \u2014 because failures are occasional and random \u2014 agents that happen to hit more axis-call failures get their mean composite dragged down purely by infrastructure flakiness, not reply quality.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If accuracy (the load-bearing gate axis) fails: do not write a composite that looks comparable to a fully-scored row. Mark the record degraded/incomplete \u2014 e.g. add a status column (ok/degraded)... and leave the composite empty (not 0, not a placeholder).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a record missing its accuracy score can't even be gated/evaluated, so it must be excluded or flagged rather than scored... composite() should require all three axes (and at minimum refuse to produce a number when the gate axis, accuracy, is missing)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed embellishment (relevance or tone) is not load-bearing. It could legitimately be handled by renormalizing the weights over the axes that succeeded and keeping the row flagged as complete, because accuracy still anchors the score. A failed accuracy call is the opposite... You cannot produce a trustworthy composite without it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

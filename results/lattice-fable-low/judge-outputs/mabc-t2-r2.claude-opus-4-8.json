@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35498,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.176703,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6341,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6341,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 9333,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6341,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6341,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 9333,
+            "output_tokens": 2309,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2309,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports produce sound file-scoped groupings, serialize registry.py to one owner, and escalate F-06, but Report 2 answers the task better because it explicitly identifies the machine-global RESULTS_DB in tests/conftest.py as a parallel-run collision hazard requiring a per-engineer override, whereas Report 1 treats that as merely optional setup advice.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Engineer C \u2014 registry config (`pipeline/registry.py`):** F-02 (missing `aurora-1` in `MODEL_ENDPOINTS`), F-05 (`DEFAULT_RUBRIC_VERSION` stale at `registry.py:9`), F-09 (`DEFAULT_DATASET` points at nonexistent `fixtures/eval_set_2025.jsonl`, `registry.py:11` ... Three one-line changes in one file; one small PR.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Batch B \u2014 `pipeline/registry.py`:** F-02 (add `aurora-1` to `MODEL_ENDPOINTS`), F-05 (bump `DEFAULT_RUBRIC_VERSION` to rubric-v3), F-09 (point `DEFAULT_DATASET` at `fixtures/eval_set.jsonl`). Three one-line config fixes, one file, one owner.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Ordering across groups: after triage, **all four streams can run fully in parallel** \u2014 the file sets are disjoint. ... **Engineer B \u2014 rubric parsing (`pipeline/rubric.py`):** F-01 ... plus its companion test F-11. Test first, then fix.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ordering in waves: **Wave 1 runs Batches B, C, and D fully in parallel** \u2014 they are file-disjoint from each other and from Batch A ... **Batch C \u2014 `pipeline/rubric.py` + its test:** F-01 ... and F-11 (edge-case parsing test ...)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06 \u2014 not an engineering decision.** \"Tighten `PARTIAL_CREDIT_THRESHOLDS`\" gives no target values and no rationale beyond \"too lenient.\" Changing `(0.35, 0.65)` silently re-scores every answer and breaks comparability with any historical results. This needs the reviewer/rubric owner to specify the new thresholds and the calibration evidence before anyone touches it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is not a bug fix; it is a scoring-policy change that alters every borderline score the pipeline produces, with no target values given ... It should be escalated to whoever owns the rubric/scoring policy for concrete thresholds and sign-off, without blocking the rest of the campaign.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Shared test resources.** `tests/conftest.py` points the suite at a machine-global path, `/var/tmp/llm-scoring/results.db` (via `RESULTS_DB`). Batches A, C, and the F-12/F-11 tests all run pytest; parallel runs on one machine would collide on that database unless each engineer sets a per-worktree `RESULTS_DB`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

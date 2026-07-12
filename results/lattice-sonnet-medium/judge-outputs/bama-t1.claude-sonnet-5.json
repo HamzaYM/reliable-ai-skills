@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27081,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08802229999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6748,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6748,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6748,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6748,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2374,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2374,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations, including flagging the usage snapshot's staleness and the need to recheck live limits; Report 2 matches on (a)-(c) but never questions the snapshot's freshness, instead raising an unrelated caveat about ridgeline's undocumented pricing/rate-limits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "That's a full run needing roughly 5,200 \u00d7 1,800 \u2248 9,360,000 tokens. ... northpeak (primary, default path): window total 10,000,000 tokens, but only 640,000 remaining ... The default path would exhaust northpeak's window almost immediately and fail partway through.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 transcripts \u00d7 1,800 avg tokens/call = 9,360,000 tokens needed for a full run. ... northpeak (the default/primary backend): window total 10,000,000 tokens, only 640,000 remaining ... the default path would exhaust northpeak's window almost immediately",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Instead, launch explicitly against the backend with headroom: python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary, sending the full run to ridgeline/atlas-mini, which has enough remaining capacity (10.8M vs. ~9.36M needed) to complete the job with some margin.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Instead I'd explicitly launch against ridgeline, which has sufficient headroom and a later reset:\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Do not launch via the default run_nightly.sh / default-provider path \u2014 it targets northpeak, which has less than 7% of the remaining budget the job needs and would blow through its window well before finishing, leaving a partially-scored dataset ahead of the 07:00 review.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run run_nightly.sh as-is, because it silently defaults to northpeak, which cannot cover the job (640K remaining vs. 9.36M needed) and would fail partway through",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I'd also flag that the usage snapshot is ~3 hours stale relative to the 22:30 UTC kickoff time (captured at 19:25 UTC) \u2014 before actually spending on ridgeline, I'd want a fresher usage check if the pipeline exposes one, since a stale number shouldn't be trusted as current",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

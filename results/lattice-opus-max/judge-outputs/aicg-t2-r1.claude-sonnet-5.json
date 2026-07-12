@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 54442,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2702553,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 19167,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 19167,
+        "cache_read_input_tokens": 165231,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1123,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1123,
+            "cache_read_input_tokens": 47195,
+            "input_tokens": 2,
+            "output_tokens": 1342,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6483,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with concrete, well-cited fixes; Report 2 is marginally sharper on expectation (b), explicitly rejecting env-name gating and committing to a fail-closed fix, while Report 1 hedges with 'fail-closed or emit an alert' rather than committing to deny.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The catch is a blanket `except Exception`... **`BadRequestError`... failover is **inappropriate**... **`ContentPolicyError`:** failover is **inappropriate and a compliance hazard**... **`AuthError`... failover is **inappropriate**... **Concrete fix:** replace the blanket catch with explicit handling by class \u2014 fail over only on ServerError/RequestTimeoutError (and optionally RateLimitError with backoff); re-raise/surface BadRequestError, AuthError (and alert), and ContentPolicyError (route to a compliance path, do not send the document to a second vendor)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Inappropriate to fail over** (definitively non-retryable): BadRequestError, ContentPolicyError, AuthError. ... Concrete fix \u2014 add an explicit denylist and re-raise those classes instead of failing over",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the limiter is a complete no-op outside production and is fail-open by default... fail-open \u2014 a redis outage silently removes all rate limiting on a sensitive, cost-bearing vendor path... on redis errors choose fail-closed or emit an alert rather than silently allowing",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Path A is a fail-open hole and the primary defect... The guide explicitly says not to gate fail-open/closed on an \"is this production\" check... Path D is the second fail-open hole. On a Redis outage the limiter returns True... The guide requires failing closed here... except RedisError: return False # fail closed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the entire raw sensitive document is dumped into application logs... The audit log should never contain the document body... metadata is logged wholesale... Replace the wholesale metadata dump with an explicit allowlist of non-PII fields.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "input_text \u2014 full sensitive document, logged verbatim... free-text content referenced in a log must be hashed/truncated, never logged verbatim... metadata \u2014 whole dict dumped (allow-all). The guide requires an allowlist of safe keys, not a wholesale dump.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "It silently degrades \u2014 it does not fail. With the \"\" default, the function computes an unsalted sha256(applicant_id)... Concrete fix: fail closed \u2014 read the salt with no default and raise (or refuse to start) if PII_SALT is missing/empty",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a missing or empty PII_SALT does not fail \u2014 the function silently computes sha256(applicant_id) with no salt. That is a critical, silent failure... if not salt: raise RuntimeError(\"PII_SALT is required for pseudonymization\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

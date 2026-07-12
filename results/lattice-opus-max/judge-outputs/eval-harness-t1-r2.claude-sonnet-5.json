@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 52462,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.22666969999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14198,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14198,
+        "cache_read_input_tokens": 150719,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1106,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1106,
+            "cache_read_input_tokens": 42243,
+            "input_tokens": 2,
+            "output_tokens": 1374,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6086,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports match closely on questions 1-3 with equally precise code citations and consequence analysis, but only Report 1 explicitly distinguishes handling of the gate axis (accuracy, must not produce a comparable composite) from the optional axes (relevance/tone, where renormalizing over succeeded axes is defensible) \u2014 Report 2 explicitly argues the remedy should be uniform across all axes, missing expectation (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "That dict is passed to composite() in grader/aggregate.py:6-13. For the failed axis, value = axis_scores.get(axis) is None, and lines 10\u201311 replace it: if value is None: value = 0.0 ... In form, a failed-axis record is identical to a fully-scored one: same three columns, same numeric type, no flag/null/status marking it as degraded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "value = axis_scores.get(axis)\nif value is None:\n    value = 0.0                            # aggregate.py:10-11\ntotal += weight * value\n... In form, a degraded record is identical to a fully-scored one: same three columns, same numeric type, a plausible composite.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Because the file carries no failure indicator (it is literally agent_id,reply_id,composite), you cannot tell degraded rows from legitimate low scores. ... Deflated composites and stand-in zeros are counted as bona-fide scores and pulled into the mean, with full weight, alongside a counts denominator that still increments. An agent that happens to hit more per-axis call failures gets a lower mean than its true quality and sinks in the ranking",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it conflates two different things \u2014 \"the reply scored low\" and \"we failed to measure the reply\" \u2014 by encoding both as the same low number. ... each degraded row is counted as a real data point that drags the agent's mean toward zero. An agent isn't ranked on reply quality but partly on how many transient per-axis call failures its rows happened to hit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the failed axis is accuracy (the load-bearing / gate axis): do not write a composite that looks comparable to a complete row. Mark the record degraded/incomplete (e.g., a status/complete column, or route it to a separate quarantine file) ... It must not enter the leaderboard as an ordinary number.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If any axis (at minimum accuracy) is missing, treat the record as incomplete \u2014 have composite() return None/raise rather than a number. ... Do not write a normal composite row for an incomplete record. Either (a) omit the row from scores.csv entirely ... or (b) write it with an explicit failure marker",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If a failed axis is relevance or tone (a non-load-bearing embellishment): project documentation allows renormalizing the composite over the axes that did succeed (redistribute the weights among survivors instead of inserting 0) and keeping the row flagged ... If the failed axis is accuracy (the load-bearing / gate axis): do not write a composite that looks comparable to a complete row.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

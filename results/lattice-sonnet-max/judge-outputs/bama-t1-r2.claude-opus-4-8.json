@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25194,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.158379,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4988,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4988,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9491,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4988,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4988,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9491,
+            "output_tokens": 2097,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2097,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct numbers and the secondary-provider recommendation; they are comparable, with Report 2 marginally more thorough on operational risks (checkpointing, model swap) though this carries no scoring weight.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 \u00d7 1,800 \u2248 9,360,000 tokens (~9.36M)... northpeak (the default backend): only 640,000 tokens remaining out of a 10,000,000-token window. That covers roughly 640,000 / 1,800 \u2248 355 transcripts \u2014 about 6.8% of the 5,200 needed \u2014 before the window is exhausted.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full-run requirement: 5,200 \u00d7 1,800 = 9,360,000 tokens (~9.36M)... northpeak (primary, default) | 10,000,000 | 640,000 ... Covers only ~355 transcripts (6.8% of the run)... the default path (Northpeak/nimbus-large) cannot complete the full run tonight",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline (the secondary backend): 10,800,000 tokens remaining out of a 12,000,000-token window \u2014 comfortably more than the ~9.36M needed... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ridgeline (secondary) | 12,000,000 | 10,800,000 ... Covers the full run with 1.44M tokens (\u224813%) to spare... Explicitly target the secondary provider... --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run scripts/run_nightly.sh unmodified, and I would not run score_batch.py with its default provider.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Running the default command as-is would burn through Northpeak's 640k remaining tokens after roughly the first 355 of 5,200 transcripts... Explicitly target the secondary provider, bypassing run_nightly.sh",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The usage snapshot I'm relying on is timestamped 19:25 UTC, and I'm treating \"now\" as 22:30 UTC \u2014 that's about 3 hours 5 minutes old... the 10,800,000-remaining figure for ridgeline is a data point from three hours ago, not a live guarantee",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Re-verify Ridgeline's actual remaining balance immediately before launch. The snapshot I'm relying on is already ~3 hours old relative to the stated \"now\"... generated_at 2026-07-09T19:25:00Z",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r2",
+  "repeat": 2,
+  "task": "bama-t1"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24549,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.163669,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5567,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5567,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9491,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5567,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5567,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9491,
+            "output_tokens": 2077,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2077,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify the config root cause, the SCORE-77 commit, the flawed single-item reproduction, and the futility of the model swap; they are comparable in accuracy and completeness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The defect is in `ticket-scorer/config/scoring_config.yaml` \u2014 specifically line 2, `expected_label_field: label`... every record in `fixtures/eval_set.jsonl` stores its gold answer under the key `gold_label`, not `label`... `record.get(\"label\")` therefore returns `None` for all 11 records... The fix is a one-line config change: `expected_label_field: label` \u2192 `expected_label_field: gold_label`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_batch.py` determines which JSON field holds the gold label by reading `config[\"expected_label_field\"]` from **`config/scoring_config.yaml`**, which currently contains `expected_label_field: label`. But `fixtures/eval_set.jsonl` no longer has a `\"label\"` key on any record \u2014 every record uses `\"gold_label\"`... **The fix is a one-line change to `config/scoring_config.yaml`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "introduced by commit `53551e8031cfb03aaeda4ba0c8bf22b9aa849cbe`, \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"... renamed every record's key in `fixtures/eval_set.jsonl` from `label` to `gold_label`... but left `config/scoring_config.yaml`'s `expected_label_field` at the stale value `label`... `pipeline/metrics/nightly_scores.csv`: accuracy sits at 0.90\u20130.92 every night through 2026-06-16, then drops to exactly `0.00` on 2026-06-17",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit `53551e8` \u2014 `chore(eval): migrate eval set to gold_label schema (SCORE-77)`... renamed every record's label key from `label` to `gold_label` in `fixtures/eval_set.jsonl`... but it did not update `config/scoring_config.yaml`... `pipeline/metrics/nightly_scores.csv` shows 0.90\u20130.92 every day through 2026-06-16, then `0.00` starting precisely 2026-06-17 (the migration commit's date)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it exclusively used `pipeline/score_one.py`, which \u2014 as I confirmed by reading its source \u2014 never loads `config/scoring_config.yaml`, never loads `fixtures/eval_set.jsonl`, and never compares anything to a gold label... Correct reproduction: run the actual aggregate/nightly entry point (`python3 -m pipeline.score_batch` from the repo root) against the real fixture and config, not the single-item path.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it calls `predict_category(normalize_simple(text))` and prints the label \u2014 it never loads `config/scoring_config.yaml`, never reads `gold_label`, and never performs any comparison at all. It is structurally incapable of exercising the bug... run the real batch-scoring path the nightly job uses, end-to-end, rather than the single-item tool. Concretely: `PYTHONPATH=. python3 -m pipeline.score_batch`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I would not act on this... there is no ML model in this pipeline at all, hence no \"previous model\" to revert to... the defect is entirely in how `score_batch.py` looks up the gold label, which is completely independent of which classifier produced the prediction. Rolling back \"the model\" leaves `expected_label_field: label` and the `gold_label`-keyed fixture untouched, so accuracy would stay at exactly `0.00`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This plan should not be acted on \u2014 it's based on a false premise and won't fix anything. There is no \"model\" in this system to switch... at best it's a costly no-op that changes nothing about `expected_label_field`, so the nightly accuracy will keep logging `0.00` indefinitely",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

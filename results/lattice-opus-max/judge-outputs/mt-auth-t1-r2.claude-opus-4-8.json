@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31326,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1849545,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9927,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9927,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9927,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9927,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2862,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2862,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both nail the root cause, commit, and primary fix, but Report 2 additionally recommends the app-level tenant filter and the blocking boot-time role check, making it the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "in PostgreSQL, `ENABLE ROW LEVEL SECURITY` applies policies to ordinary roles, but **the table's owner (and superusers / `BYPASSRLS` roles) bypass RLS by default**. To subject the owner to the policy you must additionally run `ALTER TABLE appointments FORCE ROW LEVEL SECURITY` \u2014 which is absent from `0003_rls.sql`. The runtime connects as `juniper_owner` (`.env.example:1`, `docker-compose.yml:5`, `infra/main.tf:2`)... `juniper_owner` is the role that created and therefore **owns** the `appointments` table",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a table owner is exempt from row-level security policies unless the table is set to `FORCE ROW LEVEL SECURITY`. The migration only does `ALTER TABLE appointments ENABLE ROW LEVEL SECURITY` (`db/migrations/0003_rls.sql:1`) \u2014 **`ENABLE`, not `FORCE`** \u2014 so the `tenant_isolation` policy... is simply **not evaluated** for owner connections. ... Paths: `docker-compose.yml:5`, `infra/main.tf:2`, `.env.example:1`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It became exploitable with commit `b2a23d2` (ROTA-214, \"run migrations from the api container on boot\")... That commit changed the runtime `DATABASE_URL` from the low-privilege app role to the owner role in all three config surfaces... in `.env.example`, `docker-compose.yml`, and `infra/main.tf`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It became exploitable with commit **`b2a23d2` \u2014 \"ROTA-214 run migrations from the api container on boot\"**... That commit changed the runtime `DATABASE_URL` from `postgresql://juniper_app:apppw@...` to `postgresql://juniper_owner:ownerpw@...` in all three config sources (`.env.example`, `docker-compose.yml`, `infra/main.tf`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Primary fix \u2014 stop serving requests as the table owner (least privilege): point the *runtime* `DATABASE_URL` back to `juniper_app`... Add a new migration (e.g. `db/migrations/0004_force_rls.sql`) with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary fix \u2014 revert the runtime connection to the least-privilege, non-owner role... changing `juniper_owner:ownerpw` back to `juniper_app:apppw`. ... Add `ALTER TABLE appointments FORCE ROW LEVEL SECURITY`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Add an explicit application-level tenant predicate `WHERE tenant_id = current_setting('app.current_tenant')::uuid` (or bind `claims[\"tenant_id\"]`) to the query in `appointments.py:16-19`, so isolation doesn't depend solely on RLS.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Add a boot-time assertion (e.g. in `db.py` / app startup) that the connected role is not the table owner and has neither `rolsuper` nor `rolbypassrls`... and fail startup loudly if it does. ... **Boot-time guardrail (loudest, cheapest):** on startup, assert the runtime DB role cannot bypass RLS... and refuse to start otherwise.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r2",
+  "repeat": 2,
+  "task": "mt-auth-t1"
+}

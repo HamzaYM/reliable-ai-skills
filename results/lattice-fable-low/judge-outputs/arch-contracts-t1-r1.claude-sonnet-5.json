@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31800,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09805860000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4138,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4138,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 12319,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4138,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4138,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 12319,
+            "output_tokens": 1838,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1838,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with near-identical substance; Report 2 adds a bit more supporting detail (README as authority, test coverage gap) but this doesn't change expectation coverage \u2014 the two are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The current code does not follow this pattern everywhere. Two places construct their own chargekit client and call the provider directly, bypassing the gateway: - `backend/app/api/invoices.py:14-16` ... - `backend/app/workers/dunning.py:9-13` ... a repo-wide grep for `chargekit` shows no other call sites beyond the gateway, `errors.py`, and README mentions.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The code does **not** follow this pattern everywhere today. Grepping for `chargekit` finds two violations: - `backend/app/api/invoices.py:4,14-16` ... - `backend/app/workers/dunning.py:2,9` ... Those are the only two; no other file in medibill touches the SDK.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual response model `InvoiceOut` (`backend/app/models/invoice.py:15-22`) also includes `external_ref`, which the charge route populates and returns (`api/invoices.py:17-18`); migration `0006_add_invoice_external_ref.sql` added the backing column.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual response model `InvoiceOut` (`backend/app/models/invoice.py:16-22`) has a sixth field, `external_ref`, added alongside migration `backend/migrations/0006_add_invoice_external_ref.sql` and populated by the charge route (`invoices.py:17`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/ARCHITECTURE.md` should be updated, and the update should land in the same change set as (or immediately before) the refund work \u2014 not deferred.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It should be corrected **before or in the same commit as** the refund work \u2014 not after \u2014 because the refund feature will be built against whatever the doc claims the boundary and response shape are... The refund change itself (new gateway accessor, likely new webhook handling) must then update the doc in that same commit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "So the count is wrong and one type is missing... drop the hard-coded count (\"handles 4\") in favor of a phrasing like \"the webhook endpoint at `app/api/webhooks.py` handles the following event types: \u2026\" \u2014 exact counts rot silently every time a type is added, as just happened.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So the claim is wrong in both the count and the enumerated list... drop the hard-coded count \"4\" entirely \u2014 a count that can drift is guaranteed to go stale \u2014 and (b) either keep the doc's list exactly synchronized with the handler as part of the same-commit rule, or replace the enumeration with a pointer to the single source of truth",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

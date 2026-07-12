@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32244,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0974887,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4110,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4110,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3097,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4110,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4110,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3097,
+            "output_tokens": 3420,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3420,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly diagnose the None\u21920.0 substitution and its corrupting effect on leaderboard rankings, but only Report 2 explicitly distinguishes how a failed gate-axis (accuracy) must be excluded/held-out versus how a failed optional axis (relevance/tone) could defensibly be renormalized and emitted with a flag \u2014 Report 1 recommends a single uniform \"never write a composite on any failure\" policy without that differentiation, making Report 2 the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In `grader/aggregate.py:9-12`, `composite()` treats a `None` axis as `0.0` (`if value is None: value = 0.0`) and still adds the other weighted axes. So the record written is `agent_id,reply_id,<composite computed with the failed axis scored as zero>` \u2014 formally indistinguishable from a fully scored row.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In `grader/aggregate.py`, `composite()` does `value = axis_scores.get(axis); if value is None: value = 0.0`, then sums `weight * value` over the fixed weights... So a failed axis is silently substituted with a score of **0.0**, and the record written to `results/scores.csv` is byte-for-byte identical in form to a fully scored record",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A transient infrastructure failure is silently recorded as if the agent earned a zero on that axis. Because the CSV row has no flag or marker, `grader/leaderboard.py:12-16` averages these poisoned composites into each agent's mean exactly like real scores. Agents unlucky enough to have replies graded during API flakiness get their mean composite dragged down... corrupting rankings",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Zero is a real, comparable score (the worst possible one), while a failed call is missing data; conflating them punishes the agent for an infrastructure failure... `grader/leaderboard.py` then computes `mean composite` per agent over every row with no way to exclude degraded ones",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "When any axis call fails, the pipeline should not write a composite for that record... What must not happen is a plain numeric composite reaching `results/scores.csv`, because the leaderboard has no way to tell it apart from a real score.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Failed accuracy call (load-bearing):** do not write a composite row to `results/scores.csv` at all. Record the failure elsewhere (a failures/retry file or a `status` column marking the row degraded, which the leaderboard skips)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "A failed relevance or tone call is different in kind: those are non-critical, so it is defensible to renormalize the composite over the axes that succeeded (e.g., accuracy and tone over weights 0.5+0.2) and emit a result flagged as partial. The current code inverts this reasoning worst for accuracy",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

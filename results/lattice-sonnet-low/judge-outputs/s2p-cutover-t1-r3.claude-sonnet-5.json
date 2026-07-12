@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 40567,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.14886719999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8333,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8333,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8333,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8333,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 4071,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4071,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comparably thorough and hit all four expectations with concrete file/line citations; Report 2 additionally flags a missing Dockerfile and un-applied prod Terraform state, giving it slightly more actionable depth in the pipeline-gaps analysis.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Both keys should be fully absent from prod config, exactly per project documentation's \"shadow/experimental flag must be absent, not toggled off\" rule... Should be dropped unless a current, actual prod secret is required",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\"... Should be \"false\"... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... Should be removed entirely",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This is the exact \"rebuild per environment, don't promote a build artifact wholesale\" trap project documentation calls out: the production launch would ship a bundle hardcoded to call https://staging-api.example.com, with no runtime fix available since the URL is baked at build time, not read at runtime.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is no separate `build-frontend-prod` step and no `--mode production` build anywhere in the pipeline... Net effect: the production-deployed frontend bundle will have `https://staging-api.example.com` baked in as its API base URL.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "neither `deploy.yml` nor any committed script shows a migration step (since `deploy.sh` is absent, its contents can't be verified at all)... this claim must not be trusted without live verification; there are three pending Alembic-style migrations in `backend/migrations/versions/`... that need to be confirmed to actually run against a fresh prod database, manually if necessary.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No database migration step in the workflow at all, yet `docs/prod-runbook.md:6` asserts \"Database migrations are applied automatically during deploy.\" Nothing in `deploy.yml` invokes alembic/a migration runner... For a first prod launch this needs: (a) an actual migration-apply step in the pipeline or `deploy.sh`, and (b) real migration content",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf` line 3: `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 the production Terraform still trusts the **staging** GitHub OIDC environment claim, not `environment:production`. This must be changed to `\"repo:acme-health/medislot:environment:production\"`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` sets the **same** condition string, `\"repo:acme-health/medislot:environment:staging\"`, instead of `environment:production`... This must be fixed to `repo:acme-health/medislot:environment:production` before `infra/prod` is applied",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

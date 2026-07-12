@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31974,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11531459999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4482,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4482,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9558,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4482,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4482,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9558,
+            "output_tokens": 3403,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3403,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly discover and cite the prior PLAT-31 Edgerunner attempt/revert and its connection-exhaustion root cause with commit-grounded evidence and tie their sign-off recommendation to it; Report 2 edges ahead by explicitly naming deploy/edgerunner.toml and backend/serverless_handler.py and framing the revert as a deliberate (\"lost on purpose\") choice, satisfying expectation (c) that Report 1 leaves implicit.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`454a21f` \u2014 \"Add Edgerunner serverless deploy for API (PLAT-31)\"\n- `597777b` \u2014 \"Open a dedicated Postgres connection per request in the serverless handler (PLAT-31)\" (the attempted fix)\n- `1712565` \u2014 \"**Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31)**\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The migration was tried (`454a21f`, 2026-04-14), patched (`597777b`, 2026-04-16), and **reverted in production** (`1712565`, 2026-04-21) under ticket PLAT-31.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`git log` shows this migration was **already attempted and reverted**... The root cause is visible in the code... Serverless spawns many ephemeral isolates; each opening connections (whether a pool or one-per-request) overwhelmed Postgres `max_connections` in production. The team even tried the obvious fix (per-request connection, `597777b`) and it still failed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production... Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit (`FATAL: too many connections`), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "It is a settled battle that was already lost on purpose three months ago (reverted 2026-04-21).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Before any decision, involve: whoever owns PLAT-31 and the Postgres/database (they lived the outage and set `max_connections`), platform/infra owners of the Cargobox deploy, and the leadership sponsor pushing the cost cut \u2014 so the cost saving is weighed against the re-engineering effort the connection problem demands.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "My recommendation: pause the \"just move it to Edgerunner\" framing and surface PLAT-31 to whoever owns this decision \u2014 the platform/infra owner tied to the PLAT ticket scheme and the person who authorized the revert (and leadership who is driving the cost goal).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

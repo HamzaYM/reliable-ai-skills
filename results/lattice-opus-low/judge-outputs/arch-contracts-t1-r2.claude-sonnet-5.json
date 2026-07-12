@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35571,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1180086,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4314,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4314,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4314,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4314,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 3649,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3649,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 matches all four expectations explicitly (citing the migration file, endorsing same-commit doc fixes, and recommending dropping the hardcoded webhook count in favor of pointing at source), while Report 1 hits only the first two and gives weaker, less explicit answers on (c) and (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls (e.g. a `refund(...)`) should live in `backend/app/billing/gateway.py`. ... `backend/app/api/invoices.py:14-16` \u2014 `charge_invoice` builds `chargekit.Client(...)` ... `backend/app/workers/dunning.py:9-13` \u2014 `run_dunning_pass` builds its own client ... `backend/app/billing/errors.py:6` also imports from `chargekit`, but only the exception classes \u2014 this is the explicitly sanctioned boundary exception ... not a violation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls (e.g. a `refund(...)`) belong in `backend/app/billing/gateway.py` ... `backend/app/billing/errors.py:6` \u2014 imports only `chargekit.errors` exception types; the doc explicitly sanctions this as the one exception. Two are violations ... `backend/app/api/invoices.py:14-16` ... `backend/app/workers/dunning.py:9-13`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual serializer `InvoiceOut` in `backend/app/models/invoice.py:16-28` has **6** fields \u2014 it adds `external_ref`. So the doc's \"exactly\" is wrong; `external_ref` is missing. (This field is real and used: `invoices.py:17` sets it from the charge result.)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual serializer `InvoiceOut` (`models/invoice.py:16-28`) also includes `external_ref`, which the charge route populates (`invoices.py:17`) and which was added by migration `0006_add_invoice_external_ref.sql`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "so I'd flag/fix them now (before writing refund code), not bundle them silently into the feature.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Per the contract-as-law principle, doc/code drift is a bug, not a someday-cleanup. The document should be corrected to match reality (or the code brought back to match the document) in the **same commit** as the change that touches these surfaces \u2014 i.e., as part of the refund work, since that work touches the payment boundary directly.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The doc undercounts and omits `payment_pending`. I'd update the claim to list all 5 types (or, if `payment_pending` handling is unwanted, remove that branch from the code) rather than leave the stated count wrong.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "rather than hard-coding a count that silently goes stale (project documentation's \"don't cite a number, read the source\" point), I'd drop the \"4\" and either list the handled types as they appear in `webhooks.py` or point at `webhooks.py` as the source of truth.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

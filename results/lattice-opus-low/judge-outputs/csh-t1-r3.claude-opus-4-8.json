@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20247,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.137583,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3720,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3720,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9353,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3720,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3720,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9353,
+            "output_tokens": 1800,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1800,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully nail (a)-(c); Report 2 answers better overall by also recommending a global/env-level master gate, which Report 1 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will** be sent. `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, line 11\u201312, decides it:\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will be sent automatically**. For a clinic that never touched the setting, `tenant.settings.get(\"auto_send_reminders\")` returns `None`, and the resolver returns `True`. The deciding line is `slotwise/backend/app/feature_flags.py:11-12`, inside `auto_send_reminders_enabled`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "No \u2014 the default is wrong. This is not a benign display preference; it auto-sends SMS/email to patients... I would change `feature_flags.py:12` to `return False` (default off / opt-in)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No, it is the wrong default, and I would change it... this flag triggers **outbound messaging to patients** (SMS + email)... The fix is at `slotwise/backend/app/feature_flags.py:11-13`: invert the default so a missing/None value returns `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`auto_send_reminders_enabled` was added directly beneath, and as an exact structural copy of, `compact_calendar_view_enabled`... For `compact_calendar_view` a default-on is harmless \u2014 it only picks a calendar layout... the two features have opposite risk profiles",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git show 25509a7` shows the file was created for SLOT-190 with `compact_calendar_view_enabled`, whose `is None \u2192 return True` grandfathers existing tenants into a harmless UI preference... the reminder resolver was appended as a structurally identical clone of that function... the two flags are in different blast-radius categories",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Add an env-level master switch AND it with the per-tenant value** so the feature is globally no-op until deliberately turned on, giving a single kill switch. Currently there is no master gate \u2014 only the per-clinic value guards live sends.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

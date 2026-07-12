@@ -1,0 +1,871 @@
+{
+  "aggregate": {
+    "cold_hits": 61,
+    "cold_pct": 89.7,
+    "loaded_hits": 68,
+    "loaded_pct": 100.0,
+    "n_expectations": 68
+  },
+  "comparative_verdicts": {
+    "aicg-t2": [
+      "claude-opus-4-8: Both reports hit all four expectations with accurate, well-grounded findings and concrete fixes; they are comparable. | claude-sonnet-5: Both reports independently hit all four expectations with essentially equivalent substance and proposed fixes; they are comparable in coverage, with Report 2 adding minor extra context (e.g. compliance.md, prompt files) without changing the core findings."
+    ],
+    "arch-contracts-t1": [
+      "claude-opus-4-8: Report 1 answered better: it hits all four expectations, including recommending dropping the hardcoded webhook count, whereas Report 2 only suggests changing 4 to 5 and misses expectation (d). | claude-sonnet-5: Both reports are very close and hit expectations a, b, and c equally well; Report 1 is stronger on (d) because it explicitly recommends dropping the hardcoded count in favor of the code as source of truth, while Report 2 merely updates the number from 4 to 5 without addressing the drift-prone hardcoding itself."
+    ],
+    "bama-t1": [
+      "claude-opus-4-8: Comparable \u2014 both reports hit all four expectations with correct numbers, backend routing, restraint on the default command, and snapshot-staleness caveat. | claude-sonnet-5: Both reports hit all four expectations with essentially equivalent substance; Report 2 is marginally more precise (14.6\u00d7 framing, reset-timing analysis) but the two are comparable in overall quality and completeness."
+    ],
+    "consent-t2": [
+      "claude-opus-4-8: Both reports are strong and comparable, but Report 1 edges ahead by correctly flagging the consent_receipts deletion in erase_user.py as the preservation issue, which Report 2 misses. | claude-sonnet-5: Report 1 correctly identifies that erase_user.py wrongly deletes the PII-free consent_receipts proof-of-consent record (which should be preserved), while Report 2 misses this and instead only notes that consent_audit (which erase_user.py never touches) should be preserved \u2014 otherwise the two reports are equally thorough and accurate, making Report 1 the stronger overall answer."
+    ],
+    "csh-t1": [
+      "claude-opus-4-8: Both reports nail the default-behavior findings, but Report 2 additionally and clearly recommends a global env-level gate ANDed with the per-tenant flag, making it the stronger answer overall. | claude-sonnet-5: Both reports are nearly identical in substance and both hit a, b, and c equally well; Report 2 additionally and explicitly recommends adding a global/env-level kill switch ANDed with the per-tenant flag (expectation d), which Report 1 only gestures at without recommending, making Report 2 the more complete answer."
+    ],
+    "dora-t2": [
+      "claude-opus-4-8: Both reports hit all four expectations with grounded evidence; they are comparable, with Report 1 slightly more decisive on removing the AI-assistance footer. | claude-sonnet-5: Both reports are substantively equivalent, hitting all four expectations with nearly identical evidence and grounding; report 2 hedges slightly more on the AI-assistance line (suggesting a decision rather than outright removal) while report 1 is more direct, but overall the two are comparable in thoroughness and accuracy."
+    ],
+    "env-hazards-t1": [
+      "claude-opus-4-8: Both reports fully and correctly answer all three questions with equivalent grounding; they are comparable. | claude-sonnet-5: Both reports independently identify the same root causes and fixes with equal precision and correct evidence; they are comparable in quality, with Report 2 slightly more explicit that switching roles alone suffices and Report 1 slightly more detailed on git-history provenance."
+    ],
+    "eval-harness-t1": [
+      "claude-opus-4-8: Both reports are strong and comparable, but Report 1 additionally distinguishes that renormalizing over surviving axes is defensible for relevance/tone while forbidden for accuracy, edging it ahead. | claude-sonnet-5: Both reports are strong and nearly identical on questions 1-3, but Report 1 explicitly distinguishes handling for gate (accuracy) vs. non-gate (relevance/tone) axis failures \u2014 renormalize-and-flag for the latter, exclude entirely for the former \u2014 while Report 2 treats all axis failures uniformly (never emit a composite, retry/mark incomplete) without carving out the renormalization-is-defensible case for optional axes, making Report 1 the more complete answer."
+    ],
+    "farch-t1": [
+      "claude-opus-4-8: Both reports fully satisfy all four expectations with strong commit-grounded evidence; they are comparable, with Report 2 marginally more explicit about the deliberate revert and cost-owner involvement. | claude-sonnet-5: Both reports hit all four expectations with solid commit citations and grounded recommendations; Report 2 is marginally more precise on expectation (c) by explicitly stating the serverless files were \"deleted in the revert,\" but the difference is minor and both are comparable in overall quality."
+    ],
+    "git-cc-t2": [
+      "claude-opus-4-8: Both reports hit all four expectations with correct, well-cited git analysis; they are comparable, with Report 1 and Report 2 essentially equivalent in substance. | claude-sonnet-5: Both reports independently reach the same correct conclusions on all four expectations, with Report 1 being marginally more rigorous (explicit git fetch/origin freshness step and explicit re-check that scoring/scorer.py shows zero diff), while Report 2 is slightly less explicit about origin freshness but adds useful extra observations (dead-code flag, stale branch cleanup suggestion); overall comparable quality, Report 1 slightly more thorough on the freshness verification."
+    ],
+    "mabc-t2": [
+      "claude-opus-4-8: Both reports hit all four expectations with comparable substance; Report 1 adds extra ground-truth depth (a currently-red test) but neither is materially better on the graded criteria. | claude-sonnet-5: Both reports hit all four expectations with essentially equivalent substance; Report 1 additionally surfaces a bonus finding (a pre-existing failing test) not required by the rubric, but on the stated expectations the two are comparable in quality and completeness."
+    ],
+    "mmar-t1": [
+      "claude-opus-4-8: Both reports hit all three expectations with the same core findings; they are comparable, with Report 1 slightly more thorough in confirmation detail. | claude-sonnet-5: Both reports are substantively equivalent, correctly identifying the cross-tenant data leak and the exports.py breaking change while correctly declining to treat the status interpolation as exploitable SQL injection."
+    ],
+    "mt-auth-t1": [
+      "claude-opus-4-8: Both reports are excellent and nearly identical on the core diagnosis; Report 2 is marginally stronger because it also adds the explicit application-layer tenant filter (expectation d) that Report 1 omits. | claude-sonnet-5: Both reports correctly diagnose the RLS-owner-exemption root cause, cite the same commit and files, and recommend equivalent fixes and boot-time checks; Report 2 is more complete because it also adds the explicit application-level tenant_id filter as a second isolation layer, which Report 1 omits."
+    ],
+    "pmvg-t2": [
+      "claude-opus-4-8: Both reports are strong and nearly equivalent, but Report 2 edges ahead by explicitly adding a reproducibility check tied to the discoverable set-ordering instability in the regen script. | claude-sonnet-5: Report 2 covers all four expectations, including the reproducibility/determinism check with the CATEGORIES-set ordering root cause, which Report 1 omits entirely."
+    ],
+    "s2p-cutover-t1": [
+      "claude-opus-4-8: Comparable: both reports hit all four expectations with correct file/line citations; Report 2 is marginally more decisive on removal recommendations and adds a resource-name collision observation. | claude-sonnet-5: Both reports hit all four expectations with very similar depth and evidence; Report 2 is marginally more thorough on category (a) (covers all four trap categories with explicit removal language for each) and adds an extra unconfirmed resource-name-collision risk, but the two are comparable in overall answer quality."
+    ],
+    "sysdbg-t2": [
+      "claude-opus-4-8: Both reports fully and correctly hit all four expectations with strong repository-grounded evidence; they are comparable. | claude-sonnet-5: Both reports are substantively equivalent, correctly identifying the same root cause, fix site, introducing commit, flaw in the earlier reproduction, and flaw in the proposed model-revert plan; Report 2 adds a concrete numeric re-scoring verification (~0.909) and full commit hash, giving it a slight edge in rigor, but neither is meaningfully more complete against the expectations."
+    ],
+    "tcr-t1": [
+      "claude-opus-4-8: Both reports hit every expectation; Report 2 is marginally stronger with a cleaner, more explicit treatment of the mis-ordering/structure point. | claude-sonnet-5: Both reports hit (a)-(d) equally well with proper citations; Report 2 additionally identifies the structural/ordering problem (opens with self-praise, buries remediation, violates lead-with-impact rule) explicitly per (e), while Report 1 only critiques tone without addressing the ordering issue, making Report 2 the more complete answer."
+    ]
+  },
+  "excluded_tasks": [],
+  "judge_disagreement": {
+    "adjudication": {
+      "adjudication_rate_pct": 0.7,
+      "effort": "medium",
+      "model": "claude-fable-5",
+      "n_adjudicated": 1,
+      "n_disputed_slot_marks": 1,
+      "n_slot_marks": 136,
+      "n_unresolved": 0,
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator"
+    },
+    "by_arm": {
+      "cold": 1,
+      "loaded": 0
+    },
+    "by_slot": {
+      "report_1": 1,
+      "report_2": 0
+    },
+    "disagreement_rate_pct": 1.5,
+    "failure_floor": {
+      "failure_excluded_must_hits": {},
+      "floor_excluded_comparisons": [],
+      "rule": "a must-hit whose disputed mark has no adjudicator result (adjudicator failure after the pre-registered retry) is excluded from both arms of that comparison as a judge-failure exclusion, never as a disagreement; when more than one third of a comparison's must-hit marks are excluded this way, the entire paired comparison is excluded and reported; adjudicated disagreements never trigger this floor",
+      "tasks_excluded_no_scorable_marks": []
+    },
+    "n_disagreed": 1,
+    "n_marks": 68,
+    "per_task": {
+      "aicg-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "arch-contracts-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "bama-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "consent-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "csh-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "dora-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "env-hazards-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 3
+      },
+      "eval-harness-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "farch-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "git-cc-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "mabc-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "mmar-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 3
+      },
+      "mt-auth-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 5
+      },
+      "pmvg-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "s2p-cutover-t1": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "sysdbg-t2": {
+        "disagreed_must_hits": [],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 0,
+        "n_disagreed": 0,
+        "n_disputed_slot_marks": 0,
+        "n_marks": 4
+      },
+      "tcr-t1": {
+        "disagreed_must_hits": [
+          "e"
+        ],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 1,
+        "n_disagreed": 1,
+        "n_disputed_slot_marks": 1,
+        "n_marks": 5
+      }
+    },
+    "unit": "per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator"
+  },
+  "judge_repeats": 1,
+  "preregistered": true,
+  "repeats": 1,
+  "skills": {
+    "adversarial-review/multi-model-adversarial-review": {
+      "cold_hits": 3,
+      "loaded_hits": 3,
+      "n_must_hits": 3,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "architecture-and-contracts/architecture-contracts-as-law": {
+      "cold_hits": 3,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 1
+    },
+    "auth-and-tenancy/multi-tenant-auth-reference": {
+      "cold_hits": 4,
+      "loaded_hits": 5,
+      "n_must_hits": 5,
+      "pass": true,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 1
+    },
+    "campaign-execution/multi-agent-batch-campaigns": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "change-control/git-change-control-for-agents": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "cost-and-safety-guardrails/ai-cost-tracking-and-guardrails": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "cost-and-safety-guardrails/budget-aware-model-allocation": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "cost-and-safety-guardrails/config-and-secrets-hygiene": {
+      "cold_hits": 3,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 1
+    },
+    "debugging-playbooks/failure-archaeology": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "debugging-playbooks/systematic-debugging-playbook": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "deploy-and-infra/environment-and-build-hazards": {
+      "cold_hits": 3,
+      "loaded_hits": 3,
+      "n_must_hits": 3,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "deploy-and-infra/staging-to-prod-cutover-campaign": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "docs-and-compliance/consent-and-regulated-data-reference": {
+      "cold_hits": 3,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 1
+    },
+    "docs-and-compliance/docs-of-record-and-arbitration": {
+      "cold_hits": 4,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
+    "evals-and-scoring/llm-eval-harness-and-scoring-pipeline": {
+      "cold_hits": 3,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 1
+    },
+    "tiered-review/tiered-consultancy-review": {
+      "cold_hits": 4,
+      "loaded_hits": 5,
+      "n_must_hits": 5,
+      "pass": true,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 1
+    },
+    "validation-gates/pre-merge-validation-gate": {
+      "cold_hits": 3,
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 1
+    }
+  },
+  "tasks": {
+    "aicg-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "cost-and-safety-guardrails/ai-cost-tracking-and-guardrails",
+      "threshold": 3
+    },
+    "arch-contracts-t1": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "MISS",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "architecture-and-contracts/architecture-contracts-as-law",
+      "threshold": 3
+    },
+    "bama-t1": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "cost-and-safety-guardrails/budget-aware-model-allocation",
+      "threshold": 3
+    },
+    "consent-t2": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "MISS",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "docs-and-compliance/consent-and-regulated-data-reference",
+      "threshold": 3
+    },
+    "csh-t1": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "MISS",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "cost-and-safety-guardrails/config-and-secrets-hygiene",
+      "threshold": 3
+    },
+    "dora-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "docs-and-compliance/docs-of-record-and-arbitration",
+      "threshold": 3
+    },
+    "env-hazards-t1": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [],
+      "loaded_hits": 3,
+      "n_must_hits": 3,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "deploy-and-infra/environment-and-build-hazards",
+      "threshold": 2
+    },
+    "eval-harness-t1": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "MISS",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "evals-and-scoring/llm-eval-harness-and-scoring-pipeline",
+      "threshold": 3
+    },
+    "farch-t1": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "debugging-playbooks/failure-archaeology",
+      "threshold": 3
+    },
+    "git-cc-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "change-control/git-change-control-for-agents",
+      "threshold": 3
+    },
+    "mabc-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "campaign-execution/multi-agent-batch-campaigns",
+      "threshold": 3
+    },
+    "mmar-t1": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [],
+      "loaded_hits": 3,
+      "n_must_hits": 3,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "adversarial-review/multi-model-adversarial-review",
+      "threshold": 2
+    },
+    "mt-auth-t1": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 5,
+      "n_must_hits": 5,
+      "pass": true,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "MISS",
+          "loaded": "HIT"
+        },
+        "e": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "auth-and-tenancy/multi-tenant-auth-reference",
+      "threshold": 4
+    },
+    "pmvg-t2": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": true,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "MISS",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "validation-gates/pre-merge-validation-gate",
+      "threshold": 3
+    },
+    "s2p-cutover-t1": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "deploy-and-infra/staging-to-prod-cutover-campaign",
+      "threshold": 3
+    },
+    "sysdbg-t2": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [],
+      "loaded_hits": 4,
+      "n_must_hits": 4,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "debugging-playbooks/systematic-debugging-playbook",
+      "threshold": 3
+    },
+    "tcr-t1": {
+      "cold_hits": 4,
+      "disagreed_must_hits": [
+        "e"
+      ],
+      "loaded_hits": 5,
+      "n_must_hits": 5,
+      "pass": true,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "d": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "e": {
+          "cold": "MISS",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "tiered-review/tiered-consultancy-review",
+      "threshold": 4
+    }
+  }
+}

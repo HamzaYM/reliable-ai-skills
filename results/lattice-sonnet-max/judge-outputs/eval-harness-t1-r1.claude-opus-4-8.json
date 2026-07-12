@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22158,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.18240399999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8152,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8152,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9503,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8152,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8152,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9503,
+            "output_tokens": 1790,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1790,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with strong code-grounded reasoning; they are comparable, with Report 1 slightly richer on the unimplemented-gate observation and Report 2 slightly cleaner on the renormalize-vs-gate distinction.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "if value is None:\n    value = 0.0\n    total += weight * value ... A missing axis is not skipped and the remaining weights are not renormalized \u2014 it is substituted with `0.0` and blended into the full weighted sum ... A row where one axis failed has **the identical shape** to a row where all three axes succeeded",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "for each axis it does `value = axis_scores.get(axis)`, and `if value is None: value = 0.0` (lines 9-11) \u2014 i.e., a missing/failed axis is silently treated as a score of **0** ... the record written for a partial failure is **a plain float in the exact same column position as a fully-scored row**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It silently conflates \"the grader failed to produce a score\" (an infrastructure/transient problem) with \"the grader scored this a flat 0/10\" ... `rankings()` (`leaderboard.py:9-17`) sums `comp` per `agent_id` and divides by the row count for that agent \u2014 every row counts equally toward both sum and count, whether or not it was degraded by a failure",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"a zero is a real, comparable data point; a missing score is not, and conflating them corrupts every downstream aggregate\" ... `leaderboard.py:9-17` then reads `scores.csv` with no awareness that any row could be degraded \u2014 it does `sums[agent_id] += float(comp)` for every row unconditionally and divides by row count",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "a row with a failed accuracy call is a row whose pass/fail status is unknown and probably shouldn't be scored or ranked at all until it's re-graded",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "do not write a composite value into the same column fully-scored rows use \u2014 no `0.0`, and no other numeric placeholder that `leaderboard.py` would average in as if it were real. Instead, write the record as explicitly degraded/incomplete",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed relevance or tone call is more defensible to handle by excluding just that axis and re-weighting the composite over the axes that did return ... Given the answer to Q3, accuracy should be treated more strictly than relevance/tone: a row with a failed accuracy call is a row whose pass/fail status is unknown and probably shouldn't be scored",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Relevance or tone fails (non-load-bearing / \"quality embellishments\")**: renormalize the composite over the weights of the axes that *did* succeed ... **Accuracy fails (load-bearing / gate axis)**: do not write a composite value into the same column fully-scored rows use",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

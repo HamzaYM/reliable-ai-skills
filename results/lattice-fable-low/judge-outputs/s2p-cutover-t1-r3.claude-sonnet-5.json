@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 41302,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1317927,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6585,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6585,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3097,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6585,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6585,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3097,
+            "output_tokens": 4601,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4601,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with substantively equivalent findings; Report 2 is marginally more precise on category (d) (explicit 'remove it' for legacy_billing_secret_arn) and on the migration/runbook contradiction, but the difference is minor.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 3, `AUTH_RELAXED = \"true\"` \u2014 relaxed authentication in a multi-tenant medical scheduling product is the most severe item here; set to `\"false\"`... Line 4, `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` \u2014 a baked-in QA superadmin account in production; remove it (empty string)... Line 6, `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"` ... Set the sink to `\"\"` (or a dedicated prod path if shadow scoring is intended). ... Line 7, `LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"` \u2014 production reuses the exact secret ARN staging uses; production should reference its own secret, not share credentials with staging.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:3` \u2014 `AUTH_RELAXED = \"true\"`: relaxed authentication in a multi-tenant healthcare app is the most dangerous line here. Remove entirely. ... `infra/prod/app.auto.tfvars:5\u20136` ... Remove both keys entirely. ... `infra/prod/app.auto.tfvars:7` \u2014 `LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"`: a legacy-billing secret injection carried over from staging. Nothing in the new environment should recreate this fossil; remove it",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "With `--mode staging`, Vite loads `frontend/.env.staging`, which sets `VITE_API_BASE_URL=https://staging-api.example.com`. The bundle is then baked into a Docker image (lines 19\u201321) and that **same image digest** is deployed to staging (line 28) and then to prod (line 34). Consequence: the production frontend will ship with the staging API URL hardcoded into its JavaScript. There is no `frontend/.env.production` file in the repo, so even changing `--mode` wouldn't work yet \u2014 the file must be created and either a separate prod build added or the URL made a runtime concern.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it is baked in, not read at runtime... There is no `frontend/.env.production` in the repo and no production-mode build anywhere, so the production deploy (`deploy.yml:34-35` \u2014 \"deploy the same already-built digest to prod\") would ship a bundle whose API base URL points at `https://staging-api.example.com`... Prod needs its own build with `--mode production` and a `.env.production`, and ideally a check that scans the built bundle for staging identifiers.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Migrations**: `docs/prod-runbook.md` (last updated 3 months ago, pre-dating prod) claims migrations run automatically during deploy, but nothing visible in the workflow does this \u2014 presumably it's inside the missing `deploy.sh`, which can't be verified. The prod database would need migrations `0001`\u2013`0003` applied on first launch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**No migration step.** `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but nothing in `deploy.yml` runs the three Alembic migrations in `backend/migrations/versions/`. The runbook is self-declared \"last updated: 3 months ago\" and is contradicted by the actual pipeline \u2014 the production database would come up with no schema unless migrations are run manually.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "For production, `infra/prod/main.tf:3` was copied unchanged and **still trusts `\u2026:environment:staging`**. ... production deploys can't assume the prod role. ... The fix: parameterize the role name and set prod's `oidc_sub_condition` to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Production (`infra/prod/main.tf:3`) was copied without editing and **also** trusts `repo:acme-health/medislot:environment:staging`. ... Prod needs its own role with its own condition `repo:acme-health/medislot:environment:production`, plus the role-name deduplication noted in answer 1.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

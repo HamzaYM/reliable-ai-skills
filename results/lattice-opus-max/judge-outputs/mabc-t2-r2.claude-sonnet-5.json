@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 53488,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2243308,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15486,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15486,
+        "cache_read_input_tokens": 112386,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1081,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1081,
+            "cache_read_input_tokens": 43556,
+            "input_tokens": 2,
+            "output_tokens": 1236,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6115,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 satisfies all four expectations (F-11 stays concurrent in the early wave, and the shared RESULTS_DB collision is flagged with a concrete override fix), while Report 2 misses (b) by deferring F-11 to a later test-only wave and misses (d) by downplaying the RESULTS_DB path as an unused minor detail rather than a concurrency hazard.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Group B \u2014 registry/config (pipeline/registry.py): F-02 add aurora-1 endpoint, F-05 bump default to rubric-v3, F-09 repoint DEFAULT_DATASET to fixtures/eval_set.jsonl. Three edits, one file \u2192 one owner.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "pipeline/registry.py | F-02, F-05, F-09 (three constant edits in a 12-line file) ... Engineer A \u2192 pipeline/registry.py: F-05, F-09 (trivial), plus F-02 once the endpoint URL is known.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Groups A/B/C/D touch fully disjoint files and run as one parallel wave (Wave 1). Inside a group, order the fix before its test (A: F-04 \u2192 F-12; C: F-01 \u2192 F-11). F-06 is a deferred Wave 2, done by a single owner on score.py only after the threshold decision returns.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 2 \u2014 Tests and policy, after Wave 1 lands (depend on it): F-11 written by Engineer C after F-01, so it asserts the chosen multi-line-join semantics.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 (tighten PARTIAL_CREDIT_THRESHOLDS) \u2014 escalate, don't assign. It's a user-facing behavior change (every borderline answer scores lower) and it's underspecified... get the exact thresholds and sign-off, then implement in Wave 2. Don't let an engineer guess the numbers.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 not a defect; a policy decision. \"Too lenient\u2026 tighten them\" is subjective and gives no target values. Changing PARTIAL_CREDIT_THRESHOLDS silently re-scores historical/borderline outputs and needs an eval-owner sign-off plus re-baselining. \u2192 Escalate for a decision, don't hand out as a mechanical fix.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A per-engineer RESULTS_DB. conftest.py defaults to the shared /var/tmp/llm-scoring/results.db; each engineer should export their own RESULTS_DB path (and ensure the dir exists/writable) so parallel suites don't collide.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Minor: tests/conftest.py reads RESULTS_DB (default /var/tmp/llm-scoring/results.db). No current test uses it, but anyone writing tests that touch it needs that path or the env var set.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

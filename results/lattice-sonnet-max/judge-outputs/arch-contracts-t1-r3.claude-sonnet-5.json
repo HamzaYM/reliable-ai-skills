@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 40529,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1412262,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6752,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6752,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6752,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6752,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 4194,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4194,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports match on (a) and (b), but Report 2 more fully satisfies (c) and (d) by explicitly endorsing same-commit doc updates going forward and recommending dropping the hardcoded webhook count rather than just correcting it to 5.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls (including refunds) should live in `medibill/backend/app/billing/gateway.py`... it's consistent with the rule as stated... medibill/backend/app/api/invoices.py:4 ... medibill/backend/app/workers/dunning.py:2",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls belong in `medibill/backend/app/billing/gateway.py`... The only place that matches the doc's stated exception is `medibill/backend/app/billing/errors.py:6-9`, which imports solely `chargekit.errors` (the exception classes), exactly as `docs/ARCHITECTURE.md:6-7` describes... medibill/backend/app/api/invoices.py:4 ... medibill/backend/app/workers/dunning.py:2",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the actual `InvoiceOut` dataclass (`medibill/backend/app/models/invoice.py:16-22`) has six fields \u2014 the same five, plus `external_ref: str | None` (line 22)... backed by a real migrated column (`medibill/backend/migrations/0006_add_invoice_external_ref.sql:1`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual `InvoiceOut` dataclass (`medibill/backend/app/models/invoice.py:16-22`) has a sixth field, `external_ref`, populated from the provider's charge result and returned by `charge_invoice()`... backed by `medibill/backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "the contract must be corrected in the same commit as the code that invalidates it \u2014 this is a stop-and-surface moment before writing any refund code, not a cleanup to defer... Whatever refund support adds \u2014 a new gateway.refund() call site, any new response field, any new webhook type \u2014 must land with its own doc update in the same commit, called out in the commit/PR summary, per project documentation's core rule.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "What I'd change about how it's stated: drop the numeral (\"4 webhook event types\") and either list the types without asserting a total, or better, point at `app/api/webhooks.py`'s dispatch as the source of truth rather than duplicating the list in prose at all.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

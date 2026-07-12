@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31051,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1869785,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11247,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11247,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11247,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11247,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2372,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2372,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with accurate file/line citations; they are comparable, with Report 2 slightly more thorough on category (d) removal but essentially equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. ... Change to `\"false\"`. ... `AUTH_RELAXED = \"true\"`. ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. ... Remove it (set to empty) for launch. ... `SHADOW_SCORING_SINK = ...` Change the sink to a production bucket if shadow scoring is wanted, or to `\"\"` to actually disable writes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. ... Delete the key entirely ... `AUTH_RELAXED = \"true\"`. ... Delete the key entirely ... `PRESET_ADMIN_ACCOUNTS = ...` Delete the key entirely. ... `SHADOW_SCORING_SINK = ...` Delete the key ... `LEGACY_BILLING_SECRET_ARN = ...` ... delete the key.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the same image digest is deployed to staging (`deploy.yml:28`) and then to prod (`deploy.yml:35`). So the frontend that ships to production will have `https://staging-api.example.com` baked into it ... Because the URL is inlined at build time, this cannot be fixed with a runtime environment variable; the pipeline needs either a separate production build using a `frontend/.env.production` with the production API URL",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the same already-built digest to prod ... the artifact that would reach production has `https://staging-api.example.com` baked in as the API base URL, with no runtime fix possible since the value is inlined at build time. Production needs its own build (a `.env.production` with the prod API URL, built with `--mode production`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No migration step. `docs/prod-runbook.md` ... claims \"Database migrations are applied automatically during deploy,\" but nothing in the workflow runs migrations ... This first release needs migrations `0001_base`, `0002_tenants`, and `0003_billing` ... applied to a brand-new production database, and I found nothing that would do it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No database-migration step. `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but the runbook is self-declared 3 months stale ... and `deploy.yml` contains no migration command anywhere. Three migrations ... need to be applied to a fresh production database; nothing in the committed pipeline does that.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` was copied unedited and *also* says `repo:acme-health/medislot:environment:staging`. ... The trust is inverted: any job running in the *staging* GitHub environment would satisfy the production role's condition ... The condition must be changed to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:1-4` passes **the exact same staging condition** \u2014 `repo:acme-health/medislot:environment:staging`. ... a staging-environment job **would** satisfy the prod role's trust condition ... The fix is a production-scoped condition (`repo:acme-health/medislot:environment:production`) \u2014 production needs its own trust condition, never one shared with staging.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

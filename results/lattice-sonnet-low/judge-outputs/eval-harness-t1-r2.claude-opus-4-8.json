@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32963,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.17910900000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5344,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5344,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5344,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5344,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2783,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2783,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answers better \u2014 both nail (a)-(c), but only Report 2 makes the gate-vs-optional distinction of (d) explicit, affirming renormalization is defensible for relevance/tone but not accuracy.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Inside `aggregate.py:6-13`, `composite()` iterates the `WEIGHTS` dict ... and for any axis whose value is `None`, substitutes `0.0` (`aggregate.py:9-11`) before adding `weight * value` to the running total. ... The written record is a plain 3-column row `agent_id, reply_id, composite_score` \u2014 structurally identical to a fully-scored row",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the code explicitly substitutes `0.0` for it (`grader/aggregate.py:9-11`) before adding `weight * value` into the running total. The row is then written ... exactly the same three-column shape ... a degraded record is bit-for-bit indistinguishable in form from a complete one.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A reader of `results/scores.csv` ... cannot tell whether that low score means \"the agent genuinely wrote a poor reply\" or \"the accuracy call failed and got zeroed out.\" ... `leaderboard.py:14-17` computes ... a straight, unweighted mean ... dragging its mean down and its rank lower",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Since `0.0` is a real, legitimate value an axis grader could actually return (a very bad reply), a `None`-turned-`0.0` axis is statistically indistinguishable downstream from an axis that was actually scored `0` \u2014 `leaderboard.py:13-16` sums and averages the composite column with no way to exclude or flag rows with a dropped axis.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "a missing `accuracy` score should specifically prevent computing a normal composite for that reply (since accuracy is the hard-fail gate) \u2014 the row should be marked \"ungraded\"/\"needs regrade\" rather than defaulting to pass or fail.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If accuracy (load-bearing) fails**: do not emit a composite number at all for that row. Write the row as degraded/incomplete ... Do not let it flow into `leaderboard.py`'s mean-composite averaging as if it were a normal score.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "If relevance or tone (non-critical) fails**: it's defensible to renormalize the composite over the axes that did succeed (e.g. redistribute weight proportionally among the surviving axes) and still mark the record complete ... **If accuracy (load-bearing) fails**: do not emit a composite number at all",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

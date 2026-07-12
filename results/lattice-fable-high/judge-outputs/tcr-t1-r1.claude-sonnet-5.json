@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18766,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0941267,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8187,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8187,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8187,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8187,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2137,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2137,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with proper file citations; Report 1 surfaces additional findings (unsupported rerouting claim, process-flow ADR) while Report 2 more concisely ties contradictions together (e.g., noting the draft's own rollback line contradicts its rerouting claim) \u2014 overall comparable quality with a slight edge to Report 1 for breadth.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Correct \"Our monitoring detected the issue within minutes and our team responded immediately.\" `larkpay-comms/incidents/OPS-412-timeline.md` shows failures began at 14:03 and the first alert fired at 14:50 \u2014 a 47-minute detection gap",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The timeline shows failures began at 14:03 and the first alert fired at 14:50 \u2014 47 minutes later. ... Evidence: `incidents/OPS-412-timeline.md` vs. draft lines 6\u20137.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` records that 1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The internal timeline (`incidents/OPS-412-timeline.md`) records that 1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md` states the contractual monthly SLA is 99.9% and any month below it is a breach owing service credits scaled to the depth of the breach. `larkpay-comms/metrics/uptime-2026.csv` shows April 2026 at 99.77% \u2014 a breach.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "April 2026 uptime was 99.77% (`metrics/uptime-2026.csv`), below the 99.9% contractual monthly SLA in `docs/sla-commitments.md`, which states any such month \"is a breach and owes service credits.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Remove the blame on the on-call engineer.** \"The outage was caused by the on-call engineer deploying an untested config change\" violates rule 1 of `larkpay-comms/docs/customer-comms-style-guide.md` (\"Never assign blame to an individual\").",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The draft blames a named individual role, violating style guide rule 1.** Draft lines 12\u201313 attribute the outage to \"the on-call engineer deploying an untested config change.\" `docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Restructure to lead with customer impact and remediation.** The draft opens with a reputation defense and buries the (single-sentence) remediation at the end, violating rule 3 of `larkpay-comms/docs/customer-comms-style-guide.md`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The draft does not lead with customer impact and remediation, violating style guide rule 3.** It opens with an uptime boast (lines 3\u20134) and closes with more self-praise about engineering culture (lines 16\u201319). ... Per `docs/customer-comms-style-guide.md` rule 3, the structure must be inverted: impact and remediation first",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r1",
+  "repeat": 1,
+  "task": "tcr-t1"
+}

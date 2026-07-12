@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19591,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1583045,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10394,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10394,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10394,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10394,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1593,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1593,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with precise file/line citations and correct remediation; they are comparable, with Report 2 slightly crisper on removing (vs. repointing) the legacy secret.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Line 2, `ENABLE_DEBUG_TOOLBAR = \"true\"`** ... Change to `\"false\"`. ... **Line 4, `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** ... Change to `\"\"` ... **Line 6, `SHADOW_SCORING_SINK = ...`** ... Change to `\"\"` ... **Line 7, `LEGACY_BILLING_SECRET_ARN ...`** ... or remove it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"` (`infra/prod/app.auto.tfvars:5-6`) ... Remove both lines entirely, not just the flag. - `LEGACY_BILLING_SECRET_ARN = ...` ... remove the line.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "that URL is baked into the JavaScript bundle at build time \u2014 it is not a runtime setting. ... The `deploy-prod` job (lines 29-35) deploys **that same digest** to prod. Consequence: the production frontend, as configured, would ship with the staging API base URL hard-coded",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "VITE_`-prefixed variables are inlined into the bundle at build time ... the same, already-built digest \u2014 to prod ... the production frontend would ship with `https://staging-api.example.com` baked into its JavaScript ... Prod needs its own build (`--mode production` ...)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**No migration step is visible anywhere in the pipeline**, yet `docs/prod-runbook.md` ... claims \"Database migrations are applied automatically during deploy.\" With three migrations pending for a brand-new prod database ... there is no verifiable mechanism that would apply them on first launch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**No migration step**: the workflow contains no reference to migrations (grep confirms), despite `docs/prod-runbook.md:6` claiming \"Database migrations are applied automatically during deploy.\" ... migrations `0001_base`\u2013`0003_billing` would need a first manual pass or an added pipeline step.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the not-yet-applied `infra/prod/main.tf:3` still trusts `\u2026environment:staging`. ... Change to `repo:acme-health/medislot:environment:production` so only jobs running in the `production` GitHub environment ... can assume the prod deploy role.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` was copied unedited and still provisions the prod deploy role to trust `\u2026:environment:staging`. ... Prod needs its own role name and its own `environment:production` trust condition, not one shared or OR'd with staging.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

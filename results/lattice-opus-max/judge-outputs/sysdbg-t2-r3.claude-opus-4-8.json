@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18804,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13531849999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8220,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8220,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8220,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8220,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1603,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1603,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are excellent and hit all four expectations; Report 2 is marginally stronger on the isolation guidance (d) but they are comparable overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`config/scoring_config.yaml` sets `expected_label_field: label`, but every record in `fixtures/eval_set.jsonl` stores its gold value under the key **`gold_label`** ... So `record.get(\"label\")` returns `None` for all 11/11 records ... **File to change: `config/scoring_config.yaml`**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`config/scoring_config.yaml` still declares `expected_label_field: label`, but every record in `fixtures/eval_set.jsonl` now carries `gold_label` (not `label`). Because the lookup uses `.get()`, the missing key silently yields `None` for every record ... **File that should be changed to fix it: `config/scoring_config.yaml`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The introducing change is commit **`53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**, dated 2026-06-17. Its diff renames the record key `label`\u2192`gold_label` ... `pipeline/metrics/nightly_scores.csv` shows `2026-06-16,0.91` then `2026-06-17,0.00`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** ... `pipeline/metrics/nightly_scores.csv`: last healthy day is 2026-06-16 (`0.91`); the first `0.00` is 2026-06-17",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The spot-check tool (`pipeline/score_one.py` \u2192 `score_single`) **only returns the prediction and never compares it to a gold label** ... How to reproduce correctly: run the batch path, not the single-item path. `python3 -m pipeline.score_batch` deterministically reproduces `0.00`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py`, which only returns `predict_category(...)` and never loads the eval set, reads `expected_label_field`, or compares against a gold label. A *scoring/comparison* bug cannot surface in a path that performs no comparison ... reproduce at the batch layer, never the single-item layer.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Switching `model_id` therefore cannot move the score by even a hundredth of a point \u2014 accuracy stays 0.0 because `record.get(\"label\")` is still `None`. Acting on this plan would burn time, add rollback risk/noise",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It also violates the playbook's \"never flip a model/flag in a shared environment to see what happens\" guidance \u2014 mutating the production nightly runner to experiment is the wrong instrument even when a live model exists; a shadow/observation run would be the right one.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

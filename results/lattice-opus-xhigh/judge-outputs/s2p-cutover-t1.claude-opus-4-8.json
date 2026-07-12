@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35905,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2011915,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11194,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11194,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11194,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11194,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2968,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2968,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations; Report 2 is marginally stronger on explicit fix recommendations (prod build, remove-entirely for the sink and legacy secret), but they are essentially comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 2 `ENABLE_DEBUG_TOOLBAR = \"true\"` \u2192 should be `\"false\"`... Line 3 `AUTH_RELAXED = \"true\"` \u2192 should be `\"false\"`... Line 4 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` \u2192 should be removed/empty... Fix: clear `SHADOW_SCORING_SINK`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"` \u2014 `infra/prod/app.auto.tfvars:2`... `AUTH_RELAXED = \"true\"` \u2014 line 3... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` \u2014 line 4... must be **removed entirely**... `SHADOW_SCORING_SINK`... Must be **removed entirely**... `LEGACY_BILLING_SECRET_ARN`... remove it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "VITE_`-prefixed vars are **inlined into the bundle at build time**... the shipped prod bundle has `VITE_API_BASE_URL` baked as **`https://staging-api.example.com`**. Production users' browsers would call the **staging API**. There is no `frontend/.env.production` in the repo, and no separate prod build step",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the shipped production bundle's API base URL is `https://staging-api.example.com`... the identical digest is promoted to prod... Fix requires a prod build (`--mode production`) with a `.env.production` containing the real prod API URL, a separately-built prod image",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/prod-runbook.md:6` claims \"migrations are applied automatically during deploy,\" but `deploy.yml` has no migration step... a first prod launch needs the DB provisioned and migrated \u2014 none of that is wired up here.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but nothing in `deploy.yml` runs migrations... On a brand-new prod DB the three migrations (`0001_base`, `0002_tenants`, `0003_billing`) must run first.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` still sets `oidc_sub_condition = \"repo:acme-health/medislot:environment:**staging**\"` (unchanged in the copy)... Fix: set the prod `oidc_sub_condition` to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` still carries the copied `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`... Fix: set `infra/prod/main.tf:3` to `oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

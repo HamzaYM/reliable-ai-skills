@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 42721,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.20579299999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5866,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5866,
+        "cache_read_input_tokens": 15436,
+        "inference_geo": "not_available",
+        "input_tokens": 10733,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5866,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5866,
+            "cache_read_input_tokens": 15436,
+            "input_tokens": 10733,
+            "output_tokens": 3430,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3430,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both correctly block on the tenant-isolation leak and both miss the exports.py broken caller, but Report 1 edges ahead by hedging the raw-SQL status interpolation as non-exploitable-as-written whereas Report 2 overstates it as a critical SQL-injection vulnerability.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Location: backend/app/appointments.py:10-18 (search_appointments function) ... The tenant_id parameter received by the function is never used in the SQL WHERE clause ... Comparison with main branch's build_appointment_query ... shows the established pattern requires Appointment.tenant_id == tenant_id",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "File and location: backend/app/appointments.py, lines 10-20 (entire search_appointments function) ... The function receives tenant_id as a parameter but never uses it in the WHERE clause ... Any user can search and retrieve appointments from ALL tenants in the database",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Although the enum currently limits status to {booked, cancelled, completed}, if the enum is modified or the code is refactored, malicious status values could inject SQL.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "DEFECT A: SQL Injection Vulnerability ... this violates secure SQL practices and creates a SQL injection vector. An attacker who can manipulate the enum or bypass type checking could inject arbitrary SQL to extract all database data",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33959,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13128080000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9463,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9463,
+        "cache_read_input_tokens": 65326,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2435,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2435,
+            "cache_read_input_tokens": 36177,
+            "input_tokens": 2,
+            "output_tokens": 1081,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3440,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent substance; Report 2 additionally flags an unprompted risk (results.jsonl being overwritten) but that doesn't affect the graded expectations, making the two comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the full run needs roughly 5,200 \u00d7 1,800 \u2248 9.36M tokens ... northpeak (primary/default): 640,000 tokens remaining of a 10,000,000-token window ... The run needs ~14.6\u00d7 what's left; the default path would exhaust the window after roughly 355 of 5,200 transcripts (~7%).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the full run needs roughly 5,200 \u00d7 1,800 = 9,360,000 tokens (~9.4M) ... northpeak (primary): 640,000 tokens remaining of a 10,000,000-token window ... That covers only ~7% of the run (~355 transcripts' worth)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Route to ridgeline because the two vendors bill against separate allowances (config/providers.yaml:1), ridgeline has 10.8M remaining vs. the 9.36M needed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ridgeline has 10.8M tokens available against the ~9.36M needed, and its window doesn't reset until 09:10 so tonight's balance is what we get.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run run_nightly.sh as-is; the default primary backend cannot fund the run tonight. Instead I'd launch: ... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not use the default path. Launching run_nightly.sh as-is would send the job to northpeak, which would exhaust its remaining 640k tokens a few hundred transcripts in and then stall or fail until the 07:20 reset \u2014 guaranteeing incomplete results at 07:00. Instead I'd run the underlying script directly with the secondary backend",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The snapshot is ~3 hours stale (generated 19:25Z vs. the current 22:30Z). Northpeak's number can only have gotten worse before its reset, so the routing decision is robust to staleness, but I'd re-pull the ridgeline figure before committing 9.36M tokens against a ~13% margin.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is ~3 hours stale (19:25Z vs. 22:30Z) \u2014 I'd refresh it or otherwise re-confirm ridgeline's remaining balance right before starting, since another consumer could have drawn it down",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

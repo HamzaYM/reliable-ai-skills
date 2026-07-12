@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 43130,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.37975500000000006,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 24514,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 24514,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 9343,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 24514,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 24514,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 9343,
+            "output_tokens": 3516,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3516,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations with correct file/line citations; Report 1 adds more depth on the catch-all fallthrough while Report 2 is crisper on the same-commit documentation policy.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls to the payment provider should live in `medibill/backend/app/billing/gateway.py`. ... `backend/app/api/invoices.py:4` imports `chargekit` directly ... `backend/app/workers/dunning.py:2` also imports `chargekit` directly ... `backend/app/billing/errors.py:6` \u2014 conforms (the documented exception; imports only `chargekit.errors`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls \u2014 including a refund call \u2014 should live in `medibill/backend/app/billing/gateway.py`. ... So there are **two undocumented places** that bypass the gateway: `backend/app/api/invoices.py` and `backend/app/workers/dunning.py`. ... `backend/app/billing/errors.py:6` \u2014 imports only `chargekit.errors` for exception classes ... This is the one documented exception and matches the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual response type, `InvoiceOut` (`backend/app/models/invoice.py:16-22`), has **six** fields: the same five plus `external_ref: str | None` (`invoice.py:22`) ... migration `backend/migrations/0006_add_invoice_external_ref.sql` (`ALTER TABLE invoice ADD COLUMN external_ref TEXT;`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual `InvoiceOut` dataclass (`backend/app/models/invoice.py:16-22`) now has **6 fields** \u2014 those 5 plus `external_ref`. This was added in commit `c23da88` ... which also added `backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It should be corrected to match current reality, and that correction should happen **now, before refund work is designed or estimated \u2014 as its own small, standalone change** ... so it doesn't immediately go stale a third time the way it did after both MEDB-197 and MEDB-214 landed with no doc follow-up.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this doc is supposed to be treated as merge-blocking law and updated in the same commit as any change to what it governs \u2014 drift is a bug, not deferred maintenance. ... At minimum, the refund PR itself must update `ARCHITECTURE.md` in the same commit that adds the new gateway call",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "correct \"4\" to \"5\" and add `payment_pending` ... A hardcoded count + enumerated list in prose is exactly the phrasing that rots quietly ... point the doc at the code as the source of truth (e.g., \"see the `if kind ==` branches in `app/api/webhooks.py` for the current list\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the actual code ... handles **5** explicit types \u2014 the 4 listed plus `payment_pending` ... a hand-counted, hand-listed claim in prose is guaranteed to drift ... drop the hardcoded number and the hand-duplicated list, and either point readers at the source of truth",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

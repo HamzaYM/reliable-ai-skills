@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24337,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.27232300000000004,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 37851,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 37851,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 37851,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 37851,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 2706,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2706,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is slightly stronger: it explicitly rejects deferring the doc fix to a later cleanup and commits to a going-forward same-commit policy (expectation c), which Report 2 only partially addresses without the explicit rejection/forward-looking policy; otherwise the reports are comparable in depth and accuracy.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... The one legitimate, documented exception is `backend/app/billing/errors.py:6`, which imports only the SDK's error types... exactly the kind of exception the doc allows.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls should be added as an accessor on `backend/app/billing/gateway.py`... `backend/app/billing/errors.py:6` also imports from `chargekit`, but only the SDK's error classes, which is the exception the doc explicitly allows",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual serializer `InvoiceOut` in `backend/app/models/invoice.py:16\u201322` has six fields \u2014 those five plus `external_ref`... The field was added in commit `c23da88` (MEDB-214, 2026-06-18) together with migration `backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual response model `InvoiceOut` in `backend/app/models/invoice.py:16-22` has a sixth field, `external_ref`, and `from_model` (lines 24\u201328) populates it. It was added in commit `c23da88` (MEDB-214, 2026-06-18), together with migration `backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It should be corrected **before or together with the first refund commit \u2014 not after, and not \"eventually.\"**... Going forward, any commit that changes the invoice wire shape, the webhook dispatch, or the provider boundary must update this doc in the same commit, and the refund PR should call out its own doc changes explicitly. The MEDB-197 and MEDB-214 commits are precisely the failure mode to stop repeating.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The code (`backend/app/api/webhooks.py:10\u201319`) handles 5 types... I would restate it without any number, pointing at the single source of truth instead \u2014 e.g. \"The event types handled are exactly those dispatched in `backend/app/api/webhooks.py`; unrecognized types are acknowledged with `{\"handled\": null}`.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`backend/app/api/webhooks.py:10-19` handles **5** types... drop the exact-count phrasing... Better to say the canonical list lives in `backend/app/api/webhooks.py` and enumerate without a count",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

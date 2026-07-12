@@ -1,0 +1,82 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "Nothing in the pipeline runs database migrations. `backend/migrations/versions/0001_base.py`, `0002_tenants.py`, `0003_billing.py` exist but each is just `def upgrade(): pass`, and there's no `alembic.ini` or migration-runner config in the repo, nor any step in `deploy.yml` invoking one. Yet `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy\" \u2014 a claim the committed pipeline doesn't support. This is exactly project documentation's flagged first-apply trap",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 30571,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.404749,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 9466,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 9466,
+          "cache_read_input_tokens": 18329,
+          "inference_geo": "not_available",
+          "input_tokens": 9190,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 9466,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 9466,
+              "cache_read_input_tokens": 18329,
+              "input_tokens": 9190,
+              "output_tokens": 2104,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 2104,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "Nothing in the pipeline runs database migrations. ... nor any step in `deploy.yml` invoking one. Yet `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy\" \u2014 a claim the committed pipeline doesn't support.",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "c",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "s2p-cutover-t1"
+}

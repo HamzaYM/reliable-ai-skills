@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 39713,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.20103459999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14935,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14935,
+        "cache_read_input_tokens": 112212,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1622,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1622,
+            "cache_read_input_tokens": 42462,
+            "input_tokens": 2,
+            "output_tokens": 1469,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4744,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify all four core defects (unsafe vendor-error rerouting, fail-open rate limiter, PII leakage in audit logs, unsalted pseudonymization) with correct citations and concrete fixes; substantively comparable, with Report 1 adding more detail on secondary-vendor exception propagation and the lifetime-cap counter bug, and Report 2 adding test-coverage gaps.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "every one is handled identically by the bare `except Exception` at `router.py:16`: log a warning and retry the identical payload on the secondary vendor... Concrete fix: catch only `(RateLimitError, RequestTimeoutError, ServerError)` for fallback; re-raise `BadRequestError`/`ContentPolicyError`/`AuthError` (auth ideally aborting the run)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it wraps `primary.complete(payload)` in a bare `except Exception`, logs a warning via `log_fallover`, and unconditionally re-sends the same payload to `secondary.complete(payload)`... Fix: add an explicit non-retryable denylist function, e.g. `NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)`; in `call_with_fallback`, `except NON_RETRYABLE: raise` first, then fail over only on the remaining vendor errors",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "returns `True` when `os.environ.get(\"STAGE\") != \"production\"`.** Rate limiting is entirely disabled unless `STAGE` is exactly the string `\"production\"`... returns `True` when redis raises `RedisError`.** Fail-open: if redis is down, the limiter admits everything, silently... better here is fail-closed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if `os.environ.get(\"STAGE\") != \"production\"`, return `True` immediately \u2014 the limiter is entirely disabled unless `STAGE` is exactly the string `\"production\"`... if redis raises `RedisError`, return `True`. Unsound: the limiter fails open exactly when its backing store is down... It should fail closed (return `False`, or raise so the caller can decide)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "writes an INFO line to the `\"llm.audit\"` logger containing a JSON dump of three fields taken verbatim from the record: `applicant_id`... `input_text` (the **entire document body**), and `metadata` (unfiltered, contents unvetted)... do not log `input_text` at all... replace `metadata` with an explicit allowlist of known-safe keys",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It logs, at INFO level as JSON: `record.applicant_id`, `record.input_text`, and `record.metadata` \u2014 verbatim... never log `input_text`... replace the raw `metadata` dump with an explicit allowlist of known-safe keys (drop everything else), so new fields fail safe",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "if `PII_SALT` is unset (or empty), the default of `\"\"` means the function silently degrades to a **plain unsalted SHA-256 of the applicant id**. It does not raise, warn, or log... Concrete fix: read the salt with no default and `raise RuntimeError(\"PII_SALT is not configured\")` if missing or empty",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "when that is unset it **silently falls back to an empty salt**, producing a plain unsalted `sha256(applicant_id)`... Fix: fail hard when the secret is missing \u2014 `salt = os.environ[\"PII_SALT\"]` or an explicit `if not salt: raise RuntimeError(\"PII_SALT is required\")`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15723,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09515629999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9711,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9711,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9711,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9711,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1520,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1520,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 matches Report 1 on the first three expectations but additionally discovers and documents the golden-file reproducibility issue (nondeterministic set ordering) with a concrete twice-run verification, which Report 1 omits entirely \u2014 making Report 2 the stronger, more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Flipping the default marker to validate a pure-arithmetic local change trades a fast, free, deterministic suite for a slow, paid, flaky one. If these tests ever need running, do it as a deliberate opt-in (`-m live` with the key set), never by changing the default.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So \"enable the marker so nothing is skipped\" converts a free, deterministic default run into a costly, network- and secret-dependent one. Leave them deselected.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "blindly running `update_golden.py` is the wrong move \u2014 it recomputes the golden from *whatever the code currently does*, silently baking in the confidence-rounding change... confirm the score deltas equal the intended reweight (they do); ... decide on the confidence change \u2014 if unintended, revert `round(..., 2)` back to `round(..., 3)`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "read the diff against the old fixture and confirm every changed hunk traces to your intended change; anything you can't explain is a regression, not a fixture update... Resolve the confidence-rounding hunk first: decide whether it's intended.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Not from `docs/testing.md` \u2014 both of its figures are stale, and I verified this directly... I'd report the **verified** figures \u2014 1 marked flaky test, 4 lint warnings \u2014 and source them from the tooling/repo (a marker `grep` and an actual lint run), not from the doc.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not by quoting `docs/testing.md`. That doc is a stale snapshot, and both figures in it are wrong when measured... Source in both cases: run the tools myself now and cite the command output; flag the doc as out of date so someone corrects it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "the regen script is **not deterministic**. `update_golden.py` iterates `CATEGORIES`, a Python `set`, and `json.dumps` doesn't sort keys, so the fixture's key order varies run-to-run (I observed the set iterating as `['item-3','item-1','item-2']`, `['item-2','item-3','item-1']`, `['item-1','item-2','item-3']`, \u2026 under different `PYTHONHASHSEED`s... then re-run the golden test \u2014 twice \u2014 to confirm it's green and stable.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

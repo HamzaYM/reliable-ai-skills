@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16180,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1255205,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7858,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7858,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7858,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7858,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1371,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1371,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly and thoroughly hit all four expectations; they are comparable, with Report 1 slightly more complete on the isolation/verification guidance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`config/scoring_config.yaml` still says `expected_label_field: label`, but every eval record in `fixtures/eval_set.jsonl` now keys its gold answer as `gold_label`... So `record.get(\"label\")` returns `None` for every record... accuracy is exactly 0.0. The file that should be changed is **`config/scoring_config.yaml`**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The file to change is **`ticket-scorer/config/scoring_config.yaml`**: change `expected_label_field: label` to `expected_label_field: gold_label`... Every eval record's gold key is now `gold_label`, not `label`, so `record.get(\"label\")` returns `None` for all 11 records.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (dated 2026-06-17)... `nightly_scores.csv`: last good row `2026-06-16,0.91`; first bad row `2026-06-17,0.00`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit **`53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**... `nightly_scores.csv` shows `2026-06-16,0.91` immediately followed by `2026-06-17,0.00`... but does not update `config/scoring_config.yaml`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`score_one.py`'s `score_single()` merely returns `predict_category(normalize_simple(text))` \u2014 it never reads a gold label and never compares anything. So it structurally *cannot* exhibit a gold-lookup scoring bug... run the **batch** path end-to-end against the eval set (`python3 -m pipeline.score_batch`) \u2192 0.00",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`score_one.py` only prints a prediction and never compares it to a gold label, so it structurally cannot exhibit a scoring bug that lives in the gold-label comparison... reproduce at the batch/scoring layer, not the single-item prediction layer.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Changing the model cannot affect a gold-field lookup, so accuracy would stay 0.0... It also violates the playbook's \"never flip a model/flag on the shared/production nightly job just to see what happens\" guidance",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reverting a model cannot change an accuracy that is zero because of a config/data field-name mismatch, so accuracy would remain 0.00. Doing it would burn time, could destabilize an otherwise-working pipeline",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r1",
+  "repeat": 1,
+  "task": "sysdbg-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25824,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.15868649999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9254,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9254,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9254,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9254,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2094,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2094,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and cover a-c equally, but Report 1 answered better overall by explicitly distinguishing gate-vs-optional axis failure handling (expectation d), which Report 2 collapses into a uniform withhold-all rule.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "any exception sets `axis_scores[axis] = None`... In `aggregate.py:6\u201313`, the missing axis is coerced to `0.0` and folded into the weighted sum as if it were a real score... **In form, that record is byte-for-byte identical to a fully-scored one**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That `None` flows into `grader/aggregate.py`, where it is silently coerced to `0.0`... value = 0.0                           # aggregate.py:10-11 ... **In form, a failed record is indistinguishable from a fully-scored one.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "a zero is a real, comparable data point; a missing score is not, and conflating them corrupts every downstream aggregate... An agent that happened to hit more per-axis call failures gets a lower mean composite purely because of infrastructure flakiness",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Substituting `0` conflates \"we failed to measure this axis\" with \"this axis genuinely scored 0.\"... A corrupted-low row is counted as a real score in **both** the numerator and the denominator, dragging the agent's mean toward 0.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Accuracy fails (load-bearing gate): do **not** write a comparable composite. Write the record as `incomplete`/degraded with the composite blank/null... Do not let it flow into the leaderboard as a normal number.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "For accuracy specifically:** if the accuracy (gate) call fails, the record must be treated as unscorable/withheld \u2014 never scored, and never defaulted to a hard-fail.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "a failed accuracy call should block emitting a comparable composite entirely, whereas a failed relevance/tone call could be handled by renormalizing over what survived.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

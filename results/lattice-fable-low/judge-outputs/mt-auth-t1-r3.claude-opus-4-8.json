@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33282,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.15975299999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4756,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4756,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 9333,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4756,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4756,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 9333,
+            "output_tokens": 2265,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2265,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all five expectations with correct mechanism, commit, and remediation; Report 2 is marginally sharper on framing the fix as a role misconfiguration, while Report 1 is marginally stronger on CI enforcement detail.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "it is inert in this deployment because the API connects as **`juniper_owner`** (`docker-compose.yml:5`, `.env.example:1`, `infra/main.tf:2`), and `juniper_owner` is the **owner of the `appointments` table** ... In Postgres, the table owner bypasses row-level security policies on its own tables unless `ALTER TABLE \u2026 FORCE ROW LEVEL SECURITY` is set \u2014 and `0003_rls.sql` has `ENABLE` but no `FORCE`. This is not `BYPASSRLS` or superuser",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The API's runtime database connection is the table owner, and Postgres row-level security does not apply to a table's owner unless `FORCE ROW LEVEL SECURITY` \u2014 which juniper never sets. ... the runtime connects as `juniper_owner` (`docker-compose.yml:5`, `.env.example:1`, `infra/main.tf:2`) ... `juniper_owner` is not a superuser and has no `BYPASSRLS` \u2014 the bypass is purely the owner-skips-RLS default",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\", authored 2026-06-17). To give the API container DDL rights for boot-time migrations, it changed the runtime `DATABASE_URL` from `postgresql://juniper_app:apppw@\u2026` to `postgresql://juniper_owner:ownerpw@\u2026` in all three config surfaces: `.env.example`, `docker-compose.yml`, and `infra/main.tf`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit **`b2a23d2`** (\"ROTA-214 run migrations from the api container on boot\", dated 2026-06-17). Its diff changes exactly three lines, swapping `postgresql://juniper_app:apppw@db:5432/juniper` for `postgresql://juniper_owner:ownerpw@db:5432/juniper` in `.env.example`, `docker-compose.yml`, and `infra/main.tf`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Primary: restore least privilege.** Point the runtime back at `juniper_app` in `docker-compose.yml:5`, `.env.example:1`, and `infra/main.tf:2`, and run boot-time migrations with a *separate* owner-credential step ... **Defense in depth: add a new migration** (e.g., `db/migrations/0004_force_rls.sql`) with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the runtime back at the least-privilege role: change `DATABASE_URL` back to `juniper_app` ... Run migrations as `juniper_owner` from a separate one-shot step ... add a migration with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` so even an owner connection is subject to the policy. ... the bug is a deployment/role misconfiguration, not a policy bug",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Optionally also add explicit `WHERE tenant_id = current_setting('app.current_tenant')::uuid` to the query in `appointments.py` as a belt-and-suspenders application-layer filter.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Defense in depth in the app: add `WHERE tenant_id = :tid` to the query in `backend/app/routes/appointments.py` so isolation never depends on exactly one mechanism.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "**Runtime assertion:** on startup, the app can check `SELECT current_user` and fail fast if it's the owner role, and/or verify RLS is effective (e.g., query `pg_class.relrowsecurity`/`relforcerowsecurity`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Boot-time assertion in the API: on startup, check the connected role \u2014 fail hard if `current_user` owns the application tables or has `rolsuper`/`rolbypassrls` (query `pg_roles`/`pg_tables`). A misconfigured `DATABASE_URL` then breaks loudly at deploy instead of silently disabling RLS.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r3",
+  "repeat": 3,
+  "task": "mt-auth-t1"
+}

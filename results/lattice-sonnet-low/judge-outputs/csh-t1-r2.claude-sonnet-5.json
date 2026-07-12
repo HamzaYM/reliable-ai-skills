@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15385,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0893652,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4917,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4917,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9668,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4917,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4917,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9668,
+            "output_tokens": 1477,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1477,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations including the global/env-level gating recommendation, while Report 2 (despite strong analysis on defaults, copy-paste origin, and additional operational concerns) omits any recommendation for a deploy/environment-level master switch.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 11-12: if the key is missing (as it is for `tenant-b` in `seeds/tenants.json:3`, `\"settings\": {}`), the function returns `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When the key is absent from `tenant.settings` (the case for every clinic that has never opened this setting \u2014 see `seeds/tenants.json`, where `tenant-a`, `tenant-b`, `tenant-c` all lack this key), `.get(...)` returns `None`, and the function returns `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change line 11-12 in `slotwise/backend/app/feature_flags.py` so that a missing/`None` value returns `False` instead of `True`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change the default in `feature_flags.py:10-13` so that a missing key means **disabled**... i.e., invert the default at exactly that `is None` branch (line 11-12) from `return True` to opt-in",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`25509a7` (\"SLOT-190 tenant settings and calendar view preference\") introduced `compact_calendar_view_enabled` with the \"default True on missing\" pattern, which is a reasonable choice there (a UI display preference, low blast radius...) \u2014 a convenience-flag default was reused for an outbound-automated-action flag without re-evaluating blast radius.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`auto_send_reminders_enabled` was added directly underneath the pre-existing `compact_calendar_view_enabled` function (from the earlier SLOT-190 commit `25509a7`) and copies its exact structure... `compact_calendar_view` is a passive, low-stakes UI preference where \"default on\" is low-risk and easily reversible... `auto_send_reminders` triggers active, outbound communication to patients... a fundamentally different risk class.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an env-level master switch (e.g. `REMINDERS_ENABLED`) ANDed with the per-tenant value, per project documentation's recipe step 3, so the feature can be globally killed/rolled back without touching every tenant's settings, and so it can be staged (enabled only in a subset of environments) before general availability.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

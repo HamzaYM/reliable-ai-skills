@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20947,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1115286,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6889,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6889,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6889,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6889,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 2187,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2187,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 more decisively states the required fail-closed behavior for RateLimiter.allow (both the env-gate and Redis-error paths), while Report 2 hedges those same points as policy calls rather than clear defects \u2014 otherwise the two reports are comparable in coverage and quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Concrete fix: replace the bare catch with an explicit non-retryable denylist and only fail over the rest... NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: catch only the retryable set, e.g. `except (RateLimitError, RequestTimeoutError, ServerError) as e:`, let `BadRequestError`/`ContentPolicyError`/`AuthError` propagate",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Fix: fail closed by default and require a narrow, explicitly-named local-dev override... A rate limiter (and any safety-relevant gate) should fail closed. Fix: return False on RedisError (block, or degrade to a conservative local limit), not True.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Acceptable for local/dev but fragile as the sole gate... Whether that is acceptable is a deliberate policy call; at minimum it should be logged/alerted, and for a PII vendor call fail-closed or a local fallback limiter may be safer.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Fix: drop input_text, or log only a SHA-256 hash / short length indicator... Fix: apply an explicit allowlist of metadata keys known safe to log and drop everything else.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: never log input_text (log a hash/length/token-count or omit it); log the pseudonymized id from pseudonymize, not the raw applicant_id; and scrub/whitelist metadata since it may also carry PII.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "a missing required secret (a salt) must fail closed: raise if PII_SALT is absent (or empty/too short) rather than defaulting to \"\". Fix: salt = os.environ[\"PII_SALT\"]... if not salt: raise RuntimeError(\"PII_SALT is required\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: fail loudly if PII_SALT is missing/empty (raise at startup), require a sufficiently long random secret, and consider a keyed construction (HMAC-SHA256) rather than plain concatenation.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

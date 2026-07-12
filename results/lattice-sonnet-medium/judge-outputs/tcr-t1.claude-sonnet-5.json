@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31100,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1774048,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11940,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11940,
+        "cache_read_input_tokens": 181856,
+        "inference_geo": "not_available",
+        "input_tokens": 10,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1362,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1362,
+            "cache_read_input_tokens": 39729,
+            "input_tokens": 2,
+            "output_tokens": 1232,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3171,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover the same core factual findings (a-d) essentially equally well with accurate citations; neither explicitly flags the draft's mis-ordering (leading with self-congratulation, remediation deferred to the final sentence) as required by expectation (e).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Per `incidents/OPS-412-timeline.md:3-4`, failures began at 14:03 but the first page didn't fire until 14:50 (a 47-minute detection gap), and acknowledgment came at 15:05.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per `OPS-412-timeline.md`: failures began 14:03, but the first page didn't fire until 14:50 \u2014 a **47-minute** detection gap, not \"minutes.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`incidents/OPS-412-timeline.md:9-10` states 1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` states: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/sla-commitments.md:3-4` sets the contractual monthly SLA at 99.9% and states any month below that is a breach owing service credits scaled to the depth of breach. `metrics/uptime-2026.csv:6` shows April 2026 uptime at 99.77% \u2014 below the 99.9% threshold.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md` sets the contractual **monthly** uptime SLA at 99.9% and states any month below that is a breach owing service credits (scaled to breach depth). `metrics/uptime-2026.csv` shows April 2026 uptime at **99.77%**, below the 99.9% threshold \u2014 a contractual breach.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`docs/customer-comms-style-guide.md:5` states \"Never assign blame to an individual.\" The draft states \"The outage was caused by the on-call engineer deploying an untested config change\" (`drafts/postmortem-2026-04-checkout-outage.md:12-13`), which both blames a specific role-holder and exposes an internal role name",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"The outage was caused by the on-call engineer deploying an untested config change\" violates two explicit rules in `larkpay-comms/docs/customer-comms-style-guide.md`: rule 1, \"Never assign blame to an individual,\" and rule 2, \"Never expose internal system or role names\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1",
+  "repeat": 1,
+  "task": "tcr-t1"
+}

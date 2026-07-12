@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20085,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0942426,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3906,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3906,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9566,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3906,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3906,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9566,
+            "output_tokens": 2227,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2227,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent technical substance; Report 2 is marginally more explicit on point (d) by directly naming the 'shared environment' risk and prescribing a local/offline reproduction as the safe alternative.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The config still says `expected_label_field: label` (`config/scoring_config.yaml:2`), but the eval records no longer have a `label` field \u2014 they have `gold_label`. ... The file that should be changed is **`config/scoring_config.yaml`**: change `expected_label_field: label` to `expected_label_field: gold_label`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The config `config/scoring_config.yaml` still declares `expected_label_field: label`, but every eval record in `fixtures/eval_set.jsonl` now uses the key `gold_label`. ... The file that should be changed to fix it is **`config/scoring_config.yaml`**: change `expected_label_field: label` to `expected_label_field: gold_label`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It began on **2026-06-17**, introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** ... `nightly_scores.csv` shows 0.90\u20130.92 through 2026-06-16 and exactly 0.00 starting 2026-06-17 \u2014 a clean step change",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It began with the nightly run of **2026-06-17**, introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** ... `pipeline/metrics/nightly_scores.csv` shows the last good day is `2026-06-16` (0.91) and `2026-06-17` is the first `0.00`, coinciding exactly with that commit's date.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it re-ran tickets through `pipeline/score_one.py`, which just prints a prediction and **never compares against a gold label at all** ... To correctly reproduce: run the batch scorer itself (`python3 -m pipeline.score_batch`) \u2192 `0.00`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the investigator re-ran tickets through `pipeline/score_one.py`, which never reads a gold label or scores anything \u2014 it only prints the prediction. So it structurally *cannot* exhibit a gold-label-comparison bug ... Correct reproduction is to run the **batch** path that actually scores: `python3 -m pipeline.score_batch`, which reproduces `accuracy=0.00` on the spot.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Rolling back the model changes nothing about `record.get(\"label\")` returning `None`, so accuracy would stay 0.00, likely reinforcing the wrong \"the new model is bad\" conclusion and possibly triggering an unnecessary model revert. The correct one-line fix is updating `expected_label_field` in `config/scoring_config.yaml` to `gold_label`. I'd advise against acting on the rollback plan.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It also violates the playbook's \"never flip the model/config on a shared environment to see what happens\" guidance \u2014 the question should be answered with a local reproduction (already done), not a production model swap.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

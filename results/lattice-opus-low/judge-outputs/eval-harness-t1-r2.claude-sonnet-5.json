@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29963,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1059426,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4098,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4098,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4098,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4098,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 2931,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2931,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 fully addresses all four expectations, including the critical distinction that relevance/tone failures can be handled by renormalizing over succeeded axes while accuracy failures cannot; Report 2 covers the first three points well but treats all axis failures uniformly, missing that gate vs. non-gate axes warrant different handling.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "So the failed axis contributes `weight * 0.0 = 0` to the weighted sum, and the composite is still rounded and returned as an ordinary float. **The written record is byte-for-byte indistinguishable in form from a fully-scored one**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if value is None: value = 0.0` coerces the missing axis to **zero**, which is then added as `weight * 0.0`. So the failed axis silently contributes 0, and the row written is the same fixed three columns ... as a fully scored row. **In form it is indistinguishable**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A zero-valued axis is being treated as a real measurement when in fact no measurement exists... Agents that happened to hit more per-axis failures get systematically dragged down in the mean composite",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A transient infrastructure failure (one axis call not returning) is conflated with a genuine score of 0 on that axis... the fabricated-low composite is folded into the agent's mean and counted as a normal sample.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "For a failed accuracy call (load-bearing gate): do not write a normal-looking composite. Mark the record as degraded/incomplete (e.g., a status column, or write the composite as empty/null rather than a float)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a missing accuracy value must not be silently treated as a real low score... leaderboard.py must then exclude incomplete records from both the sum and the count so failures neither lower nor inflate an agent's mean.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed relevance or tone call is a non-load-bearing axis: the right move is to renormalize over the axes that succeeded and keep the result flagged complete \u2014 not to inject a 0. A failed accuracy call is load-bearing: you cannot emit a comparable-looking number at all",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

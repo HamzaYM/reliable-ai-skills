@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32786,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16938399999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4910,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4910,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9463,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4910,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4910,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9463,
+            "output_tokens": 2574,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2574,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully identify the prior reverted Edgerunner attempt, its recorded root cause, the deliberate container state, and owner sign-off tied to that history; they are comparable, with Report 2 slightly more explicit on ownership.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "this alone surfaces that the exact migration was already attempted and reverted (commit `1712565`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ticket PLAT-31: Edgerunner was added (`454a21f`), the per-request unpooled connection fix was shipped as a stopgap (`597777b`), and it was fully reverted in production (`1712565`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565` shows the previous Edgerunner migration (`454a21f`) was deployed, then patched to open a dedicated Postgres connection per request (`597777b`) as a stopgap because Edgerunner isolates can't hold the shared pool, and that stopgap itself caused `/reports/monthly` to exhaust Postgres `max_connections` in production",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it was fully reverted in production (`1712565`) because it \"exhausted Postgres `max_connections`\" and took `/reports/monthly` down with `FATAL: too many connections`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "they were already built and are recoverable from git history at `454a21f` (`backend/serverless_handler.py`, `deploy/edgerunner.toml`), so this would be a second attempt, not a first ... at which point the team reverted back to Cargobox",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it was fully reverted in production (`1712565`) ... the container approach is already working, I'd weigh whether the \"pay-per-request\" savings are worth re-introducing a known outage risk",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the fact that this was tried and reverted for a concrete, technical reason is itself information the decision-maker needs \u2014 this is a call for whoever owns `carelog-api`/`PLAT` tickets ... not something to silently re-attempt",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Whoever owns ticket PLAT-31 / has the incident context should be consulted, since they'll know what was tried after the revert (if anything) and why it hasn't been re-attempted since April",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

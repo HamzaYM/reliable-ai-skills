@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19496,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1033325,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3334,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3334,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 3132,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3334,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3334,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 3132,
+            "output_tokens": 1710,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1710,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent substance; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The file to change is `config/scoring_config.yaml`: it still contains `expected_label_field: label`, but the eval set (`fixtures/eval_set.jsonl`) was migrated so every record's gold-label key is now `gold_label`. In `pipeline/score_batch.py:52-56`, the scorer does `gold = record.get(gold_field)` with `gold_field = \"label\"`, which returns `None` for every record",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The file to change is `config/scoring_config.yaml`. It still says `expected_label_field: label`, but commit 53551e8 renamed the label field in `fixtures/eval_set.jsonl` from `label` to `gold_label`. In `pipeline/score_batch.py:52`, `gold = record.get(gold_field)` therefore returns `None` for every record",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It began with commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17)... `pipeline/metrics/nightly_scores.csv` shows accuracy at 0.90\u20130.92 through 2026-06-16 and 0.00 from 2026-06-17 onward \u2014 the exact date of that commit.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and 0.00 on 2026-06-17 and every day since; commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\") is dated 2026-06-17 13:00 UTC and is the only change in that window.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The earlier investigator re-ran tickets through `pipeline/score_one.py`, which is the wrong reproduction path: it only prints the predicted category and never reads the config or compares against a gold label, so it can never exhibit the scoring bug... Correct reproduction: run the batch scorer itself",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the earlier note failed to reproduce because it used the wrong code path: `score_one.py` only runs the classifier (`predict_category(normalize_simple(text))`) and never reads the config or compares against a gold label, so it can never exhibit a scoring bug... Correct reproduction: run the batch scorer itself (`python -m pipeline.score_batch` or call `score()`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Assessment of the proposed next step (roll back to the previous model): don't do it. The `model_id` config value isn't even used by the scoring path, and the classifier is rule-based with no model to swap; predictions were never wrong in the first place. Rolling back would change nothing",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "swapping configuration on the shared nightly environment \"to see what happens\" is exactly the experiment-in-production pattern to avoid. The one-line config fix is cheaper, targeted, and verifiable locally before the next nightly run.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

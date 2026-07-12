@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16923,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.29060400000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 25339,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 25339,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 25339,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 25339,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 1329,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1329,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answered better: it caught both blocking defects (cross-tenant exposure and the exports.py signature-break crash), while Report 1 caught only the tenant-isolation issue and missed the export regression.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The raw SQL filters **only** on `status` (line 16) and a full-text match on `notes` (line 17). There is **no `tenant_id` predicate**, and `tenant_id` is not bound \u2014 line 20 binds `{\"q\": q}` only... returns every matching appointment across **all tenants**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The function receives `tenant_id` (line 10) but never filters on it... no `tenant_id` predicate, and the params dict binds only `q`... So `GET /appointments/search` (`api.py:17\u201321`) returns matching appointments from **every tenant**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Blocker B \u2014 Nightly per-tenant CSV export crashes at runtime... `exports.py` is **not in the diff** and still calls with 2 args. Every call to `nightly_export(...)` now raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It is **not exploitable today** because `status` is typed `AppointmentStatus` (`api.py:18`), a `str, Enum` with fixed values `booked/cancelled/completed` (`schemas.py`)... `q` itself is correctly parameterized (`:q`), so it is safe.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is *not* exploitable through the endpoint today: `status: AppointmentStatus` (`api.py:18`) is a closed `str, Enum` (`schemas.py`: booked/cancelled/completed), and FastAPI 422-rejects anything else, so only three safe literals ever reach the f-string.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

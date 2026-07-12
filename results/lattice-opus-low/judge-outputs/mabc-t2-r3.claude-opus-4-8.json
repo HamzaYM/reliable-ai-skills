@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 53353,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.22721799999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5923,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5923,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9474,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5923,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5923,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9474,
+            "output_tokens": 4480,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4480,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable: each hits 3 of 4 \u2014 Report 1 nails the F-11 early-stage test staging (b) but downplays the shared-DB collision as \\\"harmless now\\\" (misses d), while Report 2 catches the critical RESULTS_DB corruption risk (d) but sequences F-11 into a later wave (misses b).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Stream A \u2014 `pipeline/registry.py`** (one engineer): F-05 (`DEFAULT_RUBRIC_VERSION` \u2192 v3), F-09 (`DEFAULT_DATASET` \u2192 `fixtures/eval_set.jsonl`), and F-02 (`aurora-1` endpoint) once unblocked. All three are edits to the same ~11-line file; giving them to one person avoids three-way merge churn.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer A \u2014 `registry.py`:** F-02, F-05, F-09. Three tiny, independent config edits in one file; kept with one owner so they don't collide.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "all **four streams run simultaneously (Wave 1)** \u2014 they touch disjoint files so there is no ordering constraint *between* streams. The only ordering is *within* a stream: fix before its test (F-04\u2192F-12, F-01\u2192F-11).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 a judgment call, not a mechanical fix.** \"Too lenient / tighten them\" gives no target numbers; changing thresholds shifts all downstream scores and historical comparability. It needs the reviewer/product owner to specify the new `(low, high)` values (and ideally a regression fixture) before an engineer touches it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 is a behavior/policy change, not a mechanical fix.** \"Tighten the partial-credit thresholds so borderline answers score lower\" changes the scores this pipeline emits for real outputs \u2014 a user-facing scoring-policy decision, not a settled bug. Per project documentation, I'd escalate it as a flagged batch ... and not let an engineer pick numbers unilaterally.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Shared test resource collision.** `tests/conftest.py:4` defaults `RESULTS_DB` to a single shared path `/var/tmp/llm-scoring/results.db`. Parallel pytest runs across engineers would read/write the same DB and cross-contaminate ... A **distinct `RESULTS_DB` value** exported per engineer (override of the `conftest.py:4` default) so parallel test runs use isolated result databases",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

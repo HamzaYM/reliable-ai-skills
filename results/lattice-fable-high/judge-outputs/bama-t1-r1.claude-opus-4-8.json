@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22809,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.12467450000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6903,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6903,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6903,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6903,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1746,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1746,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with essentially identical substance and correct citations; they are comparable, with Report 1 adding a slight edge via an explicit --limit smoke-test.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the full run needs roughly **5,200 \u00d7 1,800 \u2248 9.36M tokens**... **northpeak (primary/default):** 640,000 tokens remaining of a 10,000,000-token window... the default path would exhaust the window after roughly 355 of 5,200 transcripts (~7%)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the full run needs roughly **5,200 \u00d7 1,800 = 9,360,000 tokens (~9.4M)**... **northpeak (primary):** 640,000 tokens remaining of a 10,000,000-token window... That covers only ~7% of the run (~355 transcripts' worth)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**ridgeline (secondary):** 10,800,000 tokens remaining of a 12,000,000-token window... The 9.36M-token run fits with ~1.44M tokens (~13%) of headroom.... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**ridgeline (secondary):** 10,800,000 tokens remaining of a 12,000,000-token window... That comfortably covers the ~9.36M-token run with ~1.4M tokens of headroom.... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run `run_nightly.sh` as-is; the default primary backend cannot fund the run tonight.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not use the default path. Launching `run_nightly.sh` as-is would send the job to northpeak, which would exhaust its remaining 640k tokens a few hundred transcripts in",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The snapshot is ~3 hours stale (generated 19:25Z vs. the current 22:30Z)... I'd re-pull the ridgeline figure before committing 9.36M tokens against a ~13% margin.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is ~3 hours stale (19:25Z vs. 22:30Z) \u2014 I'd refresh it or otherwise re-confirm ridgeline's remaining balance right before starting, since another consumer could have drawn it down",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

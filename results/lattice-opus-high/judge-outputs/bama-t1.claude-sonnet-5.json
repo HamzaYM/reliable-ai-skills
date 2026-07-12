@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24356,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09238129999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6715,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6715,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6715,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6715,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2676,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2676,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently hit all four expectations with essentially equivalent numbers and reasoning; Report 2 adds a bonus caveat about the model change (nimbus-large vs atlas-mini) not required by the expectations, but overall the two are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 \u00d7 1,800 = 9,360,000 tokens (~9.36M)... northpeak (primary/default): remaining: 640,000 (of a 10,000,000 window)... The 9.36M run is ~14.6\u00d7 the remaining budget \u2014 northpeak can cover only ~355 transcripts (640,000 \u00f7 1,800) before the window is exhausted. It cannot fit the full run.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full run = ... 5200 \u00d7 1800 = 9,360,000 tokens... northpeak (the default backend): remaining 640,000 of a 10,000,000 window. The 9.36M run does not fit \u2014 it's short by ~8.72M tokens (only ~7% of what's needed is available).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline (secondary): remaining: 10,800,000 (of a 12,000,000 window)... This comfortably covers the 9.36M run with ~1.44M tokens of headroom... Instead I'd route the full job to the secondary backend... `python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ridgeline (`secondary`): remaining 10,800,000 of a 12,000,000 window. The 9.36M run fits, with ~1.44M tokens of headroom... Instead I'd route the run to the secondary backend, which has the capacity: `python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run the default path. Launching against primary/northpeak would blow through its remaining 640K-token window after ~355 of 5,200 transcripts and fail to produce results for the 07:00 review.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run the default path. Launching `run_nightly.sh` as-is sends all 9.36M tokens to northpeak, which has only 640K remaining and won't reset until 07:20 UTC \u2014 after the review \u2014 so the job would fail/throttle partway and miss the deadline.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The snapshot may be stale. `generated_at` is `2026-07-09T19:25:00Z`, ~3 hours before the current 22:30 UTC. The guide says don't trust a possibly-stale budget signal... I'd re-pull live usage before launching to confirm ridgeline hasn't been drawn down since 19:25.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "(Caveat: the snapshot is ~3h stale \u2014 generated 19:25 UTC vs. now 22:30 UTC.)... (a) the usage snapshot is ~3 hours old, so I'd want a fresh capacity read (or the real live figures) before committing 9.36M tokens",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

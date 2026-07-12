@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14601,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.136833,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5338,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5338,
+        "cache_read_input_tokens": 15436,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5338,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5338,
+            "cache_read_input_tokens": 15436,
+            "input_tokens": 9357,
+            "output_tokens": 1158,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1158,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports nail the cross-tenant leak (a) and correctly handle the raw-SQL string (c), and both miss the exports.py signature-mismatch (b); they are comparable, with Report 2 slightly more thorough.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Cross-tenant data exposure \u2014 `search_appointments`, `backend/app/appointments.py`... The query has **no `tenant_id` predicate**... then returns `id, tenant_id, provider, starts_at, status, notes` for **every matching row across all tenants**. Any authenticated tenant can read other clinics' appointments",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "(a) BLOCKER \u2014 Cross-tenant data exposure in `search_appointments`.\n`backend/app/appointments.py`, the new `search_appointments()` function... The `WHERE` clause has **no `tenant_id` predicate**... any authenticated user of tenant A calling `GET /appointments/search?q=...&status=booked` receives matching appointment rows for **every tenant** in the database",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`status.value` is injected via an f-string rather than a bound parameter. It is **not currently exploitable** because `status: AppointmentStatus` is a FastAPI-validated `str` Enum limited to `booked/cancelled/completed` (`schemas.py`)... `q` is correctly parameterized",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "FastAPI/Pydantic rejects any query value outside `{booked, cancelled, completed}` with a 422 before the function runs, so `.value` is always one of three fixed literals. **It is therefore NOT currently exploitable as SQL injection.**",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

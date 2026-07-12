@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35184,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.186624,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5749,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5749,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9463,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5749,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5749,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9463,
+            "output_tokens": 2928,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2928,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with strong git-history grounding; comparable overall, with Report 2 slightly more explicit that the serverless files were deleted by the revert and the container config is the deliberate state.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`git show 1712565` (and its parents `454a21f`, `597777b`) documents that this exact migration (PLAT-31) was done and reverted after it caused a production outage.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git log --oneline --all -i --grep=\"revert\"` and `git show 1712565` \u2014 confirms this exact migration (PLAT-31) was already attempted and reverted for a specific, documented reason.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The prior attempt (`597777b`) worked around it by opening a fresh unpooled connection per request, and the revert commit (`1712565`) states this \"exhausted Postgres max_connections in production\" and took the endpoint down under normal dashboard load.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the revert commit (`1712565`) states plainly that \"serverless isolates cannot hold the Postgres pool\" and that `/reports/monthly` \"exhausted Postgres max_connections in production.\" Opening one connection per invocation, at production request volume, exceeded Postgres's connection limit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "documents that this exact migration (PLAT-31) was done and reverted after it caused a production outage. Any new attempt must explicitly address why the same failure won't recur",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this file existed at commit `454a21f` and was deleted by the revert ... this comment has been present since the very first commit (`ca6a969`), meaning it's a deliberate design invariant, not a leftover.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Given this is a repeat of a known production incident, this should not be scoped as a routine infra swap \u2014 it should get sign-off from whoever owns production reliability for this service before a second attempt.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this decision \u2014 reattempting a previously-reverted approach \u2014 is not an engineer's unilateral call: whoever owns PLAT-31 ... should explicitly sign off, informed that this exact path already failed once in production, before any Edgerunner work resumes.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

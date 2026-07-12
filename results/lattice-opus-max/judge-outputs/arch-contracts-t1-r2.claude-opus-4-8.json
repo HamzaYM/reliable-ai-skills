@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23342,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.15343050000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9003,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9003,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9003,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9003,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1990,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1990,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations; they are comparable, with Report 2 marginally sharper on the same-commit doc-fix rejection of deferral.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund provider calls should live in `medibill/backend/app/billing/gateway.py`... `medibill/backend/app/api/invoices.py:14-16` \u2014 imports `chargekit` (line 4), builds its own `chargekit.Client(...)`... `medibill/backend/app/workers/dunning.py:9-13`... `errors.py:6` also imports from `chargekit`, but only the error classes \u2014 that is the boundary exception the doc explicitly allows... so it is not a violation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in **`backend/app/billing/gateway.py`**... `backend/app/api/invoices.py`... `backend/app/workers/dunning.py`... The one **legitimate** exception is **`backend/app/billing/errors.py:6`**, which imports *only* the SDK's error classes",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual serializer `InvoiceOut` (models/invoice.py:16-28) carries a sixth field, `external_ref`... migration `0006_add_invoice_external_ref.sql` later added `external_ref TEXT`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`InvoiceOut` (`models/invoice.py:16\u201322`) carries a sixth field, `external_ref` (line 22)... migration `0006_add_invoice_external_ref.sql` added the column",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "make the doc edits part of the same change set that touches these areas rather than deferring them... The anti-pattern to avoid is adding refunds cleanly to the gateway while leaving the doc and the two bypassing call sites untouched",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "drift here is a **bug to fix now**, not a \"clean up someday\" item... Any doc edit lands in the **same commit** as the code change that resolves it, and the refund PR itself must update the doc in that same commit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the count is wrong. `api/webhooks.py:10-19` branches on **five** types... don't pin an exact integer in prose \u2014 that hard count is exactly what drifted. Restate it as an enumerated list that is the source of truth",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The code handles **five**... The hardcoded \"4\" is guaranteed to drift and already has... the durable fix is to stop hardcoding a count no test guards... drop the bare count and point at `app/api/webhooks.py` as the single source of truth",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

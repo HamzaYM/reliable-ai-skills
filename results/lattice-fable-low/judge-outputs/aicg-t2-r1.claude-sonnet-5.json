@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17912,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0905327,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6560,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6560,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3097,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6560,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6560,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3097,
+            "output_tokens": 1861,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1861,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with concrete, correct fixes; Report 2 is slightly crisper and more direct on the rate-limiter fail-closed fix, but overall the two are comparable in substance and coverage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "catch only the specific transient classes (`except (RateLimitError, RequestTimeoutError, ServerError)`), re-raise everything else, and log only the exception type name, not its repr.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "catch only the vendor exception base classes, re-raise when `is_non_retryable(e)`, and only fall over otherwise \u2014 with unit tests for each class.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Fail-closed (or fail-open with loud alerting and a local fallback limiter) is safer.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: fail closed by default in all environments \u2014 return `False` on `RedisError`, remove the STAGE check (or replace it with a narrow, explicitly named local-dev override like `RATE_LIMIT_DISABLED_FOR_LOCAL_DEV=1`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "drop `input_text` entirely (log at most a length/hash), and allowlist specific metadata fields.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "replace `input_text` with a hash and/or length (e.g. `sha256(input_text)[:16]` plus `input_len`); and filter metadata through an explicit allowlist of safe keys (e.g. `doc_type`, `model`, `latency_ms`), dropping everything else \u2014 allowlist, not denylist.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Concrete fix: raise (fail fast) if `PII_SALT` is missing or empty, and prefer a keyed construction (`hmac.new(salt_key, applicant_id, sha256)`) over string-concatenation hashing.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Fix:** fail hard on a missing secret \u2014 `salt = os.environ[\"PII_SALT\"]` or explicitly `raise RuntimeError(\"PII_SALT is required\")` when absent/empty",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

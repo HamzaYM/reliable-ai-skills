@@ -1,0 +1,82 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "",
+        "hit": false
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 23323,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.301871,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 5941,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 5941,
+          "cache_read_input_tokens": 18331,
+          "inference_geo": "not_available",
+          "input_tokens": 9342,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 5941,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 5941,
+              "cache_read_input_tokens": 18331,
+              "input_tokens": 9342,
+              "output_tokens": 1426,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 1426,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": false,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "Returns unconditionally whenever `STAGE` is anything other than the exact string `\"production\"`, including when `STAGE` is **unset**... fail-open by default... **Path C**... `return True`. Assessment: fail-open on Redis outage... for a PII vendor call fail-closed or a local fallback limiter may be safer.",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "Acceptable for local/dev but fragile as the sole gate... Whether that is acceptable is a deliberate policy call; at minimum it should be logged/alerted, and for a PII vendor call fail-closed or a local fallback limiter may be safer.",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "b",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "aicg-t2"
+}

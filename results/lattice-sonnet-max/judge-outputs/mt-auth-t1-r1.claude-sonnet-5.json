@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23973,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1353282,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9769,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9769,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9769,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9769,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2594,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2594,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit nearly identical marks on root cause, commit identification, and remediation, but Report 2 explicitly specifies a blocking boot-time startup check that refuses to start the app on misconfiguration, while Report 1 only proposes a periodic/pre-deploy check, making Report 2 marginally more complete against expectation (e).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "PostgreSQL's row-security policies are, by design, not applied to the table's owner unless the table is also altered with FORCE ROW LEVEL SECURITY... docker-compose.yml:5, .env.example:1, and infra/main.tf:2 all set DATABASE_URL to postgresql://juniper_owner:ownerpw@db:5432/juniper",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "PostgreSQL exempts table owners from their own RLS policies by default... juniper/.env.example:1, juniper/docker-compose.yml:5, and juniper/infra/main.tf:2 all currently set DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The break is commit b2a23d2, \"ROTA-214 run migrations from the api container on boot\" (2026-06-17T15:20:00Z). git show --stat b2a23d2 shows it touches exactly 3 files, 1 line each \u2014 .env.example, docker-compose.yml, infra/main.tf \u2014 changing DATABASE_URL from juniper_app:apppw to juniper_owner:ownerpw in all three.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It became exploitable at commit b2a23d2a527cd13589163a40ef51b2eb2a430af6 \u2014 ROTA-214 run migrations from the api container on boot... Its diff changes exactly three files, each a one-line role swap: .env.example, docker-compose.yml, infra/main.tf: juniper_app:apppw \u2192 juniper_owner:ownerpw",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "change DATABASE_URL back from juniper_owner:ownerpw to juniper_app:apppw. juniper_app already has exactly the grants it needs... Add ALTER TABLE appointments FORCE ROW LEVEL SECURITY; in a new migration",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the DATABASE_URL used by the running API process must go back to juniper_app... Add a migration that runs ALTER TABLE appointments FORCE ROW LEVEL SECURITY;",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an explicit tenant filter to the query in backend/app/routes/appointments.py:16-19 (e.g. WHERE tenant_id = current_setting('app.current_tenant')::uuid), so isolation doesn't depend on exactly one mechanism",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an explicit WHERE tenant_id = :tid to the query in backend/app/routes/appointments.py:16-19, using the same claims[\"tenant_id\"] already extracted in deps.py:19.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Add an automated environment check (pre-deploy or periodic) that queries pg_roles/pg_tables and asserts the configured runtime role is not superuser, not rolbypassrls, and not the owner of any table carrying row-security policies",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Add a startup check (e.g., in db.py at engine creation, or a dedicated health check) that queries current_user, pg_roles.rolbypassrls, pg_roles.rolsuper, and whether current_user owns appointments (pg_tables.tableowner), and refuses to start if any of those indicate a bypass path. This turns the exact ROTA-214-style change into a boot-time crash instead of a silent data leak.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r1",
+  "repeat": 1,
+  "task": "mt-auth-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23659,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1556255,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9311,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9311,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9311,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9311,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1949,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1949,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with well-cited commit history; they are comparable, with Report 2 slightly more thorough on packaging/driver gaps.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "this migration was performed once under PLAT-31 (`git show 454a21f`, `597777b`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git log --oneline` in `carelog-api` shows commits `454a21f` \"Add Edgerunner serverless deploy for API (PLAT-31)\", `597777b` \"Open a dedicated Postgres connection per request in the serverless handler (PLAT-31)\", and `1712565` \"Revert Edgerunner migration\u2026",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "reverted (`1712565`) after taking `/reports/monthly` down in production. The specific risk ... Under per-request connections, \"normal dashboard load\" opened connections faster than Postgres recycled them \u2192 `FATAL: too many connections` \u2192 endpoint down (`1712565`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565`: \"serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres `max_connections` in production.\" The body adds that \"per-request connections opened faster than Postgres could recycle them and tripped the connection limit (`FATAL: too many connections`), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "attempted, run in production, caused an outage (`FATAL: too many connections`), and deliberately reverted back to Cargobox one week later",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this migration was executed end-to-end, caused a production outage (`FATAL: too many connections`, endpoint down), and was reverted under PLAT-31",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "It should go to the owner of PLAT-31 / the platform decision, who reverted it as a production call \u2014 the prior attempt and revert are information they need.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the platform/infra owner of PLAT-31 (author of the reverted attempt ...) ... Because this touches shared database capacity and has a prior production outage, it is explicitly not a solo decision.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

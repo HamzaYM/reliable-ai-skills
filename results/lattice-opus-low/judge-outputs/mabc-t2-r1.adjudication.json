@@ -1,0 +1,82 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "",
+        "hit": false
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 19933,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.280421,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 5387,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 5387,
+          "cache_read_input_tokens": 18331,
+          "inference_geo": "not_available",
+          "input_tokens": 9340,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 5387,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 5387,
+              "cache_read_input_tokens": 18331,
+              "input_tokens": 9340,
+              "output_tokens": 1219,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 1219,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": false,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "**Wave 1 \u2014 code fixes, fully parallel (files are disjoint):** ... **Engineer C \u2014 `registry.py`:** F-02, F-05, F-09 ... **Wave 2 \u2014 the two test findings, after their target fix lands:** F-11 ... goes to **Engineer B** ... F-12 ... goes to **Engineer A**",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "Wave 2 \u2014 the two test findings, after their target fix lands: F-11 (rubric edge-case parsing) depends on F-01, so it goes to Engineer B, written *after* the F-01 fix.",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "b",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "mabc-t2"
+}

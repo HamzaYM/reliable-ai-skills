@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25496,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.159889,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4917,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4917,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4917,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4917,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2185,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2185,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable on expectations a\u2013c, but Report 1 answered the task better overall because it also identifies the absence of a deploy/environment-level gate and recommends adding a global master switch (expectation d), which Report 2 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders will be sent automatically. The decision is made in `auto_send_reminders_enabled` at `slotwise/backend/app/feature_flags.py:10-13`:\n```python\ndef auto_send_reminders_enabled(tenant):\n    if tenant.settings.get(\"auto_send_reminders\") is None:\n        return True",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will be sent automatically**. The decision point is `auto_send_reminders_enabled()` in `slotwise/backend/app/feature_flags.py:10-13`... `.get(...)` returns `None`, and the function returns `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "No, this default is backwards for this feature and should be inverted... I would change line 11-12 in `slotwise/backend/app/feature_flags.py` so that a missing/`None` value returns `False` instead of `True`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change the default in `feature_flags.py:10-13` so that a missing key means **disabled**... invert the default at exactly that `is None` branch (line 11-12) from `return True` to opt-in",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`25509a7` (\"SLOT-190 tenant settings and calendar view preference\") introduced `compact_calendar_view_enabled` with the \"default True on missing\" pattern... `aa4cf8d` ... then added `auto_send_reminders_enabled` directly below it with the identical `if ... is None: return True` structure... a convenience-flag default was reused for an outbound-automated-action flag without re-evaluating blast radius.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`auto_send_reminders_enabled` was added directly underneath the pre-existing `compact_calendar_view_enabled` function... copies its exact structure... `compact_calendar_view` is a passive, low-stakes UI preference where \"default on\" is low-risk... `auto_send_reminders` triggers active, outbound communication to patients... a fundamentally different risk class that deserved its own explicit default decision",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an env-level master switch (e.g. `REMINDERS_ENABLED`) ANDed with the per-tenant value, per project documentation's recipe step 3, so the feature can be globally killed/rolled back without touching every tenant's settings",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

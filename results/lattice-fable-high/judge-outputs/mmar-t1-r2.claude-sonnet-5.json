@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32070,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.3177837,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 39787,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 39787,
+        "cache_read_input_tokens": 76119,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 946,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 946,
+            "cache_read_input_tokens": 38841,
+            "input_tokens": 2,
+            "output_tokens": 1081,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3483,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with equivalent substance; Report 2 offers marginally more rigorous confirmation methodology (AST parse, dedicated refutation pass, repo-wide compensating-control sweep) but the two are comparable in meeting the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Cross-tenant data leak: the search query is not tenant-scoped.** File: `backend/app/appointments.py`, `search_appointments` (branch lines 10\u201321)... there is no `tenant_id` condition anywhere, and the `tenant_id` argument is never bound into the query.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Cross-tenant data exposure (PHI leak) \u2014 the new search path has no tenant filter.** Location: `backend/app/appointments.py`, `search_appointments` (lines 10\u201320 on the branch)... the function accepts `tenant_id` but never uses it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Runtime breakage of the nightly export: `build_appointment_query` gained a required argument but an existing caller was not updated.** Files: `backend/app/db.py` line 7 (signature changed to `build_appointment_query(session, tenant_id, filters)` with no default) and `backend/app/exports.py` line 11 (`nightly_export` still calls `build_appointment_query(session, tenant_id)`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The nightly export crashes with `TypeError` on every run after merge.** Location: `backend/app/db.py:7` \u2014 `build_appointment_query(session, tenant_id, filters)` now takes `filters` as a **required** positional parameter (no default) \u2014 versus `backend/app/exports.py:9`, where `nightly_export` still calls `build_appointment_query(session, tenant_id)` with two arguments.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Today this is not exploitable through the HTTP endpoint, and I confirm that precisely: `backend/app/schemas.py` defines `AppointmentStatus` as a `str` Enum with only `booked`/`cancelled`/`completed`, and FastAPI rejects any other value for the `status: AppointmentStatus` query parameter before the handler runs.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this is **not exploitable over HTTP today** \u2014 `backend/app/api.py` types the parameter as `status: AppointmentStatus`, and `backend/app/schemas.py` defines that enum with exactly three fixed values (`booked`/`cancelled`/`completed`); FastAPI rejects anything else with a 422 before the handler runs.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

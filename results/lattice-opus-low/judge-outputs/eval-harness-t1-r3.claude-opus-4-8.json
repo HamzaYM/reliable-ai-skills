@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23684,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.148738,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4146,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4146,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4146,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4146,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 2075,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2075,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports nail the core defect and its ranking impact; Report 2 answers better because it explicitly distinguishes the defensible renormalize-over-surviving-axes handling for relevance/tone from the accuracy-gate case, which Report 1 does not.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`run_batch.py:20-21` swallows it and sets `axis_scores[axis] = None`. That dict is passed to `composite()` (`aggregate.py`), where `aggregate.py:9-11` does `value = axis_scores.get(axis)` and **`if value is None: value = 0.0`** ... The written record is **indistinguishable in form** from a fully-scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the failed axis hits `if value is None: value = 0.0` (lines 9\u201311) \u2014 so the missing axis is **treated as a score of 0.0** ... **the failed record is indistinguishable in form from a fully-scored one**: same three columns, same numeric composite, no flag, null marker, or status column",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A failed call is *missing data*, but the code treats it as a *measured zero* ... leaderboard.py: `rankings()` sums and counts every row equally (`leaderboard.py:14-15`) and divides by count. The deflated composites drag down the mean of whichever agents happened to hit failures",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "there is no way, from the file alone, to tell a real 3.05 from a failure-corrupted one ... `rankings()` blindly averages every composite (`sums/counts`), so each corrupted row drags an agent's mean down by roughly `weight\u00b7(true axis score)`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Because accuracy is the weighted gate, a missing accuracy score in particular should exclude the record from ranking rather than count as 0.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That record must be treated as degraded/incomplete ... do not write a normal composite. Mark the record degraded/incomplete (e.g. a status column, or omit the composite value) ... If nothing scoreable survives, emit nothing \u2014 not a zero, not a placeholder.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "A failed **relevance or tone** call is a non-load-bearing embellishment: it's reasonable to renormalize the composite over the surviving axes and keep the record marked complete ... A failed **accuracy** call is load-bearing ... That record must be treated as degraded/incomplete and the accuracy call queued for retry, not silently zeroed.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 41085,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.20716800000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6889,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6889,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6889,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6889,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 3315,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3315,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations; Report 1 is marginally firmer in prescribing fail-closed for the rate limiter, while Report 2 hedges (\"acceptable\"/\"may be safer\") but adds useful extra defects (missing TTL, unwrapped secondary call).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The catch is a **bare `except Exception`**, so it treats every exception class from `providers.py` identically \u2014 it fails over all of them to the secondary vendor... Concrete fix: replace the bare catch with an explicit non-retryable denylist and only fail over the rest. E.g.:\nNON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Because it catches the base `Exception`, *every* error class the primary can raise is treated identically \u2014 retry on the secondary vendor... Fix: catch only the retryable set, e.g. `except (RateLimitError, RequestTimeoutError, ServerError) as e:`, let `BadRequestError`/`ContentPolicyError`/`AuthError` propagate",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A** \u2014 returns `True` whenever `STAGE` is anything other than the literal `\"production\"`... **Assessment: fails open by default and gates on an environment-name string.**... Fix: fail closed by default... **Path C** \u2014 on `RedisError`, returns `True`. **Assessment: fails open.**... Fix: return `False` on `RedisError` (block...), not `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Returns unconditionally whenever `STAGE` is anything other than the exact string `\"production\"`, including when `STAGE` is **unset**... fail-open by default... **Path C**... `return True`. Assessment: fail-open on Redis outage... for a PII vendor call fail-closed or a local fallback limiter may be safer.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`input_text` is logged verbatim.** This is the full applicant intake document \u2014 the sensitive personal data itself... Fix: drop `input_text`... **`metadata` is logged wholesale**... Fix: apply an explicit **allowlist** of metadata keys known safe to log and drop everything else.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`input_text` is the **full applicant intake document** \u2014 precisely the sensitive personal data \u2014 written verbatim to the application logs... Fix: never log `input_text` (log a hash/length/token-count or omit it)... and scrub/whitelist `metadata` since it may also carry PII.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` **silently falls back to an empty salt** when the variable is unset. With an empty salt the function computes an unsalted SHA-256 of the applicant id... a missing required secret (a salt) must **fail closed**: raise if `PII_SALT` is absent",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if `PII_SALT` is unset (or empty), `salt` defaults to `\"\"`, so the output is an **unsalted SHA-256 of the applicant id** \u2014 and it does so **silently**, with no error or warning... Fix: fail loudly if `PII_SALT` is missing/empty (raise at startup)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

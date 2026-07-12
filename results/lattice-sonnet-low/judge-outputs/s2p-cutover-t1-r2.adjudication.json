@@ -1,0 +1,82 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "That same digest is then reused for both environments: `deploy-staging` (needs: `build-frontend`, line 22-28) and `deploy-prod` (needs: `[build-frontend, deploy-staging]`, line 29-35) both consume `needs.build-frontend.outputs.digest` \u2014 there is no separate `--mode production` build step and no prod-specific artifact.\n- **Consequence**: the bundle shipped to production will contain `VITE_API_BASE_URL=https://staging-api.example.com` baked in, since `vite build --mode staging` is the only build that ever runs and it will load `.env.staging` (Vite's mode-based env file convention). The production frontend would call the staging API.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 21882,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.334341,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 7453,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 7453,
+          "cache_read_input_tokens": 18331,
+          "inference_geo": "not_available",
+          "input_tokens": 9340,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 7453,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 7453,
+              "cache_read_input_tokens": 18331,
+              "input_tokens": 9340,
+              "output_tokens": 1471,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 1471,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "the bundle shipped to production will contain `VITE_API_BASE_URL=https://staging-api.example.com` baked in, since `vite build --mode staging` is the only build that ever runs ... The production frontend would call the staging API.",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "b",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "s2p-cutover-t1"
+}

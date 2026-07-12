@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 39395,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1260642,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3981,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3981,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9668,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3981,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3981,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9668,
+            "output_tokens": 4298,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4298,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent on root cause, timing, and the flaky-note rebuttal; Report 1 edges ahead slightly by proposing a concrete offline regression-test verification step, but neither cites nightly_scores.csv to corroborate the regression date.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`config/scoring_config.yaml` sets `expected_label_field: label`. But every record in `fixtures/eval_set.jsonl` now stores the gold answer under the key `gold_label`, not `label`... The file to change is **`ticket-scorer/config/scoring_config.yaml`**: `expected_label_field` should be `gold_label` to match the current fixture schema",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`ticket-scorer/config/scoring_config.yaml` still has `expected_label_field: label`, but `ticket-scorer/fixtures/eval_set.jsonl` records now key the gold answer as `\"gold_label\"`... The fix is a one-line change to `config/scoring_config.yaml`: change `expected_label_field: label` to `expected_label_field: gold_label`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The prior investigation reproduced at the wrong layer. It used `pipeline/score_one.py`, which calls `predict_category` directly on a hand-supplied string and never touches `config/scoring_config.yaml`, `expected_label_field`, or the eval set's gold-label key at all \u2014 so it is structurally incapable of exposing this bug regardless of how many tickets are tried.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The reason the earlier engineer couldn't reproduce it is that they used `pipeline/score_one.py` for their spot-checks, which calls `predict_category(normalize_simple(text))` directly and never reads `config/scoring_config.yaml` or `fixtures/eval_set.jsonl` at all \u2014 it has no gold-label comparison logic whatsoever, so it structurally cannot exhibit this bug.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "There is no model in this pipeline to roll back \u2014 the classifier is an explicitly deterministic, offline keyword-rule stub... Rolling back \"the model\" would burn effort on a no-op change, wouldn't touch `scoring_config.yaml` or the eval fixture, and accuracy would remain 0.0 afterward... The actual fix is a one-line config change plus a regression test that runs the batch scorer end-to-end against the real fixture (not a hand-picked ticket)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reverting the model would leave `expected_label_field: label` pointing at a key that no longer exists in the eval records, so accuracy would remain 0.0 regardless of which model is used, while adding operational risk/churn (redeploying an older model) for no benefit. This is a config/data-schema bug, and rolling back the model is treating the wrong layer.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

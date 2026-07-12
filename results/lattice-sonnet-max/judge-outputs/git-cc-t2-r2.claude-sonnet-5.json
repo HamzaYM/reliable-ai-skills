@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16131,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10632119999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7239,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7239,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9696,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7239,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7239,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9696,
+            "output_tokens": 1673,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1673,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations with nearly identical technical substance (same commits, same conflict finding via git merge-tree, same rebase plan); Report 2 additionally clarifies the two-dot vs three-dot diff distinction more explicitly, but both are comparable in quality and completeness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Target `main`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/weighted-scorer` is a feature branch, not an integration branch, and (per Q2) its work has already landed in `main`, so it is not a valid target.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/weighted-scorer` is **not an ancestor of `main`** ... yet its tree is **byte-identical to `main`'s current tip** ... `main`'s tip commit `1971f08` is dated 2026-06-13 ... carries a GitHub-style squash-merge message (\"... (#42)\"). Together this is the signature of `feat/weighted-scorer` having been squash-merged into `main` via a PR \u2014 its commits (W1\u2013W3) were rewritten into a single new commit rather than preserved as ancestors.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`feat/pairwise-metric` was branched from the tip of `feat/weighted-scorer`**, not from `main` ... `feat/weighted-scorer` is **not a git ancestor of `main`** ... but `git diff ac9d505 main --stat` produces **zero output** ... the evidence conclusively points to one conclusion: **`feat/weighted-scorer` was already reviewed and squash-merged into `main` as PR #42.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`, the full +13/-3 (the `WEIGHTS` dict, weighted `total` computation, docstring change) \u2014 100% from `feat/weighted-scorer` (W1+W2). Already on `main` verbatim. ... the remaining 16 insertions/3 deletions are stale carry-over from the `feat/weighted-scorer` dependency, present only because `feat/pairwise-metric` branched from it before PR #42 squash-merged it into `main`, and has never been rebased since",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The other 16 (all of `scorer.py`, and `overlap()` in `metrics.py`) are the weighted-scorer feature, byte-for-byte identical to what's already merged into `main` in `1971f08`. **This content is present only because `feat/pairwise-metric` branched off `feat/weighted-scorer` before the latter was squash-merged, and was never rebased afterward**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Re-verify ground truth immediately before acting (`git fetch origin` + re-diff) ... Replay only the genuinely new commits \u2014 X1 `7b2e100` and X2 `1bfecb6` \u2014 onto current `main`, dropping the redundant W1\u2013W3 commits: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... After rebasing, confirm the fix worked rather than assuming it: `git diff main..<branch>` should show exactly 2 files/5 insertions (grader.txt +1, metrics.py +4, nothing in scorer.py)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Rebase the branch onto current `main`, dropping the now-redundant `feat/weighted-scorer` commits**: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`. ... **Re-verify the cleaned-up state**: `git log --oneline main..feat/pairwise-metric` should show only the 2 commits (X1, X2), and `git diff main...feat/pairwise-metric` should show only the 2-file/5-line diff.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

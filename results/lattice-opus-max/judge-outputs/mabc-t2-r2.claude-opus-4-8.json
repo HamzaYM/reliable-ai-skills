@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47562,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2172085,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10243,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10243,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10243,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10243,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 4005,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4005,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is stronger: it hits all four expectations, notably staging F-11 in the early concurrent wave and clearly explaining the shared RESULTS_DB collision requiring per-engineer overrides, whereas Report 2 defers F-11 to a later wave and downplays the conftest.py database-collision risk.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Group B \u2014 registry/config (`pipeline/registry.py`):** F-02 add `aurora-1` endpoint, F-05 bump default to `rubric-v3`, F-09 repoint `DEFAULT_DATASET`... Three edits, one file \u2192 one owner.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "| `pipeline/registry.py` | **F-02, F-05, F-09** (three constant edits in a 12-line file) |",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "With one convention \u2014 each group puts its new tests in its **own** new file... Groups A/B/C/D touch fully disjoint files and run as **one parallel wave (Wave 1)**... C: F-01 \u2192 F-11 ... **F-06 is a deferred Wave 2**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 (tighten `PARTIAL_CREDIT_THRESHOLDS`) \u2014 escalate, don't assign. It's a **user-facing behavior change**... Re-scoring can invalidate historical comparisons. Per project documentation, flag behavior changes that aren't a settled decision, get the exact thresholds and sign-off",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 not a defect; a policy decision... Changing `PARTIAL_CREDIT_THRESHOLDS` silently re-scores historical/borderline outputs and needs an eval-owner sign-off plus re-baselining. \u2192 Escalate for a decision, don't hand out as a mechanical fix.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`tests/conftest.py:4` points every run at a single `RESULTS_DB` (`/var/tmp/llm-scoring/results.db`). Parallel test runs on one machine share that DB and can clobber each other unless each engineer overrides `RESULTS_DB`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

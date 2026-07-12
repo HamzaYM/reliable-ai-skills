@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36580,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1639662,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11877,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11877,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11877,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11877,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 3660,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3660,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger overall: it matches Report 1 on config traps and OIDC, is more explicit and correct about the API-base-URL trap, and uniquely nails the migration-gap finding (explicitly calling the runbook claim false and demanding confirmation), which Report 1 only hedges as 'unverifiable'.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "AUTH_RELAXED = \"true\"\". Read at backend/config.py:9. This is a boolean auth-loosening switch left on in prod ... Change to \"false\". ... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" ... A hardcoded QA email auto-provisioned as superadmin \u2014 a backdoor account that must not exist in production. Remove this key entirely for prod",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "AUTH_RELAXED = \"true\"... Delete the line entirely. ... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... Delete the line... SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"... Delete the line; if shadow scoring is genuinely wanted in prod later, it needs its own prod-labeled sink",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production frontend, once deployed, ships JavaScript with https://staging-api.example.com compiled in as its API base URL. Production user traffic would be sent to the staging backend rather than infra/prod's API ... A production-mode frontend build / frontend/.env.production (Answer 2) \u2014 needed before this pipeline can ship a bundle that actually talks to the prod API.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Net effect: the exact same compiled bundle \u2014 with https://staging-api.example.com permanently inlined \u2014 is what ships to production. There is no --mode production build, no .env.production file to even supply a different value if a rebuild were added, and no step that rebuilds for prod at all. This is project documentation's \"rebuild per environment; don't promote a build artifact wholesale\" trap",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The migrations claim in the runbook is unverified and likely false as wired. docs/prod-runbook.md:6 states \"Database migrations are applied automatically during deploy,\" but deploy.yml contains no reference to backend/migrations, alembic, or any migration tool... For a brand-new prod database, someone needs to confirm explicitly how 0001_base, 0002_tenants, 0003_billing (backend/migrations/versions/*.py, all currently stub upgrade(): pass bodies) actually get applied.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 sets the identical literal string, oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\" \u2014 confirmed unedited by git diff 28f07ee 2f6572d... This must be fixed (infra/prod/main.tf:3 \u2192 \"repo:acme-health/medislot:environment:production\") before or as part of the terraform apply for infra/prod.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 still has oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\" \u2014 copied verbatim from staging and never updated ... the fix is changing infra/prod/main.tf:3 to repo:acme-health/medislot:environment:production before applying.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

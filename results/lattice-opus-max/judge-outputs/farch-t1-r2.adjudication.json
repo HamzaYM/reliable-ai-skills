@@ -1,0 +1,154 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "Commit `1712565` is titled *\"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31).\"*",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 13303,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.326414,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 9412,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 9412,
+          "cache_read_input_tokens": 15224,
+          "inference_geo": "not_available",
+          "input_tokens": 9340,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 9412,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 9412,
+              "cache_read_input_tokens": 15224,
+              "input_tokens": 9340,
+              "output_tokens": 591,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 591,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "The identical migration was implemented, run in production, caused a customer-facing outage (`/reports/monthly` down with `FATAL: too many connections`), and was deliberately reverted roughly three months ago (revert `1712565`, dated Apr 21 2026",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "c",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    },
+    {
+      "adjudicator_mark": {
+        "evidence": "`git -C carelog-api log --oneline` shows commits `454a21f` \u2192 `597777b` \u2192 `1712565`, all tagged **PLAT-31**: this exact migration was built and then reverted. Read `git show 1712565` before doing anything else.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 25572,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.37226400000000004,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 9412,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 9412,
+          "cache_read_input_tokens": 15224,
+          "inference_geo": "not_available",
+          "input_tokens": 9340,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 9412,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 9412,
+              "cache_read_input_tokens": 15224,
+              "input_tokens": 9340,
+              "output_tokens": 1508,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 1508,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "this exact migration was built and then reverted. Read `git show 1712565` before doing anything else.",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "c",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "farch-t1"
+}

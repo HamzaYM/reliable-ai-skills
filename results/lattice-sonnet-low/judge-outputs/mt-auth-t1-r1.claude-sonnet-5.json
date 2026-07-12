@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23398,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11856719999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6373,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6373,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6373,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6373,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2835,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2835,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 hits all five expectations, including the explicit app-level tenant_id filter as a second isolation layer (d), which Report 2 omits entirely \u2014 Report 1 is more complete.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "row-level security policies are not applied to the table owner by default, even when ALTER TABLE ... ENABLE ROW LEVEL SECURITY has been run... To make RLS apply to the owner too, the table must additionally have ALTER TABLE appointments FORCE ROW LEVEL SECURITY; \u2014 and juniper/db/migrations/0003_rls.sql never does this.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Postgres Row-Level Security, by default, does not apply to the table owner (or superusers), regardless of policies defined \u2014 only to other roles, unless the table has FORCE ROW LEVEL SECURITY set... The leak happens because the running API is configured to connect as juniper_owner... see docker-compose.yml, .env.example, and infra/main.tf, all of which set DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It became exploitable with commit b2a23d2 (\"ROTA-214 run migrations from the api container on boot\")... Commit b2a23d2 changed the same one line in all three files to postgresql://juniper_owner:ownerpw@...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit b2a23d2 (\"ROTA-214 run migrations from the api container on boot\", authored 2026-06-17) introduced the vulnerability. It changed DATABASE_URL in all three deployment/config surfaces \u2014 .env.example, docker-compose.yml, and infra/main.tf \u2014 from postgresql://juniper_app:apppw@db:5432/juniper to postgresql://juniper_owner:ownerpw@db:5432/juniper.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Primary fix \u2014 stop connecting as the owner for runtime traffic. Revert DATABASE_URL... back to the juniper_app role for the API's request-serving connection... Belt-and-suspenders fix \u2014 add FORCE ROW LEVEL SECURITY.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Immediate/primary fix: revert the runtime DATABASE_URL in docker-compose.yml, .env.example, and infra/main.tf back to the low-privilege juniper_app role... Defense in depth at the database layer: add ALTER TABLE appointments FORCE ROW LEVEL SECURITY;",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Also add an app-level filter as defense in depth, per project documentation: add WHERE tenant_id = :tenant_id to the query in juniper/backend/app/routes/appointments.py:16-19, using the same claims[\"tenant_id\"] already extracted in request_connection().",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Boot-time privilege check, exactly as project documentation recommends: on API startup, query SELECT rolname, rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user;... and hard-fail startup (not just log a warning) if the connected role is a superuser, has BYPASSRLS, or owns a table with an active RLS policy.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add a CI/startup assertion (or a lightweight migration/smoke check) that queries pg_roles/current_user at application boot and fails fast if the connected role has rolbypassrls = true or is the owner of a table with RLS policies \u2014 this directly catches \"app is connecting as a privileged role\" before it reaches production.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r1",
+  "repeat": 1,
+  "task": "mt-auth-t1"
+}

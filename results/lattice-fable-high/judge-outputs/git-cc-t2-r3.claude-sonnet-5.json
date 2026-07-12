@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24203,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1268512,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10002,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10002,
+        "cache_read_input_tokens": 66664,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1636,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1636,
+            "cache_read_input_tokens": 37515,
+            "input_tokens": 2,
+            "output_tokens": 1237,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2827,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent and correct on all four expectations, with nearly identical command choices and reasoning; Report 2 is marginally more thorough (explicit blob-hash checks, test suite reference) but this doesn't change expectation coverage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Base branch: `main`. ... Targeting `feat/weighted-scorer` would base the PR on a dead branch; `main` is the only live integration target.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The PR should target **`main`**, not `feat/weighted-scorer`, even though the branch was physically built on top of `feat/weighted-scorer`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric` was created from the tip of `feat/weighted-scorer` (`ac9d505`, \"W3: token-overlap helper in metrics\")... `feat/weighted-scorer` was **squash-merged** into `main` as PR #42 (`1971f08`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/pairwise-metric` (`1bfecb6` \"X2\", `7b2e100` \"X1\") was created from the tip of **`feat/weighted-scorer`** (`ac9d505` \"W3\")... `feat/weighted-scorer` was **squash-merged into main** as `1971f08` (#42).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`: the full refactor from flat to weighted metrics \u2014 new `WEIGHTS` dict, weighted `total` (+13/\u22123) ... The `scorer.py` refactor and the `overlap()` function belong to the weighted-scorer work (W1\u2013W3). They appear in the PR diff purely because the merge base (`65204ad`) predates them and the squash-merge (`1971f08`) gave that content new SHAs on `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it is **not** all pairwise work: all of `scoring/scorer.py` and 6 of the 10 lines in `scoring/metrics.py` (the `overlap` helper and weighted-aggregation changes) are the W1\u2013W3 weighted-scorer changes, present only because the branch forked from `65204ad`, before the squash landed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Rebase only the pairwise commits onto main**, explicitly skipping the W commits: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... **Verify the result**: `git log --oneline main..feat/pairwise-metric` should show exactly two commits (X1, X2), and `git diff main...feat/pairwise-metric` should now equal the 5-line pairwise-only diff.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Transplant only the pairwise commits onto current main**: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... **Verify the rebased branch**: `git log main..feat/pairwise-metric --oneline` should list exactly two commits, and `git diff main...feat/pairwise-metric` should now equal the 5-line content diff (2 files, 5 insertions) with `scoring/scorer.py` absent",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

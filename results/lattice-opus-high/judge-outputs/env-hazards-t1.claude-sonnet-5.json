@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 34080,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1522096,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11523,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11523,
+        "cache_read_input_tokens": 67382,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2443,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2443,
+            "cache_read_input_tokens": 38231,
+            "input_tokens": 2,
+            "output_tokens": 1531,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3886,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly and thoroughly identify the same root causes and fixes for all three expectations; Report 2 adds slightly more explicit detail (e.g., docker-entrypoint-initdb.d absence, repo disambiguation) but both are comparable in substance and completeness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as the table-owning superuser `cedar_owner`, and PostgreSQL row-level security is bypassed for that role, so the `tenant_isolation` policy never filters queries... In PostgreSQL, RLS policies are not enforced for superusers at all, and not for the table owner unless the table is declared FORCE ROW LEVEL SECURITY. The migration never issues FORCE ROW LEVEL SECURITY... Responsible files/config: cedarline/.env / .env.example (app runs as owner/superuser cedar_owner)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_owner` is (a) the role that created/owns the tables \u2014 migrations run as `cedar_owner` via `scripts/migrate.sh` \u2014 and (b) the Postgres `POSTGRES_USER`... a table's owner bypasses row-level security by default (unless `FORCE ROW LEVEL SECURITY` is set), and a superuser bypasses RLS unconditionally... The specific responsible configuration: cedarline/.env / .env.example \u2014 DATABASE_URL points the running app at cedar_owner",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Point the application at the non-privileged role. Change DATABASE_URL in .env/.env.example to postgresql://cedar_app:apppw@localhost:5432/cedar \u2014 the same role the isolation suite already uses... Keep a clear privilege split: DDL/migrations run as the owner cedar_owner (migrate.sh unchanged); all runtime request traffic runs as cedar_app.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change the application's DATABASE_URL in cedarline/.env and .env.example to connect as the least-privilege app role: postgresql://cedar_app:apppw@localhost:5432/cedar... Keep cedar_owner strictly for schema work. scripts/migrate.sh already hard-codes cedar_owner, which is correct \u2014 that's the schema-owning/migration role and it should be used for nothing else.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It is created only by the one-time, hand-run db/bootstrap/create_app_role.sql (its own comment: \"Not part of automatic database initialization; run by hand on first setup\"...). scripts/reset-local-db.sh runs docker compose down -v, which deletes the cedar_pgdata volume \u2014 destroying the entire Postgres cluster including the global role catalog, so cedar_app is gone. It then does up -d db (a fresh cluster containing only cedar_owner...) and runs scripts/migrate.sh, which only replays the table migrations \u2014 it never re-runs create_app_role.sql... re-run the bootstrap against the fresh cluster \u2014 psql \"postgresql://cedar_owner:ownerpw@localhost:5432/cedar\" -f db/bootstrap/create_app_role.sql",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "cedar_app is created solely by db/bootstrap/create_app_role.sql, which is explicitly \"Not part of automatic database initialization; run by hand on first setup\"... it is not mounted into docker-entrypoint-initdb.d in docker-compose.yml... scripts/reset-local-db.sh runs docker compose down -v, which deletes that volume \u2014 destroying every role in the cluster, including cedar_app. It then does up -d db (a brand-new cluster whose only role is cedar_owner...) and ./scripts/migrate.sh (schema only). At no point does the reset script re-run create_app_role.sql... the bootstrap must be re-applied against the fresh cluster: psql \"postgresql://cedar_owner:ownerpw@localhost:5432/cedar\" -f db/bootstrap/create_app_role.sql",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

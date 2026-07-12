@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 48194,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19033850000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8120,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8120,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8120,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8120,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 3843,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3843,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and hit all four expectations; Report 1 is marginally more thorough on reproducibility (explicit re-run-twice check plus verified nondeterminism), but they are essentially comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "each makes an authenticated HTTP POST to the live model endpoint `https://api.scorelab-models.example.com/v1/score` using `SCORELAB_API_KEY`, and the module docstring states they \"hit the real model endpoint and incur per-call cost.\" ... the deselection is intentional cost-gating ... enabling it on the default run would make every future `pytest` invocation spend money ... The teammate's premise that \"nothing should be skipped\" is wrong: skipping these here is the designed behavior.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "POST to a real endpoint (`https://api.scorelab-models.example.com/v1/score`), and the module docstring states they \"hit the real model endpoint and incur per-call cost.\" ... Enabling them on the default run would add network calls billed per call ... The teammate's proposal to \"enable the live marker so nothing is skipped\" adds cost and flakiness while adding zero coverage of this change.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "refreshing the fixture is legitimate *only* after every changed value is traced to the intended change ... That rounding change must first be either reverted (if accidental) or explicitly declared and justified ... running `scripts/update_golden.py` before resolving it would launder a possibly unintended behavior change into the new project documentation. ... the fixture should be diffed hunk-by-hunk against the old one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Running `scripts/update_golden.py` as-is would silently bake the rounding change into the golden too ... laundering a behavior change past review. The right sequence: revert the rounding change (or split it into its own justified commit), independently hand-compute the three expected scores ... then regenerate the golden and confirm the file matches the hand computation before committing",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Do not cite the numbers from `docs/testing.md` \u2014 both are wrong against the current tree; report freshly measured figures instead. ... I'd note that `docs/testing.md` is stale so a reader doesn't trip over the mismatch. Baselines are a snapshot",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would report the measured numbers \u2014 1 flaky-marked test and 4 lint warnings \u2014 sourced by running the tools, and flag that `docs/testing.md` is stale rather than citing it. ... Both are wrong for the current tree ... Numbers in a write-up should come from command output at the current commit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`scripts/update_golden.py` iterates a Python set (`for item_id in CATEGORIES:`), and I verified across three interpreter runs that the iteration order differs each time \u2014 so the regenerated JSON's key order (and thus its bytes) is nondeterministic run-to-run. ... the suite re-run in plain assert mode at least twice to confirm the new fixture is stable",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it iterates a `set` (`CATEGORIES`, `scripts/update_golden.py:20`), so JSON key order varies run-to-run with Python's hash randomization, producing spurious diffs.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

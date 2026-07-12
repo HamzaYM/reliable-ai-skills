@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24837,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12695530000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11551,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11551,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11551,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11551,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2821,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2821,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently hit all four expectations with comparable depth; Report 1 adds slightly more integration-branch mechanics while Report 2 adds a verified numeric example of the pagination bug, but neither is clearly superior on the graded expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer A \u2014 pipeline/registry.py: F-05 ... F-09 ... F-02 ... These are three one-line edits to a 12-line file; bundling them into one commit by one person eliminates guaranteed merge conflicts.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "registry.py is 11 lines with three findings (F-02, F-05, F-09) \u2014 same reasoning as run_batch.py, keep with one engineer.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Engineer B \u2014 pipeline/rubric.py: F-11 first (write the failing edge-case parsing test ...), then F-01 ... Engineer A \u2014 pipeline/registry.py: F-05 ..., F-09 ..., and F-02 ... These are three one-line edits to a 12-line file; bundling them into one commit by one person eliminates guaranteed merge conflicts.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 (all in parallel, day one): A's whole stream, B's whole stream, C's F-05/F-09, D's F-10 \u2014 these share no files and can merge in any order.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 escalate, don't assign. \"Too lenient; tighten them\" specifies no target values, and changing PARTIAL_CREDIT_THRESHOLDS (score.py:3) changes the scores of every borderline answer the pipeline will ever grade \u2014 a scoring-policy decision, not an engineering one. Batch it to the pipeline owner for concrete thresholds; don't let an engineer guess",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 a policy decision, not a bug fix. ... PARTIAL_CREDIT_THRESHOLDS = (0.35, 0.65) (score.py:3) determines every downstream score, so changing it silently breaks comparability with prior runs ... This needs the rubric owner to choose and sign off on values",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A private RESULTS_DB. Export RESULTS_DB to a per-worktree temp path before running tests, because tests/conftest.py:4 otherwise defaults everyone to the shared /var/tmp/llm-scoring/results.db.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Set RESULTS_DB (tests/conftest.py:4) to a per-engineer scratch path; the default /var/tmp/llm-scoring/results.db is shared machine-wide.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

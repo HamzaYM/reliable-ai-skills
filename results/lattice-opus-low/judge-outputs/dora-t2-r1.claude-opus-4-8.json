@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20834,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.139793,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4069,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4069,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4069,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4069,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 1748,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1748,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with the same grounded evidence; they are comparable, with Report 1 slightly more thorough and Report 2 slightly more concise.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**PDF visit-history export (\"Patients can now export their full visit history as a PDF\").** Not implemented. `app/routers/visits.py` contains only a `/visits` list stub returning `[]` and the literal comment `# TODO: pdf export`; there is no export route. ... **Remove this whole section**  ... **2FA ... Contradicted by code: `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` ... **Remove or correct**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Directly contradicted by `app/security/config.py`: `TWO_FACTOR_DEFAULT = False` ... Must be corrected or removed. ... **\"Patients can now export their full visit history as a PDF.\"** \u2014 Not implemented. `app/routers/visits.py` has `# TODO: pdf export` ... Remove this section",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the \"after\" image (`after_scheduling.png`) reads \"BILLING / INVOICES\" \u2014 a different surface entirely. `captures.json` confirms the cause: `after_scheduling.png` was captured from route `/billing/invoices`, not from the scheduling calendar.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`captures.json` records `after_scheduling.png` as `\"route\": \"/billing/invoices\"`, and the image itself literally reads **\"BILLING / INVOICES\"**, while `before_scheduling.png` reads \"SCHEDULING CALENDAR\". ... The comparison is invalid.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Missing:** `after_export.png` is referenced in the doc but **does not exist** ... **Orphaned:** `unused_capture_07.png` exists but is referenced nowhere in the doc",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The doc references `img/after_export.png`, but **that file does not exist** ... `unused_capture_07.png` exists on disk but is referenced by neither the doc nor `captures.json` \u2014 an orphan file",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Footer \"Highlights draft assembled with AI assistance.\"** This is an internal drafting/attribution artifact, not customer-facing copy. ... this line should not go out in a customer email as written",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer line \"Highlights draft assembled with AI assistance.\"** \u2014 internal drafting note; strip it before sending.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r1",
+  "repeat": 1,
+  "task": "dora-t2"
+}

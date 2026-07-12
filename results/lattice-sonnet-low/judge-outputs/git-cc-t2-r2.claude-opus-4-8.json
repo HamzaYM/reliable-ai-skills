@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 39136,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.199149,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5898,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5898,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5898,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5898,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 3363,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3363,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations; Report 1 is slightly stronger for correctly identifying that GitHub's PR view is the three-dot diff (Report 2 wrongly frames the two-dot diff as the PR view), but they are largely comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. Per project documentation's dead-base rule, every PR should be based on the trunk, not on another feature branch. `feat/pairwise-metric` was in fact built on top of `feat/weighted-scorer` (see Q2), but that base branch is a dead base now \u2014 so the PR must not target `feat/weighted-scorer`, it must target `main` directly",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main` (SHA `1971f08...`). `feat/weighted-scorer` \u2014 the branch `feat/pairwise-metric` was actually built on \u2014 is a dead end: its content has already landed on `main` (see Q2), so there is nothing left to target there. Targeting `main`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric` branches from `ac9d505` (`W3`), the tip of `feat/weighted-scorer`... `feat/weighted-scorer`'s own three commits ... are **not** an ancestor of `main` (`git merge-base --is-ancestor feat/weighted-scorer main` \u2192 NO). Yet `main` already contains equivalent functionality via a single commit, `1971f08 \"Refactor scorer for weighted metrics (#42)\"` ... This is a squash/rewrite merge ... the original `feat/weighted-scorer` branch/commits are orphaned ... `feat/weighted-scorer` still exists as a ref",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/pairwise-metric` was branched from the tip of `feat/weighted-scorer` (commit `ac9d505`) ... `git merge-base --is-ancestor ac9d505 main` returns **NO** \u2014 `feat/weighted-scorer`'s commits are not ancestors of `main`. ... PR #42's single commit `1971f08` ... This is the signature of a **squash merge** ... history-wise it is orphaned",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Not all of that is pairwise-specific \u2014 some is a byproduct of history: ... The rest \u2014 the `overlap` helper and the `scorer.py` restructuring into weighted totals \u2014 is leftover W1\u2013W3 (`feat/weighted-scorer`) content. It shows up small/clean in the three-dot diff only because `main`'s independent refactor (`1971f08`) happens to have produced byte-identical file content for `scorer.py`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The earlier three-dot diff (`main...feat/pairwise-metric`, 21 lines across 3 files) was misleading \u2014 it diffs from the merge-base (`65204ad`, the pre-refactor base), so it also showed the `overlap`/`scorer.py`-weighting changes. Those aren't new content relative to `main`'s current tip; they're already there under a different commit hash (`1971f08`) due to the squash merge.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "rebase ... `feat/pairwise-metric` so only the two pairwise-specific commits (`X1` ... and `X2` ...) are replayed on top of `origin/main`'s tip (`1971f08`), dropping `W1`/`W2`/`W3` ... After rebasing, re-verify: `git merge-base --is-ancestor main feat/pairwise-metric` should be YES, and `git diff main...feat/pairwise-metric` should show only the true pairwise-specific delta ... with no incidental weighted-scorer leftovers.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Rebase `feat/pairwise-metric` onto `main`** (not merge) \u2014 e.g. `git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... **Verify post-rebase diff** is exactly the 2-file/5-line change identified in Q3 (`git diff main..feat/pairwise-metric`), confirming no reintroduction of the weighted-scorer content.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

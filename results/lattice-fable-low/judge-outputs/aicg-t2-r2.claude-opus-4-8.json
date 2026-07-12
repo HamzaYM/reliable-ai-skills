@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16992,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13150750000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6306,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6306,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 2972,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6306,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6306,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 2972,
+            "output_tokens": 1594,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1594,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully hit all four expectations with correct file/function citations, root causes, and concrete fixes; they are comparable, with Report 1 slightly more precise on the metadata-allowlist prescription.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "a single `except Exception` catches everything, logs a warning via `log_fallover`, and re-sends the same payload to `secondary.complete(payload)`. That is appropriate for the transient class ... but wrong for the definitively-rejected class: a `BadRequestError` will fail identically on the second vendor ... an `AuthError` indicates a local credential problem ... a `ContentPolicyError` means the primary explicitly rejected the payload, yet the code reroutes that sensitive applicant document to a second vendor anyway ... **Fix:** define an explicit non-retryable denylist function, e.g. `def is_non_retryable(e): return isinstance(e, (BadRequestError, ContentPolicyError, AuthError))`, re-raise those, and only fail over on the remaining vendor error classes",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "every exception ... triggers a warning log and an immediate retry of the same payload against the secondary vendor ... `BadRequestError` \u2014 the request itself is malformed; the identical payload will almost certainly fail on the secondary too ... `ContentPolicyError` \u2014 the primary vendor refused the content. Automatically re-sending sensitive personal data to a second vendor ... is inappropriate ... `AuthError` \u2014 a credential/config problem ... Concrete fix: catch only `(RateLimitError, RequestTimeoutError, ServerError)` for fallback, re-raise `BadRequestError`/`ContentPolicyError`/`AuthError`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A** \u2014 `os.environ.get(\"STAGE\") != \"production\"` \u2192 returns `True` unconditionally ... Fails open based on an environment-name check ... **Path D** \u2014 `redis.incr` raises `RedisError` \u2192 returns `True`. Fails open: if Redis is down, all rate limiting silently disappears ... **Fix:** invert the defaults \u2014 fail closed everywhere. Remove the `STAGE` check ... on `RedisError`, return `False` (or raise) rather than `True`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if `os.environ.get(\"STAGE\") != \"production\"`, return `True` unconditionally ... A safety gate keyed on an exact string match, defaulting to *open*, is backwards \u2014 it should default to enforcing ... **Path C \u2014 Redis failure:** `except RedisError: return True`. Fail-open ... for a PII pipeline I'd fail closed or alert",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`record.input_text` (the entire applicant document, i.e., the sensitive personal data itself), and `record.metadata` in full ... **Fix:** ... never log `input_text` verbatim \u2014 log a hash and/or length ... and filter metadata through an explicit allowlist of known-safe keys ... rather than logging the whole dict",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a JSON blob of `record.applicant_id` (raw, not pseudonymized), `record.input_text` (the full document text), and `record.metadata` ... Fix: log the *pseudonymized* id ... never the input text (log a length or a content hash if traceability is needed), and either whitelist specific metadata keys or drop metadata",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`salt` comes from the `PII_SALT` environment variable with a default of `\"\"` ... when it is unset the function silently degrades to an *unsalted* SHA-256 of the applicant id ... **Fix:** fail closed \u2014 `salt = os.environ[\"PII_SALT\"]` or an explicit check that raises (`RuntimeError(\"PII_SALT not configured\")`) at startup",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`salt = os.environ.get(\"PII_SALT\", \"\")` ... If `PII_SALT` is unset or empty, the function silently degrades to an unsalted `sha256(applicant_id)` ... Fix: fail fast (`raise RuntimeError`) at startup if `PII_SALT` is missing/empty",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

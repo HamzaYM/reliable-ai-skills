@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17327,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1366445,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9165,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9165,
+        "cache_read_input_tokens": 15579,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9165,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9165,
+            "cache_read_input_tokens": 15579,
+            "input_tokens": 2,
+            "output_tokens": 1342,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1342,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comparable \u2014 each correctly identifies all three items with strong evidence; Report 2 adds slightly more verification detail but neither is materially better.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "there is no `tenant_id = :tenant_id` condition, even though the function receives `tenant_id` and simply never uses it. Concretely: any authenticated user of any clinic who calls `GET /appointments/search?q=...&status=booked` receives matching appointments from **every tenant in the database**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`backend/app/appointments.py`, `search_appointments` (lines 10\u201320 on the branch)... the `tenant_id` argument (resolved from the caller's auth by `current_tenant_id`) is accepted but never used... receives matching appointments from **every** tenant, including the `notes` column",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The PR changes `build_appointment_query(session, tenant_id)` to `build_appointment_query(session, tenant_id, filters)` with **no default** for `filters`, and updates the caller in `appointments.py` but not the one in `exports.py`, which still calls `build_appointment_query(session, tenant_id)`. Every run of `nightly_export` ... will crash with `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`backend/app/db.py:7` changes `build_appointment_query` to require a third positional argument `filters` (no default), but `backend/app/exports.py:9` (`nightly_export`) still calls it as `build_appointment_query(session, tenant_id)`... raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I verified in `backend/app/schemas.py` that `AppointmentStatus` is a `str` Enum limited to `booked`/`cancelled`/`completed` and FastAPI validates the query parameter against it, so this is **not exploitable today**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it is **not currently exploitable over HTTP**. `status` is typed `AppointmentStatus` in `api.py:18`, a `str`-`Enum` in `schemas.py` with exactly three members, so FastAPI/pydantic rejects any other value with a 422 before the handler runs... (`q` itself is safely bound as `:q`)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

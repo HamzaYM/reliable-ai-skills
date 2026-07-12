@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21554,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0994932,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4799,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4799,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4799,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4799,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2193,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2193,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is more complete: it distinguishes handling for the gate axis (accuracy) vs. optional axes (relevance/tone), proposing renormalization for the latter, while Report 2 treats all axis failures identically (skip the record), missing that distinction.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "aggregate.py lines 9-11: When composite() is called with a dict containing None values, the code does `if value is None: value = 0.0`. The missing axis score is silently replaced with 0.0. ... The form is identical. There is no column, flag, or marker indicating whether the 3.8 was computed from complete data or partial data where one axis was substituted with zero.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If value is None, replaces it with 0.0 (lines 10-11) ... What gets written: A single row with agent_id, reply_id, and the composite score\u2014identical in form to a fully scored record.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A failed accuracy call becomes a 0.0 score, dragging the agent's average downward as if they truly gave a factually incorrect reply (accuracy=0), when in reality the score was never obtained. This produces silent mis-rankings",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A row with composite 3.0 could represent either (a) a poor reply with borderline scores, or (b) a completely unscored reply with a failed API call. The CSV cannot distinguish them. ... Agents who experience more axis call failures get systematically penalized.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "For accuracy failure (load-bearing): Do not write a row with a substituted composite score to scores.csv. Instead, write a separate \"incomplete\" or \"retry\" record ... This ensures the leaderboard only ranks agents on fully-scored replies.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Don't write the record to results/scores.csv. When any axis call fails, skip that record entirely. ... Especially preserves accuracy gate logic: a missing accuracy score doesn't claim the reply fails the gate",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "For relevance or tone failure (non-load-bearing): Renormalize the composite over the axes that succeeded (recalculate weights so they sum to 1.0 over available axes). Write the row with this renormalized score and a flag indicating it is partial.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

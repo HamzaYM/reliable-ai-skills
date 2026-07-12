@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30268,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.164468,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6275,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6275,
+        "cache_read_input_tokens": 15436,
+        "inference_geo": "not_available",
+        "input_tokens": 12115,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6275,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6275,
+            "cache_read_input_tokens": 15436,
+            "input_tokens": 12115,
+            "output_tokens": 1337,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1337,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "The two reports are essentially comparable: both nail the cross-tenant leak and both correctly defuse the raw-SQL string as non-exploitable, and both miss the broken nightly_export caller in exports.py; Report 2 is marginally stronger only for its independent non-LLM verification step.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Cross-tenant data leak: the search query has no tenant filter.** `backend/app/appointments.py`, `search_appointments()` (lines 8\u201317 on the branch). The raw SQL is `SELECT id, tenant_id, provider, starts_at, status, notes FROM appointments WHERE status = '\u2026' AND to_tsvector(...) @@ plainto_tsquery(...)` \u2014 there is no `tenant_id = :tenant_id` clause, even though `tenant_id` is passed in as a parameter and then never used. Every call to `GET /appointments/search` returns matching appointments from **all tenants**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Missing tenant scoping in `search_appointments` \u2014 cross-tenant exposure of clinical notes.** `backend/app/appointments.py`, `search_appointments` (lines 10\u201320 on the branch...). The function receives `tenant_id` but never uses it ... Any authenticated user of any clinic who calls `GET /appointments/search?q=...&status=booked` receives matching appointments from **every tenant**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Today this is not directly exploitable because FastAPI validates `status: AppointmentStatus` against the three-member `str` Enum in `backend/app/schemas.py`, so the interpolated value can only be `booked`/`cancelled`/`completed`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I attempted to refute this as exploitable and partially succeeded: at the API layer (`backend/app/api.py`, `get_appointment_search`) the parameter is typed `status: AppointmentStatus`, a three-value `str` Enum (`backend/app/schemas.py`), so FastAPI/Pydantic rejects arbitrary strings before the handler runs \u2014 it is **not injectable through this endpoint today**.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

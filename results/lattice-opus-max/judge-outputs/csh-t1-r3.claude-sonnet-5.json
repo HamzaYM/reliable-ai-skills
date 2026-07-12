@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22128,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1021403,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8415,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8415,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8415,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8415,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2576,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2576,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable depth and specific citations; Report 1 adds a few extra findings (UI checkbox mismatch, missing tests, unused infra var) while Report 2 adds consent-check and persistence-path caveats, making them roughly equal in overall quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Yes, reminders **will be sent automatically**. The deciding code is `auto_send_reminders_enabled(tenant)` in `backend/app/feature_flags.py`, lines 11\u201312: ```python\n    if tenant.settings.get(\"auto_send_reminders\") is None:\n        return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Yes \u2014 reminders will be sent automatically.** The decision is made in `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`. A clinic that never touched the setting has no `auto_send_reminders` key, so `tenant.settings.get(\"auto_send_reminders\")` returns `None`, line 11's `is None` check is true, and **line 12 returns `True`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change it. Exact location: `backend/app/feature_flags.py:11-12` \u2014 the `if tenant.settings.get(\"auto_send_reminders\") is None: return True` branch inside `auto_send_reminders_enabled`. Make the unset case `return False` so unset = disabled, which also makes the backend agree with the unchecked UI.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change `feature_flags.py:12` from `return True` to `return False`. Equivalently, collapse lines 11\u201313 to the single line `return bool(tenant.settings.get(\"auto_send_reminders\"))`, which makes missing/`None`/`False` all resolve to off and only an explicit truthy value turns it on.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the `is None \u2192 return True` idiom was introduced in commit `25509a7` (SLOT-190) for `compact_calendar_view_enabled`. Commit `aa4cf8d` (SLOT-214) then added `auto_send_reminders_enabled` **directly beneath it with a byte-for-byte identical structure**... the unset\u2192True default was **inherited by copying the adjacent calendar-preference function**, not chosen deliberately for a messaging feature... Default-on is fine for a cosmetic, trivially-reversible display preference; it is not fine to carry that same default into a feature whose \"on\" action sends real messages you cannot un-send \u2014 completely different blast radius and reversibility.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was **copy-pasted from the calendar-view resolver, and that was not a sound basis.** ... `aa4cf8d` (SLOT-214) added `auto_send_reminders_enabled` directly beneath it as a byte-for-byte structural clone... Copying a UI-preference resolver's grandfather-on default onto a messaging flag is exactly the mistake to avoid.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add a global rollout gate / kill-switch. The per-clinic flag at `reminders.py:25` is currently the *only* gate \u2014 there is no environment guard or global off switch (the `infra/main.tf` `environment` variable exists but is unused by the app). Add a kill-switch and/or staged (env or percentage) rollout so it can't fire in non-prod and can be shut off fast.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an env-level master switch and AND it with the per-tenant flag. The job (`reminders.py:22-31`) currently gates on the per-tenant value alone; `git grep` confirms no env gate exists anywhere. A master switch gives a single default-off kill/rollback affordance so the feature can't fire until deliberately enabled, and can be turned off instantly if it misbehaves.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

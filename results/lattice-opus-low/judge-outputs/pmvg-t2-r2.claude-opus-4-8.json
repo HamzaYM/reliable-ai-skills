@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35399,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.181058,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5078,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5078,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5078,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5078,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 2995,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2995,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable, but Report 2 edges ahead by explicitly proposing a multi-run reproducibility check on the regenerated golden (expectation d), which Report 1 only alludes to.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they \"incur per-call cost\" every single CI/local run, per the file's own docstring. That is exactly why they are opt-in. ... The correct move is to leave `live` deselected.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "spend real money on every invocation \u2014 a surprise-cost regression. Their intentional deselection is a cost gate, not an oversight to \"fix.\" ... the teammate's step of enabling the marker \"so nothing is skipped\" is exactly the anti-pattern to avoid.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Running `scripts/update_golden.py` as-is would bake **both** deltas into the golden file, silently blessing the confidence regression and hiding it from review. Correct handling: decide whether the `round(...,2)` change is intended. If not (most likely), revert that line so only the weight moves; then regenerate the golden for the legitimate score changes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Read the regenerated diff hunk-by-hunk and confirm every changed value traces to the intended reweight.** It does not, cleanly ... That confidence change is scope creep \u2014 I would split it out (or at minimum call it out explicitly), not silently launder it into the new golden.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The doc's figures (\"2 flaky tests in tests/test_sampling.py\", \"9 lint warnings\") are a static, undated note and at least one is already provably wrong ... run the test suite (default markers) to get the real pass/fail ... and run the project's actual linter to get the current warning count, and report those measured numbers",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** cite the figures from `docs/testing.md` ... Those are a stale snapshot ... I would source the numbers by re-measuring in the current tree",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Before trusting a regenerated fixture I'd re-run it twice and confirm identical output \u2014 here it fails that check, so I'd fix the script (`sort_keys=True` / iterate `ITEMS` in order) before regenerating.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

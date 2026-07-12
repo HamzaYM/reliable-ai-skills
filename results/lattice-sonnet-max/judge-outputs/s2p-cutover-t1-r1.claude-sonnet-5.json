@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 46685,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1671102,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10388,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10388,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9696,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10388,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10388,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9696,
+            "output_tokens": 4466,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4466,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very close in substance and quality across all four expectations; report 2 is marginally more precise on remediation specifics (e.g., recommending omission over toggling, and explicitly naming the cross-environment privilege-boundary risk), but neither explicitly calls for running/confirming the first migration, so they tie overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`... Must be `\"false\"`. ... `infra/prod/app.auto.tfvars:3` \u2014 `AUTH_RELAXED = \"true\"`... Must be `\"false\"`. ... `infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`... Should be removed or set to `\"\"`. ... the sink must point to a production-specific destination... either blank the sink or fix the code to gate on the flag. ... Needs a distinct, prod-specific secret ARN.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` `ENABLE_DEBUG_TOOLBAR = \"true\"`... it should be omitted from the prod tfvars entirely. ... `AUTH_RELAXED = \"true\"`... Must be removed (omitted, not set to \"false\") before apply. ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`... Must be omitted entirely from prod... Both keys should be omitted from prod, not toggled. ... It should not be recreated in prod; if billing genuinely needs a secret, it needs its own prod-scoped ARN, not this copy.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the API base URL is compiled into the static JS as a literal string, not read at runtime. ... it comes from `frontend/.env.staging:1`, because the one and only build in the pipeline always runs in staging mode. Since the identical image digest is deployed to prod, the production bundle will call `https://staging-api.example.com` for every API request \u2014 this value is frozen into the static JS at build time",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "VITE_-prefixed variables are inlined into the built bundle at build time.\" ... So the frontend bundle shipped to production would point at `https://staging-api.example.com`, because there is no separate production build step and no `.env.production` to source a correct value from even if one were added.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` has the **exact same string**, `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`, uncorrected from the copy... The correct fix is changing `infra/prod/main.tf:3` to `\"repo:acme-health/medislot:environment:production\"` before applying.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the trust condition as written matches the *staging* job's token, meaning if this were applied unmodified, a `deploy-staging` job's OIDC token could potentially assume the *production* deploy role instead \u2014 a cross-environment privilege boundary violation",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22439,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1000087,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8716,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8716,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8716,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8716,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2288,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2288,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable substance; Report 2 adds sharper corroborating detail (git commit history, no-callers observation on gateway accessors) but this doesn't change the expectation-level outcome, making the two reports essentially comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... The code does not follow this pattern everywhere today. An exhaustive grep for `chargekit` across `medibill/` found exactly two violations: `medibill/backend/app/api/invoices.py`... `medibill/backend/app/workers/dunning.py`... The only other SDK import, `medibill/backend/app/billing/errors.py:6`, imports just the SDK's error classes... and is the legitimate, documented exception",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... The current code does not follow that pattern everywhere. A repo-wide grep for `chargekit` shows exactly two violations: `backend/app/api/invoices.py:4`... `backend/app/workers/dunning.py:2`... `errors.py` is the documented exception",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual response model `InvoiceOut` in `medibill/backend/app/models/invoice.py:16\u201322` has a sixth field, `external_ref`... `backend/migrations/0006_add_invoice_external_ref.sql` later added `external_ref`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual response model `InvoiceOut` has a sixth field, `external_ref` (`backend/app/models/invoice.py:22`, serialized at line 28), backed by migration `backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Drift between it and the code should be treated as a bug to fix now, not documentation to refresh eventually. Concretely, in a small corrective commit that lands before the refund feature branch starts... Going forward, the rule is: any change to the invoice response shape, the provider boundary, or the webhook surface updates docs/ARCHITECTURE.md in the same commit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It should be corrected before the refund feature is designed against it... This is a small standalone doc commit that can land now, before any refund code... Doc updates should land in the same commit/PR as the behavior change \u2014 including the refund PR itself",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I would change how the claim is stated: drop the hardcoded count entirely. A literal number in prose is guaranteed to drift the next time an event type is added (as it already has). Restate it as either \"the handled webhook event types are the ones dispatched in `app/api/webhooks.py` \u2014 that handler is the source of truth\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "restate it in a form that doesn't rot: drop the hard-coded count (\"exactly N\" claims are the first thing to go stale) and either point to `backend/app/api/webhooks.py` as the authoritative list, or keep a list but frame it as \"currently handled (see webhooks.py)\"",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

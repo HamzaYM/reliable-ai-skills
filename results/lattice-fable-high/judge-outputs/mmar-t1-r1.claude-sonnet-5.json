@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31405,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.281366,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 37317,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 37317,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 37317,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 37317,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 3558,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3558,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify the cross-tenant leak and the broken nightly export, and both correctly avoid over-flagging the interpolated status string as exploitable; Report 2 is more rigorous and thorough overall (adds a plausible serialization/500 defect, an adversarial-verification methodology, and cleanly separates the SQL-interpolation issue into non-blocking), while Report 1 is more concise but muddies the SQL-injection point by still listing it under 'Merge-blocking defects.'",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The function receives `tenant_id` but never uses it. The raw SQL it executes is `SELECT id, tenant_id, provider, starts_at, status, notes FROM appointments WHERE status = '...' AND to_tsvector('simple', notes) @@ plainto_tsquery('simple', :q) ORDER BY starts_at` \u2014 the WHERE clause contains only `status` and the full-text match, no `tenant_id = :tenant_id`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `tenant_id` parameter is accepted by the function and then never used \u2014 there is no `tenant_id = :tenant_id` predicate.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The PR changed the function to `def build_appointment_query(session, tenant_id, filters):` with `filters` as a **required** positional parameter (no default), and updated the caller in `appointments.py`, but `exports.py` was not touched... `nightly_export` still calls `build_appointment_query(session, tenant_id)`, which after merge raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`backend/app/db.py:7` changes `build_appointment_query` to `(session, tenant_id, filters)` with **no default** for `filters`, but `backend/app/exports.py:9` (unchanged on the branch) still calls `build_appointment_query(session, tenant_id)`. Concrete failure: `nightly_export` raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Through the HTTP endpoint this is not exploitable *today*, because FastAPI validates `status` against `AppointmentStatus`, a closed `str` Enum with values `booked`/`cancelled`/`completed` (`backend/app/schemas.py`) \u2014 I verified the enum values contain no metacharacters.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "not exploitable today because `AppointmentStatus` is a closed 3-value enum that FastAPI validates (anything else 422s before the handler), but it is one signature change away from SQL injection",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

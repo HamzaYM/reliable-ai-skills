@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20322,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1320263,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14028,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14028,
+        "cache_read_input_tokens": 23701,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 14028,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 14028,
+            "cache_read_input_tokens": 23701,
+            "input_tokens": 2,
+            "output_tokens": 2410,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2410,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with proper citations; they are comparable in substance, with Report 2 slightly more granular (splitting blame vs. role/system exposure and adding a hedging-language point) while Report 1 adds a useful scope note distinguishing unrelated products in the repo.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "failures began 14:03, the first alert fired at 14:50 (a 47-minute detection gap)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "failures began at 14:03 and the first alert fired at 14:50 \u2014 a 47-minute detection gap, not \"within minutes.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` records: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states that during the window \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md` states the contractual monthly SLA is 99.9%, and \"Any calendar month below 99.9% is a breach and owes service credits.\" `larkpay-comms/metrics/uptime-2026.csv` shows 2026-04 = 99.77% \u2014 below 99.9%, so April (this incident's month) is a contractual breach owing credits.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`metrics/uptime-2026.csv` shows April 2026 uptime of 99.77%. `docs/sla-commitments.md` states the contractual monthly SLA is 99.9% and that \"Any calendar month below 99.9% is a breach and owes service credits per the customer agreement...\" April 2026 is therefore a contractual breach owing service credits.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md` rule 1 (\"Never assign blame to an individual\") and rule 2 (\"Never expose internal system or role names\"). The draft (lines 12\u201314) says the outage was \"caused by the on-call engineer deploying an untested config change\"... This must be rewritten in organizational, non-internal terms",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"The outage was caused by the on-call engineer deploying an untested config change.\" `docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" This must be rewritten in terms of process/system, not a person.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md` rule 3 (\"Lead with customer impact and remediation\"). The draft's first sentence (lines 3\u20134) leads with the (false) 99.99% uptime claim and \"this incident does not change our commitment to reliability,\"... the document must be restructured to open with what happened to customers and what is being done.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 3: \"Lead with customer impact and remediation.\" The draft instead opens with a reliability brag (\"99.99% uptime\u2026 does not change our commitment\") and buries the one remediation (\"a pre-deploy validation step\") in the final line. It should be reordered to lead with impact... and remediation.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r3",
+  "repeat": 3,
+  "task": "tcr-t1"
+}

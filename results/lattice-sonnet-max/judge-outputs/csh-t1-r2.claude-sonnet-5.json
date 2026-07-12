@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16317,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10340219999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6593,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6593,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6593,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6593,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 1736,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1736,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all four expectations, including the missing global/env-level gate (d), while Report 1 misses that point entirely despite otherwise comparable depth on the other three.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The decision is made in `auto_send_reminders_enabled(tenant)` in `backend/app/feature_flags.py`, lines 11\u201312:\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deciding line is **line 11\u201312**: when a clinic has never touched the setting, `tenant.settings.get(\"auto_send_reminders\")` is `None`, and the function short-circuits to `return True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Where I'd change it: `backend/app/feature_flags.py`, line 12 \u2014 change `return True` to `return False` inside `auto_send_reminders_enabled` (lines 10\u201313), so a missing value is treated as not-enabled",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If I were changing this, I'd invert `backend/app/feature_flags.py` lines 11\u201312 so a missing/`None` value resolves to `False` (opt-in, not opt-out)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`compact_calendar_view_enabled` (the flag this pattern came from) controls a private UI rendering preference for clinic staff \u2014 a wrong default is cosmetic and fully reversible. `auto_send_reminders_enabled` controls whether the system autonomously contacts a third party (the clinic's patients) via SMS/email.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That's a materially different risk than its sibling flag, `compact_calendar_view_enabled` (a calendar-density display preference), where defaulting to \"on\" for everyone is essentially free if wrong \u2014 worst case, someone sees an unexpected layout. Here, \"wrong\" means unsolicited messages to patients",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Add an env-level master switch** ANDed with the per-tenant value. None exists today (`infra/main.tf` defines only an `environment` variable). Per project documentation's flag-recipe, this is what gives you a single, fast rollback affordance if the rollout misbehaves",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

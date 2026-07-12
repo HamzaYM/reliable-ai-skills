@@ -1,0 +1,104 @@
+{
+  "aicg-t2": [
+    {
+      "evidence": "- Read `.claude/skills/ai-cost-tracking-and-guardrails/SKILL.md` \u2014 established the review criteria: Guardrail 2 (fallover must be a denylist that never reroutes definitively-rejected payloads to a second vendor), Guardrail 3 (rate limiting must fail closed except under a narrow named local override,",
+      "skill_read": true
+    }
+  ],
+  "arch-contracts-t1": [
+    {
+      "evidence": "- `.claude/skills/architecture-contracts-as-law/SKILL.md` \u2014 read in full; its \"isolate third-party SDK to one module + grep for violations,\" \"drift is a bug, fix in the same commit,\" and \"don't cite a number, read the source\" principles drove every check below.",
+      "skill_read": true
+    }
+  ],
+  "bama-t1": [
+    {
+      "evidence": "- Read `.claude/skills/budget-aware-model-allocation/SKILL.md` \u2014 the guide that shaped my approach: treat separate per-provider budgets as an allocation problem, be deliberate before a large spend, shift heavy work to whichever provider has headroom, and don't trust a possibly-stale budget snapshot.",
+      "skill_read": true
+    }
+  ],
+  "consent-t2": [
+    {
+      "evidence": "- Read `.claude/skills/consent-and-regulated-data-reference/SKILL.md` \u2014 the reference that shaped my approach: retention sweeps must run on a real schedule and never touch the append-only audit trail; erasure must cascade raw user data but preserve a PII-free proof-of-consent record; publishing a le",
+      "skill_read": true
+    }
+  ],
+  "csh-t1": [
+    {
+      "evidence": "- Read `.claude/skills/config-and-secrets-hygiene/SKILL.md` in full \u2014 its sections on \"Per-tenant flags: the null/missing semantics is a product decision\" and \"Never copy-paste one resolver's null-handling into a new flag in the other category\" directly shaped what I looked for. It also flagged veri",
+      "skill_read": true
+    }
+  ],
+  "dora-t2": [
+    {
+      "evidence": "Guidance document consulted: **`.claude/skills/docs-of-record-and-arbitration/SKILL.md`** \u2014 read in full. It shaped the approach in three concrete ways: (a) fact-check before polish \u2014 pair every claim with specific file evidence; (b) screenshot-integrity check \u2014 verify every referenced image exists,",
+      "skill_read": true
+    }
+  ],
+  "env-hazards-t1": [
+    {
+      "evidence": "- `.claude/skills/environment-and-build-hazards/SKILL.md` \u2014 read in full. Its \"two-role model\" section (a schema-owning role for migrations vs. a least-privilege app role, with the warning that a superuser/owner connection *silently* bypasses row-level security) and its note that the app-only role i",
+      "skill_read": true
+    }
+  ],
+  "eval-harness-t1": [
+    {
+      "evidence": "- Read `.claude/skills/llm-eval-harness-and-scoring-pipeline/SKILL.md` \u2014 its \"Partial failure: degrade, never silently substitute\" section is the reference standard I graded the pipeline against: renormalize non-load-bearing failures, never emit a comparable number for a load-bearing failure, and ne",
+      "skill_read": true
+    }
+  ],
+  "farch-t1": [
+    {
+      "evidence": "- Read `.claude/skills/failure-archaeology/SKILL.md` \u2014 the playbook that shaped my approach; it told me to treat a platform migration as a likely \"settled battle,\" to search history for reverts (`git log --oneline -i --grep=\"revert\"`), and to re-verify cited hashes before relying on them.",
+      "skill_read": true
+    }
+  ],
+  "git-cc-t2": [
+    {
+      "evidence": "I read `.claude/skills/git-change-control-for-agents/SKILL.md`, which set my approach: verify state before acting (Step 0), base every PR on the trunk, watch for the dead-base trap where a stacked branch's base gets merged via a *different* PR, keep the working tree clean, and follow the repo's attr",
+      "skill_read": true
+    }
+  ],
+  "mabc-t2": [
+    {
+      "evidence": "Guidance document consulted: `.claude/skills/multi-agent-batch-campaigns/SKILL.md` \u2014 read in full; its Step 0 (\"re-establish ground truth; status docs rot, git doesn't\"), planning steps (re-baseline, flag behavior changes, group by file, wave-sequence, one integration branch), the file-contention ma",
+      "skill_read": true
+    }
+  ],
+  "mmar-t1": [
+    {
+      "evidence": "- Read `.claude/skills/multi-model-adversarial-review/SKILL.md` in full \u2014 it shaped my approach: run my own review first, then an adversarial fan-out whose reviewers try to *refute* each finding, ground safety-critical claims in a non-LLM check, add a completeness critic, and disclose degradation wh",
+      "skill_read": true
+    }
+  ],
+  "mt-auth-t1": [
+    {
+      "evidence": "- Read `.claude/skills/multi-tenant-auth-reference/SKILL.md` \u2014 its \"Row-level isolation has a silent-bypass failure mode\" section is the playbook I followed: runtime must use a least-privilege role that *cannot* bypass RLS, never the schema/migration owner; add a boot-time bypass-privilege assertion",
+      "skill_read": true
+    }
+  ],
+  "pmvg-t2": [
+    {
+      "evidence": "- Read `.claude/skills/pre-merge-validation-gate/SKILL.md` \u2014 this playbook shaped my whole approach: gate paid suites behind an explicit switch (don't \"fix\" an intentional deselection); baselines drift so re-measure lint/flaky counts yourself instead of copying a doc figure; a golden/snapshot failur",
+      "skill_read": true
+    }
+  ],
+  "s2p-cutover-t1": [
+    {
+      "evidence": "Guidance document consulted: `.claude/skills/staging-to-prod-cutover-campaign/SKILL.md` \u2014 its \"do-not-inherit scrub,\" \"rebuild per environment,\" \"ops-script existence,\" \"first-apply traps,\" and \"probe don't assume\" sections shaped every check below.",
+      "skill_read": true
+    }
+  ],
+  "sysdbg-t2": [
+    {
+      "evidence": "- Read `.claude/skills/systematic-debugging-playbook/SKILL.md` \u2014 this playbook shaped my whole approach: search prior art, re-verify a \"not-reproducible\" classification via the real triggering path, reproduce at the lowest layer, and bisect the introducing commit from file history.",
+      "skill_read": true
+    }
+  ],
+  "tcr-t1": [
+    {
+      "evidence": "- `.claude/skills/tiered-consultancy-review/SKILL.md` \u2014 read in full; its escalation-ladder model (analyst factual pass \u2192 external-audience pass \u2192 adversarial pass) is why I checked each claim against a source rather than reading for general plausibility.",
+      "skill_read": true
+    }
+  ]
+}

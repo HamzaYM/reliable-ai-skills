@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17028,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1361895,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8687,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8687,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8687,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8687,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1451,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1451,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comprehensive and hit all three expectations with equivalent grounding; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`cedar_owner` is the role docker-compose creates via `POSTGRES_USER: cedar_owner` ... which makes it a **superuser** ... It is also the **owner of the tables** ... because the connection (built from `DATABASE_URL`... is a superuser, Postgres skips policy evaluation entirely. There is no error and no warning; the policy is simply inert ... (Even if `cedar_owner` were not a superuser, as table owner it would still bypass RLS because the migration does not use `FORCE ROW LEVEL SECURITY`.)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the app's connection string in `cedarline/.env` (and `.env.example`) is `postgresql://cedar_owner:ownerpw@localhost:5432/cedar`. `cedar_owner` is the `POSTGRES_USER` ... the cluster **superuser** ... and it is also the **owner** of the tables ... superusers (and roles with `BYPASSRLS`) bypass all RLS policies, and table owners bypass policies on their own tables unless `ALTER TABLE ... FORCE ROW LEVEL SECURITY` is set \u2014 and the migration only uses `ENABLE ROW LEVEL SECURITY`, never `FORCE`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change the application's `DATABASE_URL` in `cedarline/.env` ... to connect as the least-privilege application role ... database access should follow a strict two-role model: - **`cedar_owner`** ... used *only* by `scripts/migrate.sh` ... never by the running app ... - **`cedar_app`** ... used by the app (`backend/app/db.py`) and the isolation tests.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change the app's `DATABASE_URL` in `cedarline/.env` and `.env.example` to the dedicated application role: `postgresql://cedar_app:apppw@localhost:5432/cedar`... structure access as two distinct roles: `cedar_owner` (superuser/owner) used **only** for migrations and admin ... and `cedar_app` (least-privilege, DML-only ...) for all application traffic.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the `cedar_app` role is created only by a **one-time manual bootstrap** ... `cedarline/db/bootstrap/create_app_role.sql` ... The reset path, `cedarline/scripts/reset-local-db.sh`, runs `docker compose down -v` \u2014 the `-v` deletes the `cedar_pgdata` named volume ... brings the db back up (the Postgres entrypoint recreates only `cedar_owner`...) and runs `scripts/migrate.sh`, which executes only `db/migrations/*.sql` ... never `CREATE ROLE cedar_app`. So after a wipe, `cedar_app` no longer exists ... the bootstrap must be re-run",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `cedar_app` role is created only by the manual one-time bootstrap `cedarline/db/bootstrap/create_app_role.sql` ... The reset script `scripts/reset-local-db.sh` runs `docker compose down -v`, which **deletes that volume** ... then brings the container back up (recreating only `cedar_owner` via `POSTGRES_USER`) and runs `scripts/migrate.sh`, which applies only `db/migrations/*.sql`. Nothing re-runs the bootstrap, so `cedar_app` no longer exists ... the teammate must re-run the bootstrap",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

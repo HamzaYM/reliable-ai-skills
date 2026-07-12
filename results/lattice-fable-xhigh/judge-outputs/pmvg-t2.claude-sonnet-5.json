@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 42156,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.18078189999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12446,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12446,
+        "cache_read_input_tokens": 107383,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1078,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1078,
+            "cache_read_input_tokens": 40519,
+            "input_tokens": 2,
+            "output_tokens": 1019,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4619,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very similar in substance and hit (a), (b), and (c) equally well, but Report 1 goes further on (d) by actually running the regeneration/comparison multiple times to confirm reproducibility, whereas Report 2 only names the instability source without a concrete repeat-run check.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they \"hit the real model endpoint and incur per-call cost.\" ... The deselection is a deliberate opt-in gate for a paid suite, not an oversight to \"fix.\" ... The teammate's \"enable the live marker so nothing is skipped\" step should be rejected.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "per the module docstring they \"incur per-call cost\"... The deselection is deliberate opt-in design documented in both `pytest.ini` (\"live: opt-in\") and the repo README... enabling them by default would be actively harmful.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Only then regenerate the golden file, read its diff, confirm every changed value traces to a now-explained change, and re-run `pytest tests/test_scoring.py` in plain assert mode at least twice.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "independently hand-compute the expected new scores (0.755, 0.56, 0.925 \u2014 which I did and confirmed against the scorer); only then regenerate the golden file, review its diff line-by-line against the hand computation, and commit it alongside the code change with an explanation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Both numbers in `docs/testing.md` are wrong against the current tree \u2014 measure, don't cite. ... I would explicitly note that `docs/testing.md` is stale (9\u21924 lint, 2\u21921 flaky) and should be corrected",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Report measured numbers, not the figures in `docs/testing.md` \u2014 both of that doc's figures are wrong for this tree. ... flag that `docs/testing.md` is stale.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I verified across five separate Python processes that set iteration order varies, so the regenerated JSON's key order is nondeterministic run-to-run... run the default offline suite (`pytest`, which correctly deselects the 2 live tests) at least twice to confirm the new fixture is deterministic",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it iterates a set, so JSON key order is nondeterministic between runs, which can produce spurious reordering diffs.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

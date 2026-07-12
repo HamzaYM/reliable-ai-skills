@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36793,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.175233,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4298,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4298,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4298,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4298,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 3074,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3074,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations; Report 2 is marginally stronger by explicitly re-running the comparison twice for reproducibility, while Report 1 only notes the nondeterminism source.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The deselected tests (`tests/test_live_model.py`) call a real external endpoint (`api.scorelab-models.example.com`), require the `SCORELAB_API_KEY` secret, and cost money per call. ... The `-m \"not live\"` deselection and the \"opt-in\" marker are deliberate.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "every default `pytest` invocation would spend real money on live API calls ... They should stay deselected; enable them only explicitly when someone wants to pay for a live check.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "confirm the new values are the intended ones ... flag that the diff also bundles a second, likely-unrelated change \u2014 `confidence` rounding `3\u21922` decimals ... That should be called out and either justified or split into its own change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "confirm each new value traces to the intended reweight by hand-computation ... notice the diff bundles a second, unrelated behavior change ... not silently laundered into the new fixture.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite the `docs/testing.md` figures as-is; I would source both numbers from the tools, because the doc is demonstrably stale.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/testing.md` is a stale snapshot ... I would source both numbers by measuring, not quoting",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Minor note: `update_golden.py` iterates a `set`, so the regenerated file's key order is nondeterministic and can produce noisy diffs.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Regenerate `expected_scores.json`, re-run the comparison twice to confirm it passes deterministically. ... `update_golden.py` iterates a Python **set** (`CATEGORIES`), so key *order* in the file is non-deterministic",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

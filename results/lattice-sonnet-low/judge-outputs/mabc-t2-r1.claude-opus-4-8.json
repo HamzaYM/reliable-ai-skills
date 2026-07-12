@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47866,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.23571399999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7327,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7327,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7327,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7327,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 4254,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4254,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and hit (a), (c), and (d); Report 1 edges ahead by correctly placing the missing-test finding F-11 in the early concurrent stage, whereas Report 2 defers all new tests to a final wave and misses (b).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Batch A \u2014 `pipeline/registry.py` (one engineer): F-02 (add `aurora-1` endpoint mapping), F-05 (bump `DEFAULT_RUBRIC_VERSION` to rubric-v3), F-09 (fix `DEFAULT_DATASET` path to `eval_set.jsonl`). All three are single-line constant edits in the same small file",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Group A \u2014 `pipeline/registry.py` (config-only, no logic risk): F-02, F-05, F-09. ... Give these to one engineer, or split across two if they coordinate on the file \u2014 but since it's one file with three independent lines, one person can do all three fastest with zero merge risk.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Wave 0 = Batch A** (registry.py) first ... **Wave 1 = Batches B, C, D in parallel** \u2014 they touch three completely disjoint files (`rubric.py`+new test, `run_batch.py`+new test, two prompt `.txt` files) ... Batch B \u2014 `pipeline/rubric.py` + new `tests/test_rubric.py` ... F-01 ... paired with F-11 (new edge-case parsing test)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06** ... the finding says to \"tighten\" the thresholds \"so borderline answers score lower\" but gives no target values. This changes user-facing scoring behavior with no specified numbers ... This needs the reviewer/product owner to supply concrete threshold values before any code changes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06 (\"tighten thresholds so borderline answers score lower\") is a subjective/product judgment call, not a pure bug fix.** ... this needs a decision (from the reviewer or a rubric owner) on target thresholds before implementation, otherwise you get an engineer guessing and silently changing scoring behavior for all past/future runs.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "note `tests/conftest.py` reads `RESULTS_DB` from env, defaulting to `/var/tmp/llm-scoring/results.db` \u2014 anyone running tests that touch that path in parallel would want their own scratch value for `RESULTS_DB` to avoid collisions",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`tests/conftest.py` defines `RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\")` \u2014 a shared filesystem path outside the repo. If multiple engineers run the test suite concurrently ... without overriding `RESULTS_DB`, test runs could read/write the same file ... An explicit `RESULTS_DB` environment variable override (e.g. a per-engineer or per-branch temp path) so parallel test runs don't collide",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

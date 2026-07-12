@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21090,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.14240750000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9001,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9001,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9001,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9001,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1558,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1558,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent grounding; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`jobs/retention_sweep.py:13-15` \u2014 `DELETE FROM consent_audit WHERE recorded_at < now() - interval '730 days'`, introduced with the comment \"Compact the audit history as well while we are here.\" **This is the table it must NOT modify.** The schema is explicit at `db/schema.sql:21-22`: \"Audit/history table: append-only. Rows are never updated or deleted; the table serves as tamper evidence.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `consent_audit` DELETE is the one that must not happen. `db/schema.sql:21-22` documents that table explicitly: \"Audit/history table: append-only. Rows are never updated or deleted; the table serves as tamper evidence.\" Deleting from it destroys the tamper-evidence property the schema guarantees.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Its only entry is `0 4 * * * python3 jobs/daily_scoring.py` (`deploy/crontab:2`) \u2014 there is no entry for `retention_sweep.py`. `patient-events/TODO.md:1` confirms this is a known gap: \"retention sweep: run manually for now / wire into scheduler later.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It contains exactly one job: `0 4 * * * python3 jobs/daily_scoring.py` (`deploy/crontab:2`). There is no entry for `retention_sweep.py`, and `deploy/config.py` contains only a `DATABASE_URL` setting \u2014 no scheduler config. `TODO.md:1` confirms this is a known gap",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`consent_receipts` **should be preserved, and the job wrongly deletes it.** ... It contains no raw personal data, and its entire purpose is to prove, after the fact, that consent was properly obtained. ... The deletion of `events` and `user_data` rows is correct \u2014 that is the user's raw data and must cascade with the request.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`consent_receipts` rows arguably should *not* be deleted. ... Because they are PII-free ... erasing them is not required to honor a deletion request, and deleting them destroys the organization's proof that valid consent existed while the user's data was being processed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`deploy/config.py:4-5` states: \"staging and production DATABASE_URLs point at databases that share the consent_versions table.\" ... `--test` is literally an alias for `--skip-validation` ... it disables the only guard ... run it against a fully isolated, disposable database \u2014 e.g., a local Postgres spun up from `db/schema.sql` and torn down afterward \u2014 with the length validation left **on**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "An INSERT made \"against staging\" ... lands in the same `consent_versions` table production reads. ... `--test` is merely an alias for `--skip-validation`: it disables the only safeguard ... or against a throwaway local database created from `db/schema.sql`. Keep validation on (no `--test`)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "consent-t2-r2",
+  "repeat": 2,
+  "task": "consent-t2"
+}

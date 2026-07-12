@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 43800,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1460107,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10764,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10764,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10764,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10764,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 4444,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4444,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent on findings grouping, staging, and the F-06 escalation call, but Report 2 explicitly identifies the shared RESULTS_DB path as a concrete collision/corruption risk and states a separate checkout alone is insufficient, while Report 1 only offers setup instructions without flagging the collision risk \u2014 making Report 2 more complete overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer B \u2014 `pipeline/registry.py`:** F-05 ... F-09 ... F-02 ... These are three one-line edits to a 12-line file; one engineer, one commit.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Batch R \u2014 registry config (one engineer):** F-02, F-05, F-09. All three are edits to the same file, `pipeline/registry.py` (lines 3\u201311). Grouping them under one owner is mandatory: assigning them to three people guarantees three concurrent edits to one 11-line file.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Lanes A\u2013D are file-disjoint and can start simultaneously.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Ordering:** all four batches are file-disjoint, so **wave 1 is all four in parallel** \u2014 that is the payoff of grouping by primary file rather than by finding number or theme.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 a scoring-behavior change with no specification. ... it's a product/calibration decision, not a mechanical fix ... I'd route it to the reviewer/owner for concrete thresholds and sign-off first.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 a behavior decision, not a fix; escalate, don't assign. ... This gets escalated to whoever owns the rubric/scoring policy, with the rest of the campaign proceeding; an engineer should not pick numbers.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "tests/conftest.py:4 defaults RESULTS_DB to the fixed absolute path /var/tmp/llm-scoring/results.db. Multiple engineers running the suite concurrently from separate checkouts would all hit the same database file and corrupt each other's runs unless each overrides the env var.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

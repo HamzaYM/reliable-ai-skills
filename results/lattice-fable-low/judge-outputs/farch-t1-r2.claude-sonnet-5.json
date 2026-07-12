@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 41170,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11459470000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4744,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4744,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3257,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4744,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4744,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3257,
+            "output_tokens": 4242,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4242,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid commit citations; Report 2 is marginally more precise (explicitly names /reports/monthly in the failure narrative and states the team 'returned to' Cargobox), but the two are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "git log in carelog-api \u2014 the single most important check: it shows this migration was already done and reverted (commits 454a21f, 597777b, 1712565, all PLAT-31).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "commits `454a21f` (Edgerunner deploy), `597777b` (per-request Postgres connections stopgap), and `1712565` (revert back to Cargobox), all under ticket PLAT-31, April 2026.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit 1712565 (2026-04-21) records that on Edgerunner, per-request Postgres connections \"opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections')\", taking the endpoint down\" under normal dashboard load.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Revert commit `1712565` records the outcome: under normal dashboard load, per-request connections opened faster than Postgres recycled them, `/reports/monthly` exhausted `max_connections` (\"FATAL: too many connections\"), and the endpoint went down; the team returned to the always-on Cargobox container with the shared pool.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "This is a re-attempt of PLAT-31, which caused a production outage less than three months ago (April 2026), and nothing in the repo has changed to address the root cause.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the team returned to the always-on Cargobox container with the shared pool.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "People to involve: whoever owned PLAT-31 and the April incident (they have the context the commits summarize)... and leadership \u2014 who should be shown the revert commit before reaffirming the decision.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "bring the PLAT-31 history to the platform/system owner (whoever owns carelog-api and the PLAT ticket queue) and to whoever owns the Postgres instance... The fact that this was tried and reverted is itself information leadership needs before committing spend to a second attempt.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

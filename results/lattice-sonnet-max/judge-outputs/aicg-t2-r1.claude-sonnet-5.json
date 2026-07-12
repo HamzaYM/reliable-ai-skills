@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23816,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.32841,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 43601,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 43601,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 9988,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 43601,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 43601,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 9988,
+            "output_tokens": 2456,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2456,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable depth and correct concrete fixes; Report 1 adds empirical test verification (actually running the code) while Report 2 adds a bonus insight about per-applicant rate-limit keying defeating aggregate protection \u2014 overall they are essentially on par in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`BadRequestError`** \u2014 the primary vendor deterministically rejected the payload as malformed... Inappropriate. ... **`ContentPolicyError`**... **`AuthError`**... Fix: classify the six exceptions into a retryable default and an explicit non-retryable denylist, and re-raise the denylist instead of failing over",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**BadRequestError** \u2014 not appropriate... **ContentPolicyError** \u2014 not appropriate... **AuthError** \u2014 not appropriate... Concrete fix: import the specific exception classes from `providers.py` and branch on them, e.g., catch only `(RateLimitError, RequestTimeoutError, ServerError)` for failover; treat `AuthError` as a raise-and-alert... treat `ContentPolicyError` and `BadRequestError` as raise-and-flag-for-review rather than transparent failover",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Not appropriate.** This is a blanket bypass gated on an environment-name string match... **Not appropriate** \u2014 this is a second, more direct violation of \"fail closed... by default\"... return False   # fail CLOSED, not open",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the implementation fails open on anything that isn't an exact-case-sensitive string match, with no logging when it does... this is backwards for a safety mechanism: exactly when the rate limiter's backing store is unavailable, the system stops limiting rather than becoming more conservative... Change the `RedisError` handler to fail closed (`return False`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`input_text` \u2014 the full raw document \u2014 is logged verbatim.**... **`metadata` is logged wholesale with no allowlist.**... _METADATA_ALLOWLIST = {\"doc_type\", \"status\"}  # explicit, team-maintained safe keys only",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "don't log `input_text` at all (log a length or a hash if some signal is needed for debugging); log the already-computed pseudonymized id... and explicitly allow-list which `metadata` fields are safe to log rather than serializing the dict wholesale",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "when the salt is missing, the function does **not** fail \u2014 it silently degrades to a plain, unsalted `sha256(applicant_id)`... salt = os.environ[\"PII_SALT\"]          # raises KeyError if unset \u2014 fails hard",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the function silently degrades to `sha256(applicant_id)` \u2014 an unsalted, unkeyed hash of the id alone, with no error, warning, or log line indicating this happened... if not salt:\n        raise RuntimeError(\"PII_SALT must be configured before processing applicant PII\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

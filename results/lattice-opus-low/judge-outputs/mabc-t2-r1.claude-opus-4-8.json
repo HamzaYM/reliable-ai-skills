@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 53068,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.22769800000000004,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6292,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6292,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6292,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6292,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 4375,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4375,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover grouping, ordering, and the F-06/F-08 judgment calls equally well, but Report 2 answers better overall because it correctly flags the shared RESULTS_DB collision and mandates a distinct DB per engineer, which Report 1 dismisses as \"harmless.\"",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Engineer B \u2014 `registry.py`**: F-02 (`aurora-1` endpoint), F-05 (default rubric version \u2192 v3), F-09 (default dataset \u2192 `eval_set.jsonl`). Three trivial one-liners in an 11-line file; one owner avoids three-way conflicts.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Engineer C \u2014 `registry.py`:** F-02, F-05, F-09 \u2014 three one-line config edits. ... `run_batch.py` (4 findings) and `registry.py` (3) are the two high-contention files, so each gets exactly one owner.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "they are largely independent and can run fully in parallel. ... **Ordering within a stream: fix before its test.** F-01 must land before F-11 (the test asserts the new join behavior); F-13/F-04 must land before F-12",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Wave 1 \u2014 code fixes, fully parallel (files are disjoint):** ... **Engineer C \u2014 `registry.py`:** F-02, F-05, F-09 ... **Wave 2 \u2014 the two test findings, after their target fix lands:** F-11 ... goes to **Engineer B** ... F-12 ... goes to **Engineer A**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06 is a judgment/policy change, not a bug.** \"Tighten the partial-credit thresholds so borderline answers score lower\" changes scoring *semantics* on all consumers ... This needs the reviewer/product owner to specify the new numbers ... Flag for a decision before coding.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06 \u2014 a behavior change, not a settled bug; escalate, don't just assign.** ... alters user-facing scoring output for every previously-scored answer and specifies no target values. That's a scoring-policy decision, not a mechanical fix. It should be flagged to whoever owns the rubric/scoring policy for a decision",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "`tests/conftest.py` gives every run the same `RESULTS_DB` default (`/var/tmp/llm-scoring/results.db`), so parallel test runs share one DB path. Mitigation: ... give each engineer a distinct `RESULTS_DB`. ... **A distinct `RESULTS_DB` per engineer** \u2014 `tests/conftest.py` defaults all runs to `/var/tmp/llm-scoring/results.db`; parallel runs need separate values so they don't collide",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19635,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.146184,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5039,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5039,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5039,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5039,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1588,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1588,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover (a), (b), and (c) equally well, but Report 1 additionally recommends dropping the hardcoded webhook count in favor of pointing at the code, making it slightly stronger.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... There are two places, both outside `gateway.py`, that construct their own `chargekit.Client`... `medibill/backend/app/api/invoices.py:4,14`... `medibill/backend/app/workers/dunning.py:2,9`... The only conforming pieces are `gateway.py` itself and `errors.py`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... `medibill/backend/app/api/invoices.py:4,14-16`... `medibill/backend/app/workers/dunning.py:2,9-13`... plus the one legitimate direct import of error classes in `errors.py`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`InvoiceOut` has six fields \u2014 `id, tenant_id, amount_cents, currency, status`, **and `external_ref`**. This field was added by migration `medibill/backend/migrations/0006_add_invoice_external_ref.sql:1`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`InvoiceOut` (`models/invoice.py:16-22`) has a sixth field, `external_ref`, which is populated by `charge_invoice` (`invoices.py:17`)... and is backed by a real migrated column (`migrations/0006_add_invoice_external_ref.sql:1`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "before adding refund support the doc needs correcting now, not deferred... This cleanup should happen **before or in the same commit as** the refund feature work",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It should be corrected now, before refund work starts \u2014 not bundled into the refund PR as an afterthought... the doc should be revised as part of the same change that adds refunds, not deferred",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "drop the number and static list altogether and point at `app/api/webhooks.py` as the source of truth for which `type` values are handled... This is exactly the kind of stale count project documentation warns about",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

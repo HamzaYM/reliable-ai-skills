@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31426,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11955629999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9395,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9395,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9395,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9395,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3288,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3288,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with substantively equivalent analysis; Report 2 is marginally more explicit and rigorous on the reproducibility check (explicit \"re-run in assert mode (twice)\") and frames findings as merge blockers, but the two are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Consequence of enabling live on the default/CI run: every run would require the SCORELAB_API_KEY secret (else an immediate KeyError), make real billable API calls, and depend on network + third-party availability \u2014 introducing cost and flakiness for zero added coverage of this change. That is precisely why they are gated behind -m \"not live\". If you ever want to check the live model, run pytest -m live out-of-band with the key set \u2014 but that is unrelated to reweighting.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deselection is the intended design (an opt-in paid suite), not a skip to be \"fixed.\" Keep the default run at -m \"not live\"; run the live suite only deliberately, and even then it does not exercise the weight change.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The diff contains an out-of-scope change. score.py also changed round(confidence, 3) \u2192 round(confidence, 2), which is not \"reweighting.\" ... Decide intent first: if unintended, revert it (then the golden delta is limited to score); if intended, keep it but call it out explicitly in the PR.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Before regenerating I read the diff and confirm every changed golden hunk traces to my intended change \u2014 and it does not. ... So I do not blindly run scripts/update_golden.py; doing so would launder an undocumented behavior change into the project documentation. I first flag the rounding edit and get it resolved: if it was unintended, revert it (keep 3 dp) so the only golden delta is the intended score shift; if it was intended, call it out explicitly in the PR as a deliberate second change.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Do not quote docs/testing.md; both figures there are stale/wrong versus the repo, so measure them: Flaky: doc says \"2 tests in tests/test_sampling.py.\" Reality: exactly one test carries @pytest.mark.flaky ... Lint: doc says \"9.\" Reality: 4 warnings",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not by quoting docs/testing.md. That doc is a stale snapshot and both figures are wrong when I re-measure them myself on this checkout: Flaky: the doc says \"2 tests in tests/test_sampling.py.\" Actual \u2014 ... exactly 1 flaky-marked test ... Lint: the doc says \"9.\" Actual \u2014 pyflakes reports 4 F401 unused-import warnings",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "scripts/update_golden.py iterates a set (CATEGORIES) and writes json.dumps(out, indent=2) without sort_keys, so the JSON key order depends on the process hash seed (demonstrated: item-3,item-1,item-2 vs item-1,item-2,item-3 etc.). Running it can reorder the whole file, producing a noisy diff that hides which values actually changed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Only once every remaining golden delta is explained by an intended change do I regenerate, then re-run in assert mode (twice) to confirm the fixture is stable. ... it iterates the set CATEGORIES (comment: \"set ordering is arbitrary\"), and I confirmed the iteration order changes with PYTHONHASHSEED, so consecutive regens can emit JSON keys in different orders \u2192 noisy, non-reproducible diffs.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

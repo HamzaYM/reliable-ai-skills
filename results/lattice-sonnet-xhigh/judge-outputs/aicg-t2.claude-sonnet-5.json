@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22953,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13976460000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10684,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10684,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9379,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10684,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10684,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9379,
+            "output_tokens": 2588,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2588,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with concrete, correct fixes; Report 2 is somewhat more rigorous (explicit code fixes, empirical verification claims, and a firmer fail-closed statement for the rate limiter), but the substantive findings are equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Fix: Catch a narrow tuple of genuinely transient classes (RateLimitError, RequestTimeoutError, ServerError) for fallback; let BadRequestError and ContentPolicyError propagate/mark the document as failed without vendor retry; treat AuthError as a hard, alertable failure (log at error/raise, don't silently degrade to secondary)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: replace the blanket catch with an explicit non-retryable denylist, as project documentation prescribes, e.g.: NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError) def call_with_fallback(payload): try: return primary.complete(payload) except NON_RETRYABLE: raise except Exception as e: log_fallover(e); return secondary.complete(payload)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "For a safety control, an unset/misconfigured environment should default to the protective behavior, not the permissive one. ... consider whether guarding calls to a paid, PII-handling vendor API should fail closed instead.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: invert both fail conditions to fail closed \u2014 treat any STAGE value other than an explicit, narrowly-named local-dev override (e.g. RATE_LIMIT_BYPASS=1 checked in addition to a local-only marker) as production-like, and return False (or raise) on RedisError rather than True.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Fix: Log the pseudonymized key (already computed in batch_score.py) instead of record.applicant_id, drop record.input_text from the log entirely (an audit trail needs \"call happened, for whom, to which vendor, with what outcome,\" not the document contents), and validate/allowlist what goes into metadata rather than logging it opaquely.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: log only the pseudonymized key (never the raw ID), drop input_text entirely or replace it with a hash/length/truncated preview, and replace the blanket record.metadata with an explicit allowlist, e.g. {k: record.metadata[k] for k in ALLOWED_METADATA_KEYS if k in record.metadata}.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Fix: Fail loudly if PII_SALT is unset (raise RuntimeError or refuse to start the batch job) rather than defaulting to \"\".",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: fail hard instead of defaulting: ... if not salt: raise RuntimeError(\"PII_SALT is not configured; refusing to pseudonymize without a salt\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

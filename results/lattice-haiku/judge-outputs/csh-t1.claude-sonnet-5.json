@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20396,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10050119999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4928,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4928,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9668,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4928,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4928,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9668,
+            "output_tokens": 2215,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2215,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 answered all four expectations, including the crucial recommendation for a deploy/environment-level gate combined with the per-clinic value; Report 2 covered the first three well but omitted the global-gate recommendation, instead focusing more on testing, logging, and stub-implementation issues.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminder messages **will be sent automatically**. The deciding function is `auto_send_reminders_enabled()` at `backend/app/feature_flags.py:10\u201313`. Specifically, lines 11\u201312 return `True` when `tenant.settings.get(\"auto_send_reminders\")` is `None`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "YES, reminder messages will be sent automatically. The decision is made in `backend/app/feature_flags.py:10-13`, specifically in the `auto_send_reminders_enabled()` function... if tenant.settings.get(\"auto_send_reminders\") is None:\n        return True",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**No, it is not.** This default violates the config-hygiene principle for outbound-messaging features... **Change required:** Line 12 should read `return False` instead of `return True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "NO, this default is problematic and should be changed to FALSE (reminders disabled by default)... Edit `backend/app/feature_flags.py:11-12`:\n\n```python\ndef auto_send_reminders_enabled(tenant):\n    if tenant.settings.get(\"auto_send_reminders\") is None:\n        return False  # \u2190 Change from True to False",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The default was copied from the existing `compact_calendar_view_enabled()` resolver (lines 4\u20137), which also defaults to `True` when unset... `compact_calendar_view` is a low-risk UI convenience feature \u2014 grandfathering it on makes sense. `auto_send_reminders` is a high-risk outbound action \u2014 the categories are completely different, yet the null-handling was copy-pasted without re-evaluation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The toggle's default was arrived at by **direct pattern copying** from the existing `compact_calendar_view_enabled` function (introduced in SLOT-190, commit 25509a7). The SLOT-214 commit adds `auto_send_reminders_enabled()` with the identical structure \u2014 same None-check, same default to True \u2014 without any independent reasoning... Different feature types (UI preference vs. outbound messaging) should have different defaults",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add a deployment-level master gate:** Introduce an environment variable (e.g., `REMINDERS_ENABLED=true`) so the entire feature can be disabled at deploy time, acting as a kill switch. The resolver should AND both the env gate and the per-tenant value (env must be true AND tenant must be true for sends to happen).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

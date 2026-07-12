@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 13136,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0994812,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7207,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7207,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7207,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7207,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 1229,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1229,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations with nearly identical technical substance (same commands, same conflict discovery, same rebase plan); Report 1 is slightly more rigorous in isolating the true feature diff via git diff feat/weighted-scorer..feat/pairwise-metric, while Report 2 adds a two-dot vs three-dot diff distinction that's a nice bonus but not required.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. It's the only integration/trunk branch in the repository \u2014 ... `feat/weighted-scorer` is not a viable target: as shown in Q2, its content is already on `main`, so targeting it would aim the PR at a branch that is itself stale/superseded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. This repo has exactly one trunk ... never stack a PR on a feature branch as its base. That rule is doubly important here because the branch this one was actually cut from, `feat/weighted-scorer`, is no longer a valid target at all",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This is conclusive evidence that `feat/weighted-scorer` was **squash-merged into `main`** as PR #42, under a new commit hash that git's ancestry graph has no way of linking back to the original branch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "main`'s tip `1971f08` (\"Refactor scorer for weighted metrics (#42)\") touches the same two files as W1\u2013W3 combined. ... Yet `git merge-base --is-ancestor ac9d505 main` \u2192 **NO**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the remaining 16 insertions and all 3 deletions \u2014 every change in `scoring/scorer.py`, plus 6 of the 10 insertions in `scoring/metrics.py` (the `overlap()` helper) \u2014 are `feat/weighted-scorer`'s content, present only because `feat/pairwise-metric` branched from `feat/weighted-scorer` and was never rebased after that work landed on `main` as #42.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So **no, not all of it is pairwise-metric work.** Only `X1` and `X2` (5 net lines) are. The other 3 commits/16 lines are the `feat/weighted-scorer` dependency's content, present purely because `feat/pairwise-metric` was cut from `feat/weighted-scorer` before that branch's work reached `main` through a different, non-ancestor commit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase `feat/pairwise-metric` to drop the now-redundant `feat/weighted-scorer` commits**, replaying only the genuine pairwise work onto current `main`: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... **Verify the result**: re-run `git diff main...feat/pairwise-metric --stat` (should now show only 2 files / 5 insertions / 0 deletions)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Rebase away the dead-base commits**: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`. ... **Verify the result**: `git diff main feat/pairwise-metric` should now show exactly the 5-line pairwise-only change",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

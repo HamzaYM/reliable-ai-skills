@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31146,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1146132,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5039,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5039,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5039,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5039,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 3105,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3105,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very close on findings (a), (b), and (c), but Report 1 fully satisfies (d) by recommending dropping the hardcoded count in favor of pointing at the source code, while Report 2 merely proposes updating the count to a new fixed number (5), missing that part of the expectation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The only conforming pieces are `gateway.py` itself and `errors.py` (medibill/backend/app/billing/errors.py:6, which imports only `chargekit.errors` \u2014 matching the doc's named exception)... `medibill/backend/app/api/invoices.py:4,14`... `medibill/backend/app/workers/dunning.py:2,9`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So as things stand, there are three independent `chargekit.Client` instantiations in the codebase (`gateway.py`, `invoices.py`, `dunning.py`) plus the one legitimate direct import of error classes in `errors.py`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Actual code (medibill/backend/app/models/invoice.py:15-22): `InvoiceOut` has six fields \u2014 `id, tenant_id, amount_cents, currency, status`, **and `external_ref`**. This field was added by migration `medibill/backend/migrations/0006_add_invoice_external_ref.sql:1`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`InvoiceOut` (`models/invoice.py:16-22`) has a sixth field, `external_ref`, which is populated by `charge_invoice` (`invoices.py:17`) from the provider's charge result and is backed by a real migrated column (`migrations/0006_add_invoice_external_ref.sql:1`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Per project documentation's core rule (\"drift between it and the code is treated as a bug... updated in the same commit\"), before adding refund support the doc needs correcting now, not deferred... This cleanup should happen **before or in the same commit as** the refund feature work",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It should be corrected now, before refund work starts \u2014 not bundled into the refund PR as an afterthought... the doc should be revised as part of the same change that adds refunds, not deferred \u2014 otherwise the drift compounds further.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Actual code (medibill/backend/app/api/webhooks.py:9-20) handles **5** event types... I'd change the doc to either (a) list all 5 current types explicitly including `payment_pending`, or (b) drop the number and static list altogether and point at `app/api/webhooks.py` as the source of truth",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'd change the statement to say \"5 webhook event types\" and add `payment_pending` to the list.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

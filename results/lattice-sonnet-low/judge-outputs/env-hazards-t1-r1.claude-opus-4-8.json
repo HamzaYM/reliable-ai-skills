@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23610,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.15757400000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5433,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5433,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5433,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5433,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1886,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1886,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify all three root causes and fixes with specific files; they are comparable, with Report 1 slightly cleaner on the two-role separation but Report 2 adding a useful FORCE RLS belt-and-suspenders note.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`cedar_owner` is the schema-owning role ... Postgres table owners (and any role that created a table) are not subject to their own row-level-security policies unless `FORCE ROW LEVEL SECURITY` is set ... `cedar_owner` bypasses the policy silently \u2014 no error, no warning \u2014 and `GET /clients` returns rows from every tenant",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the app runs as the table-owning role, RLS is enabled but not forced, so Postgres exempts the owner from the `tenant_isolation` policy and every `/clients` call returns rows from all tenants. ... `cedarline/.env` sets `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `cedarline/.env` (and `.env.example`) so the running application's `DATABASE_URL` uses `cedar_app`, not `cedar_owner` ... Keep `cedar_owner` reserved exclusively for `cedarline/scripts/migrate.sh` ... one schema-owning role used only by migration tooling, one least-privilege, non-owning, non-bypass application role used for all runtime queries",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the application's `DATABASE_URL` at the non-owning `cedar_app` role, not `cedar_owner`. `cedar_owner` should be reserved for running migrations/DDL only ... migrations should run as an owner/admin role, the API should run as a strictly-limited, non-owner application role",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedarline/scripts/reset-local-db.sh` (the script used to \"wipe and rebuild\") only does: ... `docker compose down -v` ... It never re-runs `db/bootstrap/create_app_role.sql`. Because `docker compose down -v` deletes the named volume ... the `cedar_app` role ... is destroyed and recreated from scratch. Migrations don't create `cedar_app`; only the bootstrap script does. ... a teammate must manually re-run the one-time bootstrap after any wipe",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docker compose up -d db` then reinitializes a brand-new cluster ... which only creates the role named in `POSTGRES_USER` (`cedar_owner` ...) ... it never runs `db/bootstrap/create_app_role.sql`. ... that bootstrap script is explicitly \"One-time bootstrap ... Not part of automatic database initialization; run by hand on first setup.\" ... the teammate has to manually re-run the bootstrap step",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

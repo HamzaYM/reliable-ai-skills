@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36530,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2399045,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 18347,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 18347,
+        "cache_read_input_tokens": 237475,
+        "inference_geo": "not_available",
+        "input_tokens": 12,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1509,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1509,
+            "cache_read_input_tokens": 45989,
+            "input_tokens": 2,
+            "output_tokens": 1235,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3563,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct code citations and equivalent substance; Report 2 is marginally stronger, empirically validating the bimodal deflation pattern against the actual scores.csv and noting the gate threshold isn't actually implemented in code, but the difference is minor.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In `run_batch.py:16\u201321`, each axis is scored inside a `try`; any exception sets `axis_scores[axis] = None`... the missing axis is coerced to `0.0` and folded into the weighted sum as if it were a real score... a normal 3-column row `[agent_id, reply_id, composite]` is appended to `results/scores.csv`. In form, that record is byte-for-byte identical to a fully-scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That `None` flows into `grader/aggregate.py`, where it is silently coerced to `0.0` and folded into the weighted sum... In form, a failed record is indistinguishable from a fully-scored one. `writer.writerow(...)` emits the same three columns",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "An agent that happened to hit more per-axis call failures gets a lower mean composite purely because of infrastructure flakiness, not reply quality \u2014 so it sinks in the ranking... the failure rate, not the reply quality, moves the ranking, and the two are unrecoverably mixed in the mean.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A corrupted-low row is counted as a real score in both the numerator and the denominator, dragging the agent's mean toward 0... the agents are being ranked by how many per-axis calls happened to fail \u2014 an infrastructure artifact \u2014 rather than by reply quality.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Accuracy fails (load-bearing gate): do not write a comparable composite. Write the record as `incomplete`/degraded with the composite blank/null, retain whatever partial per-axis signal exists but explicitly labeled partial, and queue the accuracy call for retry. Do not let it flow into the leaderboard as a normal number.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "For accuracy specifically: if the accuracy (gate) call fails, the record must be treated as unscorable/withheld \u2014 never scored, and never defaulted to a hard-fail.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Relevance/tone (not load-bearing): project documentation says renormalize over the axes that succeeded and keep the result flagged complete... Accuracy (load-bearing, determines pass/fail): project documentation says do not emit a number that looks comparable to a fully-scored case... So the axes must not share a failure policy: a failed accuracy call should block emitting a comparable composite entirely, whereas a failed relevance/tone call could be handled by renormalizing over what survived.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Relevance or tone fails (non-load-bearing), accuracy present: renormalize the composite over the surviving axes... For accuracy specifically: if the accuracy (gate) call fails, the record must be treated as unscorable/withheld \u2014 never scored, and never defaulted to a hard-fail.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

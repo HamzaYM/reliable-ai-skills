@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33043,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.15577250000000004,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8671,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8671,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8671,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8671,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2230,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2230,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comparable \u2014 each fully hits all four expectations with correct commit citations, the recorded rollback reason, the deliberate container state, and prior-attempt-grounded sign-off.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the git history for prior attempts \u2014 `git log` in `carelog-api/` shows commits `454a21f` (add Edgerunner deploy, PLAT-31), `597777b` (per-request Postgres connections stopgap), and `1712565` (revert after production outage)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`454a21f` \"Add Edgerunner serverless deploy for API (PLAT-31)\" \u2192 `597777b` ... \u2192 `1712565` \"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565` (2026-04-21): \"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31)\". The commit body says per-request connections \"opened faster than Postgres could recycle them and tripped the connection limit\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565`'s message records the mechanism precisely: Edgerunner's fresh-isolate-per-request model could not hold the SQLAlchemy pool; the stopgap (commit `597777b`) opened a dedicated Postgres connection per request, and \"under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The current deploy contract: `deploy/cargobox.yaml` (always-on, 2 replicas, secret-injected `DATABASE_URL`) and `backend/Dockerfile` (uvicorn ASGI server on 8080)... `1712565` (revert after production outage)... back to Cargobox container deploy",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The current deployment shape: `deploy/cargobox.yaml` (always-on, 2 replicas, secret-managed `DATABASE_URL`) and `backend/Dockerfile` (uvicorn server \u2014 not a serverless entrypoint)... The team reverted to the Cargobox container specifically to regain the shared pool.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Who should be involved: whoever owns PLAT-31 and executed the April revert (the platform/on-call team that handled the outage), the DBA/owner of the Postgres instance ... and the leadership sponsor \u2014 who should be shown commit `1712565` before any decision, since the revert commit is direct evidence that the proposed plan was already tried and rolled back.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "re-attempting it is a decision for whoever owns this system, made with full knowledge of the prior failure \u2014 not something to quietly retry. Concretely: bring PLAT-31 and commit `1712565` to leadership and the platform/DBA owners of the Postgres instance",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

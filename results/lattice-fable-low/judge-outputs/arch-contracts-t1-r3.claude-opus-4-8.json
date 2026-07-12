@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31287,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.148113,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4012,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4012,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 9333,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4012,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4012,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 9333,
+            "output_tokens": 2097,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2097,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation; Report 1 is marginally stronger because it explicitly frames doc-code drift as a bug and endorses same-commit doc updates as a going-forward norm, but the two are essentially comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Refund calls should live in `medibill/backend/app/billing/gateway.py`. ... `backend/app/api/invoices.py:4,14` \u2014 the charge route builds its own `chargekit.Client` ... `backend/app/workers/dunning.py:2,9` \u2014 the dunning worker constructs a fresh `chargekit.Client` inside its loop ... Those are the only two; `gateway.py` and `errors.py` are the legitimate sites.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls should go in `medibill/backend/app/billing/gateway.py` ... with `billing/errors.py` as the only sanctioned exception (it imports only exception types, `errors.py:6-9`) ... `medibill/backend/app/api/invoices.py:14-16` ... `medibill/backend/app/workers/dunning.py:9-13` ... Those are the only violations",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`docs/ARCHITECTURE.md:11-12` says the response contains *exactly* `id, tenant_id, amount_cents, currency, status`. The actual response model `InvoiceOut` (`backend/app/models/invoice.py:16-22`) also includes `external_ref`, which the charge route returns (`invoices.py:17-18`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual response model `InvoiceOut` (`models/invoice.py:16-22`) includes a sixth field, `external_ref`, populated by the charge endpoint (`api/invoices.py:17`) and backed by migration `backend/migrations/0006_add_invoice_external_ref.sql`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/ARCHITECTURE.md` should be corrected **in the same commit as whatever code change resolves each discrepancy** \u2014 drift between the contract doc and the code is a bug, not a \"fix later\" item. ... the doc fix (plus, ideally, restoring the boundary) is the first commit of this feature, and the refund accessor lands with a same-commit doc update describing it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It should be updated as part of the refund feature work \u2014 before or alongside the first refund PR, not after \u2014 since it's the document the README (`medibill/README.md:4`) directs engineers to, and every one of its three claims is currently stale or false.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The code (`backend/app/api/webhooks.py:10-19`) handles **five** ... I would drop the hardcoded count entirely \u2014 a stated number like \"4\" is guaranteed to drift (and already has). Restate it as either \"the handled event types are enumerated in `backend/app/api/webhooks.py`\" (point at the single source of truth)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The code at `backend/app/api/webhooks.py:10-19` handles **5** ... stop hard-coding an exact count (\"4 webhook event types\") in prose \u2014 either enumerate the types without a count, or point to `app/api/webhooks.py` as the source of truth, since exact-count claims silently rot every time a handler is added",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 46897,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.21872399999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7265,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7265,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9346,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7265,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7265,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9346,
+            "output_tokens": 3629,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3629,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and hit every expectation; Report 1 is marginally more rigorous (explicit \"re-run at least twice for determinism\"), but they are effectively comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "it makes a real HTTP call (`urllib.request.urlopen`) to `https://api.scorelab-models.example.com/v1/score` ... its own module docstring says outright: \"These tests hit the real model endpoint and incur per-call cost.\" ... the deselection is intended behavior, not an oversight, and \"fixing\" it is how you get a surprise bill. If live-model coverage is ever wanted, it should be run explicitly and deliberately ... never folded into the default gate for this change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "per their own docstring (\"hit the real model endpoint and incur per-call cost\") and code, they POST to `https://api.scorelab-models.example.com/v1/score` ... would make a real network call and incur real per-call monetary cost on every single default test invocation, forever ... the 2 live-marked tests remain deselected on purpose because they test a different system, not an oversight to be silenced by \"enable everything.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "before committing a refreshed fixture you must read the diff and confirm every changed value traces to the intended change \u2014 anything you can't explain is a regression, not a fixture update.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the resulting JSON diff should be reviewed line-by-line against the weight arithmetic, not accepted because the script exited cleanly ... That second change looks like an unintended edit riding along in the same hunk ... Before touching golden at all, confirm with whoever wrote it whether the rounding change was deliberate.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the doc's flaky count is stale, and citing \"2\" in a PR would be repeating a wrong number I could have caught by grepping myself. ... re-run `pytest --collect-only -m flaky -q` (or equivalent) and `ruff check .` myself immediately before writing the report, cite the fresh output",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not the `docs/testing.md` figures as-is \u2014 I checked both against the actual repo and found both wrong ... the real numbers with the method that produced them ... rather than citing `docs/testing.md`'s numbers as if they were current findings.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "re-run `test_scores_match_golden` in normal assert mode (not the regen script) at least twice to confirm determinism. ... `update_golden.py` iterates `CATEGORIES = {\"item-1\", \"item-2\", \"item-3\"}` \u2014 a Python `set` \u2014 and its own comment admits \"set ordering is arbitrary,\" so the regenerated JSON's *key order* could shift between runs",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`update_golden.py` iterates a Python `set`, which its own comment admits is \"arbitrary\" order ... it means re-running the script can needlessly reshuffle key order in the file between runs.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

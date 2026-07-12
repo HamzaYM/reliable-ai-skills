@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23269,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.17308800000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6916,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6916,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6916,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6916,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 1941,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1941,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent substance and correct fixes; Report 1 adds extra depth (TTL/lifetime-counter bug, uncaught secondary), making them comparable with a slight edge to Report 1.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "It catches **one** thing \u2014 bare `Exception` ... `BadRequestError` \u2014 malformed/invalid request. Not transient ... Should not fall over. ... `AuthError` ... Should not fall over; should surface/alert. ... `ContentPolicyError` ... This should be a hard stop, not a fallback. ... Concrete fix: branch on exception type. Fall over only for `RateLimitError`, `RequestTimeoutError`, `ServerError`. Let `BadRequestError`, `AuthError`, and especially `ContentPolicyError` propagate",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It catches a bare `Exception`, so *every* error class the primary can raise ... is treated identically and failed over ... `BadRequestError`, `AuthError`, `ContentPolicyError` \u2014 definitively non-retryable rejections. Failing these over is **wrong and dangerous**. ... a payload the primary rejected outright ... must never be rerouted to a second vendor ... Concrete fix: replace the bare catch with an explicit **denylist** of non-retryable classes ... `except NON_RETRYABLE: raise` and only fall over on the remaining classes.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A (line 12\u201313):** `if os.environ.get(\"STAGE\") != \"production\": return True`. Returns `True` whenever `STAGE` is anything other than the exact string `\"production\"` ... fails **open** ... **Path C (line 17\u201318):** `except RedisError: return True`. On any Redis error, returns `True`. Assessment: fails **open** ... for a PII pipeline, failing closed ... on `RedisError` is safer than unbounded calls.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if `os.environ.get(\"STAGE\") != \"production\"` \u2192 returns `True` unconditionally ... This **fails open** and gates behavior on an environment-name check ... **Wrong.** ... Path C (line 17-18): on `RedisError`, returns `True`. This **fails open** \u2014 if Redis is down, all rate limiting silently disappears ... a safety gate must fail **closed**. ... default to fail-closed (`return False` on `RedisError`, and enforce limits regardless of stage)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It emits at `INFO` a JSON blob containing `record.applicant_id`, `record.input_text`, and `record.metadata`. ... this writes the **full raw document text (`input_text`) and the raw applicant id in cleartext to application logs.** ... Concrete fix: never log `input_text` (drop it, or log only a length/hash/redacted preview); log the pseudonymized id ... scrub `metadata` for PII before logging.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It logs a JSON blob containing `applicant_id`, `input_text`, and `metadata` verbatim ... `input_text` is the **raw applicant intake document** ... It must never be logged ... `metadata` is logged wholesale via a **denylist-of-nothing** approach ... requires an **allowlist** of safe keys ... Concrete fix: ... drop `input_text` entirely ... filter `metadata` through an explicit allowlist of known-safe keys, dropping everything else.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`salt = os.environ.get(\"PII_SALT\", \"\")`. ... if `PII_SALT` is unset (or empty), `salt` defaults to `\"\"`, so the function silently computes an **unsalted** SHA-256 ... this fails **open and silently** ... Concrete fix: fail closed \u2014 raise if `PII_SALT` is missing or below a minimum length",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It reads `salt = os.environ.get(\"PII_SALT\", \"\")` ... `.get(..., \"\")` silently falls back to an **empty salt**, so the output becomes an unsalted `sha256(applicant_id)`. ... It fails **silently and open**. Concrete fix: require the salt \u2014 `salt = os.environ[\"PII_SALT\"]` or an explicit check that raises if unset/empty",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

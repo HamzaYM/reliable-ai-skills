@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19883,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1268755,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6980,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6980,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6980,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6980,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1797,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1797,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with the same numbers and recommendation; comparable, with Report 2 adding slightly more repo-grounded detail (overwrite/no-resume caveats).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 1,800 avg tokens per scoring call \u2248 9,360,000 tokens (~9.4M)... northpeak (primary/default): 640,000 tokens remaining of a 10,000,000-token window... Launching run_nightly.sh as-is would exhaust northpeak's remaining 640k tokens partway through",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 transcripts \u00d7 1,800 average tokens per scoring call = \u2248 9,360,000 tokens (~9.36M)... Northpeak (primary, default): 640,000 tokens remaining of a 10,000,000-token window. The run needs ~14.6\u00d7 what's left... would exhaust the allowance roughly 7% of the way through",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Instead I'd route the whole run to the secondary backend... --provider secondary... ridgeline has 10.8M tokens free versus a 9.36M need",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Route to the secondary backend by invoking score_batch.py directly with --provider secondary... Ridgeline's 10.8M remaining tokens comfortably cover the run",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run the default path. Launching run_nightly.sh as-is would exhaust northpeak's remaining 640k tokens partway through... Instead I'd route the whole run to the secondary backend",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run run_nightly.sh as-is, because it silently uses the primary/northpeak backend, which has only ~640k tokens left tonight... --limit only takes the first N transcripts... a clean single run on secondary is the practical choice",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is ~3 hours stale (19:25Z vs. 22:30Z now), so before launching I'd refresh the telemetry (or at minimum confirm ridgeline's remaining balance) rather than trust an old number",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The snapshot is from 19:25Z, ~3 hours stale at the assumed 22:30Z launch; I'd re-capture it (or check the vendor dashboards) to confirm ridgeline still has \u2265 ~9.4M tokens before committing",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r2",
+  "repeat": 2,
+  "task": "bama-t1"
+}

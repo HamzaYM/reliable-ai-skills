@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20853,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.14530800000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4673,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4673,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4673,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4673,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 1727,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1727,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions; they are comparable, with Report 1 adding transaction-scoping nuance and Report 2 being slightly more precise on the init path.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as the **table-owning role `cedar_owner`**, and RLS is only `ENABLE`d, never `FORCE`d. In Postgres, RLS policies are **not applied to the table's owner** (and not to superusers) unless the table is set to `FORCE ROW LEVEL SECURITY`. So the `tenant_isolation` policies never take effect for the running app.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The application (`backend/app/db.py` builds the engine from `DATABASE_URL`; `deps.py`/`main.py` use it for `/clients`) connects as **`cedar_owner`**... row-level security policies are **not enforced against a superuser, nor against the table's owner**, unless the table is set to `FORCE ROW LEVEL SECURITY`. `db/migrations/0001_init.sql` only does `ENABLE ROW LEVEL SECURITY` (no `FORCE`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `DATABASE_URL` in `.env`/`.env.example` (and any deployment config) to connect as `cedar_app` (`postgresql://cedar_app:apppw@...`), not `cedar_owner`. `cedar_app` does not own the tables and is not a superuser, so RLS applies to it. Keep migrations running as the owner (`cedar_owner`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change `DATABASE_URL` in `.env`/`.env.example` so the **application connects as the least-privilege `cedar_app` role**... Keep `cedar_owner` (owner/superuser) for **migrations only** (`scripts/migrate.sh`) \u2014 never for the running app.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedar_app` is created only by `db/bootstrap/create_app_role.sql`, which is explicitly a **one-time, by-hand step** and is *not* part of migrations... `scripts/reset-local-db.sh` runs `docker compose down -v`, which **deletes the `cedar_pgdata` volume**... `reset-local-db.sh` then runs `migrate.sh` **only**, never the bootstrap. So `cedar_app` no longer exists",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_app` is created only by `db/bootstrap/create_app_role.sql`, which is explicitly \"**Not part of automatic database initialization; run by hand on first setup**\"... the `-v` **deletes that volume**, destroying the entire cluster including the `cedar_app` role. It then only brings the DB back up and runs `./scripts/migrate.sh`... It never re-runs the bootstrap",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

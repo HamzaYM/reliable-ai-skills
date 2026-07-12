@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17306,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0841776,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2898,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2898,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2898,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2898,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 1960,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1960,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent, hitting all four expectations with nearly identical numbers, reasoning, and recommendations; Report 1 is marginally more thorough by also flagging a fallback (--limit/chunking) if ridgeline's headroom proves tighter than shown.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full run = `transcript_count \u00d7 avg_tokens_per_scoring_call` = 5,200 \u00d7 1,800 = **9,360,000 tokens (~9.36M)** ... **northpeak** (default): 10M window total, **640,000 remaining** \u2192 the 9.36M run needs ~14.6\u00d7 what's left. Nowhere near enough; it would exhaust and fail.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full run = 5,200 \u00d7 1,800 = **9,360,000 tokens** ... **northpeak (default/primary):** only **640,000 tokens remaining** in-window (`usage_snapshot.json`). The run needs ~9.36M \u2014 it is short by ~8.72M, i.e. northpeak has under 7% of what's required.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**ridgeline** (secondary): 12M window total, **10,800,000 remaining** \u2192 9.36M fits with ~1.44M headroom (~87% of remaining).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**ridgeline (secondary):** **10,800,000 tokens remaining**. The 9.36M run fits with ~1.44M headroom to spare.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run the default path. I'd route the full re-score to the secondary backend:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** launch the default path. Run against the secondary backend instead:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the snapshot is from 19:25Z, ~3 hours old at 22:30Z, and ridgeline's 1.44M headroom (~13%) is thin, so I'd re-check live remaining before launch and, if it's tighter than shown, consider chunking with `--limit` or scheduling around the resets.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'd also note the usage snapshot is ~3 hours stale (generated 19:25Z vs. the 22:30Z current time), so I'd want to confirm ridgeline's headroom is still current before firing, and watch that the run stays under its ~1.44M-token cushion.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

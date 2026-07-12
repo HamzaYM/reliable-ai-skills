@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21520,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13614400000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3870,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3870,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3870,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3870,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1654,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1654,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is clearly stronger, hitting all four expectations by rejecting stale docs, diffing golden values, and checking determinism, whereas Report 1 blindly regenerates, copies doc figures, and does no reproducibility check.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The deselected tests are the two live tests that make real API calls and incur per-call cost. They verify that the model endpoint works, not that the scoring logic works... Enabling live tests would unnecessarily incur API costs without validating anything about the weight change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The live tests in `test_live_model.py` hit a real API endpoint and incur per-call cost... they should remain opt-in, deselected by default... Enabling live tests would burn real API cost without validating the specific change",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "before committing a recaptured fixture, read the diff and confirm every changed hunk traces to your intended change. Run `scripts/update_golden.py` to regenerate the fixture. Then inspect the diff: verify each score change corresponds to the weight rebalance",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Do NOT cite stale numbers from docs/testing.md. Measure yourself... Do not cite the \"9 lint warnings\" or \"2 flaky tests\" from docs/testing.md\u2014those figures are outdated",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Re-run the test at least twice to confirm determinism before merging... Run test suite a third time to confirm determinism.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

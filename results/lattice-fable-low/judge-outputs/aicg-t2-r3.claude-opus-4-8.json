@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29880,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.15815549999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6432,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6432,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 2972,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6432,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6432,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 2972,
+            "output_tokens": 2606,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2606,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 1 edges ahead because it firmly prescribes failing closed on Redis errors while Report 2 equivocates (\"whether fail-open is acceptable is a policy call\"), missing expectation (b).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "on *any* `Exception`, logs a warning via `log_fallover` and resends the identical payload to `secondary.complete`... It is wrong for the definitively non-retryable class: `BadRequestError`... `AuthError`... and most seriously `ContentPolicyError`... Fix: add an explicit non-retryable denylist function... catch only vendor exceptions, re-raise denylisted ones, and fall over only on everything else.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "every one of them (plus any other exception, including programming bugs like `TypeError`) is handled identically: a `log.warning` then a retry against the secondary vendor. That blanket handling is only appropriate for the transient/availability classes... `BadRequestError` \u2014 inappropriate... `ContentPolicyError` \u2014 inappropriate... `AuthError` \u2014 inappropriate... Fix: catch the specific transient classes only... re-raise the rest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "if `os.environ.get(\"STAGE\") != \"production\"`, return `True` unconditionally \u2014 the limiter is completely disabled... `RedisError` is caught and the function returns `True` \u2014 the limiter **fails open**... Fix: fail closed by default in every environment (`return False` on `RedisError`, remove the STAGE check)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`record.input_text` (the **full verbatim document text**, which contains sensitive personal information), and `record.metadata` unfiltered... never log `input_text` verbatim... and filter metadata through an explicit **allowlist** of known-safe keys",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`record.input_text` (the full document text), and `record.metadata`... drop `input_text` entirely (or log only a length/hash), and allowlist specific metadata fields rather than dumping the whole dict.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`salt = os.environ.get(\"PII_SALT\", \"\")`... the function **silently degrades to an unsalted `sha256(applicant_id)`**... Fix: fail hard when the secret is missing \u2014 `salt = os.environ[\"PII_SALT\"]` or an explicit `raise RuntimeError(\"PII_SALT is not set\")`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "where `salt = os.environ.get(\"PII_SALT\", \"\")`... the function silently degrades to an unsalted `sha256(applicant_id)`: no error, no warning... Fix: fail fast \u2014 `salt = os.environ[\"PII_SALT\"]` or an explicit check that raises when the salt is missing/empty",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

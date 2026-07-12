@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14933,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09791659999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6982,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6982,
+        "cache_read_input_tokens": 61392,
+        "inference_geo": "not_available",
+        "input_tokens": 3099,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3948,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3948,
+            "cache_read_input_tokens": 32213,
+            "input_tokens": 2,
+            "output_tokens": 923,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1706,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is slightly better: it explicitly notes the usage snapshot is ~3 hours stale and commits to re-checking live usage before launch (expectation d), which Report 2 omits entirely despite citing the same snapshot timestamp.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 ~1,800 tokens per scoring call \u2248 9.36M tokens ... northpeak (primary/default): 640,000 tokens remaining of a 10M window \u2014 only ~7% of what the run needs",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 transcripts \u00d7 ~1,800 tokens per scoring call \u2248 9.36M tokens ... northpeak (default/primary): 640,000 tokens remaining of a 10M window \u2014 covers only ~355 transcripts (~7% of the run)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I'd launch on the secondary backend:\n\n```bash\ncd transcript-scoring\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Instead I'd route the full run to the secondary backend:\n\n```bash\ncd transcript-scoring\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not use the default path. I'd launch on the secondary backend... If a partial-primary run were preferred instead, `--limit` exists to cap scope, but a split run adds complexity for no benefit given Ridgeline's headroom.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** use the default path. Launching `run_nightly.sh` as-is would send the work to northpeak, which would exhaust its remaining 640k tokens a few hundred transcripts in, and its quota doesn't reset until 07:20 \u2014 too late for the 07:00 review. Instead I'd route the full run to the secondary backend",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the snapshot is ~3 hours stale, so I'd re-check live vendor usage before launch if a mechanism exists (none is in the repo)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

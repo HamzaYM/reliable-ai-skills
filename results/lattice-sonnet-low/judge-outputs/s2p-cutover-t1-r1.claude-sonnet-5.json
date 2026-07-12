@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27875,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12340319999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7744,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7744,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7744,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7744,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2609,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2609,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover the same ground thoroughly and nearly tie, but Report 1 explicitly and unambiguously calls for confirming/running the first migration before launch rather than assuming deploy handled it, while Report 2 only notes the claim is unverifiable without making an explicit call to action \u2014 giving Report 1 a slight edge.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Both keys should be removed entirely from prod, not merely toggled off... This should not be blindly recreated in prod without confirming the ARN is still valid and actually needed; if it's a known-dead reference it should be dropped.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is a staging convenience credential; it must be removed (or replaced with real prod admin provisioning) before launch",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the frontend bundle deployed to production will have https://staging-api.example.com baked in permanently \u2014 this cannot be fixed at runtime since it's inlined at build time... There is also no .env.production file to build from even if the pipeline were fixed to build twice",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the production frontend deploy would ship a bundle baked with the staging API base URL (https://staging-api.example.com) \u2014 production traffic would point at the staging backend \u2014 and even if the --mode were fixed, there is no .env.production file to supply a correct value.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "docs/prod-runbook.md:6 asserts \"Database migrations are applied automatically during deploy,\" but that document is stale... and there is no evidence in the pipeline to back the claim \u2014 per project documentation's first-apply trap, this must be confirmed explicitly, not assumed, before launch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "docs/prod-runbook.md states \"Database migrations are applied automatically during deploy\" (line 5), but since scripts/deploy.sh doesn't exist in the repo, there is no way to verify this claim",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Must change to repo:acme-health/medislot:environment:production before any apply.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This line must be changed to repo:acme-health/medislot:environment:production before applying.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

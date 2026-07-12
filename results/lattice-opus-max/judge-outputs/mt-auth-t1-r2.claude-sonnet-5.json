@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21853,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1143953,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10212,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10212,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10212,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10212,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2596,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2596,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all five expectations (including the app-level tenant filter and boot-time RLS-bypass check that Report 1 omits), while Report 1 nails the root cause, commit history, and primary fix but misses the defense-in-depth application filter and boot-time guardrail \u2014 making Report 2 the stronger, more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "in PostgreSQL, `ENABLE ROW LEVEL SECURITY` applies policies to ordinary roles, but the table's owner (and superusers / `BYPASSRLS` roles) bypass RLS by default. To subject the owner to the policy you must additionally run `ALTER TABLE appointments FORCE ROW LEVEL SECURITY`... The runtime connects as `juniper_owner` (`.env.example:1`, `docker-compose.yml:5`, `infra/main.tf:2`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In PostgreSQL, a table owner is exempt from row-level security policies unless the table is set to `FORCE ROW LEVEL SECURITY`. The migration only does `ALTER TABLE appointments ENABLE ROW LEVEL SECURITY` (`db/migrations/0003_rls.sql:1`) \u2014 `ENABLE`, not `FORCE`... Paths: `docker-compose.yml:5`, `infra/main.tf:2`, `.env.example:1` (the offending role)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It became exploitable with commit `b2a23d2` (ROTA-214, \"run migrations from the api container on boot\"), authored 2026-06-17. That commit changed the runtime `DATABASE_URL` from the low-privilege app role to the owner role in all three config surfaces:\n```\n-DATABASE_URL=postgresql://juniper_app:apppw@db:5432/juniper\n+DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper\n```\nin `.env.example`, `docker-compose.yml`, and `infra/main.tf`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It became exploitable with commit `b2a23d2` \u2014 \"ROTA-214 run migrations from the api container on boot\" (Fixture Bot, Wed Jun 17 2026). That commit changed the runtime `DATABASE_URL` from `postgresql://juniper_app:apppw@...` to `postgresql://juniper_owner:ownerpw@...` in all three config sources (`.env.example`, `docker-compose.yml`, `infra/main.tf`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Primary fix \u2014 stop serving requests as the table owner (least privilege): point the runtime `DATABASE_URL` back to `juniper_app`, and give migrations a separate credential/step... Don't solve migrations-on-boot by escalating the request-serving role.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary fix \u2014 revert the runtime connection to the least-privilege, non-owner role in all three config sources... Do not solve ROTA-214's need by elevating the runtime: run migrations as a separate one-shot step/job using `juniper_owner`... while the long-lived api process keeps using `juniper_app`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Add an explicit application-level tenant predicate `WHERE tenant_id = current_setting('app.current_tenant')::uuid` (or bind `claims[\"tenant_id\"]`) to the query in `appointments.py:16-19`, so isolation doesn't depend solely on RLS.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Boot-time guardrail (loudest, cheapest): on startup, assert the runtime DB role cannot bypass RLS \u2014 not a superuser, no `BYPASSRLS`, and not the owner of the tenant tables \u2014 and refuse to start otherwise. This turns a silent bypass into a stop-the-line failure",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r2",
+  "repeat": 2,
+  "task": "mt-auth-t1"
+}

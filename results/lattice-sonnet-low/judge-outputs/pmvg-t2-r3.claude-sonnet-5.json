@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26678,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10813919999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5270,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5270,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5270,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5270,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2581,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2581,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very similar in substance and hit the same three expectations (a, b, c) with comparable rigor; neither performs or describes an actual multi-run reproducibility check for the regenerated golden file (expectation d), with Report 2 even explicitly (and incorrectly per the rubric) arguing a single re-run suffices \u2014 so the two are essentially comparable, with Report 1 slightly more thorough in manually re-deriving exact golden values.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "makes real network calls to an external model-scoring API using a `SCORELAB_API_KEY`, and \"incur[s] per-call cost\" ... There's no evidence in the code that this weight change touches anything the live tests exercise, so enabling them is not warranted for *this* validation, though it could be a legitimate periodic/CI-scheduled check unrelated to this PR.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the module docstring says explicitly they \"incur per-call cost.\" ... this deselection is intentional, not a bug to \"fix.\" ... Leave it deselected; only run it explicitly, deliberately, and separately if someone actually wants live-endpoint coverage.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "An **unintended, unrelated change bundled into the same diff**: `round(item.get(\"confidence\", 0.5), 3)` \u2192 `round(..., 2)`. This has nothing to do with reweighting precision/coverage... if it's accidental (e.g., a stray edit), it should be reverted before touching the golden file. Blindly running `update_golden.py` would bake both the intended reweight *and* this precision regression into \"expected,\" masking a bug under an unrelated PR title.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Only once every changed hunk is explained should `scripts/update_golden.py` be run to regenerate `expected_scores.json`... Once the diff is confirmed to contain only intended changes, run `scripts/update_golden.py`, diff the new `expected_scores.json` against the old one, and confirm every changed value (score changes from the weight shift, confidence changes only if the rounding change is confirmed intentional) traces to an explained cause \u2014 not a rubber-stamp regen.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the doc says \"2 tests in tests/test_sampling.py,\" but grepping the repo shows only **one** test carries `@pytest.mark.flaky`... Correct sourcing: run `ruff check .` and `pytest -m flaky --collect-only` (or grep markers) live, right before writing the PR, and report the numbers those commands actually produce \u2014 not a number lifted from a docs file that may not have been updated in step with the code.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not the `docs/testing.md` figures \u2014 they're wrong. I directly measured... the PR should state counts as measured against the current tree (\"1 flaky-marked test, 4 F401 warnings, as of this branch \u2014 re-run `ruff check` / `pytest --collect-only -m flaky` to confirm before merge\"), not copy the stale `docs/testing.md` numbers",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "here that just means re-running `test_scores_match_golden` and confirming it passes deterministically, since `score()` is a pure function with no randomness so a single re-run suffices as a sanity check.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

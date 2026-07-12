@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26827,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.181684,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7029,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7029,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7029,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7029,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2212,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2212,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answered the task better: it matched all four expectations, notably catching the shared conftest.py RESULTS_DB collision that Report 1 missed entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Group C \u2014 `pipeline/registry.py`**: F-02, F-05, F-09. Same file, but the three constants ... are independent of each other \u2014 one engineer can knock out all three in one small PR faster than coordinating three people on one file.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Engineer A \u2014 `pipeline/registry.py`:** F-02 ... F-05 ... F-09 ... All three constants live in the same small file with no logical dependency between them, so one engineer doing all three avoids three people touching one file simultaneously.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**First: Group A and Group B in parallel** ... **Then, or in parallel with step 1: Group C and Group D** ... **Group C \u2014 `pipeline/registry.py`**: F-02, F-05, F-09 ... one engineer ... [Group B] F-01, plus the new test F-11",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Engineer C \u2014 `pipeline/rubric.py` + its test:** F-01 ... together with F-11 ... [Engineer A registry.py] ... Wave 1 groups are genuinely file-disjoint ... Wave 2 is held to a single owner",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06**: \"tighten partial-credit thresholds so borderline answers score lower\" has no target values ... This isn't safe to hand to an engineer to fix \"as written\" \u2014 it needs a rubric-owner decision on the actual new thresholds ... before code changes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06** ... this is not a pure bug fix, it's a scoring-policy change with direct, user-facing impact on every borderline-scored output going forward ... I would escalate this to whoever owns the rubric/scoring policy for a concrete target ... before assigning it to an engineer",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Shared test resource:** `tests/conftest.py` defines `RESULTS_DB` pointing at a single path (`/var/tmp/llm-scoring/results.db` by default). If multiple engineers run the test suite concurrently on shared infrastructure without each setting a distinct `RESULTS_DB`, test runs can collide/clobber each other's results.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

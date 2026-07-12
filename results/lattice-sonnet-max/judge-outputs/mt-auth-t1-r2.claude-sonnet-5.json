@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28167,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1427622,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10023,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10023,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10023,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10023,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2988,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2988,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 hits all five expectations (including the explicit tenant_id filter and a blocking boot-time check), while Report 2 misses the application-level tenant filter and does not clearly state the boot-time check should block startup \u2014 Report 1 more fully satisfies the expectations despite Report 2's extra findings (unsigned tokens, missing commit/rollback) being valuable but out of scope for these specific expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "in PostgreSQL, table owners bypass row-level security by default, regardless of ENABLE ROW LEVEL SECURITY or any policy defined, unless the table is additionally altered with FORCE ROW LEVEL SECURITY. juniper_owner is the role that ran the migrations that created appointments... No migration in this repo ever issues ALTER TABLE appointments FORCE ROW LEVEL SECURITY",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Under standard, documented PostgreSQL semantics, RLS policies are bypassed by three categories of role: superusers, roles with BYPASSRLS, and the table's owner \u2014 unless the table is explicitly opted in with ALTER TABLE ... FORCE ROW LEVEL SECURITY... I confirmed by grep that FORCE ROW LEVEL SECURITY does not appear anywhere in this repository.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The leak was introduced in commit b2a23d2a527cd13589163a40ef51b2eb2a430af6, \"ROTA-214 run migrations from the api container on boot\"... DATABASE_URL: juniper_app:apppw \u2192 juniper_owner:ownerpw",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The leak was introduced by the second commit, b2a23d2a527cd13589163a40ef51b2eb2a430af6 (\"ROTA-214 run migrations from the api container on boot\", 2026-06-17)... DATABASE_URL=postgresql://juniper_app:apppw@db:5432/juniper \u2192 +DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Immediate fix \u2014 stop using the owner role for runtime traffic. Revert DATABASE_URL... back to the juniper_app role... Database-layer hardening \u2014 close the owner-bypass hole itself. Add ALTER TABLE appointments FORCE ROW LEVEL SECURITY;",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary fix \u2014 stop using the owner role as the runtime credential: Revert DATABASE_URL back to the juniper_app role... Add a new migration, e.g. db/migrations/0004_force_rls.sql, with ALTER TABLE appointments FORCE ROW LEVEL SECURITY;",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Application-layer defense in depth. Add an explicit WHERE tenant_id = :tid to the query in juniper/backend/app/routes/appointments.py:16-19, binding :tid from claims[\"tenant_id\"]... Isolation should not depend on exactly one mechanism (RLS) working correctly; this makes the leak impossible even if RLS is misconfigured or bypassed again for any reason.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Boot-time privilege assertion... on startup, have the API process query its own connected role... and refuse to start (or alert loudly) if the runtime role is the table owner or has BYPASSRLS. This turns a silent data leak into a loud, immediate deploy-time failure",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add a boot-time or CI self-check for RLS bypass. A small check \u2014 either at app startup or as a CI step against a real Postgres \u2014 that runs as the configured runtime role and confirms it is neither a superuser nor BYPASSRLS nor the owner of any table with an RLS policy... would catch this class of misconfiguration regardless of which specific commit or environment variable introduces it.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r2",
+  "repeat": 2,
+  "task": "mt-auth-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24613,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1204665,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3834,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3834,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 3132,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3834,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3834,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 3132,
+            "output_tokens": 2180,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2180,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 1 also arrives at the required distinction that relevance/tone failures can defensibly be scored over surviving axes while accuracy cannot, giving it the edge.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In `aggregate.py`, `composite` converts a `None` axis to `0.0` and folds it into the weighted sum anyway: `if value is None: value = 0.0; total += weight * value` (`grader/aggregate.py:10-12`). So a record with a failed axis gets a composite computed as if that axis had scored a literal zero. In form, the written row is **indistinguishable** from a fully scored row",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In `aggregate.py:9-12`, `composite` replaces a `None` axis with `0.0` and still computes the weighted sum. So a failed axis is silently scored as 0. The written record is **indistinguishable in form** from a fully scored one",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`results/scores.csv` therefore contains silently corrupted composites that can't be told apart from legitimate low scores. `leaderboard.py` then sums and averages every row blindly (`grader/leaderboard.py:13-16`), so any agent whose replies happened to hit transient call failures gets their mean composite dragged down",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`results/scores.csv` accumulates poisoned rows carrying no marker of failure, and `leaderboard.py:13-16` averages them into each agent's mean with full weight. Agents who happened to hit more call failures get unfairly dragged down",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "A failed **accuracy** call means the gate itself is unknown \u2014 no comparable composite can honestly be emitted at all. The record must be treated as unscored/degraded, never written as a normal composite row.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "On any axis failure, the pipeline should **not write a numeric composite for that row**... for a gate axis like accuracy no imputation is defensible; the record is simply unscored.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed **relevance or tone** call is a non-critical piece; it's defensible to renormalize the composite over the axes that succeeded (e.g., accuracy+tone over weights 0.5+0.2) and still emit a value, provided the row is flagged as partial.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

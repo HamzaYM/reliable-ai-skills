@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32948,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.17933920000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15158,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15158,
+        "cache_read_input_tokens": 70864,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2592,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2592,
+            "cache_read_input_tokens": 41715,
+            "input_tokens": 2,
+            "output_tokens": 1385,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3994,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify all four core defects and prescribe essentially the same fixes with comparable rigor; Report 2 is slightly crisper on the rate-limiter fail-closed recommendation, but overall the two are comparable in coverage and correctness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "it wraps `primary.complete(payload)` in `except Exception as e`... and unconditionally retries the same payload on `secondary.complete(payload)`... `BadRequestError` \u2014 inappropriate to fall back... `ContentPolicyError` \u2014 inappropriate and a compliance problem... `AuthError` \u2014 inappropriate to silently absorb... Concrete fix: catch only `(RateLimitError, RequestTimeoutError, ServerError)` for failover and re-raise everything else",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it wraps `primary.complete(payload)` in a single `except Exception as e`... and unconditionally re-sends the same payload to `secondary.complete(payload)`... `BadRequestError` \u2014 ... it should be raised to the caller instead... `ContentPolicyError` \u2014 ... This must not fall over... `AuthError` \u2014 ... It should raise (or at minimum alert loudly)... add an explicit non-retryable classifier in `router.py`... re-raise when `is_non_retryable(e)`, and fall over only on the vendor's transient classes",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This fires whenever `STAGE` is unset, empty, or any other value... Safer would be to always enforce the limit and use configuration only to *tune* it, or at minimum log loudly when bypassing... any `RedisError` from `incr` returns `True`. Assessment: fail-open on infrastructure failure, and *silent*... failing closed or falling back to an in-process limiter would be more defensible",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A safety gate should fail closed everywhere by default, with only a narrow, explicitly named local-dev override (e.g. `RATE_LIMIT_DISABLED_FOR_LOCAL_DEV=1`), never an \"is this production?\" check... It should fail closed: return `False` (and log/alert), or raise so the caller can decide.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "drop `input_text` entirely \u2014 if the audit trail needs to reference content, log a content hash, length, and document type, (c) replace the free-form `metadata` pass-through with an explicit allowlist of known-safe fields (timestamps, model/vendor name, prompt version, outcome)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "replace `input_text` with a digest and length (e.g. `{\"input_sha256\": hashlib.sha256(text.encode()).hexdigest(), \"input_chars\": len(text)}`); filter metadata through an explicit allowlist of safe keys (e.g. `ALLOWED_METADATA_KEYS = {\"doc_type\", \"model\", \"vendor\", \"latency_ms\", \"tokens_in\", \"tokens_out\"}`), dropping everything else",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Concrete fix: fail hard on a missing/empty salt and use a keyed construction... if not salt:\n        raise RuntimeError(\"PII_SALT must be set\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A missing secret that gates handling of sensitive data should fail hard, not fall back. Concrete fix: `salt = os.environ.get(\"PII_SALT\")` then `if not salt: raise RuntimeError(\"PII_SALT must be set\")`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

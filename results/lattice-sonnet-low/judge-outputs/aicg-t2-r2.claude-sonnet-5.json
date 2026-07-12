@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 41142,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1556442,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9310,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9310,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9310,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9310,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 4132,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4132,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 correctly flags AuthError as a definitive rejection that must not be rerouted (matching the expectation), while Report 2 explicitly endorses failing over AuthError to the secondary vendor, missing that part of expectation (a); the two reports are otherwise comparable on b, c, and d.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`AuthError` \u2014 **inappropriate**. A primary-vendor auth failure (bad/expired credentials) is not something a retry against a different vendor fixes... Fix: Catch specific exception types individually. Retry-worthy transient classes (`RateLimitError`, `RequestTimeoutError`, `ServerError`) should fall over to secondary. `AuthError` and `BadRequestError` should be re-raised (or raise an explicit configuration/programmer-error alert) rather than silently falling over. `ContentPolicyError` should not automatically retry against a different vendor without an explicit, reviewed policy for that behavior",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "RateLimitError, RequestTimeoutError, ServerError, and AuthError are legitimately fallover-appropriate (transient/availability issues, or a primary-side credential problem, not a payload rejection) \u2014 the current behavior is appropriate for these four.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "in production, `redis.incr(key)` succeeds \u2192 returns `n <= LIMIT`... `redis.incr` raises `RedisError` \u2192 returns `True`, i.e. **fail open**. Assessment: **inappropriate for a rate limiter**... This should fail closed... Fix: Make the non-production bypass explicit and robust... Change the `RedisError` path to fail closed (return `False`...)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Path C \u2014 production, Redis raises `RedisError`: caught and returns `True`, i.e., **fails open** on Redis unavailability... Concrete fix: ... In the `except RedisError` branch, return `False` (fail closed) rather than `True`... Replace the environment-name check with an explicit, narrowly-named override",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`input_text` should almost never appear in logs verbatim for a sensitive-document pipeline; at most a hash, length, or truncated/redacted excerpt would be defensible for debugging. Fix: ... drop `input_text` from the audit record entirely (or replace with a non-reversible fingerprint, e.g., a hash and length...). `metadata` should also be reviewed field-by-field for PII before logging.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Keep sensitive data out of logs and audit metadata by allowlist, not denylist... Long or free-text content that must be referenced in a log should be hashed/truncated, never logged verbatim.' Here there is no allowlist at all... ALLOWED_METADATA_KEYS = {\"document_type\", \"vendor\", \"status\"}",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "When that variable is **not set**, `salt` silently defaults to the empty string `\"\"`, and the function proceeds without error \u2014 it does not raise, warn, or log anything... Fix: Fail loudly if `PII_SALT` is not set (raise a configuration error at import/startup or at minimum in `pseudonymize`) rather than silently defaulting to `\"\"`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When `PII_SALT` is unset, `os.environ.get(\"PII_SALT\", \"\")` silently falls back to `\"\"` \u2014 the function does not error, it just hashes `applicant_id` unsalted... if not salt: raise RuntimeError(\"PII_SALT is not configured; refusing to pseudonymize without a salt\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

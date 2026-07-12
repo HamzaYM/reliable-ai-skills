@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33341,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19070399999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5466,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5466,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5466,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5466,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 3198,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3198,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with accurate mechanism and citations; they are comparable, with Report 1 slightly more detailed on role separation and Report 2 crisper on the app-level tenant filter.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Postgres Row Level Security is never applied to the table owner, regardless of privileges, unless the table also has `FORCE ROW LEVEL SECURITY` set (which migration `0003_rls.sql` does not set \u2014 it only runs `ENABLE ROW LEVEL SECURITY`). The current runtime `DATABASE_URL` in `.env.example:1`, `docker-compose.yml:5`, and `infra/main.tf:2` all point the API at `juniper_owner:ownerpw@db:5432/juniper`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "RLS policies are never applied to the table's **owning role**, regardless of that role's `BYPASSRLS` attribute, unless the table also has `FORCE ROW LEVEL SECURITY` set. `juniper_owner` (created in `0001_init.sql`) owns the `appointments` table ... the app's runtime `DATABASE_URL` \u2014 in `.env.example`, `docker-compose.yml`, and `infra/main.tf` \u2014 is `postgresql://juniper_owner:ownerpw@db:5432/juniper`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was introduced in commit `b2a23d2` \u2014 \"ROTA-214 run migrations from the api container on boot\" ... `.env.example`: `juniper_app:apppw` \u2192 `juniper_owner:ownerpw`; `docker-compose.yml` (api service `DATABASE_URL`): same change; `infra/main.tf` (`database_url` variable default): same change",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\", 2026-06-17, in `juniper/`) changed `.env.example`, `docker-compose.yml`, and `infra/main.tf`, switching `DATABASE_URL` from `postgresql://juniper_app:apppw@db:5432/juniper` to `postgresql://juniper_owner:ownerpw@db:5432/juniper`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Revert the API runtime's `DATABASE_URL` in `docker-compose.yml`, `.env.example`, and `infra/main.tf` back to `juniper_app` (or an equivalently non-owner, non-`BYPASSRLS` role) ... Additionally, as defense in depth, add `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` in a new migration",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Revert the runtime `DATABASE_URL` ... back to the `juniper_app` role, so the application never connects as the schema owner. ... add `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` in a new migration",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the app-layer logic (`deps.py`, `appointments.py`) is already correct and shouldn't need a defensive `WHERE tenant_id = ...` if RLS is properly enforced, though adding it as belt-and-suspenders is reasonable given how easily the DB-layer protection was silently defeated here",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Also add an explicit `WHERE tenant_id = current_setting('app.current_tenant')::uuid` (or equivalent) to the query in `backend/app/routes/appointments.py`, rather than relying solely on RLS \u2014 this bounds the blast radius of any future connection-role misconfiguration",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Add a CI/deploy-time check (or a startup assertion in `backend/app/db.py`) that fails fast if the configured runtime role is the table owner or has `BYPASSRLS`/superuser privileges \u2014 e.g., query `pg_roles`/`rolbypassrls` and `pg_tables.tableowner` on startup and refuse to serve traffic if the connected role owns or bypasses RLS on tenant tables",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add a boot-time assertion in the app (e.g., in `backend/app/db.py`) that queries `current_user`/`pg_roles.rolbypassrls` and the table's owner, and refuses to start (or logs a stop-the-line alarm) if the runtime role is the table owner or has `BYPASSRLS`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r2",
+  "repeat": 2,
+  "task": "mt-auth-t1"
+}

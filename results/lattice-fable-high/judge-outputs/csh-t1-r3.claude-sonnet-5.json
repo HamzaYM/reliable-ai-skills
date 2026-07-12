@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14684,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0857557,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8097,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8097,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8097,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8097,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1620,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1620,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with substantively equivalent analysis; Report 2 additionally flags a UI-persistence edge case and job idempotency/error-handling issues, giving it a slight edge in depth, but both are comparable on the core expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A clinic that has never opened the setting WILL have reminders sent automatically. The deciding code is `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, specifically lines 11\u201312... if tenant.settings.get(\"auto_send_reminders\") is None: return True",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A clinic that has never opened the setting WILL have reminders sent automatically. The decision is made in `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, specifically lines 11\u201312: if tenant.settings.get(\"auto_send_reminders\") is None: return True",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "No, this default is wrong and I would invert it... The change: in `auto_send_reminders_enabled` (`feature_flags.py:12`), return `False` when the value is `None`/missing.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No \u2014 the default is wrong for this feature... The change I'd make is in `backend/app/feature_flags.py:11-13`: treat a missing value as disabled, e.g. `return bool(tenant.settings.get(\"auto_send_reminders\"))`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "commit `25509a7` (SLOT-190, June 10) created `compact_calendar_view_enabled` with the pattern \"if `.get(...)` is None \u2192 return True, else bool(...)\"... For a compact-calendar UI preference, defaulting missing-to-on is a reasonable \"grandfather existing tenants in\" choice with essentially zero cost if wrong. Copying that resolver shape into a flag that fires automated outbound patient messaging carried the convenience-feature default into a category where the failure mode is silently messaging every existing clinic's patients.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `25509a7` (SLOT-190, June 10) introduced `compact_calendar_view_enabled` with the \"missing \u2192 True\" pattern, plus tests for it... Defaulting a *display preference* to on is a reasonable product decision \u2014 everyone gets the compact calendar until they opt out, and nothing leaves the system. Copying that default onto a flag that triggers outbound SMS/email to patients transplants the pattern into a context where its consequences are categorically different.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an env-level master kill switch ANDed with the per-tenant value in the resolver, wired into deploy config (`infra/main.tf` currently defines only an `environment` variable) with a no-op default. Right now the only \"off\" lever is per-tenant data edits; there is no single switch to stop all sending if the job misbehaves, and no documented rollback affordance.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Consider a global kill switch (env/infra-level) in addition to the per-tenant flag, so the whole feature can be halted quickly if the rollout goes wrong; `infra/main.tf` currently defines only an `environment` variable.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

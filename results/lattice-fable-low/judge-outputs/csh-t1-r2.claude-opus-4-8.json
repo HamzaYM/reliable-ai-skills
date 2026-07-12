@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19388,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.11308549999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4044,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4044,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 2972,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4044,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4044,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 2972,
+            "output_tokens": 1827,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1827,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations with correct citations; Report 1 is marginally sharper on the missing global gate, Report 2 slightly more detailed on rollout stubs, but overall equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The decision is made in `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, lines 11\u201312: `if tenant.settings.get(\"auto_send_reminders\") is None: return True`. A clinic that never touched the setting has no `auto_send_reminders` key ... so `.get()` returns `None` and the function returns `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The decision is made in `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, lines 10\u201313 \u2014 specifically lines 11\u201312 ... `if tenant.settings.get(\"auto_send_reminders\") is None:\n    return True` ... so `.get()` returns `None` and the function returns `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "No, the default is wrong and should be inverted. ... The fix is in `slotwise/backend/app/feature_flags.py:11-13`: missing/`None` should return `False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No \u2014 this default is wrong and should be flipped to opt-in. ... The change: in `backend/app/feature_flags.py:12`, `return True` \u2192 `return False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Commit `25509a7` (SLOT-190) created `compact_calendar_view_enabled`, a UI-preference flag where \"missing \u2192 True\" ... is reasonable and harmless. ... added `auto_send_reminders_enabled` as a line-for-line structural clone of that resolver ... a low-risk display preference and an automated outbound-messaging action are in opposite default categories",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "commit `25509a7` (SLOT-190) introduced `compact_calendar_view_enabled` with a default-on-when-unset pattern, and the SLOT-214 diff ... adds `auto_send_reminders_enabled` as a line-for-line copy of that function ... Default-on is defensible for a cosmetic UI preference like compact calendar view; it is not defensible for a flag that triggers outbound patient messaging.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an environment-level master kill switch ANDed with the per-tenant value in the resolver, so the whole feature can be disabled in one place without touching tenant data ... Currently there is no gate at all besides the per-tenant value.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Consider a global kill switch in addition to the per-clinic toggle, so ops can halt all reminder sends without touching each tenant's settings.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

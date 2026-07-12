@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47688,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.218654,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6752,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6752,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9463,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6752,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6752,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9463,
+            "output_tokens": 3808,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3808,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable on (a), (b), and (c), but Report 2 answers better overall because it correctly recommends dropping the hardcoded webhook count in favor of pointing at the code, which Report 1 fails to do (it merely updates 4 to 5).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls (including refunds) should live in `medibill/backend/app/billing/gateway.py`. ... `medibill/backend/app/api/invoices.py:4` (`import chargekit`) ... `medibill/backend/app/workers/dunning.py:2` (`import chargekit`) ... `app/billing/errors.py`, which only re-exports the SDK's exception classes (`errors.py:6-9`) \u2014 it never builds a client or makes a call, so it's consistent with the rule as stated.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls belong in `medibill/backend/app/billing/gateway.py`. ... `medibill/backend/app/api/invoices.py:4` ... `medibill/backend/app/workers/dunning.py:2` ... The only place that matches the doc's stated exception is `medibill/backend/app/billing/errors.py:6-9`, which imports solely `chargekit.errors` (the exception classes)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual `InvoiceOut` dataclass (`medibill/backend/app/models/invoice.py:16-22`) has six fields \u2014 the same five, plus `external_ref: str | None` (line 22). This field is genuinely wired up ... `medibill/backend/migrations/0006_add_invoice_external_ref.sql:1`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual `InvoiceOut` dataclass (`medibill/backend/app/models/invoice.py:16-22`) has a sixth field, `external_ref`, populated from the provider's charge result and returned by `charge_invoice()` (`invoices.py:17-18`) ... backed by `medibill/backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It needs a correction pass, and that pass should happen **before** refund work starts coding, not after or bundled into the refund PR. ... there's no reason to defer it to \"later cleanup\"; it can land as its own quick commit ahead of the refund ticket.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this is a **stop-and-surface moment before writing any refund code**, not a cleanup to defer. ... The doc needs to be corrected now, as its own explicitly-called-out change ... must land with its own doc update in the same commit, called out in the commit/PR summary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "drop the numeral (\"4 webhook event types\") and either list the types without asserting a total, or better, point at `app/api/webhooks.py`'s dispatch as the source of truth rather than duplicating the list in prose at all. ... a restated fixed count would just go stale a second time",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

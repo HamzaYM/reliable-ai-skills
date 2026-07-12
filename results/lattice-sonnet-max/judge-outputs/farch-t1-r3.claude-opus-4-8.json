@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35252,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.218914,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9022,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9022,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9022,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9022,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2904,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2904,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with strong commit-grounded evidence; they are comparable, with Report 1 marginally more thorough on the DB-connectivity root cause and stakeholder ownership.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "this exact migration was already attempted in this repository and reverted after causing a production outage. ... `454a21f` \u2014 \"Add Edgerunner serverless deploy for API (PLAT-31)\" ... `1712565` \u2014 \"Revert Edgerunner migration...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it surfaces that this migration was already attempted under ticket **PLAT-31** and reverted after a production incident (commits `454a21f`, `597777b`, `1712565`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "\"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31)\" \u2014 commit body: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565` (\"Revert Edgerunner migration...\") states directly: *\"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production... Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"*",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Both `serverless_handler.py` and `edgerunner.toml` were deleted. ... Returning to the always-on Cargobox container with the shared pool.\" ... Treat the previous attempt's rollback discipline (clean, fully-reverted, well-documented in the commit message)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rebuilding the deleted `serverless_handler.py`/`edgerunner.toml` as they last existed would reproduce a known failure, not attempt something new. ... keeping `deploy/cargobox.yaml` intact as an instant rollback path",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "given the failure was a specific, previously-litigated production incident, this isn't a call to make unilaterally or re-attempt silently \u2014 the fact that it already failed once is itself information the decision-owner needs before signing off again. I'd involve: whoever owns/owned ticket `PLAT-31` (the prior attempt and revert)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Loop in whoever is sponsoring the cost-cutting initiative (leadership) with the concrete history, not an abstract risk: the last attempt caused a production outage on the reporting endpoint ... leadership should be the one weighing that explicitly.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

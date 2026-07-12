@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35033,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.181853,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6386,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6386,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 9333,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6386,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6386,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 9333,
+            "output_tokens": 2497,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2497,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable on grouping, ordering, and the F-06 escalation, but Report 1 answers the task better because it identifies the shared results-database collision in tests/conftest.py as a concrete parallelism hazard requiring a per-engineer RESULTS_DB override, whereas Report 2 treats it only as an optional path/writability preference.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Batch A \u2014 registry (Engineer 1):** F-05, F-09, plus F-02 once the escalation answers arrive. All three edit only `pipeline/registry.py` (lines 3\u201311); splitting them across people guarantees conflicts in a 12-line file, so one owner takes all of it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Engineer C \u2014 registry config (`pipeline/registry.py`): F-02, F-05, F-09.** All three are one-line edits to the same 12-line file (`MODEL_ENDPOINTS` missing `aurora-1`, `DEFAULT_RUBRIC_VERSION`, `DEFAULT_DATASET`). Bundle them into one small PR; assigning them separately would be three people editing one tiny file.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Batches A\u2013D are mutually file-disjoint, so they all run **in wave 1, fully parallel** ... **Batch B \u2014 rubric (Engineer 2):** F-01 + its test F-11. ... **Batch A \u2014 registry (Engineer 1):** F-05, F-09, plus F-02 ... so one owner takes all of it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Ordering:** all four streams can start simultaneously \u2014 that's the point of the file partition. ... **Engineer B \u2014 rubric parsing (`pipeline/rubric.py`): F-01, then F-11.** ... **Engineer C \u2014 registry config (`pipeline/registry.py`): F-02, F-05, F-09.** ... Bundle them into one small PR",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06** \u2014 \"tighten the partial-credit thresholds.\" Changing `PARTIAL_CREDIT_THRESHOLDS` (`pipeline/score.py:3`, currently `(0.35, 0.65)`) changes every borderline score the pipeline emits. That's a product/policy decision, not a bug fix: the finding gives no target values and no acceptance criterion. Per the campaign rule, behavior changes that aren't settled decisions get escalated as a batch, not guessed at by whichever engineer picks the ticket.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06 \u2014 needs a product/quality decision, not an engineer.** \"Thresholds are too lenient; tighten them\" gives no target values and no evidence. `PARTIAL_CREDIT_THRESHOLDS = (0.35, 0.65)` is a scoring-policy knob: changing it silently re-scores every dataset and breaks comparability with historical results. This needs an owner to decide the new values (ideally against labeled examples) before anyone edits code.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Shared test resource.** `tests/conftest.py:4` defaults `RESULTS_DB` to the machine-global path `/var/tmp/llm-scoring/results.db`. Parallel test runs from multiple engineers/agents on one machine would collide on that database. Each workspace must override `RESULTS_DB` to a per-worktree path.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

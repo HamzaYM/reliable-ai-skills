@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27539,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12319619999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6689,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6689,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9551,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6689,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6689,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9551,
+            "output_tokens": 3047,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3047,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all five expectations clearly, including the ordering/mis-structure point (e) that Report 1 raises but then explicitly undercuts (\"not merely placed second\"), leaving it short of the required restructuring recommendation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "failures began at 14:03, the first alert did not fire until 14:50 (a 47-minute gap), and on-call acknowledged at 15:05",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "failures began at 14:03 but the first page didn't fire until 14:50 (47 minutes later), and on-call didn't acknowledge until 15:05 (62 minutes later)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "\"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md:3-4` sets a contractual monthly uptime SLA of 99.9% and states that any month below that \"is a breach and owes service credits per the customer agreement\"... `larkpay-comms/metrics/uptime-2026.csv:6` records April 2026 at 99.77% \u2014 below threshold, a breach.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the same file shows April 2026 (the incident month) at **99.77%** uptime. `larkpay-comms/docs/sla-commitments.md` states the contractual monthly SLA is 99.9%, and any month below that \"is a breach and owes service credits per the customer agreement... April is a confirmed contractual breach",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Rule 1, \"Never assign blame to an individual\" \u2014 violated. `larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md:12-13`: \"The outage was caused by the on-call engineer deploying an untested config change.\" This pins the cause on a specific role-holder in a document going to customers, which is exactly what the rule forbids",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md` states: \"1. Never assign blame to an individual\"... The draft violates both: \"The outage was caused by **the on-call engineer** deploying an untested config change\"... Both must be rewritten",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The draft instead opens with an uptime/reliability reassurance (lines 3-4), buries the impact statement in the middle (line 10), and puts remediation in the final line (line 21). It should be restructured to lead with impact and remediation per the team's own documented standard.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r3",
+  "repeat": 3,
+  "task": "tcr-t1"
+}

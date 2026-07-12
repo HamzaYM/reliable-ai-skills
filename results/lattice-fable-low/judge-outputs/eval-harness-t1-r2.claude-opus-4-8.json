@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25170,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1253105,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4167,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4167,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 3112,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4167,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4167,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 3112,
+            "output_tokens": 2234,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2234,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 answered better: both nail the bug and rankings impact, but only Report 1 arrives at the required gate-vs-optional distinction (renormalize for relevance/tone, never for accuracy), which Report 2 explicitly rejects.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In `grader/aggregate.py:9-12`, `composite()` does `value = axis_scores.get(axis); if value is None: value = 0.0` and folds that zero into the weighted sum ... So a failed axis is silently scored as 0.0, and the record written to `results/scores.csv` is byte-for-byte indistinguishable in form from a fully scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Inside `grader/aggregate.py:6-13`, `composite()` does `value = axis_scores.get(axis); if value is None: value = 0.0`, i.e. a failed axis is silently treated as a score of **zero** ... The written record is a normal three-column CSV row (`agent_id, reply_id, composite`) \u2014 **identical in form to a fully scored row**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "substituting 0.0 conflates the two ... nothing distinguishes them from a genuinely bad reply. Consequence for `grader/leaderboard.py`: `rankings()` (leaderboard.py:9-17) sums and means every row's composite with no notion of degraded records, so an agent who happens to draw more transient API failures gets their mean composite dragged down and drops in rank",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "indistinguishable from a genuinely bad reply ... `grader/leaderboard.py:12-16` sums and counts *every* row with no way to exclude them, so an agent's mean composite is dragged down in proportion to how many of *their* replies happened to hit a failing call",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If accuracy failed (the gate axis): do not write a comparable composite row to `scores.csv` at all. Either skip the row and queue `(reply_id, axis)` for retry, or write it to a separate degraded/failed output ... so partial signal is preserved but clearly labeled and excluded from rankings.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "never into the same three-column `scores.csv` that `leaderboard.py` averages blindly ... and for the gate axis especially, \"unknown\" must not be conflated with \"failed the gate\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed **relevance or tone** call loses only an embellishment: it's defensible to renormalize the composite over the axes that did succeed (e.g., with tone missing, weight relevance 0.3/0.8 and accuracy 0.5/0.8) and flag the row as partial. ... A failed **accuracy** call is a load-bearing loss: no composite comparable to fully-scored rows should be emitted at all",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

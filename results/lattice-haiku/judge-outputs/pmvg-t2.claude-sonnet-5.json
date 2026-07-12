@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18704,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0901542,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3870,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3870,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3870,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3870,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 1942,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1942,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 substantively satisfies all four expectations (traceable golden-diff review, re-measured flaky/lint figures, reproducibility check) while Report 1 only satisfies the live-test-cost expectation and otherwise treats docs/testing.md numbers as authoritative and skips diff/reproducibility verification.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The deselected tests are the two live tests that make real API calls and incur per-call cost... Enabling live tests would unnecessarily incur API costs without validating anything about the weight change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The live tests in `test_live_model.py` hit a real API endpoint and incur per-call cost. Per the project documentation project documentation: \"Gate paid or costly test suites behind an explicit switch\" \u2014 they should remain opt-in, deselected by default.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Per project documentation: before committing a recaptured fixture, read the diff and confirm every changed hunk traces to your intended change. Run `scripts/update_golden.py` to regenerate the fixture. Then inspect the diff: verify each score change corresponds to the weight rebalance (item-2 score decreased because coverage weight dropped; item-1 and item-3 increased because precision weight rose).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Source these numbers from `docs/testing.md`, which explicitly documents the current test suite status. This is the authoritative source for test health metrics in the project.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Do NOT cite stale numbers from docs/testing.md. Measure yourself... Do not cite the \"9 lint warnings\" or \"2 flaky tests\" from docs/testing.md\u2014those figures are outdated (actual counts are 4 and 1 respectively).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Fixture determinism | \u2713 Verified | Re-ran test twice; consistent results ... Run test suite a third time to confirm determinism.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

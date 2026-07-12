@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22723,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1451545,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6560,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6560,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 2972,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6560,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6560,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 2972,
+            "output_tokens": 2031,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2031,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct file/function citations and concrete fixes; they are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The router does not distinguish any of them \u2014 it catches bare `except Exception as e`, logs a warning via `log_fallover` ... and retries the same payload against the secondary vendor. ... Concrete fix: catch only the specific transient classes (`except (RateLimitError, RequestTimeoutError, ServerError)`), re-raise everything else",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It is inappropriate for the definitive rejections: `BadRequestError` and `AuthError` will fail on the secondary too ... and `ContentPolicyError` is the worst case ... **Fix:** add an explicit non-retryable denylist function ... catch only the vendor exception base classes, re-raise when `is_non_retryable(e)`, and only fall over otherwise",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A (line 12-13):** if `os.environ.get(\"STAGE\") != \"production\"`, return `True` unconditionally. ... **Path C (lines 17-18):** `RedisError` is caught and `True` is returned \u2014 fail-open when Redis is down. ... Fail-closed (or fail-open with loud alerting and a local fallback limiter) is safer.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "*Path A (line 12\u201313):* if `os.environ.get(\"STAGE\") != \"production\"` \u2192 returns `True` unconditionally ... *Path D (line 17\u201318):* `RedisError` \u2192 returns `True`. Fails open ... **Fix:** fail closed by default in all environments \u2014 return `False` on `RedisError`, remove the STAGE check",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`record.input_text` (the **entire document text**, which contains sensitive personal data), and `record.metadata` (arbitrary, unfiltered). ... Concrete fix: ... drop `input_text` entirely (log at most a length/hash), and allowlist specific metadata fields.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`record.input_text` \u2014 the **full verbatim document text** ... and (c) `record.metadata` \u2014 the entire metadata dict, unfiltered ... **Fix:** ... replace `input_text` with a hash and/or length ... filter metadata through an explicit allowlist of safe keys ... dropping everything else",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "When it is unset, the default `\"\"` is used silently, so the output degrades to a plain unsalted `sha256(applicant_id)`. ... Concrete fix: raise (fail fast) if `PII_SALT` is missing or empty",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When that variable is unset, it silently defaults to the empty string and returns a plain unsalted `sha256(applicant_id)` ... **Fix:** fail hard on a missing secret \u2014 `salt = os.environ[\"PII_SALT\"]` or explicitly `raise RuntimeError(\"PII_SALT is required\")` when absent/empty",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

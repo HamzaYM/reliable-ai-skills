@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33299,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.30111,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 36290,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 36290,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 36290,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 36290,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 9700,
+            "output_tokens": 3618,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3618,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with concrete, well-cited evidence; Report 2 is slightly stronger on (c) with an explicit, unambiguous \"same commit\" going-forward policy and a clearer minimum-bar timing statement, while Report 1 leaves that endorsement more implicit.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls to the payment provider should live in `medibill/backend/app/billing/gateway.py`... `backend/app/api/invoices.py:4` imports `chargekit` directly and `invoices.py:14` builds its **own** `chargekit.Client(...)`... `backend/app/workers/dunning.py:2` also imports `chargekit` directly, and `dunning.py:9-13` builds its own `chargekit.Client(...)` and calls `.charge()` directly... `backend/app/billing/errors.py:6` \u2014 conforms (the documented exception; imports only `chargekit.errors`...)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls \u2014 including a refund call \u2014 should live in `medibill/backend/app/billing/gateway.py`... `backend/app/api/invoices.py:4` and `:14` \u2014 imports `chargekit` directly and builds its own `chargekit.Client(...)`... `backend/app/workers/dunning.py:2` and `:9` \u2014 same pattern... `backend/app/billing/errors.py:6` \u2014 imports only `chargekit.errors` for exception classes... This is the one documented exception and matches the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the actual response type, `InvoiceOut` (`backend/app/models/invoice.py:16-22`), has **six** fields: the same five plus `external_ref: str | None` (`invoice.py:22`)... This field was added in commit `c23da88`... together with `Invoice.external_ref` (`invoice.py:12`) and migration `backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual `InvoiceOut` dataclass (`backend/app/models/invoice.py:16-22`) now has **6 fields** \u2014 those 5 plus `external_ref`. This was added in commit `c23da88`... which also added `backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It should be corrected to match current reality, and that correction should happen **now, before refund work is designed or estimated \u2014 as its own small, standalone change, separate from the refund feature PR.**... Once the refund feature actually lands, `docs/ARCHITECTURE.md` will need a *second*, feature-specific update at that time \u2014 to document the new `gateway.refund()` call path... so it doesn't immediately go stale a third time the way it did after both MEDB-197 and MEDB-214 landed with no doc follow-up.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this doc is supposed to be treated as merge-blocking law and updated in the same commit as any change to what it governs \u2014 drift is a bug, not deferred maintenance... this shouldn't wait... At minimum, the refund PR itself must update `ARCHITECTURE.md` in the same commit that adds the new gateway call and any webhook/field changes it introduces.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The actual handler... branches on five distinct kinds, not four... I'd either drop the redundant count (\"handles 4 webhook event types\") and keep only the list (fewer numbers to get wrong), or better, point the doc at the code as the source of truth (e.g., \"see the `if kind ==` branches in `app/api/webhooks.py` for the current list\") rather than duplicating it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual code, `backend/app/api/webhooks.py:7-20`, handles **5** explicit types \u2014 the 4 listed plus `payment_pending`... What I'd change about how it's stated: drop the hardcoded number and the hand-duplicated list, and either point readers at the source of truth (\"see the `kind ==` branches in `app/api/webhooks.py` for the current set of handled event types\") or, better, have the code expose a single named collection (e.g., a `HANDLED_EVENT_TYPES` tuple)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

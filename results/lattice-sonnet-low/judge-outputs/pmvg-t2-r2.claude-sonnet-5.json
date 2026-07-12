@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14718,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0883092,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5060,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5060,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5060,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5060,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 1343,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1343,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all four expectations (including an explicit reproducibility re-run check) while Report 1 misses expectation (d), making Report 2 the stronger answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The deselection here is by design (opt-in marker), not an accidental gap that needs closing for this change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "enabling it by default would start spending real money and adding external-dependency flakiness on every default test run, for no validation benefit specific to score.py's weight change... only run the live suite explicitly and separately if the team wants that specific coverage, and never make it default.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the diff also silently changed confidence rounding from 3 decimals to 2 decimals... This should be flagged/split out \u2014 an unreviewed precision change riding along with a weight change is exactly the kind of thing a blind golden-regen would paper over.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the confidence deltas (0.812\u21920.81, 0.444\u21920.44, 0.633\u21920.63) do not trace to the weight change at all... Anything you can't explain is a regression, not a fixture update.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Not by copying docs/testing.md, which is stale/inaccurate against the current code",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "project documentation says baselines are \"a snapshot from whenever someone last measured them... re-measure the project documentation yourself before citing it.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "After regenerating, re-run the golden test at least once (ideally twice) in assert mode to confirm it's deterministic, per project documentation.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

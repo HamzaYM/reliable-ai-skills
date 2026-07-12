@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21410,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1529945,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9249,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9249,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9249,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9249,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1874,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1874,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports strongly cover the core bug and rankings impact, but Report 1 additionally distinguishes handling for the gate axis versus renormalizing over surviving optional axes, which Report 2 explicitly declines to do, making Report 1 slightly more complete.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "For the failed axis, `value = axis_scores.get(axis)` is `None`, and lines 10\u201311 replace it: `if value is None: value = 0.0`... In form, a failed-axis record is identical to a fully-scored one: same three columns, same numeric type, no flag/null/status marking it as degraded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`composite()` in `grader/aggregate.py` then converts that `None` into a numeric zero sub-score... In form, a degraded record is identical to a fully-scored one: same three columns, same numeric type, a plausible composite... The responsible lines are `aggregate.py:10-11` (None\u21920.0) and `run_batch.py:20-23`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Deflated composites and stand-in zeros are counted as bona-fide scores and pulled into the mean, with full weight... you cannot tell degraded rows from legitimate low scores... An agent that happens to hit more per-axis call failures gets a lower mean than its true quality and sinks in the ranking",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It conflates two different things \u2014 \"the reply scored low\" and \"we failed to measure the reply\" \u2014 by encoding both as the same low number... each degraded row is counted as a real data point that drags the agent's mean toward zero",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the failed axis is accuracy (the load-bearing / gate axis): do not write a composite that looks comparable to a complete row. Mark the record degraded/incomplete... It must not enter the leaderboard as an ordinary number.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If any axis (at minimum accuracy) is missing, treat the record as incomplete... Do not write a normal composite row for an incomplete record. Either (a) omit the row from `scores.csv` entirely... or (b) write it with an explicit failure marker",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If a failed axis is relevance or tone (a non-load-bearing embellishment): project documentation allows renormalizing the composite over the axes that did succeed (redistribute the weights among survivors instead of inserting `0`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

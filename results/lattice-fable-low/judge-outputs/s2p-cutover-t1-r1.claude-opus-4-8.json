@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 39705,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.17679450000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6345,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6345,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 2972,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6345,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6345,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 2972,
+            "output_tokens": 3388,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3388,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports HIT all four expectations; Report 1 is marginally more explicit about removing leftover values and running the first migration manually.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 2, `ENABLE_DEBUG_TOOLBAR = \"true\"` \u2014 debug tooling in production. Remove the key entirely ... Line 3, `AUTH_RELAXED = \"true\"` ... Line 4, `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... Remove entirely ... `SHADOW_SCORING_SINK` ... Remove both keys entirely ... `LEGACY_BILLING_SECRET_ARN` ... remove the key.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Line 2, `ENABLE_DEBUG_TOOLBAR = \"true\"` ... must be `\"false\"` ... Line 3, `AUTH_RELAXED = \"true\"` ... Line 4, `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... remove ... Line 6, `SHADOW_SCORING_SINK` ... Set the sink to `\"\"` ... all feed `backend/config.py` in `infra/prod/app.auto.tfvars`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "VITE_-prefixed variables are **inlined into the bundle at build time** ... The `deploy-prod` job (lines 29\u201335) deploys **the same already-built digest** \u2014 so the production frontend would ship with the staging API URL `https://staging-api.example.com` hard-baked in ... Production needs its own build",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`import.meta.env.VITE_API_BASE_URL` is **inlined into the bundle at build time** ... Both `deploy-staging` and `deploy-prod` then deploy **that same digest**. Consequence: the production frontend would ship with the staging API URL hard-coded ... a separate `vite build --mode production`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**No database migration step anywhere in the workflow**, despite `docs/prod-runbook.md:6` claiming \"Database migrations are applied automatically during deploy.\" ... the three migrations in `backend/migrations/versions/` ... would need a manual first pass against the new prod database.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/prod-runbook.md` claims \"database migrations are applied automatically during deploy,\" but with `deploy.sh` absent nothing in the repo actually runs migrations ... the runbook (last updated 3 months ago) can't be trusted for this launch.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Production (`infra/prod/main.tf:1-4`) was copied unmodified and **also** passes `repo:acme-health/medislot:environment:staging`. ... any staging-environment CI job could assume the production deploy role ... Prod needs its own role name and a `...environment:production` sub condition.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Production as committed (`infra/prod/main.tf:3`) uses the **identical staging** sub condition ... the prod role would instead trust staging-environment jobs, letting staging deploys ... assume production credentials. It should be changed to `repo:acme-health/medislot:environment:production`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

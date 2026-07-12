@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23590,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.14408900000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3708,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3708,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9463,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3708,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3708,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9463,
+            "output_tokens": 2043,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2043,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answered the task better, additionally catching the individual-blame style-guide violation that Report 1 missed.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The internal timeline (`larkpay-comms/incidents/OPS-412-timeline.md`) shows failures began at 14:03, but the first alert fired at 14:50 \u2014 a 47-minute delay, not \"within minutes.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` shows failures began 14:03, first alert at 14:50 = **47 minutes**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the incident timeline explicitly documents: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` states \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "April 2026 uptime was 99.77% (`larkpay-comms/metrics/uptime-2026.csv`), which breaches the 99.9% monthly SLA (`larkpay-comms/docs/sla-commitments.md`). Service credits are owed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md` commits to 99.9% monthly SLA. April 2026 = 99.77% (per `uptime-2026.csv`), a breach. Service credits are contractually owed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Current text**: \"The outage was caused by the on-call engineer deploying an untested config change.\" - **Violation**: `larkpay-comms/docs/customer-comms-style-guide.md` Rule 1 states \"Never assign blame to an individual.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1",
+  "repeat": 1,
+  "task": "tcr-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29502,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.20488459999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12558,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12558,
+        "cache_read_input_tokens": 306882,
+        "inference_geo": "not_available",
+        "input_tokens": 16,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 189,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 189,
+            "cache_read_input_tokens": 41520,
+            "input_tokens": 2,
+            "output_tokens": 1105,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2293,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are accurate and thorough and hit (a), (b), and (c) equally well; Report 1 additionally flags the snapshot's staleness and explicitly commits to re-checking live limits before relying on it (expectation d), which Report 2 omits (it only notes generated_at for reset-timing math, not as a call to re-verify), making Report 1 the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full-run size, using the manifest's authoritative figures: 5,200 transcripts \u00d7 1,800 tokens/call = **~9,360,000 tokens** ... only **640,000 tokens remaining** in its window. The job needs ~9.36M \u2014 roughly **14.6\u00d7 more than remains**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full run \u2248 **9,360,000 tokens** (5,200 transcripts \u00d7 1,800 tokens/call... **northpeak (primary/default):** only **640,000 tokens remaining** of a 10,000,000 window \u2192 covers ~355 transcripts, roughly **7%** of what's needed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**ridgeline (secondary):** **10,800,000 tokens remaining**. The ~9.36M job fits, leaving ~1,440,000 tokens of headroom... I'd route the job to the secondary backend:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ridgeline has enough (10.8M \u2265 9.36M), so I'd launch against the secondary backend:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run the default. I'd route the job to the secondary backend... northpeak stays out of the picture tonight regardless.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** launch on the default path. Routing to northpeak would exhaust its 640K remaining after ~355 of 5,200 transcripts and fail/throttle the rest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**The snapshot is stale.** It was `generated_at` 2026-07-09T19:25:00Z, ~3 hours before the assumed 22:30 launch, and there's no auto-refresh in the repo. I'd re-pull fresh telemetry (or proceed conservatively) rather than trust a 3-hour-old number",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

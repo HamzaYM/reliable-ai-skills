@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32490,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16655399999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3981,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3981,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3981,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3981,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2826,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2826,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "The two reports are substantively equivalent \u2014 both correctly identify the config/fixture mismatch, the SCORE-77 commit, the wrong-layer reproduction, and the futility of the model rollback; comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`config/scoring_config.yaml` sets `expected_label_field: label`. But every record in `fixtures/eval_set.jsonl` now stores the gold answer under the key `gold_label`, not `label`... So `record.get(\"label\")` returns `None` for every record... The file to change is **`ticket-scorer/config/scoring_config.yaml`**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`ticket-scorer/config/scoring_config.yaml` still has `expected_label_field: label`, but `ticket-scorer/fixtures/eval_set.jsonl` records now key the gold answer as `\"gold_label\"`... `gold = record.get(gold_field)` therefore returns `None` for every single record... The fix is a one-line change to `config/scoring_config.yaml`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "introduced by commit `53551e8...` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"). That commit renamed the JSON key `label` \u2192 `gold_label` in every line of `fixtures/eval_set.jsonl` but did not update the corresponding `expected_label_field: label` setting in `config/scoring_config.yaml`. This lines up exactly with the incident report's \"around 2026-06-17\" onset date",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"), dated 2026-06-17... It renamed the `label` key to `gold_label` across every record in `fixtures/eval_set.jsonl` but did not update the corresponding `expected_label_field` setting in `config/scoring_config.yaml`... lines up almost exactly with... the drop window noted in the earlier investigation",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It used `pipeline/score_one.py`, which calls `predict_category` directly on a hand-supplied string and never touches `config/scoring_config.yaml`, `expected_label_field`, or the eval set's gold-label key at all \u2014 so it is structurally incapable of exposing this bug... **Correct reproduction**: run the actual nightly path, `ticket-scorer/pipeline/score_batch.py` (`score()`), against `fixtures/eval_set.jsonl`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "they used `pipeline/score_one.py` for their spot-checks, which calls `predict_category(normalize_simple(text))` directly and never reads `config/scoring_config.yaml` or `fixtures/eval_set.jsonl` at all \u2014 it has no gold-label comparison logic whatsoever, so it structurally cannot exhibit this bug... The correct way to reproduce it is to run the actual nightly path, `pipeline/score_batch.py` / `score()`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I would not act on it. There is no model in this pipeline to roll back... Rolling back \"the model\" would burn effort on a no-op change, wouldn't touch `scoring_config.yaml` or the eval fixture, and accuracy would remain 0.0 afterward... a regression test that runs the batch scorer end-to-end against the real fixture",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This would not fix anything and should not be acted on. The regression has nothing to do with which model/classifier version runs... Reverting the model would leave `expected_label_field: label` pointing at a key that no longer exists in the eval records, so accuracy would remain 0.0 regardless of which model is used, while adding operational risk/churn",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

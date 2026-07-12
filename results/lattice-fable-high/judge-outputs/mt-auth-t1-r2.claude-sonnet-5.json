@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21738,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1118097,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9569,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9569,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9569,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9569,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2713,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2713,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 hits all five expectations while Report 2 misses the explicit application-layer tenant_id filter (expectation d), making Report 1 the more complete answer overall, though Report 2 adds a bonus finding (unsigned tokens) not required by the rubric.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The API's runtime database connection runs as the Postgres role that owns the `appointments` table, and the RLS on that table was never `FORCE`d \u2014 so Postgres silently exempts every application query from the tenant-isolation policy... The deployed configuration connects the API as the owner: `docker-compose.yml:5`... and identically `.env.example:1` and `infra/main.tf:2`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the deployment connects as `juniper_owner` (`docker-compose.yml:5`, `.env.example:1`, `infra/main.tf:2`)... In Postgres, a table's owner is exempt from that table's RLS policies by default; `ALTER TABLE \u2026 ENABLE ROW LEVEL SECURITY` alone (which is all `0003_rls.sql:1` does) does not apply policies to the owner. Only `ALTER TABLE \u2026 FORCE ROW LEVEL SECURITY` would.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `b2a23d2` \u2014 \"ROTA-214 run migrations from the api container on boot\", authored 2026-06-17 \u2014 introduced the leak. Its diff changes exactly one thing in three files: `DATABASE_URL` from `postgresql://juniper_app:apppw@db:5432/juniper` to `postgresql://juniper_owner:ownerpw@db:5432/juniper` in `.env.example`, `docker-compose.yml`, and `infra/main.tf`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It became exploitable with commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\", authored 2026-06-17)... The diff changed exactly three lines, each swapping the runtime DSN from the low-privilege role to the owner role: `docker-compose.yml`..., `.env.example` (same swap), and `infra/main.tf` (same swap in the `database_url` variable default).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Revert the runtime role (primary fix). Change `DATABASE_URL` back to `postgresql://juniper_app:apppw@db:5432/juniper`... Add `ALTER TABLE appointments FORCE ROW LEVEL SECURITY` in a new migration",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Immediate: restore the runtime role to `juniper_app`.... Defense in depth: add a migration `0004` with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Defense in depth in application code: add `WHERE tenant_id = :tid` (from the verified claims) to the query in `backend/app/routes/appointments.py:16-19`, so isolation never depends on exactly one mechanism.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Boot-time role assertion: at API startup, query `pg_roles`/`pg_tables` and assert the connected role (a) is not the owner of any RLS-protected table, and (b) lacks `rolsuper`/`rolbypassrls` \u2014 and refuse to start (not just log) if the check fails.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A fail-closed startup assertion in the app. At boot, before serving traffic, verify the connected role is actually subject to RLS \u2014 e.g., check `SELECT current_user` is not the table owner (`pg_tables.tableowner` for `appointments`), or run a canary query with `app.current_tenant` unset and refuse to start if it returns rows.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r2",
+  "repeat": 2,
+  "task": "mt-auth-t1"
+}

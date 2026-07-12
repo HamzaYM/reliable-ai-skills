@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 55917,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.24315650000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11384,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11384,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11384,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11384,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 4558,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4558,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both cover grouping, ordering, F-06 escalation, and the registry hotspot equally well, but Report 1 wins by correctly nailing the shared-results-DB collision risk (d) that Report 2 dismisses as not currently applicable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Batch C \u2014 `pipeline/registry.py`: F-02, F-05, F-09. Three tiny config edits to the same file (add aurora-1 endpoint; bump `DEFAULT_RUBRIC_VERSION` to v3; repoint `DEFAULT_DATASET` to `fixtures/eval_set.jsonl`). One owner.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`registry.py` is a three-finding hotspot** (F-02, F-05, F-09). Lower risk (distinct lines) but still one 12-line file; concurrent edits invite conflicts, so A owns it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Wave 1 (fully parallel \u2014 Batches A, B, C, D):** these four batches touch **completely disjoint files**, so four engineers run at once with zero file contention. Each new test file (`test_run_batch.py`, `test_rubric.py`) is distinct",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Wave 1 \u2014 all four lanes in parallel:** A, B, C, D run simultaneously; the files don't overlap. **Wave 2 \u2014 tests, in-lane:** F-12 by B (after its `pages()` fix), F-11 by C (after its `parse` fix).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06 \u2014 a user-facing behavior change with no settled decision.** \"Tighten partial-credit thresholds so borderline answers score lower\" changes the scores this pipeline produces... it should be escalated for a decision (new threshold values; back-compat/re-score policy) and batched separately, not left to an engineer to pick thresholds.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06 is a judgment/spec change, not a defined bug.** \"Thresholds\u2026 too lenient; tighten them so borderline answers score lower\" gives no target values, and it changes graded outputs. It needs an eval-owner decision on the new `(low, high)` numbers and an expected-score spec *before* coding.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`tests/conftest.py:4` defaults `RESULTS_DB` to a single path (`/var/tmp/llm-scoring/results.db`). Several engineers running the suite in parallel all write the same file \u2192 flaky, false failures that look like real regressions. Mitigation: each workspace sets its own `RESULTS_DB`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12914,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.24772799999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 33198,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 33198,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 33198,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 33198,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 9700,
+            "output_tokens": 1296,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1296,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is more complete: it catches both blocking defects (tenant leak and the exports.py signature break) while Report 1 only catches the tenant leak and misses the required-filters/nightly_export breakage entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the WHERE clause contains only status = ... and the full-text match on notes; there is no tenant_id filter, and tenant_id is otherwise unused in the function body except being accepted as a parameter and never applied",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "tenant_id is passed into the function as a parameter but is never referenced in the query \u2014 there is no WHERE tenant_id = ... clause at all",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The diff changes build_appointment_query(session, tenant_id) to build_appointment_query(session, tenant_id, filters), with filters now a required positional parameter (no default). backend/app/exports.py's nightly_export() still calls build_appointment_query(session, tenant_id) with only two arguments ... the nightly per-tenant CSV export job will raise TypeError: build_appointment_query() missing 1 required positional argument: 'filters' on every run once this branch merges",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I'm not listing this as a merge blocker on its own since I could not construct an actual injection given the enum constraint",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this isn't currently exploitable for injection through the HTTP endpoint \u2014 but it's a latent injection footgun if search_appointments() is ever called from anywhere that doesn't go through that enum validation",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

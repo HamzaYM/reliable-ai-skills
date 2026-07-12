@@ -1,0 +1,82 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "Two caveats on the regen script itself: it duplicates the `ITEMS` list from `tests/test_scoring.py` (they must be kept in sync manually), and it iterates a `set` (`CATEGORIES`, `scripts/update_golden.py:20`), so JSON key order varies run-to-run with Python's hash randomization, producing spurious diffs.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 30162,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.275409,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 4423,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 4423,
+          "cache_read_input_tokens": 18329,
+          "inference_geo": "not_available",
+          "input_tokens": 9342,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 4423,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 4423,
+              "cache_read_input_tokens": 18329,
+              "input_tokens": 9342,
+              "output_tokens": 1504,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 1504,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "it iterates a `set` (`CATEGORIES`, `scripts/update_golden.py:20`), so JSON key order varies run-to-run with Python's hash randomization, producing spurious diffs.",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "d",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "pmvg-t2"
+}

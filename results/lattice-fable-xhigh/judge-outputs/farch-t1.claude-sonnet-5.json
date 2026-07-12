@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31798,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1230893,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9649,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9649,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9649,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9649,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3420,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3420,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit the core historical findings (a, b) and sign-off recommendation (d) equally well; Report 1 more explicitly frames Cargobox as the deliberate chosen state post-revert and the serverless files as purposely removed (c), which Report 2 leaves implicit, giving Report 1 a slight edge.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`454a21f` \"Add Edgerunner serverless deploy for API (PLAT-31)\" (2026-04-14), `597777b` \"Open a dedicated Postgres connection per request in the serverless handler (PLAT-31)\" (2026-04-16), and `1712565` \"Revert Edgerunner migration\u2026\" (2026-04-21).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git log --all --oneline` in `carelog-api` shows this migration was already done and reverted: `454a21f` (add Edgerunner deploy, PLAT-31, Apr 14 2026), `597777b` (per-request connection stopgap, Apr 16), `1712565` (revert after a production outage, Apr 21).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`git show 1712565 --format=%B`: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production\u2026 'FATAL: too many connections', taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565` (Apr 21, 2026): \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production\u2026 'FATAL: too many connections', taking the endpoint down.\" Under normal dashboard load, per-request connections opened faster than Postgres could recycle them.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The team returned to the Cargobox container specifically for its shared pool... a workspace-wide grep for `PLAT-31|serverless|edgerunner` finds nothing in any working tree. Anyone scoping this from the current files alone (as leadership apparently did) would have no idea it already failed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Reattempting a settled battle is a call for whoever owns this system \u2014 the platform team behind the PLAT ticket queue and whoever operates the shared Postgres (its `max_connections` limit is the shared resource that was exhausted) \u2014 not something to re-execute silently.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "People to involve: the engineer/team who owned PLAT-31 (they hold the operational context of the April incident, which lives outside this repo), the DBA or owner of the Postgres instance (they control `max_connections` and would operate any pooler), the on-call/SRE function (the failure mode was a production outage), and the leadership sponsor, who should make the final call with the April revert in front of them.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

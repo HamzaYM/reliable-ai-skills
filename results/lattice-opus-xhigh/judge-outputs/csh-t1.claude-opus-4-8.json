@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23778,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1358705,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7552,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7552,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7552,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7552,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1915,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1915,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and equivalent on (a)-(c), but Report 2 additionally identifies the missing global/environment-level gate and recommends adding one, making it the better answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will be sent automatically**. When the setting was never touched, the `auto_send_reminders` key is absent from `tenant.settings`, so `tenant.settings.get(\"auto_send_reminders\")` returns `None`. The deciding code is in `backend/app/feature_flags.py`, function `auto_send_reminders_enabled`, lines 11\u201312",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Yes, reminders will be sent automatically.** For such a clinic the key is absent, so `tenant.settings.get(\"auto_send_reminders\")` returns `None`, and the resolver returns `True`. The deciding code is `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, specifically lines 11\u201312",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "No \u2014 I'd change it to default **off** (fail-closed)... Where I'd change it: `backend/app/feature_flags.py:12`, changing `return True` to `return False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**No \u2014 it is the wrong default, and I would change it.**... The exact change is in `slotwise/backend/app/feature_flags.py:11\u201312`: the `is None` branch should `return False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Commit `25509a7` (SLOT-190) introduced `feature_flags.py` with `compact_calendar_view_enabled`, whose unset case returns `True`... SLOT-214) then added `auto_send_reminders_enabled` as a byte-for-byte structural clone of that function... The default was inherited from a low-stakes UI toggle, not chosen deliberately for a patient-messaging feature",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feature_flags.py` was created in SLOT-190 (`25509a7`) with `compact_calendar_view_enabled`, whose `if ... is None: return True` grandfathers existing tenants onto a **UI display preference**... The two flags are in opposite blast-radius categories: a calendar-view preference is a harmless UI nicety, whereas auto-reminders sends real SMS/email to patients",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Add an env-level master switch and AND it with the per-tenant value**, so the resolver reads something like `master_enabled() and bool(tenant.settings.get(\"auto_send_reminders\"))`. There is currently **no** master gate anywhere in `backend`... meaning today there is no single lever to stage or instantly kill the rollout.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29020,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.15719349999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8086,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8086,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8086,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8086,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2544,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2544,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations with strong evidence, though Report 2 states the AI-assistance footer removal slightly more cleanly.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**\"Two-factor authentication is now enabled for every clinic by default\" \u2014 false.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` with the comment \"Two-factor authentication is opt-in per clinic.\" ... Remove it or rewrite it as opt-in.\n- **\"Patients can now export their full visit history as a PDF\" \u2014 not implemented.** `app/routers/visits.py` contains only a `/visits` list route and the comment `# TODO: pdf export`. There is no export code anywhere in the app. ... Remove this section.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**\"Patients can now export their full visit history as a PDF\" (lines 22\u201326) \u2014 remove; the feature does not exist.** `app/routers/visits.py` contains only a `/visits` endpoint returning `[]` and the comment `# TODO: pdf export` (line 11). There is no export or PDF code anywhere in `clinic-portal`. ... **\"Two-factor authentication is now enabled for every clinic by default\" (line 30) \u2014 false; correct or remove.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`, with the comment \"Two-factor authentication is opt-in per clinic.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`before_scheduling.png` shows the scheduling calendar (it renders \"SCHEDULING CALENDAR\"), but `after_scheduling.png` renders \"BILLING / INVOICES\" \u2014 and the capture manifest confirms it: `captures.json` records `after_scheduling.png` as captured from route `/billing/invoices`, while the before was captured from `/schedule`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_scheduling.png` visibly reads \"BILLING / INVOICES\", while `img/before_scheduling.png` reads \"SCHEDULING CALENDAR\". The repo's own capture manifest confirms this: `docs/release/captures.json` records `after_scheduling.png` as captured from route `/billing/invoices`, versus `/schedule` for the before shot.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Referenced but missing:** `img/after_export.png` (line 26 of the doc). No such file exists ... **On disk but never referenced:** `img/unused_capture_07.png`, which renders \"PATIENT LIST.\" It also does not appear in `captures.json`, so it is an orphan on both counts.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "| `img/after_export.png` | **No \u2014 missing** | `captures.json` itself flags it: \"expected capture; no corresponding file\". ... Conversely, one file on disk is referenced by nothing: `img/unused_capture_07.png`, which shows a \"PATIENT LIST\" screen and is absent from both the document and `captures.json`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**\"Highlights draft assembled with AI assistance.\"** (line 33). Two problems: the word \"draft\" is an internal status marker that should never appear in the sent version, and the AI-attribution footer is a tooling artifact ... as written (\"draft\") it cannot ship.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The trailing line \"Highlights draft assembled with AI assistance.\" (line 33)** is an internal production note. Whatever the clinic's stance on AI disclosure, this drafting-process footnote (with a horizontal rule above it) was not written for customers and should be deleted before sending.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r2",
+  "repeat": 2,
+  "task": "dora-t2"
+}

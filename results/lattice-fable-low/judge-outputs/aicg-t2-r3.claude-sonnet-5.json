@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19590,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0940057,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6432,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6432,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3257,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6432,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6432,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3257,
+            "output_tokens": 2117,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2117,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is stronger: it commits to an explicit fail-closed fix for the Redis-unavailable case in the rate limiter, while Report 2 hedges by calling fail-open \"a policy call\" and only suggests logging; both reports are otherwise comparable in depth and correctness on the router, audit, and pseudonymize questions.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Fix: add an explicit non-retryable denylist function, e.g. `def is_non_retryable(e): return isinstance(e, (BadRequestError, ContentPolicyError, AuthError))`, catch only vendor exceptions, re-raise denylisted ones, and fall over only on everything else.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: catch the specific transient classes only (`except (RateLimitError, RequestTimeoutError, ServerError)`), re-raise the rest, and wrap the secondary call so its failure is logged and reported distinctly.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Fix: fail closed by default in every environment (`return False` on `RedisError`, remove the STAGE check), with only a narrow, explicitly named local-dev override (e.g. `RATE_LIMIT_DISABLED_FOR_LOCAL_DEV=1`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "At minimum log the error; whether fail-open is acceptable is a policy call.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Fix: log `pseudonymize(record.applicant_id)` instead of the raw id; never log `input_text` verbatim \u2014 log a hash and/or length (e.g. `sha256(input_text)[:16]` and `len(input_text)`); and filter metadata through an explicit **allowlist** of known-safe keys (model, vendor, latency, token counts), dropping everything else, rather than trying to denylist bad keys.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: log `pseudonymize(record.applicant_id)` instead of the raw ID, drop `input_text` entirely (or log only a length/hash), and allowlist specific metadata fields rather than dumping the whole dict.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Fix: fail hard when the secret is missing \u2014 `salt = os.environ[\"PII_SALT\"]` or an explicit `raise RuntimeError(\"PII_SALT is not set\")` if empty \u2014 and use HMAC-SHA256.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: fail fast \u2014 `salt = os.environ[\"PII_SALT\"]` or an explicit check that raises when the salt is missing/empty \u2014 and preferably use a keyed construction (`hmac.new(salt, applicant_id, sha256)`) rather than plain concatenation.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

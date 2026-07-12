@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31449,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.15407510000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12378,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12378,
+        "cache_read_input_tokens": 68257,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2423,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2423,
+            "cache_read_input_tokens": 39106,
+            "input_tokens": 2,
+            "output_tokens": 1117,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3577,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with substantively similar depth; Report 2 states the reproducibility check slightly more explicitly ('confirm it's stable across repeated runs') while Report 1 demonstrates it via PYTHONHASHSEED variation, making the two reports comparable overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they **never import or exercise `score.py`'s `score()`**... they add zero signal for this change; leaving them deselected is correct, and the teammate's framing (\"nothing is skipped\") misreads intentional opt-in as a defect... every default run would make 2 real, billable network calls",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deselection is an **intentional cost gate**, not an accidental skip... If someone genuinely needed to check the live endpoint, the correct move is an explicit, one-off opt-in run (`pytest -m live` with the key set and authorization to spend) \u2014 never a change to the default config.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "hand-verify the new scores (0.755 / 0.56 / 0.925) match the new weights... regenerate the golden and **review the diff line-by-line**, confirming every changed value is explained by an intended change... either revert that line... or, if it's genuinely wanted, call it out explicitly",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a recaptured fixture must have *every* changed value trace back to an intended change... Only after that, deliberately regenerate the golden, and read the resulting `git diff` of `expected_scores.json` to confirm every changed number maps to an intended source change.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Do **not** quote `docs/testing.md`'s \"Known flaky: 2\" and \"Lint warnings: 9\" as fact \u2014 that file is already out of sync with the repo... How to source them properly: measure at the PR's HEAD tied to a command",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** cite the figures from `docs/testing.md`. That doc is a stale snapshot and both numbers are demonstrably wrong; I'd re-measure both against the current tree.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`update_golden.py` serializes keys in set-iteration order (`CATEGORIES` is a `set`), which is non-deterministic across runs (I showed order changes with `PYTHONHASHSEED`). Expect churny key-reordering; sort keys before committing so the golden doesn't appear changed when only order moved.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "update_golden.py iterates a Python `set` (`CATEGORIES`), and I confirmed its key order is non-deterministic across runs (three different orderings under different hash seeds)... I'd verify the diff shows only the intended value changes (normalizing key order so the diff isn't polluted by set-iteration noise), and confirm it's stable across repeated runs.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 43855,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1429692,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6310,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6310,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6310,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6310,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 4487,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4487,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is slightly stronger: it explicitly ties the missing migration step to the runbook's false \"automatic migrations\" claim and calls for confirming migrations run before launch, while Report 2 only notes the migration mechanism is \"missing\" without challenging the runbook claim or calling for explicit action; both reports are otherwise comparable on config flags, frontend build/API URL, and OIDC trust condition findings.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Line 3: `AUTH_RELAXED = \"true\"`** \u2192 Should be `\"false\"` or omitted entirely... **Line 4: `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** \u2192 Should be completely omitted.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "| 3 | `AUTH_RELAXED = \"true\"` | Authentication bypass enabled in production | `\"false\"` |\n| 4 | `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` | QA test account with superadmin access in production | Remove or set to `\"\"` |",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The workflow should build twice\u2014once with `--mode staging` and once with `--mode prod`, using a `.env.prod` file with the production API URL (e.g., `https://api.example.com`). Each environment must rebuild from source.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Missing**: No `.env.production` file exists; production builds would also use staging settings ... Frontend API URL baked into the image is always the staging endpoint because the build uses `--mode staging`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "For a first production deployment with three migrations (0001_base.py, 0002_tenants.py, 0003_billing.py), migrations must absolutely run before the app starts. This is not proven in the pipeline.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Line 3: `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`** \u2192 Should be `\"repo:acme-health/medislot:environment:prod\"`. The production GitHub Actions environment ... will generate OIDC tokens with `environment:prod` in the sub claim. The current staging condition will cause the production deployment to fail authentication.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The role's trust policy checks: `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` (infra/prod/main.tf:3) \u2190 **Still points to staging!** ... **Token mismatch** \u2014 production deployments will fail with an authentication error because the role expects a staging token but receives a production token",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20481,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13049729999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13649,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13649,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13649,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13649,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2117,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2117,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify all four core defects (router failover misclassification, rate-limiter fail-open on stage/Redis error, full PII logging, unsalted pseudonymization) with concrete, correct fixes; Report 2 is slightly more precise on some secondary points (e.g., explicit fail-closed rate limiter code, HMAC suggestion), but coverage of the required expectations is essentially equal.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`BadRequestError`... failover is **inappropriate**... `ContentPolicyError`... failover is **inappropriate and a governance problem**... `AuthError`... failover is **inappropriate**... Concrete fix: catch only the transient subset and let terminal ones propagate: ... TRANSIENT = (RateLimitError, RequestTimeoutError, ServerError) ... `BadRequestError`/`ContentPolicyError`/`AuthError` then propagate",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "NON_RETRYABLE = (BadRequestError, AuthError, ContentPolicyError)  # + not-found, etc.\n\ndef call_with_fallback(payload):\n    try:\n        return primary.complete(payload)\n    except NON_RETRYABLE:\n        raise                       # never reroute a rejected/malformed/unauthorized payload",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path A \u2014 `STAGE != \"production\"` \u2192 `return True`... **Assessment: fail-open by default.**... Path D \u2014 ... `redis.incr` raises `RedisError` \u2192 `return True`... **Assessment: fail-open on backend failure**... (3) on `RedisError`, fail closed... (4) don't make enforcement hinge on `STAGE == \"production\"` failing open",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Fails open, and gates on an environment-name string.**... A safety gate should enforce by default in *every* environment... never by an \"is this production\" check.... **Fails open on backend failure.**... A safety-relevant gate must fail closed here.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`record.input_text` is the full intake-document body**... Writing entire PII documents into application logs is the most serious defect here... do not log `input_text` at all... `record.metadata` is dumped wholesale \u2014 arbitrary contents that may themselves contain PII... whitelist specific safe `metadata` fields rather than dumping the blob",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`input_text` \u2014 the entire intake document, verbatim.**... **Fix:** drop it, or log only a `sha256` digest and/or a short length-bounded excerpt \u2014 never the raw body.... **`metadata` \u2014 the whole blob, unfiltered.**... **Fix:** project it through an explicit **allowlist** of known-safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**It degrades to an unsalted `sha256(applicant_id)`.**... The failure is silent (no error/warning)... fail-open on a privacy control.... **require** the secret \u2014 raise if `PII_SALT` is unset/empty (fail closed) instead of defaulting to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if `PII_SALT` is unset or empty, `salt` becomes `\"\"` and the function computes an **unsalted** `sha256(applicant_id)`... it **fails silently**... A missing salt on a route that handles sensitive data should fail hard, not degrade to an unsalted hash.... salt = os.environ.get(\"PII_SALT\")\n    if not salt:\n        raise RuntimeError(\"PII_SALT is required to pseudonymize applicant ids\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

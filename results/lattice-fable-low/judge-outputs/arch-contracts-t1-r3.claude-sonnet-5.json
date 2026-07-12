@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12288,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0781986,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4012,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4012,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9521,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4012,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4012,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9521,
+            "output_tokens": 1124,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1124,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with nearly equivalent substance and citations; report 2 is marginally more explicit in recommending doc correction \"before or alongside the first refund PR\" but overall the two are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Refund calls should live in `medibill/backend/app/billing/gateway.py`.\" ... `app/billing/errors.py` as the only exception (it imports only the SDK's error types, `errors.py:6`) ... `backend/app/api/invoices.py:4,14` ... `backend/app/workers/dunning.py:2,9`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls should go in `medibill/backend/app/billing/gateway.py` ... with `billing/errors.py` as the only sanctioned exception (it imports only exception types, `errors.py:6-9`). ... `medibill/backend/app/api/invoices.py:14-16` ... `medibill/backend/app/workers/dunning.py:9-13`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual response model `InvoiceOut` (`backend/app/models/invoice.py:16-22`) also includes `external_ref`, which the charge route returns (`invoices.py:17-18`). The field was added in commit `c23da88` ... with migration `0006_add_invoice_external_ref.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual response model `InvoiceOut` (`models/invoice.py:16-22`) includes a sixth field, `external_ref`, populated by the charge endpoint (`api/invoices.py:17`) and backed by migration `backend/migrations/0006_add_invoice_external_ref.sql`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/ARCHITECTURE.md` should be corrected **in the same commit as whatever code change resolves each discrepancy** \u2014 drift between the contract doc and the code is a bug, not a \"fix later\" item. ... the doc fix ... is the first commit of this feature, and the refund accessor lands with a same-commit doc update describing it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It should be updated as part of the refund feature work \u2014 before or alongside the first refund PR, not after",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I would drop the hardcoded count entirely \u2014 a stated number like \"4\" is guaranteed to drift (and already has). Restate it as either \"the handled event types are enumerated in `backend/app/api/webhooks.py`\" (point at the single source of truth), or keep the list without a count and update it in the same commit as any handler change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "stop hard-coding an exact count (\"4 webhook event types\") in prose \u2014 either enumerate the types without a count, or point to `app/api/webhooks.py` as the source of truth, since exact-count claims silently rot every time a handler is added (which is precisely what happened with `payment_pending`).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

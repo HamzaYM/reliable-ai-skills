@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32314,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1107732,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3814,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3814,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3814,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3814,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 3339,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3339,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with substantively similar evidence; Report 1 additionally flags a provenance/process check (ADR) while Report 2 adds a critique of remediation completeness and hedging language, making them comparable in coverage of the core expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Per `larkpay-comms/incidents/OPS-412-timeline.md`, failures began at 14:03 but the first page did not fire until 14:50 (47 minutes later), and on-call didn't acknowledge until 15:05.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per `larkpay-comms/incidents/OPS-412-timeline.md`, failures began at 14:03 but the first page did not fire until 14:50 (a 47-minute detection gap), and the on-call didn't acknowledge until 15:05",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` states 1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` states 1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md` sets a contractual monthly uptime SLA of 99.9%, with any month below that being a breach that owes service credits... April 2026 was 99.77% (`larkpay-comms/metrics/uptime-2026.csv`), which is a breach.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md` sets the monthly uptime SLA at 99.9%... `larkpay-comms/metrics/uptime-2026.csv` shows April 2026 uptime at 99.77%, which is below the 99.9% threshold \u2014 a breach that triggers contractual credits.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md` rule 1 says \"Never assign blame to an individual,\"... The draft says \"The outage was caused by the on-call engineer deploying an untested config change\" \u2014 this both names a role... and pins blame on a person",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md` rule 1 says \"Never assign blame to an individual,\"... The draft states \"The outage was caused by the on-call engineer deploying an untested config change,\" which both names an internal role and assigns blame to a specific person's action",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Style-guide rule 3 (\"Lead with customer impact and remediation\") is not followed.** The draft leads with an uptime-record boast and self-congratulatory tone... before ever stating what happened to customers... it needs to lead the letter, per the company's own style rules in `larkpay-comms/docs/customer-comms-style-guide.md`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rule 3 says \"Lead with customer impact and remediation\"... The draft opens with a reliability boast rather than impact... rather than direct impact and remediation statements as required.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r2",
+  "repeat": 2,
+  "task": "tcr-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21327,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.11362549999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3964,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3964,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 2972,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3964,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3964,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 2972,
+            "output_tokens": 1883,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1883,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations; Report 2 is marginally stronger on the global-gate point by confirming nothing exists in infra, but they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A clinic that has never opened the setting WILL get reminders sent automatically.** The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, specifically lines 11\u201312: `if tenant.settings.get(\"auto_send_reminders\") is None: return True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The decision is made in `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, lines 11\u201312:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change line 12 of `backend/app/feature_flags.py` to `return False` (unset \u2192 disabled, opt-in), which also makes the UI truthful.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "For that category, missing/unset must mean **off**: clinics should opt in... The fix is in `backend/app/feature_flags.py:11-12`: change the `None` case to `return False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It was copy-pasted from the existing calendar flag... `compact_calendar_view_enabled` (commit `25509a7`, SLOT-190) established the \"unset \u2192 True\" pattern... Default-on is defensible for a harmless display preference; carrying it over unchanged to a feature that sends external messages ignores that the risk profile is completely different.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "character-for-character the same shape as `compact_calendar_view_enabled`... That pattern was reasonable for its original flag... Reusing a UI-preference default for a flag that triggers automated outbound patient messaging carried the wrong product decision along with the code.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Consider a global kill switch** in addition to the per-clinic flag, so the rollout can be halted without touching each tenant's settings.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Add an env-level master kill switch** ANDed with the per-tenant value (e.g. `REMINDERS_ENABLED`), defaulting off, so the whole feature can be disabled in one place without touching tenant rows. Nothing like this exists \u2014 `infra/main.tf` defines only an `environment` variable",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

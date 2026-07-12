@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 55598,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.19528500000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13716,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13716,
+        "cache_read_input_tokens": 67430,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4588,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4588,
+            "cache_read_input_tokens": 38279,
+            "input_tokens": 2,
+            "output_tokens": 1299,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5853,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and nearly identical in coverage for (a)-(c); Report 2 edges ahead on (d) by explicitly stating the hardcoded count is \"guaranteed to drift\" going forward and recommending pointing at the code file, while Report 1 only notes it already drifted without the forward-looking claim.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund provider calls should live in `medibill/backend/app/billing/gateway.py` ... The code does **not** follow that pattern everywhere today. Two call sites bypass the gateway and talk to `chargekit` directly: `medibill/backend/app/api/invoices.py:14-16` ... `medibill/backend/app/workers/dunning.py:9-13` ... `medibill/backend/app/billing/errors.py:6` also imports from `chargekit`, but only the error classes \u2014 that is the boundary exception the doc explicitly allows (errors.py:3-4), so it is not a violation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in **`backend/app/billing/gateway.py`** ... The code does **not** follow this everywhere today. Two places call the provider some other way, bypassing the gateway: **`backend/app/api/invoices.py`** ... **`backend/app/workers/dunning.py`** ... The one **legitimate** exception is **`backend/app/billing/errors.py:6`**, which imports *only* the SDK's error classes ... this is the exception the doc explicitly sanctions, and it's fine.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual serializer `InvoiceOut` (models/invoice.py:16-28) carries a sixth field, `external_ref`, and the charge endpoint returns it ... migration `0001_step1.sql` created the `invoice` table with exactly those five columns (matching the doc), and `0006_add_invoice_external_ref.sql` later added `external_ref TEXT`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The code contradicts this: `InvoiceOut` (`models/invoice.py:16\u201322`) carries a sixth field, `external_ref` (line 22), which `from_model` populates (line 28) and the `/invoices/{id}/charge` endpoint returns ... Provenance: migration `0006_add_invoice_external_ref.sql` added the column",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "On timing: make the doc edits part of the same change set that touches these areas rather than deferring them. ... land the gateway-consolidation fix (code + doc together) with or just before the refund call is added, so the \"single gateway\" line is true again the moment refunds ship.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "drift here is a **bug to fix now**, not a \"clean up someday\" item. ... **When:** now, as part of this review, before any refund code is written. ... Any doc edit lands in the **same commit** as the code change that resolves it, and the refund PR itself must update the doc in that same commit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The hardcoded \"4\" is guaranteed to drift and already has, and nothing enforces it (`tests/test_webhooks.py` is a placeholder). Rather than merely bumping 4\u21925 ... I'd drop the bare count and point at `app/api/webhooks.py` as the single source of truth for the handled set (describe the property, not the number).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

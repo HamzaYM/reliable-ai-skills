@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12849,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0836207,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8326,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8326,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8326,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8326,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1384,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1384,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent evidence and rigor; they are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`app/routers/visits.py` contains only a stub `GET /visits` returning an empty list, followed by the comment `# TODO: pdf export`. There is no export endpoint anywhere in the project... `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` with the comment \"Two-factor authentication is opt-in per clinic.\" ... At most the document could say 2FA is *available* and opt-in.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`clinic-portal/app/routers/visits.py` contains only a stub `GET /visits` returning an empty list and the comment `# TODO: pdf export` (line 11)... This entire section must be removed. ... `clinic-portal/app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` with the comment \"Two-factor authentication is opt-in per clinic.\" The claim states the opposite of what the code does. Correct it to \"opt-in\" or remove it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`docs/release/captures.json` records that `after_scheduling.png` was captured from route `/billing/invoices` (versus `/schedule` for the \"before\"), and viewing the image confirms it \u2014 `before_scheduling.png` renders a screen titled \"SCHEDULING CALENDAR\" while `after_scheduling.png` renders \"BILLING / INVOICES\".",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/before_scheduling.png` renders \"SCHEDULING CALENDAR\", but `img/after_scheduling.png` renders \"BILLING / INVOICES\". The capture manifest confirms this was a capture-definition error... `captures.json` maps `before_scheduling.png` to route `/schedule` but `after_scheduling.png` to route `/billing/invoices`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`img/after_export.png` | **No** | Missing file; the email would ship a broken image. `captures.json` confirms: \"expected capture; no corresponding file\". ... `img/unused_capture_07.png` | Orphan file rendering \"PATIENT LIST\". Unused by the document",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_export.png` | **no** | missing; `captures.json` explicitly says \"expected capture; no corresponding file\"... `img/unused_capture_07.png` | orphan file showing \"Patient List\"; referenced nowhere in the doc or the manifest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance\" (line 33).** This is an internal drafting note, not customer content... Remove it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance\" (line 33).** This is internal drafting/attribution metadata, not customer content... a footer calling the document a \"draft\" definitely cannot go out in a customer email.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r1",
+  "repeat": 1,
+  "task": "dora-t2"
+}

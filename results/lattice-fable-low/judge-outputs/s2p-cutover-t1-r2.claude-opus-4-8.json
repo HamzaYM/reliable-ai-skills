@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26373,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1495115,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6305,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6305,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 3132,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6305,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6305,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 3132,
+            "output_tokens": 2284,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2284,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with equivalent, correctly grounded findings; they are comparable, with Report 1 marginally more detailed on the OIDC role-collision reasoning.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 2 `ENABLE_DEBUG_TOOLBAR = \"true\"` \u2014 developer debug tooling must not run in prod. Remove the key entirely ... Line 3 `AUTH_RELAXED = \"true\"` ... Remove the key entirely ... Line 4 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` \u2014 a test account with superadmin privileges. Remove entirely ... `SHADOW_SCORING_SINK = ...` ... Remove both keys entirely. ... Line 7 `LEGACY_BILLING_SECRET_ARN = ...` \u2014 a legacy secret reference carried over from staging ... Remove",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "All in `medislot/infra/prod/app.auto.tfvars` ... **Line 2, `ENABLE_DEBUG_TOOLBAR = \"true\"`** ... **Line 3, `AUTH_RELAXED = \"true\"`** ... **Line 4, `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** ... The sink must be set to `\"\"` ... **Line 7, `LEGACY_BILLING_SECRET_ARN = ...`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the deploy-prod job (deploy.yml:29-35) deploys **the same already-built digest** to prod. So the production frontend would ship with the staging API URL baked in, with no runtime override possible. There is no `frontend/.env.production` in the repo and no prod build step; both are needed (rebuild per environment rather than promoting the digest",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That **same digest** is deployed to both staging and prod ... Because the build runs with `--mode staging`, Vite loads `frontend/.env.staging`, which sets `VITE_API_BASE_URL=https://staging-api.example.com`. ... the production deployment will ship a bundle hard-wired to the staging API.** Either a `frontend/.env.production` plus a separate production build is needed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**No migration step**: `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but nothing in `deploy.yml` (nor any script...) runs the three migrations in `backend/migrations/versions/` ... on the first prod deploy the schema (`0001_base`, `0002_tenants`, `0003_billing`) would need a manual first pass.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the runbook ... claims migrations are applied automatically during deploy, but ... nothing in the workflow runs the three migrations ... For a first launch, the production database needs all three applied from scratch, and nothing verifiable does that.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "For production, `infra/prod/main.tf:3` passes the **identical staging condition**, so the prod deploy role would (a) trust the staging environment's tokens instead of the `deploy-prod` job's `environment: production` tokens ... Prod needs its own role name and its own `repo:acme-health/medislot:environment:production` trust condition, never one shared with the looser environment.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf` line 3 was copied unedited and still says `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`. So the production deploy role trusts only staging-environment tokens. ... (b) conversely, staging-environment jobs *would* be trusted by the production role \u2014 an environment-separation violation.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

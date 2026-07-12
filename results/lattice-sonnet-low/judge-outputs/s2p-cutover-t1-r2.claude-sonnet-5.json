@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 42288,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1527072,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8354,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8354,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9708,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8354,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8354,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9708,
+            "output_tokens": 4317,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4317,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all four expectations with explicit, actionable statements (production-specific build recommendation, explicit call to confirm migrations), while Report 1 misses the explicit recommendation on frontend rebuild and the explicit call to confirm migrations, making Report 2 the stronger and more complete answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 3 AUTH_RELAXED = \"true\" ... Change to \"false\". ... Line 4 PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" ... it should be removed entirely (empty string) ... Line 6 SHADOW_SCORING_SINK ... Either clear SHADOW_SCORING_SINK for prod, or point it at a real prod-specific bucket path",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "AUTH_RELAXED = \"true\". ... Must be omitted, not \"false\". ... PRESET_ADMIN_ACCOUNTS ... Must be removed entirely ... Both keys should be omitted from prod entirely, not merely toggled. ... LEGACY_BILLING_SECRET_ARN ... Should not be recreated in the new environment; drop it unless someone can show it's still consumed somewhere.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "a `--mode production` build reading a `.env.production` file is required, and the pipeline needs two separate build+push steps (or an automated scan of the shipped bundle for `staging` references) instead of one shared digest.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "this claim is unverifiable from the repo and, per project documentation's first-apply-traps guidance, should not be trusted without confirming the (missing) deploy script actually runs Alembic (backend/migrations/versions/ has 3 revisions: 0001_base.py, 0002_tenants.py, 0003_billing.py) against the prod database.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 still has oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\" \u2014 unchanged from staging. ... This must be fixed to \"repo:acme-health/medislot:environment:production\" before applying.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 still has oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\" \u2014 copied verbatim from staging and never updated. ... Fix: change infra/prod/main.tf:3 to \"repo:acme-health/medislot:environment:production\" before ever applying infra/prod/.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

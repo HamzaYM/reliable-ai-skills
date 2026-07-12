@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20575,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.15417250000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9736,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9736,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9736,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9736,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1711,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1711,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comprehensive and hit all four expectations with correct, well-cited findings; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund provider calls should live in `backend/app/billing/gateway.py`, added as a new accessor (e.g. a `refund(...)` function)... `backend/app/api/invoices.py:4,14-16` \u2014 **bypasses the gateway**... `backend/app/workers/dunning.py:2,9-13` \u2014 **bypasses the gateway**... `backend/app/billing/errors.py:6` \u2014 imports `chargekit.errors`... it only imports exception *types* (makes no provider calls), so it is benign.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in the single vendor-boundary module, `backend/app/billing/gateway.py`... two of them bypass the gateway... **`backend/app/api/invoices.py`**... **`backend/app/workers/dunning.py`**... `backend/app/billing/errors.py:6` (`from chargekit import errors as ck_errors`), which imports only the SDK's exception types and is the one documented exception.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The code has a sixth field: `InvoiceOut` declares `external_ref` (`backend/app/models/invoice.py:22`)... So the response now serializes `external_ref` too \u2014 the word \"exactly\" is no longer correct. Git confirms this field was added in `c23da88`... together with migration `0006_add_invoice_external_ref.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "return a **sixth** field, `external_ref` (declared at line 22, populated at line 28). So the word \"exactly\" is false... was introduced by `migrations/0006_add_invoice_external_ref.sql` (`ALTER TABLE invoice ADD COLUMN external_ref TEXT;`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the correction belongs **with this refund work rather than deferred**... correct the invoice-fields and webhook lines immediately; make the gateway-reconciliation call up front and land the doc change in the same change set as the refund code \u2014 don't merge refund code while leaving the doc stale",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The discrepancies should be treated as bugs to reconcile *now*, before refund code is written \u2014 not documentation to \"fix eventually.\"... the governing rule is same-commit: any change to schema, API/wire shape, route surface, or a documented invariant updates `ARCHITECTURE.md` in the same commit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Stop pinning a hard count.** \"Handles 4 \u2026 types\" couples a number to an enumeration, so it silently goes wrong the next time anyone adds a branch \u2014 which is exactly what happened. I'd restate it to point at the handler as the source of truth... and drop the fixed count",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it hardcodes a count **and** duplicates the enumeration, both of which drift from `webhooks.py` the instant a branch is added... My recommendation is to drop the standalone count and reference the code, since the current wording has already proven it goes stale.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

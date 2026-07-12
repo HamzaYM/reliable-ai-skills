@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 11675,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1081183,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13049,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13049,
+        "cache_read_input_tokens": 23701,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13049,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13049,
+            "cache_read_input_tokens": 23701,
+            "input_tokens": 2,
+            "output_tokens": 1275,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1275,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is stronger overall: it hits all three expectations, including the exports.py breaking-change defect that Report 2 misses entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Cross-tenant patient data exposure (Critical).** `backend/app/appointments.py`, function `search_appointments` (lines 10\u201319...) `tenant_id` is passed in ... but it is never referenced in the SQL or bound as a parameter.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Cross-tenant data leak (broken access control / IDOR) \u2014 `backend/app/appointments.py`, `search_appointments()`... has no `WHERE tenant_id = ...` clause at all, even though `tenant_id` is passed into the function as an argument... it's just never used to filter.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Breaking change / runtime crash in the nightly export job (Critical).** `backend/app/db.py` line 7 vs. `backend/app/exports.py` line 8: ... `def build_appointment_query(session, tenant_id, filters):   # filters now required, no default` ... `nightly_export` ... `rows = build_appointment_query(session, tenant_id).all()   # still calls with 2 args` ... every invocation of `nightly_export`, for every tenant, will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the raw SQL interpolates `status.value` via f-string rather than binding it as a parameter (not currently exploitable, since FastAPI's `AppointmentStatus` enum validation constrains it before reaching this function, but it's an unsafe pattern if `search_appointments` is ever called from elsewhere without that validation)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I don't consider the f-string interpolation of `status.value` into the SQL (`backend/app/appointments.py` line ~13) a blocking security bug by itself \u2014 `status` is typed as `AppointmentStatus`, a `str, Enum` in `backend/app/schemas.py`, and FastAPI validates/coerces the query parameter against that enum before the handler runs, so an attacker cannot inject arbitrary text through it today.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

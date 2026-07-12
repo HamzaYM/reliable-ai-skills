@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31465,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.165003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4482,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4482,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9353,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4482,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4482,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9353,
+            "output_tokens": 2592,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2592,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation and are comparable; Report 2 is slightly more thorough in naming the removed serverless files, but the substance is equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`454a21f` \u2014 \"Add Edgerunner serverless deploy for API (PLAT-31)\"\n- `597777b` \u2014 \"Open a dedicated Postgres connection per request in the serverless handler (PLAT-31)\" (the attempted fix)\n- `1712565` \u2014 \"**Revert Edgerunner migration",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The migration was tried (`454a21f`, 2026-04-14), patched (`597777b`, 2026-04-16), and **reverted in production** (`1712565`, 2026-04-21) under ticket PLAT-31.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production... Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit (`FATAL: too many connections`), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "git history shows steps (a)\u2013(d) were already implemented under ticket PLAT-31 and then reverted",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add a serverless entry shim `backend/serverless_handler.py`... Add an `deploy/edgerunner.toml` platform config (7 lines last time)... these exact steps were already executed and then reverted.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "involve: whoever owns PLAT-31 and the Postgres/database (they lived the outage and set `max_connections`), platform/infra owners of the Cargobox deploy, and the leadership sponsor pushing the cost cut",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "surface PLAT-31 to whoever owns this decision \u2014 the platform/infra owner tied to the PLAT ticket scheme and the person who authorized the revert (and leadership who is driving the cost goal)... it is not an engineering-only call to quietly redo.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

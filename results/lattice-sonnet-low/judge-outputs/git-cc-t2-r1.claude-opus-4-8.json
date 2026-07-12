@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36598,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.183619,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5395,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5395,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5395,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5395,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2943,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2943,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is clearly better: it uses the correct three-dot PR diff to expose that scoring/scorer.py leftover weighted-scorer content is still present, whereas Report 2's two-dot diff wrongly concludes the diff is already clean and misses that scope problem entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`... Targeting `main` is now both correct per the rule and the only viable option, since the original base branch's commits are stale duplicates of what's already on trunk.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/weighted-scorer` itself has no unique remaining branch to target; it's obsolete now that its content is on `main`. So `main` is the only branch that makes sense as the PR target.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/weighted-scorer` is **not** a git ancestor of current `main` (`git merge-base --is-ancestor` returned false), yet its content is already on `main`... `feat/weighted-scorer` was squash-merged into `main` under a different commit/PR (#42) after `feat/pairwise-metric` had already branched off it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That starting point (`feat/weighted-scorer`) has already been merged into `main`, but as a **squash merge**... `main`'s history contains only a single new commit `1971f08` \u2014 none of `d6fdbc3`/`2d3029b`/`ac9d505` appear in `main`'s ancestry",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the whole diff (docstring rename, `WEIGHTS` dict, weighted `score()` refactor) is **identical, line for line**, to the change already merged into `main` via commit `1971f08`. None of it is pairwise work \u2014 it's inherited from `feat/weighted-scorer`... It shows up in the diff only because `feat/pairwise-metric` still has `feat/weighted-scorer`'s now-obsolete commits underneath its own",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase `feat/pairwise-metric` onto current `origin/main`**... **Re-run `git diff origin/main...feat/pairwise-metric`** after the rebase and confirm it now shows only the `pairwise_preference()` function and the grader-prompt line \u2014 i.e., pure pairwise-metric work, nothing from the weighted-scorer dependency.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Rebase `feat/pairwise-metric` onto `main`** (`git rebase --onto main feat/weighted-scorer feat/pairwise-metric`...): this replays only the X1... and X2... commits onto current `main`... confirm `git log --oneline main..feat/pairwise-metric` now shows only the 2 pairwise commits.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

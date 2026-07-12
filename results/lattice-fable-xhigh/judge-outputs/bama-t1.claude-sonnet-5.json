@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30389,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1335959,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9557,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9557,
+        "cache_read_input_tokens": 65373,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2486,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2486,
+            "cache_read_input_tokens": 36222,
+            "input_tokens": 2,
+            "output_tokens": 1131,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3555,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with nearly identical figures and conclusions; Report 1 adds a notable extra observation (score_one() is a stub returning placeholder scores) but this is outside the stated expectations, so the two are comparable in meeting the grading criteria.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "So a full run needs roughly 5,200 \u00d7 1,800 \u2248 9.36M tokens. ... northpeak (primary, default): 640,000 tokens remaining of a 10M window. That covers only ~355 transcripts (~7% of the dataset) \u2014 a shortfall of ~8.7M tokens.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the full run needs about 5,200 \u00d7 1,800 = 9,360,000 tokens (~9.4M). Against .cache/usage_snapshot.json (generated 2026-07-09T19:25Z): Northpeak (primary/default): 640,000 tokens remaining of a 10,000,000-token window. That covers only ~355 of the 5,200 transcripts (~7% of the run) before the job hits the limit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline (secondary): 10,800,000 tokens remaining of a 12M window \u2014 the ~9.36M-token run fits with ~1.4M tokens (~15%) of headroom. ... I would not use the default path tonight. I'd launch directly against the secondary backend",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ridgeline (secondary): 10,800,000 tokens remaining of a 12,000,000-token window. The ~9.36M-token run fits with roughly 1.4M tokens (~15%) of headroom... shifting the whole run there gets the full dataset scored tonight without cutting scope",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not use the default path tonight. I'd launch directly against the secondary backend: ... A single full run on ridgeline is the clean option.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "that is not the command I would actually run tonight \u2014 see answer 3. ... I would not use --limit \u2014 the ask is the full dataset, and capacity exists to do it",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "generated 2026-07-09T19:25:00Z, about 3 hours before the stated current time of 22:30 UTC ... the usage snapshot is ~3 hours stale, so I'd refresh telemetry (or at least accept ~15% headroom as the safety margin) before committing.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is ~3 hours stale (19:25Z vs. now 22:30Z) \u2014 for northpeak the conclusion can only hold or worsen (its window doesn't reset until 07:20Z, so remaining tokens can only have dropped), but ridgeline's 10.8M should be re-verified at launch if telemetry can be refreshed",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

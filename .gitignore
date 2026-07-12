@@ -1,0 +1,31 @@
+.DS_Store
+__pycache__/
+*.pyc
+results/*/.lock
+# Public results tree is a POSITIVE ALLOWLIST (owner ruling 2026-07-11 + adversarial review):
+# only the 15 scored cells, the pre-registered open cell (fable-max), and the matrix ship.
+# Gates, smoke runs, examples, merge scratch dirs, and _audit backups stay local as provenance.
+results/*
+!results/lattice-sonnet-low/
+!results/lattice-sonnet-medium/
+!results/lattice-sonnet-high/
+!results/lattice-sonnet-xhigh/
+!results/lattice-sonnet-max/
+!results/lattice-opus-low/
+!results/lattice-opus-medium/
+!results/lattice-opus-high/
+!results/lattice-opus-xhigh/
+!results/lattice-opus-max/
+!results/lattice-fable-low/
+!results/lattice-fable-medium/
+!results/lattice-fable-high/
+!results/lattice-fable-xhigh/
+!results/lattice-fable-max/
+!results/lattice-haiku/
+!results/matrix/
+!results/SANITIZATION.md
+!results/concordance/
+# Working debris inside the concordance dir stays local (raw Codex stdout with tool noise, checkpoints);
+# the complete per-comparison record is embedded in codex-concordance.json which ships.
+results/concordance/_raw/
+results/concordance/_marks/

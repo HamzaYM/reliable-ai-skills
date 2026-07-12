@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23395,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.149813,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4317,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4317,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9365,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4317,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4317,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9365,
+            "output_tokens": 2048,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2048,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent substance and citations; they are comparable, with Report 2 slightly more thorough on the stub/data caveats and Report 1 on tests.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will be sent automatically**. The deciding code is `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, specifically lines 11\u201312:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, lines 11\u201312:\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```\nWhen the clinic has never set the key, `.get(...)` returns `None`, so the function returns `True`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "null/missing/malformed must mean **off**... I would change it. In `slotwise/backend/app/feature_flags.py`, lines 10\u201313, the resolver should default off, e.g.:\n\n```python\ndef auto_send_reminders_enabled(tenant):\n    return bool(tenant.settings.get(\"auto_send_reminders\"))\n```\n\nso a missing/None/malformed value yields `False`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the default should be **fail-closed (opt-in)**, not fail-open... The minimal fix is in `backend/app/feature_flags.py:11\u201313`: default unset to `False` (fail closed), e.g. `return bool(tenant.settings.get(\"auto_send_reminders\"))` with no special-casing of `None`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`auto_send_reminders_enabled` was added as a **structural copy-paste of `compact_calendar_view_enabled`**... Grandfather-on is defensible for a cosmetic UI toggle but wrong for one that spends money and sends messages on patients' behalf.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "SLOT-190 (`25509a7`) introduced `compact_calendar_view_enabled` with the `if ... is None: return True` shape for a purely cosmetic UI preference... The two features have very different blast radii \u2014 a cosmetic view toggle versus automatically messaging patients \u2014 so a default that is safe for one is not automatically safe for the other.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add an env-level master gate** and AND it with the per-tenant value. Currently `reminders.py run()` (line 25) is gated *only* by the per-tenant flag \u2014 there is no environment kill-switch, so there's no single lever to enable/disable the feature during rollout or to roll back.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Add a global kill-switch / staged rollout gate.** Currently the per-tenant flag is the only gate (confirmed by grep)... Before real sending, add an environment/config gate so the job can be enabled cautiously",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

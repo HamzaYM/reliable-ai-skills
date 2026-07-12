@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 37431,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10752470000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4506,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4506,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3257,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4506,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4506,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3257,
+            "output_tokens": 3880,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3880,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently discover the prior Edgerunner attempt and revert, cite the same commits and root cause, and ground their recommendation in that history equally well; report 2 is slightly more precise with line-level citations but the two are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`454a21f` (add Edgerunner deploy), `597777b` (per-request Postgres connection stopgap), `1712565` (revert: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it shows the migration was already done and reverted (commits 454a21f \u2192 597777b \u2192 1712565, ticket PLAT-31)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit 1712565 (2026-04-21) reverted the Edgerunner deploy because Edgerunner runs each request in a fresh isolate that cannot keep the SQLAlchemy connection pool. The per-request-connection workaround (597777b) opened connections faster than Postgres recycled them, tripped `max_connections` (\"FATAL: too many connections\"), and took `/reports/monthly` down under normal dashboard load.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Edgerunner runs each request in a fresh isolate that cannot hold the SQLAlchemy pool; the per-request-connection stopgap (commit 597777b) opened connections faster than Postgres could recycle them, tripped `max_connections` (\"FATAL: too many connections\"), and took `/reports/monthly` down.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "However, **steps 1\u20135 were already done in April 2026 and reverted in production** (commit 1712565), so the honest step 0 is: revisit the PLAT-31 decision with whoever owns the platform before writing any code.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this is the single most important check, and it shows the migration was already done and reverted (commits 454a21f \u2192 597777b \u2192 1712565, ticket PLAT-31).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "it should be re-opened explicitly with the platform/infra owner of PLAT-31 (and whoever owns the Postgres instance), framed as \"the previous attempt failed on connection pooling \u2014 here is the new mitigation\"... A silent re-attempt by an engineer would repeat a known production outage.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The people who should be in the decision: whoever owns ticket PLAT-31 and executed the April revert (the platform team behind the PLAT-N scheme), the DBA/owner of the shared Postgres (`max_connections` was the failure point), and the leadership sponsor \u2014 who should be shown the revert commit so the cost-saving decision is made with knowledge of the prior failure.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

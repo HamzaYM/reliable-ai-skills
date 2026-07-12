@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15303,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1436772,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13702,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13702,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9547,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13702,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13702,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9547,
+            "output_tokens": 1608,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1608,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations with concrete fixes and correct root-cause analysis; Report 2 adds a few extra observations (per-applicant scoping issue in the rate limiter, dead-code stub note) but both are comparable in substance against the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Concrete fix \u2014 classify before failing over:\n```python\n...\nNON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)\n\ndef call_with_fallback(payload):\n    try:\n        return primary.complete(payload)\n    except NON_RETRYABLE:\n        raise\n    except Exception as e:\n        log_fallover(e)\n        return secondary.complete(payload)\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Concrete fix**: import the specific exception classes and branch on them instead of a bare `except Exception`:\n```python\n...\n    except ContentPolicyError:\n        log.error(\"primary vendor rejected content on policy grounds\")\n        raise  # do not silently ship to a second vendor\n    except BadRequestError:\n        log.error(\"primary vendor rejected malformed request\")\n        raise  # retrying secondary won't fix a bad payload\n    except AuthError:\n        log.error(\"primary vendor auth failure \u2014 check credentials\")\n        raise  # persistent config problem, not a per-call fallback case\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "By default \u2014 and in any environment whose `STAGE` value isn't spelled exactly `production` \u2014 rate limiting is completely disabled and every call is allowed unconditionally. This is not appropriate for a safety/cost gate. ... this fails open exactly when the gate's own dependency is unavailable \u2014 a redis outage silently disables rate limiting for the entire pipeline instead of blocking",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Gating a cost/safety-relevant control on an exact string match against a general-purpose deployment-stage variable is fragile. ... For Path C, prefer failing closed for a cost/safety control unless there's a documented reason availability should win: `except RedisError: return False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the full applicant intake document text, logged verbatim: no truncation, hashing, or redaction... an arbitrary dict logged in full with no field-level filtering whatsoever, not even a denylist... replace the raw `metadata` passthrough with an explicit, named allowlist",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not log `input_text` or raw `metadata` at all in general application logs; if raw content must be retained for debugging, put it in a separate, access-controlled, region-locked, encrypted store with its own retention policy, and log only a non-reversible reference (e.g. a content hash) if correlation is needed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "```python\ndef pseudonymize(applicant_id):\n    salt = os.environ.get(\"PII_SALT\")\n    if not salt:\n        raise RuntimeError(\"PII_SALT is not configured; refusing to pseudonymize without a salt\")\n    return hmac.new(salt.encode(), applicant_id.encode(), hashlib.sha256).hexdigest()\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "```python\ndef pseudonymize(applicant_id):\n    salt = os.environ[\"PII_SALT\"]  # KeyError if unset \u2014 fail fast, don't silently degrade\n    if not salt:\n        raise RuntimeError(\"PII_SALT must be a non-empty secret\")\n    return hmac.new(salt.encode(), applicant_id.encode(), hashlib.sha256).hexdigest()\n```",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

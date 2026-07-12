@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28029,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.177684,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6554,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6554,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6554,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6554,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2242,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2242,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent evidence; comparable overall, with Report 1 marginally more decisive on the AI-footer removal while Report 2 defers it to the doc owner.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Export your visit history\" (lines 22\u201326) \u2014 False as stated. ... There is no PDF-generation code anywhere in the repo. ... This entire section describes a feature that doesn't exist yet and must be removed. ... `app/security/config.py` reads: `TWO_FACTOR_DEFAULT = False` ... The doc claims the opposite (\"now enabled for every clinic by default\"). ... Must be corrected or removed before sending.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is no export route, and `captures.json` itself flags the corresponding image as ... This entire section describes a feature that doesn't exist in the codebase and must be removed ... Directly contradicted by `clinic-portal/app/security/config.py`: `TWO_FACTOR_DEFAULT = False` ... This is the opposite of what the document claims and must be corrected or removed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`after_scheduling.png` renders the text **\"BILLING / INVOICES\"** \u2014 a completely different, unrelated page. ... `after_scheduling.png` was captured from route `/billing/invoices`. Whoever assembled the capture set grabbed the wrong screenshot for the \"after\" slot.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_scheduling.png` renders the text \"BILLING / INVOICES\" \u2014 a completely unrelated screen. The \"after\" half of this comparison does not show the scheduling calendar at all. ... \"after_scheduling.png\": {\"route\": \"/billing/invoices\", \"state\": \"seed-demo\"}",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`after_export.png` is referenced in the doc but does not exist anywhere in the repository.** ... **`unused_capture_07.png` exists on disk but is not referenced by the document at all.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "| `img/after_export.png` | **No** | Referenced at line 26 of the doc but the file does not exist in `img/` ... Additionally, `img/unused_capture_07.png` **exists on disk but is not referenced anywhere in the document**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (line 33)** \u2014 this reads as an internal drafting note/disclaimer, not customer-facing copy. It should be stripped regardless of the accuracy issues above; it doesn't belong in an external clinic-facing communication.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer line \"Highlights draft assembled with AI assistance.\"** (line 33) reads as an internal production note that leaked into customer-facing copy \u2014 the word \"draft\" in particular is not something you'd want a clinic customer to read in the email they receive.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

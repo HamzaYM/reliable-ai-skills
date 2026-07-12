@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26736,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.18509799999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7357,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7357,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7357,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7357,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 2245,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2245,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with accurate file/line citations; they are comparable, with Report 1 slightly stronger on the legacy-secret removal framing.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` `ENABLE_DEBUG_TOOLBAR = \"true\"` ... this should be **omitted entirely** ... `infra/prod/app.auto.tfvars:3` `AUTH_RELAXED = \"true\"` ... **omit the key entirely** ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... **Remove entirely** ... remove both `SHADOW_SCORING_ENABLED` and `SHADOW_SCORING_SINK` from prod ... `LEGACY_BILLING_SECRET_ARN` ... **omit**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. ... Should be `\"false\"` ... `AUTH_RELAXED = \"true\"`. ... must be `\"false\"` ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. ... Must be removed (empty string) ... `SHADOW_SCORING_SINK` ... Either clear the sink or point it at a prod bucket",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production frontend would ship with the **staging** API base URL baked in (`https://staging-api.example.com`) ... `VITE_`-prefixed vars are **inlined into the bundle at build time** ... the **same digest** is later deployed to prod ... Fix: add `frontend/.env.production` ... build/ships a separate prod bundle with `--mode production`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the shipped bundle's API base URL is hard-coded to `https://staging-api.example.com`. The same single image (built once with `--mode staging`) is what the `deploy-prod` job ships ... Fix requires a production build (`--mode production`) with a `.env.production` providing the prod `VITE_API_BASE_URL`, and a separate image for prod.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/prod-runbook.md:6` claims migrations run automatically during deploy, but the runbook is stale ... and there's no migration step anywhere in `deploy.yml` ... do not assume \"pipeline succeeded\" = schema current; confirm/add an explicit first-run migration step.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Runbook says migrations run automatically during deploy** (`docs/prod-runbook.md:6`), but the pipeline has no migration step ... describes behavior the current pipeline doesn't implement ... nothing applies them for a first prod DB.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` still passes the **staging** condition `...:environment:staging` ... production needs **its own scoped trust condition** (`repo:acme-health/medislot:environment:production`) ... Fix `infra/prod/main.tf:3` to the production sub",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Production** (`infra/prod/main.tf:3`) passes the **same** `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` (copied unchanged) ... the production `oidc_sub_condition` must be changed to `...:environment:production` for it to work.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

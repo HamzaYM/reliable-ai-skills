@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31441,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.14963939999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11059,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11059,
+        "cache_read_input_tokens": 67108,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2249,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2249,
+            "cache_read_input_tokens": 37959,
+            "input_tokens": 2,
+            "output_tokens": 1725,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3910,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent and hit all five expectations with comparable precision and citations; Report 2 is marginally more thorough (e.g., notes grant scope for juniper_app and a CI integration test detail) but this does not change expectation coverage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "table owners are exempt from row-level security unless the policy is *forced* ... The runtime connection is `postgresql://juniper_owner:ownerpw@db:5432/juniper` in all three deployment configs: `juniper/docker-compose.yml:5`, `juniper/.env.example:1`, `juniper/infra/main.tf:2`. ... In Postgres, the table owner bypasses `ENABLE`d RLS entirely \u2014 no error, no warning; the policy simply doesn't apply.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the application now connects as the role that *owns* the `appointments` table, and Postgres exempts table owners from row-level security unless the table has `FORCE ROW LEVEL SECURITY`. ... `docker-compose.yml:5` and `.env.example:1` set `DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper`, and `infra/main.tf:2` sets the same as Terraform's `database_url` default.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\", authored 2026-06-17). Its diff (`git show b2a23d2`) changes exactly three lines, switching `DATABASE_URL` from `postgresql://juniper_app:apppw@...` to `postgresql://juniper_owner:ownerpw@...` in `.env.example`, `docker-compose.yml`, and `infra/main.tf`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\", authored 2026-06-17). To let the API container apply migrations at boot (which needs DDL rights), it changed the *runtime* connection string from `juniper_app` to `juniper_owner` in all three configuration surfaces \u2014 `.env.example` (line 1), `docker-compose.yml` (line 5), and `infra/main.tf` (line 2)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Primary fix \u2014 restore the least-privilege runtime role: revert the runtime `DATABASE_URL` to `juniper_app` in `juniper/docker-compose.yml:5`, `juniper/.env.example:1`, and `juniper/infra/main.tf:2`. ... add a migration with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` so even the owner is subject to the policy.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary fix \u2014 split migration and runtime credentials. Revert the runtime `DATABASE_URL` to `postgresql://juniper_app:apppw@db:5432/juniper` ... add a migration `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` in `db/migrations/` so that even an owner connection is subject to the policy.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Defense in depth in application code: add `WHERE tenant_id = :tenant_id` to the query in `juniper/backend/app/routes/appointments.py:16-19`, so isolation does not depend on exactly one mechanism working.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Defense in depth 2: add an explicit `WHERE tenant_id = :tenant` to the query in `backend/app/routes/appointments.py:16-19`, so application-layer scoping doesn't depend solely on RLS.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Startup assertion: at app boot, query the connected role's privileges and table ownership (e.g. check `pg_class.relowner`/`pg_tables.tableowner` for `appointments` against `current_user`, plus `rolsuper`/`rolbypassrls` from `pg_roles`) and refuse to start \u2014 not just log \u2014 if the runtime role owns the tables or can bypass RLS.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Runtime privilege assertion. On startup, have the app verify its own role, e.g. `SELECT current_user` plus a check that `current_user` does not own the tenant tables (`pg_tables.tableowner`) and lacks `rolbypassrls` \u2014 refuse to boot otherwise. That converts silent RLS bypass into a loud deployment failure.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1",
+  "repeat": 1,
+  "task": "mt-auth-t1"
+}

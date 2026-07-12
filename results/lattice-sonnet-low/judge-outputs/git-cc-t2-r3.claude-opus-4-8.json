@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33379,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.179554,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5071,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5071,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5071,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5071,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2910,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2910,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 answered better: it correctly used the three-dot PR-view diff and caught that scoring/scorer.py re-appears (expectation c), which Report 2 missed by using a two-dot diff and concluding the diff was clean.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. Per project documentation's dead-base PR trap rule, every PR should base on trunk, not on another feature branch \u2014 and here that's doubly true because the branch this work actually depended on, `feat/weighted-scorer`, is a dead base",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. It's the only long-lived integration branch in the repo (`git branch -a` shows only `main`, `feat/weighted-scorer`, and `feat/pairwise-metric`) ... There's no other candidate integration branch to target.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/weighted-scorer`'s three commits are **not** an ancestor of `main` ... yet `main`'s tip, `1971f08` \"Refactor scorer for weighted metrics (#42)\", is byte-for-byte content-identical to `feat/weighted-scorer` ... the weighted-scorer work was merged into `main`, but via a squash/rewrite (PR #42) that produced a brand-new commit hash",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/weighted-scorer` is **not** a git ancestor of `main` ... This is the classic signature of a **squash-merged PR**: `main`'s commit `1971f08` (\"Refactor scorer for weighted metrics (#42)\") applies the same net changes as W1+W2+W3 combined, but as one new commit with a different hash",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`: identical to `main`'s current version already (weighted scoring) ... `overlap()` in the same diff is boilerplate already present in `main` via #42, appearing here only because of how the three-dot diff is rendered against the old base",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Rebase `feat/pairwise-metric` onto current `main` (`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... After the rebase, re-verify the diff is exactly the two pairwise-metric commits: `git log main..feat/pairwise-metric` should show only X1/X2, and `git diff main...feat/pairwise-metric` should still be the same 3-file pairwise-only diff.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` (replays only X1 and X2 onto current `main`) ... worth a manual check with `git diff` after rebase to confirm only the intended pairwise-metric diff remains",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

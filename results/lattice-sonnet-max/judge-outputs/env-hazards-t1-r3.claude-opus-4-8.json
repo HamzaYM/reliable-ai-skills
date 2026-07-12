@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23418,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.17943900000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7299,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7299,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9491,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7299,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7299,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9491,
+            "output_tokens": 2015,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2015,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions with equivalent grounding; they are comparable, with Report 1 and Report 2 each hitting every expectation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "both `.env` and `.env.example` set `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`. `cedar_owner` is the role that `scripts/migrate.sh` uses to run all DDL in `0001_init.sql`, making it the **owner** of the `clients`/`appointments` tables ... row-security policies are never evaluated for the owning role \u2014 and never for superusers \u2014 unless the table has `ALTER TABLE ... FORCE ROW LEVEL SECURITY`, which `0001_init.sql` never sets. So every `GET /clients` request ... RLS silently returns all tenants' rows",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The leak is caused by **`cedarline/.env` (and the checked-in template `cedarline/.env.example`)**, both of which set:\n```\nDATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar\n```ubuntu`cedar_owner` ... it's also the role that owns every table because `scripts/migrate.sh` runs all migrations as `cedar_owner`. In PostgreSQL, row-level security is **unconditionally bypassed for superusers**, and by default also bypassed for the owner of a table (the migration never applies `FORCE ROW LEVEL SECURITY`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "change `DATABASE_URL` in `cedarline/.env` ... from `cedar_owner` to `cedar_app` ... Treat \"migration/owner\" credentials and \"application runtime\" credentials as categorically separate, never interchangeable: `cedar_owner` should be used only by `scripts/migrate.sh`/CI migration jobs, never embeddable in the app's runtime config.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "change `DATABASE_URL` in `cedarline/.env` from `cedar_owner` to `cedar_app` credentials ... **Enforce the two-role split as a hard boundary, not a convention.** `cedar_owner` should be used *only* by `scripts/migrate.sh` (or a CI/CD migration step) and should never appear in any config the running application reads.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Creating `cedar_app` is, by design, a separate manual step ... `./scripts/migrate.sh` then applies only `db/migrations/*.sql` (schema DDL) as `cedar_owner`; it never touches `db/bootstrap/create_app_role.sql` ... there's no `/docker-entrypoint-initdb.d` mount in `docker-compose.yml` to auto-run anything else ... after any teammate runs the reset script, `cedar_app` simply does not exist in the new cluster ... fails immediately with a Postgres \"role \\\"cedar_app\\\" does not exist\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_app` is created by exactly one script, `cedarline/db/bootstrap/create_app_role.sql` ... `docker-compose.yml` does not mount `db/bootstrap` ... into Postgres's `/docker-entrypoint-initdb.d` ... `scripts/reset-local-db.sh` runs `docker compose down -v` ... `cedar_app` simply no longer exists in the fresh cluster ... fails immediately with a Postgres error to the effect of `role \"cedar_app\" does not exist`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

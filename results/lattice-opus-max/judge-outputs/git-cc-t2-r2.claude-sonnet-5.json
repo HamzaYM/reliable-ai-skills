@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24114,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10949029999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9396,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9396,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9396,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9396,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2621,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2621,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reach the same correct conclusions on all four expectations with nearly identical evidence and commands; they are comparable in substance, with Report 2 offering a slightly more detailed rationale in places (e.g., git cherry -v explanation) and an extra optional hygiene step, but this does not change the expectation coverage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Target **`main`** (the trunk)... The obvious alternative base \u2014 `feat/weighted-scorer`, the branch this work was stacked on \u2014 is a **dead base**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`main`.** ... (Targeting the still-existing `feat/weighted-scorer` branch would be wrong \u2014 that branch is now redundant with `main` and should itself be retired.)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Created from `feat/weighted-scorer` (at `ac9d505`, \"W3: token-overlap helper in metrics\").\" ... the trunk commit is literally titled \"\u2026weighted metrics (#42).\" So the dependency wasn't abandoned \u2014 it landed as squash commit `1971f08`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was branched off **`feat/weighted-scorer`** (tip `ac9d505`, \"W3: token-overlap helper in metrics\")... its content is fully merged into `main`, but via a squash that produced a new SHA (`1971f08`, #42), so none of `feat/weighted-scorer`'s original commits (W1/W2/W3) are ancestors of `main`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The rest \u2014 the entire `scoring/scorer.py` rewrite and the `overlap()` function in `metrics.py` \u2014 is the **weighted-scorer work that is already in `main` via #42**... because `feat/pairwise-metric` was branched off `feat/weighted-scorer` and still carries commits `d6fdbc3` (W1), `2d3029b` (W2), `ac9d505` (W3).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The rest \u2014 the entire `scorer.py` refactor and the `overlap()` helper \u2014 is the **weighted-scorer** work (W1/W2/W3). It appears in the diff because `feat/pairwise-metric` is stacked on `feat/weighted-scorer` and its merge-base with `main` is the pre-weighted base `65204ad`; since #42 landed those changes as a *squash* (new SHA), git doesn't treat them as shared history and re-lists them.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Verify the rebased branch is clean and scoped:** `git diff main...feat/pairwise-metric` should now show only `grader.txt` (+1) and `metrics.py`'s `pairwise_preference` (+4); `git merge-base --is-ancestor main feat/pairwise-metric` should now be **YES**; `git log origin/main..HEAD -- scoring/scorer.py` should be **empty**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "confirm the diff is now pure pairwise: `git diff main...feat/pairwise-metric` should show only `prompts/grader.txt` (+1) and `scoring/metrics.py` (+4). Run the pipeline's tests.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

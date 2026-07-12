@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21536,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1047762,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5312,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5312,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5312,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5312,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2340,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2340,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 fully satisfies all four expectations, while Report 2 misses (d): it corrects the count to 5 rather than recommending dropping the hardcoded count in favor of pointing at the code.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... Two additional call sites construct their own `chargekit.Client` and call it directly, bypassing `gateway.py` entirely: `medibill/backend/app/api/invoices.py:4,14-16`... `medibill/backend/app/workers/dunning.py:2,9-13`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... `medibill/backend/app/api/invoices.py:4,14`... `medibill/backend/app/workers/dunning.py:2,9`... `medibill/backend/app/billing/errors.py` is the one sanctioned exception called out in both the doc and the module's own docstring... it only imports `chargekit.errors`, not a client, so it's consistent with the stated exception.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual `InvoiceOut` dataclass (medibill/backend/app/models/invoice.py:16-22) has six fields: `id`, `tenant_id`, `amount_cents`, `currency`, `status`, and `external_ref`... backed by a real migration adding the column (medibill/backend/migrations/0006_add_invoice_external_ref.sql:1)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Actual code: `InvoiceOut` in `medibill/backend/app/models/invoice.py:16-22` has six fields \u2014 the five listed plus `external_ref`. This field was added by migration `medibill/backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The doc should be corrected now, as its own change... not bundled silently into the refund feature... it should happen before or in the same commit as any refund work that touches these same files, per project documentation's rule that contract changes land in the same commit as the code they govern.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it's a small, low-risk fix that belongs in the same PR/commit that establishes the refund gateway function \u2014 not deferred to a \"docs cleanup later\" backlog item, since that's exactly the kind of stale-doc rot already visible here.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The actual handler... checks for 5 event types, not 4... Per project documentation's 'don't cite a number: read the source' guidance, I'd change the wording to drop the hardcoded count entirely (it's exactly the kind of number guaranteed to drift as event types are added) and either list the types without a count, or point at the handler as the source of truth",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Recommended change: update the count to 5 and add `payment_pending` to the list, e.g. \"The integration handles 5 webhook event types: payment_succeeded, payment_failed, payment_pending, refund_created, dispute_opened.\"",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

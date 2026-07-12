@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25656,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16111250000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9490,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9490,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9490,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9490,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2085,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2085,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all four questions with grounded git evidence; they are comparable, with Report 1 and Report 2 each hitting every expectation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`main`.** The branch's only dependency \u2014 the `overlap()` token-overlap helper used by the new pairwise metric \u2014 was delivered by `feat/weighted-scorer`, and that work has already landed on `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`main` (the trunk).** ... The branch's *actual* dependency base, `feat/weighted-scorer`, is a **dead base**: its content is already on `main`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was branched from **`feat/weighted-scorer` at its tip `ac9d505` (W3)** \u2014 not from `main`. ... **`feat/weighted-scorer` has already been merged into `main`, via squash-merge**, as commit `1971f08 (#42)`. ... `ac9d505` (and `7b2e100`, `1bfecb6`) all **NOT in main**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**It was created from `feat/weighted-scorer`, at that branch's tip `ac9d505`** ... its work has already landed on `main` under a different commit. - Not an ancestor: `git merge-base --is-ancestor feat/weighted-scorer origin/main` returns `1` ... The branch ref still exists on both local and `origin`. ... reached `main` as a squashed/refactored single commit (PR #42) with a *different SHA*",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**No \u2014 not all of the three-dot diff is pairwise work.** ... `scoring/scorer.py` (+10/\u22123) ... That extra 16/3 is present **because the branch was cut from `feat/weighted-scorer` before that branch was squash-merged**. The three-dot diff is computed from the old merge-base `65204ad`, so it re-includes W1\u2013W3",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`scoring/scorer.py` \u2014 `+10/-3` ... \u2192 **entirely weighted-scorer work** (W1). **No \u2014 not all of it is pairwise work.** ... **Why that content is present:** ... the branch's merge-base with `main` is the *old root* `65204ad` ... A three-dot PR diff measured from that root therefore re-shows the weighted changes as if new",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... After rebase, `git log --oneline main..feat/pairwise-metric` should list only the two replayed pairwise commits, and `git diff --stat main...feat/pairwise-metric` should now match the two-dot result (`grader.txt` +1, `metrics.py` +4, 5 insertions).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto origin/main feat/weighted-scorer feat/pairwise-metric` ... `git diff origin/main...HEAD` \u2192 now only `grader.txt +1` and `metrics.py +4`; `scorer.py` gone. - Scope check ... `git log origin/main..HEAD -- scoring/scorer.py` \u2192 empty",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

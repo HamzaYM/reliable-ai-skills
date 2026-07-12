@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35159,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1436653,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12192,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12192,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12192,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12192,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3649,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3649,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with substantively equivalent findings; Report 1 is slightly more precise/actionable (explicit removal calls for the legacy secret and explicit corrected tfvars line for the OIDC fix), while Report 2 leaves the legacy-secret fix as a replacement rather than removal and states the OIDC fix implicitly rather than explicitly.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\" ... Change: delete the line. ... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" ... Change: delete the line; this account should not exist in prod at all. ... Change: remove SHADOW_SCORING_SINK entirely from prod ... LEGACY_BILLING_SECRET_ARN ... Change: delete the line; don't recreate a secret injection for a consumer that no longer exists.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\" \u2014 a debug toolbar ... must not be on in production. Should be \"false\". ... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" \u2014 a QA email is hardcoded as a superadmin account ... Should be removed entirely (empty) ... SHADOW_SCORING_SINK ... Either the sink must be emptied, or if shadow scoring is genuinely wanted in prod, it needs its own prod-scoped sink and the enabled flag must actually gate the write path.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Net effect: the frontend bundle shipped to production would have https://staging-api.example.com baked into it as VITE_API_BASE_URL, because it was built once with --mode staging and never rebuilt. This is precisely the \"rebuild per environment; don't promote a build artifact wholesale\" trap ... that file needs to be created (with the real production API URL) before a --mode production build would even pick up a value.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So the production deployment ships a frontend bundle whose API base URL is hardcoded to https://staging-api.example.com. If applied as-is, the production frontend would call the staging API, not a production API, unless something downstream (not present in this repo) rewrites it. ... there's no .env.production and no --mode production build step, so a prod-specific bundle is never produced by this pipeline as written.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No migration step anywhere in deploy.yml. The runbook (docs/prod-runbook.md:6) states \"Database migrations are applied automatically during deploy,\" but nothing in deploy.yml runs alembic upgrade or equivalent ... don't trust \"the pipeline succeeded\" as proof the prod schema is current; this needs to be confirmed/added explicitly, and it directly contradicts the (3-month-old, likely stale) runbook.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No database migration step. docs/prod-runbook.md:6 claims \"Database migrations are applied automatically during deploy,\" but no step in deploy.yml runs alembic or any migration tool ... so even if a runner existed, the prod schema would not actually be created by them.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 should read oidc_sub_condition = \"repo:acme-health/medislot:environment:production\".",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:1-4 instantiates the same module but with oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\" \u2014 unchanged from staging, i.e., it was copied verbatim and never edited to say environment:production. ... Net effect: as committed, production cannot authenticate distinctly from staging.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

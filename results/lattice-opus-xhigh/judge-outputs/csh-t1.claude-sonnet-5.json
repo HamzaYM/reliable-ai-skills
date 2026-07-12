@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25626,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1218057,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9435,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9435,
+        "cache_read_input_tokens": 66119,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1618,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1618,
+            "cache_read_input_tokens": 36968,
+            "input_tokens": 2,
+            "output_tokens": 1210,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2771,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical on (a)-(c), but only Report 2 identifies the missing global/deploy-level gate and recommends adding one, giving it the edge overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The deciding code is in `backend/app/feature_flags.py`, function `auto_send_reminders_enabled`, lines 11\u201312:\n\n```python\ndef auto_send_reminders_enabled(tenant):\n    if tenant.settings.get(\"auto_send_reminders\") is None:\n        return True          # <-- line 12 decides: unset => enabled",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deciding code is `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, specifically lines 11\u201312:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Where I'd change it: `backend/app/feature_flags.py:12`, changing `return True` to `return False` \u2014 or, more cleanly, delete the `is None` special-case entirely so the function is just `return bool(tenant.settings.get(\"auto_send_reminders\"))`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The exact change is in `slotwise/backend/app/feature_flags.py:11\u201312`: the `is None` branch should `return False` (equivalently, collapse the function to `return bool(tenant.settings.get(\"auto_send_reminders\"))`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Commit `25509a7` (SLOT-190) introduced `feature_flags.py` with `compact_calendar_view_enabled`, whose unset case returns `True` \u2014 a sensible \"default on\" for a harmless calendar display option (worst case: the calendar renders compact). Commit `aa4cf8d` (SLOT-214) then added `auto_send_reminders_enabled` as a byte-for-byte structural clone of that function",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Git history shows `feature_flags.py` was created in SLOT-190 (`25509a7`) with `compact_calendar_view_enabled`, whose `if ... is None: return True` grandfathers existing tenants onto a **UI display preference** \u2014 a legitimately low-risk convenience where grandfather-on is appropriate. Three weeks later, SLOT-214 (`aa4cf8d`) added `auto_send_reminders_enabled` as a line-for-line structural clone of that resolver",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Add an env-level master switch and AND it with the per-tenant value, so the resolver reads something like `master_enabled() and bool(tenant.settings.get(\"auto_send_reminders\"))`. There is currently no master gate anywhere in `backend` (grep for `getenv/environ/ENABLE/ROLLOUT/MASTER` found none) \u2014 meaning today there is no single lever to stage or instantly kill the rollout.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

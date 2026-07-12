@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 48373,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19516800000000006,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4359,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4359,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4359,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4359,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 3847,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3847,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable: both correctly target main, trace the stacked base and its #42 landing, and prescribe the range-rebase, but both wrongly claim a clean diff and miss that the three-dot PR view re-includes scoring/scorer.py.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main` (the trunk). ... Targeting `feat/weighted-scorer` would be the textbook dead-base trap.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "there is no longer any reason to target `feat/weighted-scorer`; the PR should target `main`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric` was created from `feat/weighted-scorer` at commit `ac9d505` ... That starting point has been **squash-merged into main**. Main's tip is `1971f08 \"Refactor scorer for weighted metrics (#42)\"` ... `git merge-base --is-ancestor ac9d505 main` returns NO (the weighted commits are *not* in main by identity)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was branched off `feat/weighted-scorer`. ... The starting point (`feat/weighted-scorer`) has been **merged into `main`, but as a squash/rewrite, not as those same commits**. `main`'s tip `1971f08` is a single \"Refactor scorer for weighted metrics (#42)\" commit ... Proof that the original W commits are *not* in `main`: `git branch --merged main` lists only `main`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... Verify: `git log main..HEAD` shows only X1, X2; `git diff main..HEAD` is unchanged (2 files, 5 insertions) and scoped only to files pairwise meant to touch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... **Verify** the result: `git log --oneline main..feat/pairwise-metric` should now show only X1 and X2, and `git diff main feat/pairwise-metric` should still be exactly the same 5 insertions.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

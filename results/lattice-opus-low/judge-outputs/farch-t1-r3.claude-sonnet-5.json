@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29974,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1149636,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4856,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4856,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9558,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4856,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4856,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9558,
+            "output_tokens": 3230,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3230,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently discover the same git history, cite the same commits and revert message, correctly identify the connection-pooling root cause, and tie their sign-off recommendation to the prior failure \u2014 the reports are comparable in substance, with Report 2 slightly more explicit that the serverless config was deliberately reverted rather than never built.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`git log --oneline` shows this migration was already done and reverted (`454a21f`, `597777b`, `1712565`, PLAT-31). Do not re-scope it as greenfield.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It reveals commits `454a21f`, `597777b`, and revert `1712565`, i.e. this migration already happened and failed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "\"serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres `max_connections` in production\u2026 the per-request connections opened faster than Postgres could recycle them and tripped the connection limit (`FATAL: too many connections`), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Revert commit `1712565` states: \"serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres `max_connections` in production.\" The per-request-connection stopgap (`597777b`) made it worse: under normal dashboard load, per-request connections opened faster than Postgres could recycle them, tripping `FATAL: too many connections` and taking the endpoint down.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "recreate `backend/serverless_handler.py`... This replaces the Dockerfile's long-lived `uvicorn` server (`backend/Dockerfile`)... Add an Edgerunner deploy manifest \u2014 recreate `deploy/edgerunner.toml`... replacing `deploy/cargobox.yaml`... `deploy/cargobox.yaml` \u2014 the current shape (2 replicas \u2192 bounded pool of connections).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I must flag before listing these as a plan: every one of these steps was already implemented and then reverted... Retire the Cargobox deploy (`deploy/cargobox.yaml`, `replicas: 2`, always-on).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Who to involve: the owner of the **PLAT** platform ticket line / whoever authored the PLAT-31 revert (they hold the production failure context)... This is a decision that should not be made solely by the engineer scoping it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Who to involve: the owner of the platform/PLAT area and whoever authored/reverted PLAT-31 (the institutional memory of why it failed)... This is their call, made with the revert history in front of them \u2014 not a silent engineering re-attempt.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 42483,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2516241,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 18884,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 18884,
+        "cache_read_input_tokens": 147797,
+        "inference_geo": "not_available",
+        "input_tokens": 12977,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4509,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4509,
+            "cache_read_input_tokens": 43389,
+            "input_tokens": 2,
+            "output_tokens": 2885,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3670,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is more complete: it covers all points Report 1 covers plus the individual-blame style-guide violation (expectation d) and the internal-system-name exposure, which Report 1 omits entirely; neither report explicitly flags the draft's mis-ordering (expectation e).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The internal timeline (`larkpay-comms/incidents/OPS-412-timeline.md`) shows failures began at 14:03, but the first alert fired at 14:50 \u2014 a 47-minute delay, not \"within minutes.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` shows failures began 14:03, first alert at 14:50 = **47 minutes**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The incident timeline explicitly documents: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\" This directly contradicts the postmortem's claim",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` states \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "April 2026 uptime was 99.77% (`larkpay-comms/metrics/uptime-2026.csv`), which breaches the 99.9% monthly SLA (`larkpay-comms/docs/sla-commitments.md`). Service credits are owed per the customer agreement",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md` commits to 99.9% monthly SLA. April 2026 = 99.77% (per `uptime-2026.csv`), a breach. Service credits are contractually owed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Violation**: `larkpay-comms/docs/customer-comms-style-guide.md` Rule 1 states \"Never assign blame to an individual.\" **Required change**: Reframe to describe the problem ... without naming or implying blame on the on-call engineer.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1",
+  "repeat": 1,
+  "task": "tcr-t1"
+}

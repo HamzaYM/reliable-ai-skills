@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14424,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08644020000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4886,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4886,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4886,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4886,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 1288,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1288,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all four expectations, including the missing global/deploy-level gate (d), while Report 1 misses that point entirely; Report 2 also catches an extra UI/backend consistency bug not required but reinforcing its analysis.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "If the key `auto_send_reminders` is absent from `tenant.settings`... the `is None` branch fires, and the function returns `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if the key is missing from `tenant.settings`... the function returns `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I'd change the default at exactly `backend/app/feature_flags.py:12`, flipping the \"missing means\" branch to return `False` (opt-in) rather than `True`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'd fix it at `slotwise/backend/app/feature_flags.py:11-12`, inverting the missing-value branch to return `False` (mirroring the \"off-by-default\" pattern)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`auto_send_reminders_enabled` was added by literally copying the shape of the pre-existing `compact_calendar_view_enabled` function... the two flags have very different risk profiles (UI cosmetics vs. sending real messages to patients)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "commit `aa4cf8d`... then added `auto_send_reminders_enabled` immediately below it, using the exact same `is None: return True` structure verbatim... a mechanical copy-paste of the prior resolver's shape rather than a deliberate re-evaluation of null semantics for a flag whose blast radius... is completely different from a calendar display preference",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Confirm there's no env-level master switch gating the job globally (I found none) \u2014 per project documentation's rollout-flag guidance, a global kill switch AND-ed with the per-tenant value gives a fast, safe rollback path; right now the only way to stop sends is to edit every tenant record or disable the batch job entirely.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

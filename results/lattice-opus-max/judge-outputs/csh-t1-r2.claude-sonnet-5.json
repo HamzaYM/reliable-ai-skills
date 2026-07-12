@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 8103,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0748943,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8123,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8123,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8123,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8123,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 883,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 883,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations equally; Report 2 adds a notable extra finding (UI/backend default mismatch) but that doesn't factor into the scored expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "For a clinic that never opened the setting, the `auto_send_reminders` key is absent, so `.get(...)` returns `None`, the `is None` check at **line 11** is true, and **line 12 returns `True`**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A clinic that never opened the setting has no `auto_send_reminders` key in `tenant.settings`, so `.get(...)` returns `None`, the line\u201111 condition is true, and **line 12 returns `True`**.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change it: `backend/app/feature_flags.py:12`, `return True` \u2192 `return False`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Where I'd change it: `backend/app/feature_flags.py:11-12` \u2014 make the unset case return `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`25509a7` (SLOT-190, Jun 10) created `feature_flags.py` with `compact_calendar_view_enabled`, using `is None \u2192 return True`. That grandfather-on default is reasonable there \u2014 it's a low-risk UI display preference.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git show 25509a7` (SLOT-190, \"tenant settings and calendar view preference\") introduced `compact_calendar_view_enabled` with exactly the `if ... is None: return True; return bool(...)` shape... The default\u2011ON was reasonable for `compact_calendar_view` \u2014 a cosmetic in-app UI preference where \"on when unset\" harms nobody.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "There is currently **no** master/kill gate \u2014 `git grep` and `infra/main.tf` show the only gate is the per-tenant setting. A master switch gives a staged rollout and, critically, a one-flip rollback.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`reminders.py` has only the per-tenant flag: no global kill switch, no environment gating (the sole infra config, `infra/main.tf`, defines an unused `environment` var)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

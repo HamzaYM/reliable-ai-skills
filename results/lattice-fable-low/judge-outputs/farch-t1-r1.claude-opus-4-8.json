@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35934,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1491835,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4251,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4251,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 3132,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4251,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4251,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 3132,
+            "output_tokens": 3148,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3148,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy all four expectations with equivalent grounding in the git history and code; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "it shows the migration was already attempted and reverted (commits 454a21f \u2192 597777b \u2192 1712565, ticket PLAT-31).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it reveals the prior attempt and revert (`454a21f`, `597777b`, `1712565`, ticket PLAT-31). This is the single most important check.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit 1712565 reverts the Edgerunner deploy because \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production\" \u2014 per-request connections \"opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per commit `1712565` (2026-04-21): Edgerunner's isolates cannot hold the SQLAlchemy connection pool; the stopgap of opening a dedicated Postgres connection per request (`597777b`) exhausted Postgres `max_connections` under normal dashboard load and took `/reports/monthly` down.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Recreate an Edgerunner entry shim like the one in commit 454a21f: a `backend/serverless_handler.py` that adapts `backend.app.main:app` to per-request invocation, plus a `deploy/edgerunner.toml`... Commit 1712565 reverts the Edgerunner deploy",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the previous attempt (commit `454a21f`) shows the shape: (a) add an entry shim like `backend/serverless_handler.py`... (b) add `deploy/edgerunner.toml`... treat PLAT-31 as a settled battle.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Involve: whoever owns PLAT-31 and handled the April incident, the platform/DBA team that controls Postgres `max_connections` and could operate a pooler, and the leadership sponsor \u2014 they should see the revert commit before re-committing budget expectations to this plan.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is a re-litigation of a decision someone already lost in production, so it should not be attempted silently \u2014 involve the platform team / owner of ticket PLAT-31 and whoever owns the Postgres instance... and put the prior failure in front of leadership so the cost/risk trade-off is made with full information.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

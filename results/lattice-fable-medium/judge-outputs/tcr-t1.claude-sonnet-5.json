@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25107,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.21933469999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 20655,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 20655,
+        "cache_read_input_tokens": 196949,
+        "inference_geo": "not_available",
+        "input_tokens": 10,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1060,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1060,
+            "cache_read_input_tokens": 48744,
+            "input_tokens": 2,
+            "output_tokens": 1227,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2165,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with essentially equivalent grounding and citations; Report 1 is more exhaustive (e.g., flags the isolation/rerouting mismatch and ADR process requirement) but both fully satisfy the graded expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Per `incidents/OPS-412-timeline.md`, failures began at 14:03 and the first alert fired at 14:50 \u2014 a 47-minute detection gap",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per `incidents/OPS-412-timeline.md`, checkout failures began at 14:03 and the first alert fired at 14:50 \u2014 a 47-minute detection gap.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The internal timeline `larkpay-comms/incidents/OPS-412-timeline.md` records that **1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states that 1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md` sets a contractual **monthly** 99.9% uptime SLA, with any month below it a breach owing credits scaled to the depth of the breach. `metrics/uptime-2026.csv` shows April 2026 at **99.77%** \u2014 a breach.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "April 2026 uptime was 99.77% (`metrics/uptime-2026.csv`), below the contractual 99.9% monthly SLA in `docs/sla-commitments.md`, which says any such month \"is a breach and owes service credits.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rule 1 (never assign blame to an individual) \u2014 violated** by \"The outage was caused by the on-call engineer deploying an untested config change.\" The blame must be removed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"The outage was caused by the on-call engineer deploying an untested config change.\" breaks rule 1 of `docs/customer-comms-style-guide.md` (\"Never assign blame to an individual\")",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "**Rule 3 (lead with customer impact and remediation) \u2014 violated.** The draft leads with an uptime boast and closes with self-praise ... remediation is one line at the end. ... The structure must be inverted: impact and remediation first, marketing language removed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rule 3 of `docs/customer-comms-style-guide.md` requires leading with impact and remediation; the draft instead leads with an uptime boast and reliability messaging, and buries the (understated) impact. The self-congratulatory paragraphs (\"engineering culture treats reliability as the first feature\u2026\") should be cut.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1",
+  "repeat": 1,
+  "task": "tcr-t1"
+}

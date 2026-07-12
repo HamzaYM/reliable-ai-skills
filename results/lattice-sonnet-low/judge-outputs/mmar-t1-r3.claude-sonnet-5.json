@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 10885,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0798192,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4325,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4325,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4325,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4325,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 1071,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1071,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are nearly equivalent in substance: both correctly identify the critical cross-tenant leak in search_appointments with strong evidence, both correctly analyze and dismiss the f-string SQL as non-exploitable, and both fail to catch the exports.py/nightly_export breaking-change defect (expectation b).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`search_appointments(session, tenant_id, q, status)` accepts `tenant_id` as a parameter but the raw SQL it builds ... never references `tenant_id` in the `WHERE` clause or anywhere else.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The new endpoint `GET /appointments/search` ... takes `tenant_id` as a parameter but never uses it. ... There is no `WHERE tenant_id = :tenant_id` clause anywhere.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "In this specific case it's not exploitable \u2014 `AppointmentStatus` is a closed `str, Enum` with fixed literal members (`booked`/`cancelled`/`completed`) validated by FastAPI before the function is ever called, so `status.value` can't carry attacker-controlled content.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In this specific instance it is not exploitable for injection because `status` is typed as `AppointmentStatus` (a closed `str, Enum`) and FastAPI/Pydantic will reject any request whose `status` isn't one of `booked`/`cancelled`/`completed` before the handler body runs (confirmed via `backend/app/schemas.py`).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

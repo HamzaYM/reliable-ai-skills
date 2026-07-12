@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29012,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1184283,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10011,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10011,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10011,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10011,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2936,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2936,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reach the same correct conclusions (target main, trace to feat/weighted-scorer/#42, diagnose scorer.py contamination, rebase --onto with freshness verification) and hit all four expectations; Report 1 is marginally more thorough (e.g., explicitly notes the origin ref for feat/weighted-scorer still exists) but the substantive content is comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Target main. ... The tempting alternative \u2014 basing the PR on feat/weighted-scorer, the branch this work was stacked on \u2014 is exactly the trap to avoid: feat/weighted-scorer's content has already been merged into main (proven below), so it is a dead base. Basing the PR there would orphan it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "main. ... You should not target feat/weighted-scorer: its content is already merged, it's effectively stale/slated for deletion, and PRs shouldn't be opened against an already-merged feature branch.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "feat/weighted-scorer still existing on origin (git ls-remote origin shows refs/heads/feat/weighted-scorer \u2192 ac9d505) proves only that the ref exists, not that it is still a valid target \u2014 and it isn't. ... Main's tip, 1971f08 \"Refactor scorer for weighted metrics (#42)\", is a squash merge of the weighted-scorer work",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "feat/weighted-scorer has been squash\u2011merged into main as 1971f08 (#42) \u2014 its changes are in main, but the original commits are not ancestors of main",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "scoring/scorer.py +13/\u22123 \u2014 the entire weighted refactor (WEIGHTS, weighted score(), overlap import) \u2014 weighted-scorer work \u274c ... feat/pairwise-metric was cut from feat/weighted-scorer before that branch merged, and #42 merged it as a squash ... the merge-base therefore stays pinned at the pre-#42 commit 65204ad, both the three-dot diff and the commit range re-include all the weighted-scorer content, even though main already holds an equivalent copy of it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "scoring/scorer.py (13 changed): docstring flat\u2192weighted, import \u2026 overlap, add WEIGHTS, rewrite score() into a weighted aggregation \u2192 entirely weighted\u2011scorer work (W1), already in main. \u274c ... Those went into main via a squash (different SHA), so the merge\u2011base of main and the branch is the old base 65204ad; the 3\u2011dot diff therefore replays every change since base and drags the already\u2011merged weighted\u2011scorer work back into the PR as noise/duplication.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "git rebase --onto main ac9d505 feat/pairwise-metric ... This replays only X1 (7b2e100) and X2 (1bfecb6) onto main and drops W1\u2013W3. ... Verify the result: git log --oneline main..HEAD should show exactly X1 and X2; git diff main...HEAD should show only the pairwise changes (grader.txt +1, metrics.py +4); git merge-base --is-ancestor main HEAD should now succeed (branch contains the trunk tip)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "git rebase --onto main ac9d505 feat/pairwise-metric ... Verify the cleaned\u2011up diff. git log --oneline main..feat/pairwise-metric should list exactly X1 and X2; git diff --stat main...feat/pairwise-metric should show only prompts/grader.txt | 1 and scoring/metrics.py | 4 \u2014 scorer.py and overlap gone.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

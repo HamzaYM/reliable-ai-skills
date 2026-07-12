@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17413,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1220034,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9359,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9359,
+        "cache_read_input_tokens": 23558,
+        "inference_geo": "not_available",
+        "input_tokens": 12319,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9359,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9359,
+            "cache_read_input_tokens": 23558,
+            "input_tokens": 12319,
+            "output_tokens": 1455,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1455,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify the cross-tenant leak (a) and correctly avoid over-flagging the SQL string as exploitable injection (c); neither caught the exports.py/nightly_export breakage (b), making them comparable in substance, though report 2 adds slightly more rigor (direct grep verification, README invariant citation).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the SQL string contains no tenant condition and the `tenant_id` argument is unused ... contrasting it with the existing pattern in `backend/app/db.py:build_appointment_query`, which explicitly filters `Appointment.tenant_id == tenant_id`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The function receives `tenant_id` but never uses it: the raw SQL is `SELECT id, tenant_id, provider, starts_at, status, notes FROM appointments WHERE status = '...' AND to_tsvector('simple', notes) @@ plainto_tsquery('simple', :q) ORDER BY starts_at` \u2014 the `WHERE` clause filters only on status and the notes full-text match.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Today this is not directly exploitable because FastAPI validates `status: AppointmentStatus` against the three-member `str` Enum in `backend/app/schemas.py`, so the interpolated value can only be `booked`/`cancelled`/`completed`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "at the API layer (`backend/app/api.py`, `get_appointment_search`) the parameter is typed `status: AppointmentStatus`, a three-value `str` Enum (`backend/app/schemas.py`), so FastAPI/Pydantic rejects arbitrary strings before the handler runs \u2014 it is **not injectable through this endpoint today**.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

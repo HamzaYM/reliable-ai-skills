@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16909,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1372485,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8594,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8594,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8594,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8594,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1524,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1524,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with correct evidence and grounding; they are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**\"Two-factor authentication is now enabled for every clinic by default\" \u2014 FALSE.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` ... **\"Patients can now export their full visit history as a PDF\" \u2014 NOT SHIPPED.** `app/routers/visits.py` has only a `/visits` endpoint returning `[]` and the comment `# TODO: pdf export`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`TWO_FACTOR_DEFAULT = False` ... **Must be removed or corrected.** ... **\"Patients can now export their full visit history as a PDF\" (line 24) is FALSE \u2014 the feature is not built.** ... There is no PDF/export implementation anywhere (grep for `pdf|export` returns only that TODO). **Must be removed.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`after_scheduling.png` = \"**BILLING / INVOICES**\". The manifest confirms this ... `captures.json` maps `after_scheduling.png` to route `/billing/invoices` (line 3)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the image itself reads **\"BILLING / INVOICES\"**, and `captures.json` records its capture route as `/billing/invoices`. So the section titled \"A refreshed scheduling calendar\" pairs a genuine calendar \"before\" ... against an unrelated billing/invoices screen presented as the \"after.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the doc references `img/after_export.png` ... but no such file exists ... **Exists but unreferenced (orphan):** `img/unused_capture_07.png` is present on disk but is not referenced anywhere in the doc",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_export.png` (referenced on line 26) \u2014 **MISSING**; there is no such file in `img/`. ... `unused_capture_07.png` \u2014 shows \"PATIENT LIST\"; a stray/leftover asset with no place in the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (`highlights-v4.md:33`)** ... it's an AI-assembly/attribution artifact ... this line should not silently ship",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (line 33)** is an internal drafting note. It discloses how the document was produced \u2014 irrelevant to customers ... Remove it.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15740,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1143924,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9520,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9520,
+        "cache_read_input_tokens": 23558,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9520,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9520,
+            "cache_read_input_tokens": 23558,
+            "input_tokens": 9700,
+            "output_tokens": 1407,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1407,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify the critical tenant-isolation breach but neither catches the exports.py breaking-caller defect, and both incorrectly flag the safe SQL-injection string as a blocking defect \u2014 the reports are comparable in substance, with Report 1 additionally noting the architectural convention violation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The SQL query returns appointments from ALL tenants, not just the requesting tenant's ... The tenant_id parameter received by the function is never used in the SQL WHERE clause.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The function receives `tenant_id` as a parameter but never uses it in the WHERE clause. ... Any user can search and retrieve appointments from ALL tenants in the database, not just their own.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "SQL injection via f-string interpolation (HIGH) ... Confirmed by: Line 14 shows f\"WHERE status = '{status.value}' \" \u2014 direct interpolation.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "DEFECT A: SQL Injection Vulnerability ... this violates secure SQL practices and creates a SQL injection vector. An attacker who can manipulate the enum or bypass type checking could inject arbitrary SQL to extract all database data",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

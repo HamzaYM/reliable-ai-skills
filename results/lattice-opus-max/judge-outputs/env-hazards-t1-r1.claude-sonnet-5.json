@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18161,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09513830000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9480,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9480,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9480,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9480,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1647,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1647,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly and thoroughly identify all three root causes with equivalent depth and file-level evidence; Report 2 adds a useful extra note about the bootstrap script's non-idempotency, but both fully satisfy all expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In Postgres, superusers and a table's owner bypass row-level security (the owner bypasses unless FORCE ROW LEVEL SECURITY is set; a superuser always bypasses). So the tenant_isolation policies defined in db/migrations/0001_init.sql are silently inert for the app's connections \u2014 there is no error or warning.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The exact mechanism: in PostgreSQL, superusers and roles with BYPASSRLS always bypass row security, and a table's owner also bypasses it unless FORCE ROW LEVEL SECURITY is set on the table. cedar_owner qualifies on both counts (superuser and table owner), and FORCE is not set.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Migrations only run as the schema-owning role cedar_owner (keep migrate.sh/reset-local-db.sh as-is on that point). The running app connects only as cedar_app. Ensure this role is never granted superuser or BYPASSRLS.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Privileged migrator/owner role (cedar_owner): used only for DDL/migrations (migrate.sh), never for serving requests. Unprivileged runtime role (cedar_app): used for all application connections; not a superuser, without BYPASSRLS, and not the owner of any table.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "cedar_app role is created only by the one-time manual bootstrap db/bootstrap/create_app_role.sql \u2014 which reset-local-db.sh does not run, which is not mounted into /docker-entrypoint-initdb.d, and which is referenced only as a manual step in README.md/docs/local-setup.md ... Nothing recreates cedar_app, because that role is created only by the one-time manual bootstrap",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The cedar_app role is created only by the manual, one-time bootstrap db/bootstrap/create_app_role.sql. Its own header says \"One-time bootstrap \u2026 Not part of automatic database initialization; run by hand on first setup,\" ... Nothing in the reset re-creates cedar_app.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17207,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0935107,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8305,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8305,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8305,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8305,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2052,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2052,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable rigor; Report 2 adds slightly more precision (malformed-value handling, test specifics, grep verification of all consumers) but both are equally responsive to the task.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The decision is made in `auto_send_reminders_enabled` in `backend/app/feature_flags.py` \u2014 specifically lines 11\u201312: `if tenant.settings.get(\"auto_send_reminders\") is None: return True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The decision point is `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py:10-13`... `feature_flags.py:12` \u2014 `return True` \u2014 is the exact line that decides it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The fix is to change `backend/app/feature_flags.py:12` from `return True` to `return False` (or more simply, make the function `return bool(tenant.settings.get(\"auto_send_reminders\"))`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The fix is at `feature_flags.py:11-13`: replace the `is None \u2192 True` branch so that missing (and malformed) values resolve to `False` \u2014 e.g. `return tenant.settings.get(\"auto_send_reminders\") is True`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Default-on is defensible for `compact_calendar_view`: it's a cosmetic UI preference where \"on unless the tenant opted out\" is harmless and probably the desired rollout. Reusing that default for a flag that triggers outbound SMS/email to patients transplants a low-stakes convention into a high-stakes context without re-examining it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `25509a7` (SLOT-190, 2026-06-10) introduced `compact_calendar_view_enabled` with the `is None \u2192 return True` pattern \u2014 a reasonable grandfather-on choice for a calendar display preference... inheriting its null-semantics across a category boundary \u2014 from \"UI preference\" to \"automated outbound action\" \u2014 is a product decision that was skipped, not made.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add a global kill switch above the per-tenant flag. `run()` in `reminders.py` gates only per-tenant; there is no environment-level or deployment-level gate to stop all sends at once if something goes wrong (e.g. a bad template or a messaging-provider incident). `infra/main.tf` defines only an `environment` variable \u2014 no feature-flag infrastructure.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an env-level master kill switch ANDed with the per-tenant value in `reminders.py`'s gate, with a no-op default, so there is a single rollback affordance that stops all sending without touching every tenant row. Today the only gate is the per-tenant value at `reminders.py:25`; `infra/main.tf` defines nothing for this feature, so there is no documented off switch.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

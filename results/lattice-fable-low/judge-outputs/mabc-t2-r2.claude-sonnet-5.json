@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 38137,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1308066,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6341,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6341,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9489,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6341,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6341,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9489,
+            "output_tokens": 3706,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3706,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports handle grouping, ordering, and the F-06 escalation equally well, but Report 2 clearly and mandatorily flags the shared RESULTS_DB collision risk (and states a private RESULTS_DB is required per engineer) while Report 1 only mentions it as an \"optional\" step without stating the collision/corruption risk explicitly, making Report 2 the stronger overall report.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer C \u2014 registry config (`pipeline/registry.py`): F-02 ... F-05 ... F-09 ... Three one-line changes in one file; one small PR.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Batch B \u2014 pipeline/registry.py: F-02 (add aurora-1 to MODEL_ENDPOINTS), F-05 (bump DEFAULT_RUBRIC_VERSION to rubric-v3), F-09 (point DEFAULT_DATASET at fixtures/eval_set.jsonl). Three one-line config fixes, one file, one owner.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "hand out four workstreams, grouped strictly by file so no two engineers edit the same file ... Engineer B \u2014 rubric parsing (`pipeline/rubric.py`): F-01 ... plus its companion test F-11 ... Engineer C \u2014 registry config ... Ordering across groups: after triage, all four streams can run fully in parallel",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 runs Batches B, C, and D fully in parallel ... Batch A also starts in Wave 1 but its three-plus-one findings are sequenced internally by its single owner",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 not an engineering decision. ... Changing (0.35, 0.65) silently re-scores every answer and breaks comparability with any historical results. This needs the reviewer/rubric owner to specify the new thresholds and the calibration evidence before anyone touches it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 (tighten PARTIAL_CREDIT_THRESHOLDS in pipeline/score.py:3). This is not a bug fix; it is a scoring-policy change that alters every borderline score the pipeline produces ... It should be escalated to whoever owns the rubric/scoring policy for concrete thresholds and sign-off",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Optionally set the RESULTS_DB env var \u2014 tests/conftest.py defaults it to /var/tmp/llm-scoring/results.db; engineers should point it at a scratch path rather than share that machine-global default.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "tests/conftest.py points the suite at a machine-global path, /var/tmp/llm-scoring/results.db (via RESULTS_DB). Batches A, C, and the F-12/F-11 tests all run pytest; parallel runs on one machine would collide on that database unless each engineer sets a per-worktree RESULTS_DB.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

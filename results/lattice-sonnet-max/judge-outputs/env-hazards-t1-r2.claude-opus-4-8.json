@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21251,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.178949,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7940,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7940,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9491,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7940,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7940,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9491,
+            "output_tokens": 1739,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1739,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions with equivalent depth and repo-grounded specifics; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "It doesn't take effect because the app connects as `cedar_owner` \u2014 the **same role that owns the tables**... Postgres row-level security is never applied to a table's owning role unless the table was set up with `FORCE ROW LEVEL SECURITY` \u2014 and `0001_init.sql` only ever runs plain `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`, never `FORCE`. So `cedar_owner` is exempt from the `tenant_isolation` policy",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Since the app connects as `cedar_owner`, the table owner, **every query the app runs is silently exempt from the `tenant_isolation` policy**, regardless of what `current_setting('app.current_tenant')` is set to.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Reserve `cedar_owner` exclusively for schema changes... split today's single `DATABASE_URL` into two distinct env vars \u2014 e.g. a migrations-only URL used solely by `scripts/migrate.sh`, and an app URL (`cedar_app`) used solely by `backend/app/db.py`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "point the application's runtime `DATABASE_URL` at `cedar_app`, not `cedar_owner`... Introduce two distinct connection strings (e.g., keep `DATABASE_URL` for the app = `cedar_app`, add something like `MIGRATIONS_DATABASE_URL`/`ADMIN_DATABASE_URL` = `cedar_owner`, used only by `scripts/migrate.sh`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The only file that creates `cedar_app` is `cedarline/db/bootstrap/create_app_role.sql`, and its own header comment states it explicitly: \"One-time bootstrap... **Not part of automatic database initialization; run by hand on first setup.**\" Neither `scripts/reset-local-db.sh` nor `scripts/migrate.sh` invokes it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it has no knowledge of `cedar_app` at all (that role isn't declared in `docker-compose.yml`, and there's no script mounted to `docker-entrypoint-initdb.d/`)... The **only** place `cedar_app` is created anywhere in this repo is `cedarline/db/bootstrap/create_app_role.sql`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

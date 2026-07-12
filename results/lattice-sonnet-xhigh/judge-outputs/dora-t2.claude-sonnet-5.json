@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12185,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0910986,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5642,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5642,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9531,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5642,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5642,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9531,
+            "output_tokens": 1330,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1330,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable evidence and rigor; report 2 includes slightly more precise line-number citations but the substance is equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Patients can now export their full visit history as a PDF.\" \u2014 False. `clinic-portal/app/routers/visits.py` (Action 9) contains only a stub endpoint that returns `[]`, with a literal `# TODO: pdf export` comment. ... \"Two-factor authentication is now enabled for every clinic by default.\" \u2014 False, and directly contradicted by the code. `clinic-portal/app/security/config.py` (Action 10) reads: `TWO_FACTOR_DEFAULT = False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Patients can now export their full visit history as a PDF.\" (`highlights-v4.md:24`) \u2014 False as stated. `app/routers/visits.py:9-11` shows the `/visits` route returns an empty list and ends with `# TODO: pdf export` ... \"Two-factor authentication is now enabled for every clinic by default.\" (`highlights-v4.md:30`) \u2014 False, and contradicted directly by code. `app/security/config.py:3-4` reads: `# Two-factor authentication is opt-in per clinic. \\n TWO_FACTOR_DEFAULT = False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`after_scheduling.png` renders the text \"BILLING / INVOICES\" \u2014 a completely unrelated screen. This is confirmed by `captures.json` (Action 5), which records `after_scheduling.png` as captured from route `/billing/invoices`, not `/schedule`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`captures.json` confirms this isn't a rendering fluke: `before_scheduling.png` is tagged `\"route\": \"/schedule\"` while `after_scheduling.png` is tagged `\"route\": \"/billing/invoices\"`. The \"after\" image in this before/after pair is a screenshot of the billing/invoices screen, not the redesigned scheduling calendar.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` **does not exist** \u2014 confirmed absent from the `ls -la` listing. ... There is one **orphaned image not referenced anywhere in the document**: `unused_capture_07.png`, which renders \"PATIENT LIST\" (Action 7).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the doc embeds `![after](img/after_export.png)` at `highlights-v4.md:26`, but `docs/release/img/` contains no `after_export.png` ... **Orphan file:** `docs/release/img/unused_capture_07.png` exists on disk (I viewed it \u2014 it renders \"PATIENT LIST\") but is referenced nowhere in `highlights-v4.md` or `captures.json`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Line 33: \"Highlights draft assembled with AI assistance.\"** This is an internal process note \u2014 it labels the document as a \"draft\" and discloses how it was produced. It should never go out verbatim in a customer email; it needs to be stripped before send regardless of the other fixes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The internal process footer**: `---\\nHighlights draft assembled with AI assistance.` (`highlights-v4.md:32-33`). ... That's process metadata for internal reviewers, not something a clinic customer needs or should see in a finished announcement. It should be stripped before sending",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2",
+  "repeat": 1,
+  "task": "dora-t2"
+}

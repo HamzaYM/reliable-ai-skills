@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 40827,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13026719999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5433,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5433,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5433,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5433,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 3991,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3991,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is more complete: it cites all three config files for expectation (b), adds the explicit tenant_id application-level filter (d) which report 1 omits entirely, and provides a more general/robust boot-time ownership check (e); report 1 edges out slightly on explicitly naming FORCE ROW LEVEL SECURITY as the owner-exemption escape hatch (a), which report 2 never mentions.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In PostgreSQL, Row-Level Security policies are **bypassed by the table owner by default**. ... Add `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` in `db/migrations/0003_rls.sql` ... This forces RLS to apply even to the owner",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "PostgreSQL's Row-Level Security (RLS) policies do NOT apply to the table owner. ... queries silently bypass the RLS policy defined in `db/migrations/0003_rls.sql`.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Introduced: Commit `b2a23d2` on June 17, 2026 at 15:20 UTC (\"ROTA-214 run migrations from the api container on boot\") ... the DATABASE_URL was changed from `juniper_app:apppw` to `juniper_owner:ownerpw`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Introduced: Commit `b2a23d2` on June 17, 2026 (ROTA-214) ... Updated in three files: `.env.example`, `docker-compose.yml` (line 5), `infra/main.tf`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Option A (Preferred): Restore role separation with deferred migrations - Revert `docker-compose.yml` DATABASE_URL to `postgresql://juniper_app:apppw@db:5432/juniper` ... Application runs as `juniper_app`, RLS policies apply correctly",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change the runtime connection to use `juniper_app` (the low-privilege role), and separate the migration execution to run with `juniper_owner` credentials only during deployment.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "add defense-in-depth application-level filtering in `backend/app/routes/appointments.py`: ... \" WHERE tenant_id = :tenant_id\"  # <-- add explicit filter",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Role audit validation: Add connection-time assertion: After `engine.connect()` in `backend/app/db.py`, query `SELECT current_user;` Assert current role is `juniper_app`, log error if `juniper_owner` Fail startup if wrong role detected.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if current_role == result: raise RuntimeError(f\"ISOLATION FAILURE: App connected as {current_role}, but that role owns the appointments table. RLS policies will be silently bypassed...\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1",
+  "repeat": 1,
+  "task": "mt-auth-t1"
+}

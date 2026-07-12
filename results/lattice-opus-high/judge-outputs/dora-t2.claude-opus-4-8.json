@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15182,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.12872150000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8146,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8146,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8146,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8146,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1378,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1378,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with equivalent, well-grounded evidence; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default.\" \u2014 FALSE, directly contradicted by code.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` ... **\"Patients can now export their full visit history as a PDF.\" \u2014 NOT SHIPPED.** `app/routers/visits.py` contains only a `/visits` route returning `[]` and a bare `# TODO: pdf export`. There is no export route and no PDF code.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default.\" \u2014 FALSE.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` ... **\"Patients can now export their full visit history as a PDF.\" \u2014 NOT IMPLEMENTED.** `app/routers/visits.py` has only `list_visits` returning `[]` and a trailing `# TODO: pdf export`. ... Must be removed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`after_scheduling.png` does not show a scheduling calendar \u2014 I opened it and it reads **\"BILLING / INVOICES\"**. `captures.json` confirms it was captured from route `/billing/invoices`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_scheduling.png` renders the text **\"BILLING / INVOICES\"**, and `captures.json` confirms its `\"route\": \"/billing/invoices\"`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the doc references `img/after_export.png` ... but **no such file exists** ... **Exists but referenced by nobody:** `img/unused_capture_07.png` is on disk but is **not referenced by the document**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_export.png` \u2014 **does not exist.** The file is missing from `docs/release/img/` ... `img/unused_capture_07.png` \u2014 present in the repo but used nowhere in the doc",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\"** This is an internal process/attribution artifact that has no reason to appear in a customer-facing product email",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\"** (line 33) is an internal drafting note and should be removed before sending to customers.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2",
+  "repeat": 1,
+  "task": "dora-t2"
+}

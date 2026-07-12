@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30779,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.20084049999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12076,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12076,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12076,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12076,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2575,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2575,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with correct file/line citations and equivalent fixes; they are comparable, with Report 1 marginally more explicit on removing the shadow sink and confirming migrations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "infra/prod/app.auto.tfvars:2 \u2014 ENABLE_DEBUG_TOOLBAR = \"true\"... Remove the key entirely from the prod tfvars ... infra/prod/app.auto.tfvars:4 \u2014 PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\": ... Remove the key entirely ... Both keys must be removed entirely so shadow_scoring_sink is \"\" ... LEGACY_BILLING_SECRET_ARN ... It should be omitted from prod",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/app.auto.tfvars:2 \u2014 ENABLE_DEBUG_TOOLBAR = \"true\". ... change to \"false\" (or remove the key ...) ... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\". ... set to empty / remove. ... Either empty the sink to genuinely disable the feature in prod, or point it at a dedicated prod path ... Leaving the staging/ path is wrong in every scenario.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "deploy-prod deploys the same already-built digest to prod ... production ships the staging-mode artifact, and the API base URL baked into the shipped production bundle is https://staging-api.example.com ... Production needs its own build with a production env file",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the production frontend bundle will contain the hardcoded staging API URL https://staging-api.example.com baked into its JavaScript ... Fixing this requires either a separate production build (--mode production plus a new .env.production) with a second image/digest, or moving the API base URL to a runtime-injected configuration",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No database migration step. docs/prod-runbook.md:6 claims \"Database migrations are applied automatically during deploy,\" but the runbook is self-declared stale ... nothing in deploy.yml runs the three migrations ... the full migration chain needs an explicit (likely manual) first pass \u2014 \"pipeline succeeded\" would not mean the schema exists.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No migration step exists. docs/prod-runbook.md:6 claims \"Database migrations are applied automatically during deploy,\" but nothing in the workflow runs the three migrations ... For a first production release, the entire schema needs to be created; there is currently no mechanism for that. The runbook is also self-dated ... so its claims can't be trusted",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Production (as committed): infra/prod/main.tf:3 sets the same staging condition \u2014 repo:acme-health/medislot:environment:staging. ... The condition must be changed to repo:acme-health/medislot:environment:production \u2014 a production role needs its own scoped trust condition, never one shared with staging.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 \u2014 an unedited copy from staging \u2014 configures the production deploy role to trust repo:acme-health/medislot:environment:staging instead. ... The fix is to parameterize the role name and set the prod condition to ...:environment:production.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

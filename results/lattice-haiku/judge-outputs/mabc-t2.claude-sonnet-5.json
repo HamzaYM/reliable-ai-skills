@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 79950,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.20186519999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7926,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7926,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7926,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7926,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 7767,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 7767,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger: it explicitly flags registry.py as needing single-owner coordination and correctly escalates F-06 as a product decision requiring sign-off, while Report 1 misses both; neither report adequately addresses the F-11 early-stage sequencing or the shared RESULTS_DB test-corruption risk with a concrete per-engineer mitigation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Group A (1 engineer): F-02, F-05, F-09 \n- All in `pipeline/registry.py`\n... Rationale: Single file, three simple constants; one engineer avoids merge conflicts",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Changing scoring thresholds is a **product decision**, not a bug fix. It affects the output of every score in the pipeline... Recommendation: Escalate F-06 to a decision gate; don't assign until answered.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Environment variables to check:**\n- `RESULTS_DB` (set in conftest.py; defaults to /var/tmp/llm-scoring/results.db)",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

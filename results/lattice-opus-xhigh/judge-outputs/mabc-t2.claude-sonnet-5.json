@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 53987,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2356815,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 16529,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 16529,
+        "cache_read_input_tokens": 114085,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1034,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1034,
+            "cache_read_input_tokens": 44646,
+            "input_tokens": 2,
+            "output_tokens": 1136,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6389,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 correctly identifies and mitigates the RESULTS_DB collision risk (d) but fails to place F-11 in an early concurrent stage (b); Report 2 does the opposite, nailing the staged ordering but treating RESULTS_DB as inert and missing the collision risk \u2014 overall comparable, each missing one of four expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Batch B \u2014 owns registry.py (one engineer): F-02 (add aurora-1 endpoint), F-05 (DEFAULT_RUBRIC_VERSION \u2192 v3), F-09 (DEFAULT_DATASET \u2192 fixtures/eval_set.jsonl). Three independent config one-liners in one file.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Lane B \u2014 registry.py owner: F-02 (add aurora-1 endpoint), F-05 (DEFAULT_RUBRIC_VERSION v1\u2192v3), F-09 (DEFAULT_DATASET \u2192 eval_set.jsonl). Three edits to an 11-line file; giving all three to one person makes them trivial and conflict-free.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Wave 1 \u2014 the four lanes run fully in parallel (A, B, C, D). They touch disjoint files, so there's no cross-lane barrier.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 do not assign as written; escalate for a decision. \"Tighten [PARTIAL_CREDIT_THRESHOLDS] so borderline answers score lower\" is a subjective, output-facing behavior change with no target values given \u2014 it moves the score of every borderline answer. Picking the numbers is a product/quality-owner call, not something an engineer should decide unilaterally.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 is a judgment/policy call, not a mechanical fix. \"Partial-credit thresholds\u2026 are too lenient; tighten them\" gives no target numbers... \"Too lenient\" is a subjective scoring-policy decision that changes every graded result, so it needs the rubric/product owner to specify the new values and sign off",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Shared test database. tests/conftest.py defaults RESULTS_DB to /var/tmp/llm-scoring/results.db. Parallel test runs from different worktrees all point at that one path \u2192 they collide. Resolution: each engineer overrides RESULTS_DB to a private path.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Awareness of the RESULTS_DB env var. tests/conftest.py:4 reads RESULTS_DB (default /var/tmp/llm-scoring/results.db). Nothing currently consumes it, but engineers adding tests should know it exists in case a new test wires it in.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

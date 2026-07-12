@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32070,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1379621,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10207,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10207,
+        "cache_read_input_tokens": 104407,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1586,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1586,
+            "cache_read_input_tokens": 37772,
+            "input_tokens": 2,
+            "output_tokens": 1187,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2745,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is stronger: it explicitly proposes different handling for the two cases\u2014renormalize-and-keep for a failed relevance/tone (non-load-bearing) versus never-emit-a-comparable-composite for a failed accuracy (gate) axis\u2014fully satisfying expectation (d), while Report 2 argues accuracy failures are worse but converges both cases on the same retry-or-mark-incomplete remedy without distinguishing handling.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In `aggregate.py:9-11`, `composite` does `value = axis_scores.get(axis)` and then `if value is None: value = 0.0` \u2014 so a failed axis is treated as a **score of 0**... The record written for the failed case (`agent,reply,3.8`) is **byte-for-byte the same shape** as a fully-scored record \u2014 a plain numeric composite in the third column.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In `grader/aggregate.py:9-12`, `composite` coerces that `None` to `0.0` (`if value is None: value = 0.0`) and still adds `weight * 0.0` for the failed axis... In **form**, that record is identical to a fully-scored one: same three columns `agent_id,reply_id,composite`, a single bare float, with no null, flag, or error marker",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It is exactly the \"silently substitute\" anti-pattern: a missing score and a real zero are conflated. A zero is a legitimate, comparable data point... each fabricated-low composite drags down the offending agent's mean composite.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The bug is treating \"axis not measured\" as \"axis scored 0.\"... `rankings()` includes these deflated rows in both the numerator (`sums`) and denominator (`counts`) of each agent's mean (`leaderboard.py:13-16`). An agent that hit more transient axis-call failures gets an artificially depressed mean and is ranked lower than it should be",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "A failed **accuracy** call destroys half the composite's weight (and, per the README's intent, the gate that decides pass/fail). You must not emit a number that looks comparable to a fully-scored reply; that record should be marked degraded, not silently scored.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If the load-bearing axis (accuracy) fails... Write the record as degraded/incomplete... queue the missing axis for retry.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed **relevance** or **tone** call loses a small, non-load-bearing share of the signal \u2014 the survivable case, where you could renormalize over the surviving axes and keep the record. A failed **accuracy** call destroys half the composite's weight... that record should be marked degraded, not silently scored.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

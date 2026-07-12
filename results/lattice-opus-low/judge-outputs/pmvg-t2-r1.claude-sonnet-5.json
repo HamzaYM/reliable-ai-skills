@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 34528,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11095260000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4298,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4298,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4298,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4298,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 3185,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3185,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very similar in substance and hit a,b,c equally well, but Report 2 explicitly verifies reproducibility by re-running the comparison twice while Report 1 only notes the nondeterminism risk without performing a concrete reproducibility check, making Report 2 the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The deselected tests (tests/test_live_model.py) call a real external endpoint (api.scorelab-models.example.com), require the SCORELAB_API_KEY secret, and cost money per call... The -m \"not live\" deselection and the \"opt-in\" marker are deliberate. The right validation for this change is the local unit/golden path, not the live path.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per their own docstring they \"hit the real model endpoint and incur per-call cost,\" authenticating with SCORELAB_API_KEY against api.scorelab-models.example.com... They should stay deselected; enable them only explicitly when someone wants to pay for a live check.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "confirm the new values are the intended ones (I verified them: 0.755 / 0.56 / 0.925); (b) flag that the diff also bundles a second, likely-unrelated change \u2014 confidence rounding 3\u21922 decimals... That should be called out and either justified or split into its own change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Before accepting a regenerated project documentation I would: (a) confirm each new value traces to the intended reweight by hand-computation (done above); (b) notice the diff bundles a second, unrelated behavior change \u2014 confidence rounding went 3dp \u2192 2dp... which also shifts the golden and is not \"reweighting.\" That belongs called out and either justified or split into its own change, not silently laundered into the new fixture.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite the docs/testing.md figures as-is; I would source both numbers from the tools, because the doc is demonstrably stale... I would report the flaky count from the actual markers / an observed run (1, not 2), and the lint count from actually running ruff check . against ruff.toml (F rules) \u2014 reporting the real number, not the doc's.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not cite the doc's \"2 flaky / 9 lint warnings\" as reported facts \u2014 re-measure them... I would source both numbers by measuring, not quoting: run ruff check... and characterize flakiness from actual runs.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Regenerate expected_scores.json, re-run the comparison twice to confirm it passes deterministically.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

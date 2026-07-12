@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31301,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1203372,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5828,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5828,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5828,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5828,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 3171,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3171,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations explicitly, including the distinct-handling split for relevance/tone (renormalize) vs. accuracy (withhold entirely); Report 2 is equally strong on a-c but never states that computing over succeeded axes is defensible specifically for relevance/tone failures, so it misses the full distinction in (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "if value is None:\n    value = 0.0\ntotal += weight * value\n... There is no flag column, no NaN, no partial marker \u2014 a degraded record is indistinguishable in form from a fully-scored one.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A `None` axis score is silently treated as `0.0` and included in the weighted sum at full weight, exactly like a real score of 0 would be. ... There is no column, flag, or sentinel anywhere in the CSV that distinguishes \"all three axes scored\" from \"one axis silently failed and was scored as 0.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "leaderboard.py:12-17 reads scores.csv with no awareness of degraded rows \u2014 it sums every composite into sums[agent_id] and divides by counts[agent_id] unconditionally. A transient call failure (nothing to do with reply quality) drags an agent's mean composite down as if the agent had genuinely written a bad reply.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treating a *failed call* the same as a *genuine 0 score* conflates \"we don't know\" with \"this was bad\"... a None-driven low composite pulls an agent's mean down exactly as if they had genuinely produced a bad reply.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Accuracy call fails (load-bearing/gating axis): do not compute or write a composite at all for that record. Write a row marked degraded/incomplete (e.g., a status column or a separate retry_queue)... Never write a numeric composite that a downstream mean/ranking could silently ingest as complete.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the safest behavior is to withhold composite/pass-fail determination entirely until accuracy is successfully re-scored, rather than let a failure decide the gate one way or the other.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Relevance or tone call fails (non-critical axes): if accuracy succeeded, it's acceptable to renormalize the composite over the axes that did succeed (redistribute weight, e.g. weight accuracy/(accuracy+remaining-axis-weight)) and write the result \u2014 but flag the record as computed-from-partial-axes... Accuracy call fails (load-bearing/gating axis): do not compute or write a composite at all for that record.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

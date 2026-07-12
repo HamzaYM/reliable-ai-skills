@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36686,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.208126,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7463,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7463,
+        "cache_read_input_tokens": 17232,
+        "inference_geo": "not_available",
+        "input_tokens": 9451,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7463,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7463,
+            "cache_read_input_tokens": 17232,
+            "input_tokens": 9451,
+            "output_tokens": 3105,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3105,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both cover (a), (b), and (d) equally well, but Report 2 answered better overall because it clearly states the pipeline has no migration step and the runbook is wrong, whereas Report 1 only hedges that migrations are \"unverifiable\" due to the missing deploy script.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`.** Debug toolbar on in prod exposes internals. Change to `\"false\"`. ... `infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`.** A QA test account pre-provisioned as superadmin in prod is a backdoor. Remove it (empty string).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Line 2 `ENABLE_DEBUG_TOOLBAR = \"true\"`** \u2014 developer-convenience debug tooling. Must be **removed entirely** ... **Line 4 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** \u2014 a preset test account with `superadmin` privileges. **Remove entirely.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production frontend bundle points at the staging API (`https://staging-api.example.com`)**, and because it's the identical image, adding a prod env file alone wouldn't fix it without also building a separate prod bundle.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the production frontend would ship pointing at the staging API.** This is the classic \"build-time config baked into a promoted artifact\" trap \u2014 the fix is to build a separate prod bundle with a prod `.env`/mode, not promote the staging digest.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**No database migrations step.** The runbook (`docs/prod-runbook.md`...) claims \"Database migrations are applied automatically during deploy,\" but the pipeline contains no migration step at all. ... A brand-new prod database will not be migrated by this pipeline \u2014 the schema must be created by a manual first pass. Don't trust the stale runbook.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` **still** sets `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`, but the `deploy-prod` job runs with `environment: production` ... It must be changed to `...environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` still passes `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 inherited from staging. ... The prod module must be changed to `oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"`, giving prod its own scoped trust.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

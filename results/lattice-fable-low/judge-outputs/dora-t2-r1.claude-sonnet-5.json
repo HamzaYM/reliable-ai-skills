@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16849,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0695817,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3624,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3624,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3097,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3624,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3624,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3097,
+            "output_tokens": 1781,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1781,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 answers the task better overall \u2014 it matches Report 2 on expectations (a), (b), and (c), but clearly flags the AI-assistance footer as something that must be removed (d), whereas Report 2 hedges and defers to the document owner instead of stating removal is required.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Patients can now export their full visit history as a PDF\" \u2014 not implemented. `clinic-portal/app/routers/visits.py` returns an empty list and contains `# TODO: pdf export`... \"Two-factor authentication is now enabled for every clinic by default\" \u2014 false. `clinic-portal/app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default\" \u2014 false.\" `clinic-portal/app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`... \"Patients can now export their full visit history as a PDF\" \u2014 not implemented.\" `clinic-portal/app/routers/visits.py` has no export endpoint, only `# TODO: pdf export`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the \"after\" image (`after_scheduling.png`) shows \"BILLING / INVOICES\" \u2014 it's a screenshot of the wrong page. `captures.json` confirms it: `after_scheduling.png` was captured from route `/billing/invoices`, while the before was from `/schedule`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`before_scheduling.png` shows \"SCHEDULING CALENDAR\", but `after_scheduling.png` shows \"BILLING / INVOICES\". The manifest confirms the mis-capture: `captures.json` lists `after_scheduling.png` as captured from route `/billing/invoices`, while the before came from `/schedule`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` is referenced by the document but **does not exist** in `docs/release/img/`; `captures.json` explicitly records it as \"expected capture; no corresponding file\"... `unused_capture_07.png` exists on disk (it shows \"PATIENT LIST\") but is referenced by neither the document nor `captures.json`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Referenced but missing: `img/after_export.png` (would render as a broken image in the email)... Exists but unreferenced: `img/unused_capture_07.png` (shows a \"PATIENT LIST\" screen) \u2014 not in the doc and not in `captures.json`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The footer **\"Highlights draft assembled with AI assistance.\"** is an internal drafting note and should be removed from a customer-facing message.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r1",
+  "repeat": 1,
+  "task": "dora-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21109,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.14719449999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8752,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8752,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8752,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8752,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1853,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1853,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all four expectations; Report 1 is marginally more thorough, but they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The PR should target **`main`**. ... The only other conceivable base, `feat/weighted-scorer` (the branch this work was stacked on), must not be used",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**1. Base branch: `main`.** ... The only alternative would be stacking the PR on `feat/weighted-scorer`, the branch this work depends on \u2014 but that dependency has already landed on `main`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**`feat/pairwise-metric` was cut from the tip of `feat/weighted-scorer`** ... landed as a **squash merge via PR #42** ... `git merge-base --is-ancestor feat/weighted-scorer main` returns false \u2014 by ancestry, `feat/weighted-scorer` was never merged. But by **content** it is fully merged",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/pairwise-metric` was created from the tip of `feat/weighted-scorer` ... **it was squash-merged into `main`** ... the three W commits themselves are not ancestors of `main` and never will be",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "So no, not all of it is pairwise work. ... The other +16/\u22123 are the weighted-scorer changes, which are present for a purely mechanical reason: the branch's merge base with `main` predates the squash merge, so git's diff-from-merge-base re-shows the stacked foundation even though `main` already contains identical content via commit 1971f08 (#42)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Not all of this is pairwise-metric work.** ... the entire scorer.py rewrite \u2014 is the `feat/weighted-scorer` work. It appears in the PR diff because the branch physically carries commits W1\u2013W3, and the merge base (`65204ad`) predates the squash merge",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase only the pairwise commits onto main**: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... **Verify the result**: `git merge-base --is-ancestor main HEAD` ... `git diff main...HEAD` now equals the 5-line net-new diff ... `git log main..HEAD -- <file>` is non-empty only for `scoring/metrics.py` and `prompts/grader.txt`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Rebase only the pairwise commits onto main**: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... **Verify the result**: `git log --oneline main..feat/pairwise-metric` should show exactly 2 commits, and `git diff main...feat/pairwise-metric` should now equal the 5-line pairwise-only delta",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

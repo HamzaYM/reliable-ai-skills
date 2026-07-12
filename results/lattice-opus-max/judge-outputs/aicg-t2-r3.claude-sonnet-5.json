@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29082,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1744307,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15591,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15591,
+        "cache_read_input_tokens": 71499,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2394,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2394,
+            "cache_read_input_tokens": 42348,
+            "input_tokens": 2,
+            "output_tokens": 1015,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3438,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and nearly equivalent across all five questions, but Report 1 explicitly commits to fail-closed behavior on Redis errors in limits.py (expectation b), while Report 2 only hedges by saying to 'decide deliberately' without recommending deny-by-default, making Report 1 the stronger answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "add an explicit non-retryable denylist in router.py, e.g. NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)... Fail over only on (RateLimitError, RequestTimeoutError, ServerError) (plus connection errors).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "only fail over on the transient classes and let the deterministic/operational ones propagate (or handle explicitly): ... TRANSIENT = (RateLimitError, RequestTimeoutError, ServerError) ... # BadRequestError / ContentPolicyError / AuthError propagate: deterministic \u2014 failover won't help, and for ContentPolicyError it would re-send PII to a second vendor.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It should be inverted to enforce by default and only disable under a narrow, explicitly-named local-dev override (e.g. RATELIMIT_DISABLED=1)... Per Guardrail 3 this should fail closed (return False, or raise) unless the narrow local override is set.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "decide fail-open vs. fail-closed on RedisError deliberately and emit a metric/alert either way",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "replace input_text with a hash and/or length/truncated excerpt; and filter metadata through an explicit allowlist of safe keys ({...}), dropping anything not listed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "do not log input_text at all (log at most a length or a non-reversible feature summary \u2014 never content)... whitelist specific safe metadata keys rather than dumping the dict.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Concrete fix: treat PII_SALT as a required secret \u2014 raise (fail closed) if it is missing/empty rather than defaulting to \"\", so a deploy without the salt fails hard instead of emitting weak pseudonyms.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: fail closed \u2014 require the salt (salt = os.environ[\"PII_SALT\"], raising on absence) and validate a minimum length/entropy at startup rather than defaulting to \"\"",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

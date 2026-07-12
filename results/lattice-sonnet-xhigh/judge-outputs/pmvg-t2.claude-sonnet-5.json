@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23390,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1154826,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7256,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7256,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9531,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7256,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7256,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9531,
+            "output_tokens": 2310,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2310,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very similar in depth and correctness; Report 1 edges ahead by explicitly performing a concrete reproducibility check (regenerate twice, diff outputs) for the golden file, whereas Report 2 only names the set-ordering instability source without describing an actual verification action.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "This change should be validated with the default marker filter untouched... the consequence of enabling them...(a) every run now makes real, billed calls to a third-party API...for a change that doesn't touch that code path \u2014 pure cost with no signal",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If a live sanity check is wanted for unrelated reasons, it should be run as an explicit one-off (`pytest -m live`, with the key set) \u2014 not folded into \"make nothing skip\" for this PR, and not made the new default in `pytest.ini`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "confirm the score changes trace to the intended reweight (done, they do); (b) get the confidence-rounding change explicitly confirmed as intentional (and documented) or reverted as scope creep \u2014 right now it's neither, it's just riding along silently; (c) only then run `scripts/update_golden.py`, diff the regenerated `expected_scores.json` against the current committed version, and confirm nothing beyond the confirmed changes moved",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Before regenerating: confirm with whoever wrote the commit whether the `round(...,3)\u2192round(...,2)` change was intentional; if yes, it should be called out explicitly...; if it was accidental scope creep, revert it back to `round(...,3)` and re-diff. Only after that should `scripts/update_golden.py` be run",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite `docs/testing.md`'s figures verbatim \u2014 project documentation is explicit that baselines are \"a snapshot from whenever someone last measured them,\" and I found direct evidence the doc is stale... it should not be trusted without an actual `ruff check .` run.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not by copying `docs/testing.md` verbatim \u2014 its figures are demonstrably wrong, not just possibly stale... The right way to source these numbers for a PR is to run the actual tools at the branch's HEAD \u2014 `ruff check .` for lint, `pytest --collect-only -m flaky` (or a marker grep) for flaky count \u2014 not quote a static doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "before committing, run it twice and diff the two outputs to rule out spurious key-reordering noise in the fixture (harmless to the test, which does key-based lookups, but it pollutes the reviewable diff)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

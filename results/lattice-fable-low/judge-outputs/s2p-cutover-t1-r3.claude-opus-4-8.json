@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25714,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.14955449999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6585,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6585,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 3132,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6585,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6585,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 3132,
+            "output_tokens": 2165,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2165,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports correctly hit all four expectations; Report 2 is marginally crisper on the migration and secret-removal points.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 2, `ENABLE_DEBUG_TOOLBAR = \"true\"` \u2014 a debug toolbar must not run in production; set to `\"false\"`. ... Line 3, `AUTH_RELAXED = \"true\"` ... set to `\"false\"`. Line 4, `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... remove it (empty string) ... Line 6, `SHADOW_SCORING_SINK ... Set the sink to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"` ... Remove the key entirely ... `:3` \u2014 `AUTH_RELAXED = \"true\"` ... Remove entirely. `:4` \u2014 `PRESET_ADMIN_ACCOUNTS ... Remove entirely ... With `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"` present ... Remove both keys entirely.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production frontend will ship with the staging API URL hardcoded into its JavaScript ... that **same image digest** is deployed to staging (line 28) and then to prod (line 34) ... the file must be created and either a separate prod build added or the URL made a runtime concern.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "VITE_-prefixed variables are inlined into the bundle at build time ... it is baked in, not read at runtime ... the production deploy (deploy.yml:34-35 \u2014 \"deploy the same already-built digest to prod\") would ship a bundle whose API base URL points at `https://staging-api.example.com` ... Prod needs its own build with `--mode production`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "docs/prod-runbook.md ... claims migrations run automatically during deploy, but nothing visible in the workflow does this ... The prod database would need migrations `0001`\u2013`0003` applied on first launch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No migration step. docs/prod-runbook.md:6 claims \"Database migrations are applied automatically during deploy,\" but nothing in deploy.yml runs the three Alembic migrations ... the production database would come up with no schema unless migrations are run manually.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` was copied unchanged and **still trusts `\u2026:environment:staging`** ... The fix: parameterize the role name and set prod's `oidc_sub_condition` to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Production (infra/prod/main.tf:3) was copied without editing and **also** trusts `repo:acme-health/medislot:environment:staging` ... Prod needs its own role with its own condition `repo:acme-health/medislot:environment:production`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

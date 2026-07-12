@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28656,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.189768,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7469,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7469,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7469,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7469,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 2387,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2387,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with accurate file/line citations; they are comparable, with Report 1 marginally more precise on line numbers and Report 2 slightly more emphatic on full removal.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`infra/prod/app.auto.tfvars:2` `ENABLE_DEBUG_TOOLBAR = \"true\"`** ... **`infra/prod/app.auto.tfvars:4` `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** ... Remove entirely for prod. ... **`infra/prod/app.auto.tfvars:6` `SHADOW_SCORING_SINK ...`** ... Either clear the sink for prod ... **`infra/prod/app.auto.tfvars:7` `LEGACY_BILLING_SECRET_ARN`** ... confirm prod should use a prod-scoped secret ARN, not the staging one.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`ENABLE_DEBUG_TOOLBAR = \"true\"` (prod/app.auto.tfvars:2)** ... should be **omitted entirely** ... **`PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` (line 4)** ... **Omit entirely.** ... the stray non-empty `SHADOW_SCORING_SINK` value ... Both keys should be **fully absent** from prod config. ... **`LEGACY_BILLING_SECRET_ARN ...` (line 7)** ... **omit it**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Vite's `--mode staging` loads `.env.staging`, so the shipped bundle has the **staging API URL baked in** ... the **same digest is deployed to both staging and prod** ... So production would serve a frontend that talks to `https://staging-api.example.com`. ... A prod build needs `--mode production` plus a `.env.production` with the prod API URL",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the URL is **baked into the static bundle**, not read at runtime ... the **staging API URL is inlined** ... the **same digest** is deployed to both staging ... and prod ... the production frontend would ship a bundle hard-coded to call `https://staging-api.example.com` ... Prod needs its own `.env.production` with the prod API URL and a separate `vite build --mode production`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/prod-runbook.md:6` says migrations apply automatically during deploy, but all of `backend/migrations/versions/0001-0003` are empty `upgrade(): pass`, and nothing in `deploy.yml` actually invokes a migration step. For a first launch on an empty prod DB, real schema-creating migrations (or a documented migration step) are required.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The runbook ... claims \"Database migrations are applied automatically during deploy,\" but that automation would live in the missing `deploy.sh`. With the script absent, nothing runs migrations. ... don't assume the pipeline migrates the fresh prod DB \u2014 this needs explicit confirmation/first manual pass.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Production** (`infra/prod/main.tf:3`) **still sets `oidc_sub_condition = \"\u2026:environment:staging\"`** (not `production`). So the prod deploy job \u2014 running under `environment: production`, sub `\u2026:environment:production` \u2014 would **fail to match the trust condition and cannot assume the deploy role**. This must change to `environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Production** (`infra/prod/main.tf:3`) currently passes the **same** `oidc_sub_condition = \"...:environment:staging\"` ... That **does not match** the trust condition ... set `infra/prod/main.tf` `oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

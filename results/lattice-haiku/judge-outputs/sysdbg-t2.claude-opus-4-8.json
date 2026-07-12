@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 39149,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.175704,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4171,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4171,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4171,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4171,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 3116,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3116,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both correctly diagnose the config field mismatch, but Report 1 answers better because it explicitly explains why the single-item scorer structurally cannot show the drop, which Report 2 only gestures at.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**File to change:** `config/scoring_config.yaml` ... Current state: `expected_label_field: label` ... Since records have `\"gold_label\"` but config says to look for `\"label\"`, `record.get(\"label\")` returns `None` for all 11 evaluation records. Every prediction is then compared to `None`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The file that should be changed is **`ticket-scorer/config/scoring_config.yaml`**. The exact defect: Line 2 reads `expected_label_field: label` but should read `expected_label_field: gold_label`. ... `gold = record.get(gold_field)` ... The dict.get() returns None for all 11 records.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\" ... Metrics data (`nightly_scores.csv`): accuracy was 0.91 on 2026-06-16 (row 29), dropped to 0.00 on 2026-06-17 (row 30), and stayed at 0.00",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by **commit 53551e8** (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\") ... Git log shows commit 53551e8 on 2026-06-17 13:00 migrated the eval field name ... The metric log commit on 2026-06-19 likely captured the first post-migration run",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`score_one.py` only calls `predict_category()` and returns the prediction \u2014 it doesn't compare to ground truth ... How to correctly reproduce the drop: In Python, call `score_batch.py:score()` with the current setup ... Observe it returns 0.0",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The defect is in the configuration, not the model ... `record.get(\"label\")` would still return `None` ... Accuracy would still be 0.0, just under a different model ... they would spend time investigating the wrong subsystem",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The problem is not with the model but with configuration. Switching models would: Leave the config mismatch in place, Possibly give false confidence ... Waste engineering effort on the wrong problem",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2",
+  "repeat": 1,
+  "task": "sysdbg-t2"
+}

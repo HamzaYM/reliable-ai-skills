@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24086,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1522353,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8000,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8000,
+        "cache_read_input_tokens": 208311,
+        "inference_geo": "not_available",
+        "input_tokens": 3284,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 154,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 154,
+            "cache_read_input_tokens": 37025,
+            "input_tokens": 2,
+            "output_tokens": 1148,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1925,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all four expectations, including the missing global/environment-level gate recommendation (d), which Report 1 omits entirely \u2014 Report 1 is otherwise comparably strong but incomplete on that point.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders WILL be sent automatically.** The decision is in `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, lines 11\u201312: `if tenant.settings.get(\"auto_send_reminders\") is None: return True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will be sent** for a clinic that has never touched the setting. The decision is in `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, lines 11\u201312: `if tenant.settings.get(\"auto_send_reminders\") is None: return True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The fix is to change line 12 of `backend/app/feature_flags.py` to `return False` (or simply `return bool(tenant.settings.get(\"auto_send_reminders\"))`), making it opt-in and consistent with the UI.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a missing/unset value should mean **off** ... I'd change `slotwise/backend/app/feature_flags.py:11-13` to `return bool(tenant.settings.get(\"auto_send_reminders\"))` (unset/malformed \u2192 False).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "commit `aa4cf8d` (SLOT-214) added `auto_send_reminders_enabled` as a line-for-line copy of `compact_calendar_view_enabled` from commit `25509a7` (SLOT-190), including its default-on-when-missing behavior. That was not a sound basis: default-on is defensible for a cosmetic UI preference like a compact calendar view, but the same pattern was copied unchanged onto a feature that sends real messages to patients, where the failure mode of a wrong default is externally visible and consent-sensitive.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `25509a7` (SLOT-190) introduced `compact_calendar_view_enabled` with the `None \u2192 True` pattern; commit `aa4cf8d` (SLOT-214) added `auto_send_reminders_enabled` as a byte-for-byte structural copy of that function with only the key name changed... default-on is defensible for a cosmetic calendar preference, but the reminder flag triggers automated outbound action, a different risk category, and its missing-value semantics needed to be re-decided rather than inherited.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Add an env-level master kill switch ANDed with the per-tenant value, so reminders can be disabled globally without a data migration; wire it into deploy config as a documented no-op default (nothing like this exists today \u2014 grep found no master gate, and `infra/main.tf` only defines an `environment` variable).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

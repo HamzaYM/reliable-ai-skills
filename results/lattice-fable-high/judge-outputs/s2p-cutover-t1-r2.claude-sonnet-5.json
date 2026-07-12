@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32455,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1362307,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11662,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11662,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11662,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11662,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 3389,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3389,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable rigor and near-identical evidence; Report 2 is marginally more thorough overall (flags missing OIDC permissions block, backend state, and runbook staleness) but this does not affect coverage of the graded expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\" (infra/prod/app.auto.tfvars:2) ... Must be \"false\" (or removed) for prod. AUTH_RELAXED = \"true\" (infra/prod/app.auto.tfvars:3) ... Must be \"false\"/removed. PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" (infra/prod/app.auto.tfvars:4) ... Must be removed (empty) for prod.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/app.auto.tfvars:2 \u2014 ENABLE_DEBUG_TOOLBAR = \"true\" ... It should be deleted from the prod tfvars entirely ... infra/prod/app.auto.tfvars:4 \u2014 PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" ... Delete entirely \u2014 no test-account allow-list belongs in prod.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Consequence: the production deployment would serve a frontend bundle whose API base URL is hard-baked to https://staging-api.example.com. Production users' browsers would call the staging API. There is no frontend/.env.production in the repo (verified with find), and no prod-mode build step. Fixing this requires either a separate vite build --mode production (plus a .env.production with the prod API URL) producing a second image, or moving the API URL to runtime configuration instead of build-time inlining.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So the API base URL in the shipped production bundle comes from frontend/.env.staging: production would serve a frontend hard-wired to https://staging-api.example.com, with no runtime fix possible since the value is baked in. ... Production needs its own --mode production build against a new .env.production, not a promoted staging digest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Nothing applies migrations. docs/prod-runbook.md:6 claims \"Database migrations are applied automatically during deploy,\" but no workflow step runs them, and the script that supposedly would is missing. The first prod release needs all three migrations (backend/migrations/versions/0001_base.py, 0002_tenants.py, 0003_billing.py) applied to a fresh database.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No database-migration step. docs/prod-runbook.md:6 claims \"Database migrations are applied automatically during deploy,\" but the workflow contains no migration step and the script that might have run them doesn't exist. ... the first release needs an explicit, verified migration pass; the runbook ... cannot be trusted on this.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 was copied unchanged and still trusts ...:environment:staging. Two consequences: (a) the prod deploy job's token will not match the prod role's trust condition, so production deploys will fail to authenticate; and (b) the trust that is configured means any job in the staging GitHub environment would satisfy the prod role's condition \u2014 a privilege-escalation path from staging to prod.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 \u2014 copied unedited from staging \u2014 sets the prod role's trust condition to ...environment:staging. As authored, this is doubly wrong ... The fix is a production-scoped condition (repo:acme-health/medislot:environment:production) on a distinctly named role ... Production must get its own trust condition, never an inherited or shared one.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

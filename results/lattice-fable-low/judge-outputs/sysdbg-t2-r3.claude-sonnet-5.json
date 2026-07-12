@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12386,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0636777,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3517,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3517,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3257,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3517,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3517,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3257,
+            "output_tokens": 1402,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1402,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently and correctly identify the same root cause, timeline, flaw in the earlier investigation, and correct assessment of the proposed rollback; they are comparable in substance, with Report 1 offering slightly more forensic detail (e.g., normalizer divergence, REQUIRED_KEYS bypass) and Report 2 more explicitly naming the anti-pattern in point 4.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The file to fix is `ticket-scorer/config/scoring_config.yaml`. It still says `expected_label_field: label`, but the eval set (`fixtures/eval_set.jsonl`) was migrated to use the key `gold_label`. In `pipeline/score_batch.py`, `score()` does `gold = record.get(gold_field)`... since no record has a `label` key, `record.get(\"label\")` returns `None` for every record, so `prediction == gold` is always `False` and accuracy is exactly 0.0.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The batch scorer (`pipeline/score_batch.py`) looks up the gold label via `gold = record.get(config[\"expected_label_field\"])`, and the config still says `expected_label_field: label`. Commit `53551e8` migrated every record in `fixtures/eval_set.jsonl` from `\"label\"` to `\"gold_label\"`... So `record.get(\"label\")` now returns `None` for every record, `prediction == None` is always false, and accuracy is exactly 0.0",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17 13:00 UTC) renamed `label` \u2192 `gold_label` in every eval record and in `REQUIRED_KEYS` in `score_batch.py`, but missed the `expected_label_field` setting... `pipeline/metrics/nightly_scores.csv` shows 0.91-ish accuracy through 2026-06-16 and 0.00 from 2026-06-17 onward",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It began on 2026-06-17, introduced by commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17).\" Evidence: `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and 0.00 on 2026-06-17 and every night since",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it also uses a different normalizer, `normalize_simple` vs `normalize_batch`... it re-ran tickets through `pipeline/score_one.py`, which only calls the classifier and prints a prediction; it never reads the config or compares against a gold label, so it exercises none of the broken code path",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py` only prints a prediction and never compares against a gold label, so spot-checks can't ever show a scoring bug. The correct reproduction is to run the actual failing path, the batch scorer: `python3 -m pipeline.score_batch`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "There is no model to roll back \u2014 the classifier is a keyword stub, and `model_id: ticket-classifier-v3` in the config is not even used by `score_batch.py`. A rollback would change nothing (accuracy stays 0.00, since the defect is the gold-label field name), would burn time",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "even if a model were involved, flipping config on the shared nightly runner to \"see what happens\" is exactly the experiment-in-production anti-pattern to avoid \u2014 a candidate should be run in shadow, not swapped in.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

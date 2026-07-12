@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 11447,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.244149,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 32989,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 32989,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 32989,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 32989,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 9700,
+            "output_tokens": 1141,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1141,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is more complete: it catches the same cross-tenant leak and correctly handles the SQL-injection non-issue like Report 1, but additionally identifies the nightly_export breakage in exports.py that Report 1 misses entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the raw SQL built with `sqlalchemy.text(...)` only filters on `status` and the full-text match against `notes`; `tenant_id` is never referenced in the `WHERE` clause or bound as a parameter.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The function accepts `tenant_id` as a parameter but the raw SQL it builds only filters on `status` and the full-text match against `notes` \u2014 it never adds `AND tenant_id = :tenant_id`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The branch changes `build_appointment_query`'s signature from `(session, tenant_id)` to `(session, tenant_id, filters)` with `filters` as a required positional parameter (no default). `backend/app/exports.py`'s `nightly_export` was not updated and still calls `build_appointment_query(session, tenant_id)` with two arguments. This will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` the next time the nightly per-tenant CSV export runs",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Today this is not exploitable for injection because `status` is constrained by FastAPI to the `AppointmentStatus` enum before it reaches this function ... so `status.value` can only ever be one of `\"booked\"/\"cancelled\"/\"completed\"`. I'm flagging this as a secondary/lower-severity code-quality and defense-in-depth issue rather than a standalone blocker ... but on its own, given the current call site, it doesn't produce an exploitable defect.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`status` is constrained by the `AppointmentStatus` enum at the FastAPI layer so this particular field isn't currently injectable, but it's an inconsistent, risky pattern ... (Minor, non-blocking but worth flagging)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

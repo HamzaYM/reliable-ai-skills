@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19064,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.40306,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 31825,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 31825,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 9342,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 31825,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 31825,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 9342,
+            "output_tokens": 1524,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1524,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct findings and concrete fixes; they are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "catches all six identically with a single bare `except Exception` ... **`BadRequestError`** ... Inappropriate. ... **Fix:** classify the six exceptions into a retryable default and an explicit non-retryable denylist, and re-raise the denylist instead of failing over",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "catches all six identically via the bare `except Exception as e` at line 16 ... **BadRequestError** \u2014 not appropriate. ... **Concrete fix:** import the specific exception classes from `providers.py` and branch on them, e.g., catch only `(RateLimitError, RequestTimeoutError, ServerError)` for failover; ... treat `ContentPolicyError` and `BadRequestError` as raise-and-flag-for-review rather than transparent failover",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A** ... `os.environ.get(\"STAGE\") != \"production\"` \u2192 returns `True` unconditionally ... This is a blanket bypass gated on an environment-name string match ... **Path D** ... raises `RedisError` \u2192 returns `True` ... **Not appropriate** ... return False   # fail CLOSED, not open",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A (line 13):** `return True` whenever `os.environ.get(\"STAGE\") != \"production\"` ... silently disables rate limiting ... **Path C (line 18):** ... raises `RedisError`. Returns `True` \u2014 i.e., fails open ... Change the `RedisError` handler to fail closed (`return False`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`input_text` \u2014 the full raw document \u2014 is logged verbatim.** ... **`metadata` is logged wholesale with no allowlist.** ... The repo's own guardrail is explicit that this must be an allowlist ... don't log `input_text` at all",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the **full raw `input_text`** ... and the entirety of `record.metadata` ... **Concrete fix:** don't log `input_text` at all (log a length or a hash if some signal is needed for debugging); ... explicitly allow-list which `metadata` fields are safe to log rather than serializing the dict wholesale",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "note the default of `\"\"` (empty string) when unset ... when the salt is missing, the function does **not** fail \u2014 it silently degrades to a plain, unsalted `sha256(applicant_id)` ... salt = os.environ[\"PII_SALT\"]          # raises KeyError if unset \u2014 fails hard",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "defaulting to the **empty string** if unset ... if `PII_SALT` is unset (or set to an empty string), the function silently degrades to `sha256(applicant_id)` ... if not salt: raise RuntimeError(\"PII_SALT must be configured before processing applicant PII\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

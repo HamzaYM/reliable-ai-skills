@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28836,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1465785,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7547,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7547,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7547,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7547,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2350,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2350,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations with the same core evidence; Report 2 is slightly more decisive on removing the AI-assistance footer while Report 1 is marginally more thorough.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Patients can now export their full visit history as a PDF\" (lines 22\u201326) \u2014 not implemented. `app/routers/visits.py` contains only a stub `/visits` endpoint returning `[]` and a literal `# TODO: pdf export` comment... This entire section must be removed until the feature ships. ... \"Two-factor authentication is now enabled for every clinic by default\" (line 30) \u2014 false. `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default\" \u2014 false.** `clinic-portal/app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` ... remove or rewrite as opt-in. ... \"Patients can now export their full visit history as a PDF\" \u2014 not implemented.** ... There is no export route anywhere in the app ... Remove this section.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`after_scheduling.png` shows the billing screen (\"BILLING / INVOICES\"). The capture manifest confirms this isn't just a mislabeled render \u2014 `captures.json` records `after_scheduling.png` as captured from route `/billing/invoices`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_scheduling.png` shows \"BILLING / INVOICES\" \u2014 the wrong page entirely. The capture manifest confirms this: `captures.json` records `after_scheduling.png` as captured from route `/billing/invoices`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`img/after_export.png` | **no \u2014 file does not exist**... And one file exists that nothing references: `img/unused_capture_07.png`... It is not in `captures.json` and not used by the doc \u2014 it's an orphan",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_export.png` | **No \u2014 file does not exist**... Conversely, `img/unused_capture_07.png` (a \"PATIENT LIST\" screenshot) exists on disk but is referenced nowhere",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The footer \"Highlights draft assembled with AI assistance\" (line 33) \u2014 it self-identifies the document as a *draft*... and it carries an AI-attribution line... it should be confirmed with the document owner rather than shipped by default",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the footer on the last line: \"Highlights draft assembled with AI assistance.\" That is an internal drafting note, not customer content... Remove it.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2",
+  "repeat": 1,
+  "task": "dora-t2"
+}

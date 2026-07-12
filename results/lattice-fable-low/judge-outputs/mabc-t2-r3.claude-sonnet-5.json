@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33655,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12597360000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5978,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5978,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9369,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5978,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5978,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9369,
+            "output_tokens": 3553,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3553,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable substance; Report 1 states the checkout-insufficiency nuance for the results-DB collision slightly more explicitly, while Report 2 adds extra scrutiny (F-02 endpoint URL, non-git working copy) not required by the rubric \u2014 overall they are roughly equal in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Batch B \u2014 registry: F-02, F-05, F-09, all three of which are the entirety of pipeline/registry.py. One engineer owns this file; splitting three one-line config fixes across people guarantees conflicts for no gain.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer C \u2014 registry config (pipeline/registry.py): F-02, F-05, F-09. All three are edits to one 12-line config file; trivially one person.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 (fully parallel, file-disjoint): ... Batch A \u2014 tests: F-11 (rubric edge-case parsing test) and F-12 (pagination boundary test) ... Batch B \u2014 registry: F-02, F-05, F-09 ... One engineer owns this file",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ordering: A, B, C, D can all start immediately in parallel \u2014 their file sets are disjoint. ... Engineer B \u2014 rubric parsing (pipeline/rubric.py): F-01 plus its test F-11. ... Engineer C \u2014 registry config (pipeline/registry.py): F-02, F-05, F-09. All three are edits to one 12-line config file; trivially one person.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 ... This changes scoring outcomes for every graded dataset \u2014 it's a product/policy decision, not a bug ... Assigning it means an engineer guesses new thresholds and silently shifts every score. Escalate it for a decision on the actual values (ideally with before/after distributions), without blocking the other batches.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 a policy decision, not a bug fix. ... changing PARTIAL_CREDIT_THRESHOLDS silently shifts every score, breaking comparability with all previously recorded results. This needs an owner to specify the new thresholds and decide on re-baselining ... I'd send F-06 back for concrete acceptance criteria and sequence it last.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Shared test infrastructure: tests/conftest.py points every test run at the same /var/tmp/llm-scoring/results.db. Parallel test runs from multiple checkouts would collide on that database unless each engineer sets their own RESULTS_DB.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "tests/conftest.py:4 reads RESULTS_DB (default /var/tmp/llm-scoring/results.db); each engineer should set RESULTS_DB to a private per-engineer path so parallel test runs don't share one database file.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

@@ -1,0 +1,60 @@
+# Two jobs:
+#   validate  - the free deterministic gate. No API calls, no secrets. Runs on
+#               every PR and every push to main. This is the badge in README.md.
+#   live-ab   - a live A/B on the golden suite. Manual only (workflow_dispatch),
+#               run by the maintainer at discretion to verify a PR's committed
+#               results. Requires the ANTHROPIC_API_KEY repository secret and
+#               fails fast without it.
+name: evals
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Deterministic gate (no API calls)
+        run: python3 eval/run.py --validate
+      - name: Harness unit tests (no API calls)
+        run: python3 -m unittest discover -s eval/tests
+
+  live-ab:
+    name: live-ab
+    if: github.event_name == 'workflow_dispatch'
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require ANTHROPIC_API_KEY secret
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "live-ab needs the ANTHROPIC_API_KEY repository secret; aborting." >&2
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install claude CLI
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Live A/B on the golden suite
+        run: python3 eval/run.py --suite golden --ab
+      - name: Upload run results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-ab-results
+          path: results/

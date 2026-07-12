@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32512,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.155642,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12186,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12186,
+        "cache_read_input_tokens": 67650,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2834,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2834,
+            "cache_read_input_tokens": 38501,
+            "input_tokens": 2,
+            "output_tokens": 1051,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3815,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 correctly derives the required gate-vs-optional-axis distinction (renormalize for relevance/tone failures, withhold entirely for accuracy failures), while Report 2 explicitly argues against differentiated handling and treats all axis failures uniformly, missing expectation (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "grader/aggregate.py:9-12 \u2014 composite then silently converts the missing axis to a score of zero ... So a failed axis contributes weight \u00d7 0.0 ... In form, the record is byte-for-byte indistinguishable from a fully scored row.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In grader/aggregate.py:6-13, composite() silently substitutes 0.0 for the missing axis ... The written record \u2014 agent_id, reply_id, composite \u2014 is identical in form to a fully-scored record: three columns, a plausible-looking float, no flag, no null, no error marker.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the file permanently mixes two populations of rows \u2014 genuinely scored replies and failure-contaminated ones \u2014 with no way to tell them apart after the fact ... A single failed accuracy call on one of an agent's replies drags that reply's composite down by up to 5.0 points, which for an agent with few replies moves their mean by several points.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It conflates \"we failed to measure this\" with \"we measured this and it was the worst possible score.\" ... The leaderboard is corrupted by infrastructure luck, not reply quality. grader/leaderboard.py:13-16 averages every row's composite per agent with no filtering",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If accuracy (the load-bearing axis) failed: do not write a composite to scores.csv at all. Record the failure somewhere that is not the comparable-score stream \u2014 e.g. a separate failures/retry file or a status column that leaderboard.py filters on",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A record with a failed axis has no valid composite, so no composite should be written for it to results/scores.csv.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "a failed embellishment can degrade gracefully; a failed gate axis must not produce a comparable number ... If only relevance or tone failed: renormalize the weights over the axes that succeeded, write the composite, and mark the row as degraded/partial",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It does not matter in principle: no axis failure should be imputed as any score. A failed tone call fabricating a 0 is the same category of error, just smaller (0.2 weight). Missing data is missing data regardless of which axis it is",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27790,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1288926,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7469,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7469,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9570,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7469,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7469,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9570,
+            "output_tokens": 3111,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3111,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable accuracy and file/line citations; Report 2 is slightly more thorough on category (a) by flagging all four trap categories with explicit 'omit entirely' language, but this doesn't change the pass/fail outcome versus Report 1.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`infra/prod/app.auto.tfvars:4` `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** \u2014 seeds a QA account with superadmin across a live multi-tenant system (`config.py:10`). Remove entirely for prod. ... **`infra/prod/app.auto.tfvars:6` `SHADOW_SCORING_SINK = ...`** ... Either clear the sink for prod or point it to a prod bucket",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`SHADOW_SCORING_ENABLED = \"false\"` (line 5)** and **`SHADOW_SCORING_SINK = ...` (line 6)** ... Both keys should be **fully absent** from prod config. ... **`LEGACY_BILLING_SECRET_ARN = ...` (line 7)** ... omit it",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "That one bundle is packaged into a single image (`deploy.yml:16-21`), and the **same digest is deployed to both staging and prod** (`deploy.yml:28` and `:35`). So production would serve a frontend that talks to `https://staging-api.example.com`. ... A prod build needs `--mode production` plus a `.env.production` with the prod API URL \u2014 neither exists.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That single bundle is packaged into one image (`deploy.yml:16-21`) and the **same digest** is deployed to both staging ... and prod ... Prod needs its own `.env.production` with the prod API URL and a separate `vite build --mode production`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Migrations are placeholders.** `docs/prod-runbook.md:6` says migrations apply automatically during deploy, but all of `backend/migrations/versions/0001-0003` are empty `upgrade(): pass`, and nothing in `deploy.yml` actually invokes a migration step. For a first launch on an empty prod DB, real schema-creating migrations (or a documented migration step) are required.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The runbook ... claims \"Database migrations are applied automatically during deploy,\" but that automation would live in the missing `deploy.sh`. With the script absent, nothing runs migrations. Per project documentation's first-apply trap, don't assume the pipeline migrates the fresh prod DB \u2014 this needs explicit confirmation/first manual pass.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Production** (`infra/prod/main.tf:3`) **still sets `oidc_sub_condition = \"\u2026:environment:staging\"`** (not `production`). So the prod deploy job ... would **fail to match the trust condition and cannot assume the deploy role**. This must change to `environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "set `infra/prod/main.tf` `oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"`, and give the prod role a distinct name ... so prod has its own scoped, non-shared deploy identity.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

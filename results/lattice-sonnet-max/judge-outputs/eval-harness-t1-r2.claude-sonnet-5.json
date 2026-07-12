@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21442,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12139319999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7895,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7895,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9708,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7895,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7895,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9708,
+            "output_tokens": 2413,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2413,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully hit all four expectations with similarly precise code citations and reasoning; Report 2 additionally corroborates its claims with git history and an actual leaderboard run, giving it slightly more empirical grounding, but on the stated expectations they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`composite()` (`grader/aggregate.py:6-13`) iterates `WEIGHTS = {\"relevance\": 0.3, \"accuracy\": 0.5, \"tone\": 0.2}` (line 3), does `value = axis_scores.get(axis)` (line 9), and if that's `None`, substitutes `0.0` (lines 10-11)... The written record is a plain float in the same `agent_id,reply_id,<float>` shape as every other row... There is nothing in the row's *form* that distinguishes \"one or more axis calls failed and were scored as 0\" from \"all three axes were genuinely scored.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The missing axis is substituted with `0.0` and folded into the weighted sum exactly as if the model had genuinely scored that axis a 0 out of 10... **Form comparison:** a degraded record and a fully-scored record are byte-for-byte identical in shape \u2014 exactly three CSV fields (`agent_id, reply_id, composite`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It conflates \"the grading call failed\" (an infrastructure fact, unrelated to reply quality) with \"the model rated this reply the worst possible score on that axis\" (a quality judgment)... A row degraded by a silent axis failure counts exactly the same as a fully-scored row, both in the numerator (a deflated value) and the denominator (still counted as one full data point).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a `0.0` substitute is mathematically a real, legitimate value a model could have returned for a genuinely terrible reply, so `results/scores.csv` cannot distinguish \"this reply scored 0 on accuracy\" from \"the accuracy call errored out.\"... `leaderboard.py` averages that `4.0` into the agent's mean with exactly the same weight as a clean `8.0` row.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "a failed accuracy call should not get any numeric default at all. The row should be excluded from scoring/leaderboard aggregation (or queued for mandatory re-grading) rather than defaulted, because there is no safe stand-in value for \"we don't know if this reply is factually correct\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Accuracy call fails (the gate axis):** do not write a numeric composite for that row at all... The row should either be left out of `results/scores.csv` entirely, or written with an explicit incomplete marker (e.g., an added `status`/`missing_axis` column with an empty/null composite field) so it's structurally impossible for `leaderboard.py`'s plain `float(comp)` parse to ingest it as a real score.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "For relevance/tone \u2014 the lower-stakes, additive axes \u2014 it's more defensible to either (a) also exclude the row until fully re-scored (simplest, most consistent), or (b) compute the composite from only the successfully-scored axes with weights renormalized to sum to 1... A failed accuracy call should not get any numeric default at all.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Relevance or tone call fails alone (the \"quality embellishment\" axes), accuracy present:** a renormalized composite (redistribute weight across the axes that did succeed) is defensible, but only if the row is also flagged as partial/degraded... **Accuracy call fails (the gate axis):** do not write a numeric composite for that row at all.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

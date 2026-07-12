@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26069,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16432950000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9364,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9364,
+        "cache_read_input_tokens": 17371,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9364,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9364,
+            "cache_read_input_tokens": 17371,
+            "input_tokens": 2,
+            "output_tokens": 2274,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2274,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable, but Report 1 additionally distinguishes that renormalizing over surviving axes is defensible for relevance/tone while forbidden for accuracy, edging it ahead.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A missing/failed axis is explicitly coerced to `0.0` and still multiplied by its full weight, then summed into the same weighted total as a fully-scored row.\n\nThe written record (`run_batch.py:22-23`, ...) is **identical in shape** to a fully-scored row",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A missing/`None` axis score is coerced to `0.0` and multiplied by that axis's weight ... A record degraded by a dropped axis call is therefore byte-for-byte indistinguishable in form from a fully and honestly scored record.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "a failed call is silently converted into a real zero and blended into a real weighted average \u2014 nothing marks the row as degraded ... an agent whose replies happened to hit an axis-call failure has its mean composite pulled down by a fabricated low score indistinguishable from a real one.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Silently mapping \"the call failed\" to \"the reply is a 0/10 on this axis\" conflates two very different situations ... agents that got unlucky with transient API failures on their accuracy call have their mean composite pulled down by phantom \"0\" accuracy scores",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Accuracy (load-bearing) call fails:** do not compute or write a composite score at all for that record ... with the `composite` field left blank/null rather than a substituted `0.0` \u2014 and the reply/axis pair should be queued for retry, not silently finalized.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a failed accuracy call in particular should never be treated as either \"gate passed\" or \"gate failed\" ... don't emit a hard-fail-equivalent composite for that record, and retry/re-grade the accuracy axis before finalizing the row.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Relevance or tone (non-load-bearing) call fails:** it's defensible to renormalize the composite over the axes that did succeed ... by re-scaling the surviving weights to sum to 1, but the row must still be explicitly flagged",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

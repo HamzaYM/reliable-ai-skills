@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17426,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10675019999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6986,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6986,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6986,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6986,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 1802,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1802,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid, well-cited evidence; Report 2 is slightly more rigorous (uses git blame, checks test coverage explicitly, flags additional risks like the bool(\"false\")==True pitfall and settings-null AttributeError), but both fully satisfy the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 11 checks whether the key is missing (a clinic that never opened the setting has no \"auto_send_reminders\" key in its tenant.settings JSONB, so .get() returns None); line 12 returns True in that case.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the is None branch at line 11 is taken, and line 12 returns True. That return value is consumed directly in backend/app/jobs/reminders.py:25 \u2014 if auto_send_reminders_enabled(tenant): \u2014 which gates the SMS/email send loop",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change backend/app/feature_flags.py:11-12 to invert the default so missing/null means disabled, e.g. collapsing the function to:\n```python\ndef auto_send_reminders_enabled(tenant):\n    return bool(tenant.settings.get(\"auto_send_reminders\"))\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Where I'd change it: backend/app/feature_flags.py:12 \u2014 change return True to return False inside auto_send_reminders_enabled (lines 10\u201313 as a whole is the function; line 12 is the specific line).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`compact_calendar_view_enabled` (the resolver this was copied from) gates a purely cosmetic UI preference \u2014 grandfathering existing tenants to \"on\" is low-risk and reversible... `auto_send_reminders_enabled` is a different risk category entirely: it triggers unsolicited, automated outbound SMS and email to patients",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "auto_send_reminders_enabled (added SLOT-214) is structurally identical to compact_calendar_view_enabled (added SLOT-190, feature_flags.py:4-7), which also defaults unset to True. Defaulting a calendar-density UI preference to \"on\" is low-stakes and fully reversible. Defaulting an automated SMS/email-to-patients feature to \"on\" is not",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an env-level master switch AND'd with the per-tenant value. Right now `reminders.py`'s `run()` has no global gate at all \u2014 a grep across the whole project for anything master/kill-switch/environment-related turned up nothing wired to this flag",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is no rollout or kill-switch mechanism anywhere in this repo. My grep for feature-flag/rollout/env-based gating found nothing beyond this one per-tenant JSONB value \u2014 no cohort rollout, no global environment gate... Before flipping this on for real clinics, I'd want at least a global kill switch independent of per-tenant settings",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

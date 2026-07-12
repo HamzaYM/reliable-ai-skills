@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20512,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.131364,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3167,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3167,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3167,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3167,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1744,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1744,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both correctly diagnose the northpeak shortfall and reroute to ridgeline/secondary, and both omit the snapshot-staleness/re-check caveat (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full run size: `transcript_count` (5,200) \u00d7 `avg_tokens_per_scoring_call` (1,800) = **9,360,000 tokens** ... only **640,000 tokens remain** in its current window (`.cache/usage_snapshot.json`), against a 10,000,000-token window total ... it would exhaust northpeak's window almost immediately",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 \u00d7 1,800 \u2248 9,360,000 tokens ... Northpeak (default/primary): only **640,000 tokens remaining** in its window (of a 10,000,000 total) ... would exhaust northpeak's window after scoring roughly 350 transcripts",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline currently has ~10.8M tokens available, comfortably covering the ~9.36M-token full run ... `python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'd launch the full job with `--provider secondary` ... so it targets ridgeline/atlas-mini, whose 10.8M remaining tokens comfortably covers the ~9.36M-token requirement",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run `./scripts/run_nightly.sh` as-is. Its default path (northpeak/primary) has only 640,000 tokens of headroom against a 9.36M-token requirement ... Instead I'd launch against the secondary backend",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run `run_nightly.sh` as-is. I'd launch the full job with `--provider secondary`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

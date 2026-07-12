@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30131,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1401474,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9424,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9424,
+        "cache_read_input_tokens": 62478,
+        "inference_geo": "not_available",
+        "input_tokens": 3099,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5304,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5304,
+            "cache_read_input_tokens": 33299,
+            "input_tokens": 2,
+            "output_tokens": 1290,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3466,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical on expectations a, b, and c, but Report 2 explicitly performs and states a reproducibility check (re-running the suite/regeneration twice to confirm determinism) tied to the set-ordering instability, which Report 1 only names as a cosmetic issue without acting on it \u2014 making Report 2 the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The two deselected tests (tests/test_live_model.py) are @pytest.mark.live tests that make real HTTP calls to a paid model endpoint using a SCORELAB_API_KEY bearer token; the module docstring says they \"hit the real model endpoint and incur per-call cost.\" ... Enabling them on the default run (removing -m \"not live\" from pytest.ini:2) would make every test run incur API cost, require credentials, and fail in any environment without network/SCORELAB_API_KEY \u2014 they're deselected on purpose.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "They make real HTTP calls to https://api.scorelab-models.example.com/v1/score using SCORELAB_API_KEY, and their module docstring states they \"hit the real model endpoint and incur per-call cost.\" Enabling them on the default run would make every test run spend real money (and require a live credential/network), which is exactly why they're gated. ... The deselection is intended behavior; leave it alone.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would revert the rounding change (or get explicit sign-off that it's intended), verify the new golden values by hand-computing at least one item, then run scripts/update_golden.py and include the golden diff in the PR for review.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "confirm with the author whether the rounding change is intentional; if not, revert it, then regenerate, then diff the new golden against the old and verify every changed value traces to the weight change (e.g. item-1: 0.7\u00b70.8 + 0.3\u00b70.65 = 0.755 \u2713), then re-run the suite in plain assert mode at least twice.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The doc claims \"2 flaky tests in tests/test_sampling.py\" and \"9 lint warnings,\" but grep shows exactly one @pytest.mark.flaky test (tests/test_sampling.py:10), and running pyflakes ... yields 4 warnings ... In the PR I'd report the freshly measured numbers \u2014 1 flaky-marked test, 4 lint warnings, none introduced by this branch \u2014 sourced from actually running the linter and grepping markers on this branch, and I'd flag docs/testing.md as stale.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not cite the numbers from docs/testing.md \u2014 both are stale. ... In the PR I would report: 1 test marked flaky (measured, with the doc's \"2\" flagged as stale), 4 pre-existing lint warnings, and zero new lint warnings introduced by this change \u2014 sourcing every number from a fresh measurement, not the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "regenerate the golden file, diff it against the old one, and hand-verify each changed value against the new weights before committing it; then run pytest in assert mode twice to confirm determinism (mindful of the set-iteration ordering issue in the regen script).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

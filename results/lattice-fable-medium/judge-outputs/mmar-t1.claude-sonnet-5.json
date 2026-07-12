@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24555,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1481728,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14602,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14602,
+        "cache_read_input_tokens": 60346,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1658,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1658,
+            "cache_read_input_tokens": 36645,
+            "input_tokens": 2,
+            "output_tokens": 982,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2588,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with comparable rigor; Report 2 is slightly more thorough (checks for compensating tenant controls, notes lack of test coverage) but both are essentially equivalent in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the function receives `tenant_id` and simply never uses it. Concretely: any authenticated user of any clinic who calls `GET /appointments/search?q=...&status=booked` receives matching appointments from **every tenant in the database**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the `tenant_id` argument (resolved from the caller's auth by `current_tenant_id`) is accepted but never used. Concrete failure: any authenticated user of any clinic who calls `GET /appointments/search?q=diabetes&status=booked` receives matching appointments from **every** tenant",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The PR changes `build_appointment_query(session, tenant_id)` to `build_appointment_query(session, tenant_id, filters)` with **no default** for `filters`, and updates the caller in `appointments.py` but not the one in `exports.py`, which still calls `build_appointment_query(session, tenant_id)`. Every run of `nightly_export` for every tenant will crash with `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`backend/app/db.py:7` changes `build_appointment_query` to require a third positional argument `filters` (no default), but `backend/app/exports.py:9` (`nightly_export`) still calls it as `build_appointment_query(session, tenant_id)`. Concrete failure: the first nightly per-tenant CSV export run after this merges raises `TypeError`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I verified in `backend/app/schemas.py` that `AppointmentStatus` is a `str` Enum limited to `booked`/`cancelled`/`completed` and FastAPI validates the query parameter against it, so this is **not exploitable today**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'll state its true severity honestly: it is **not currently exploitable over HTTP**. `status` is typed `AppointmentStatus` in `api.py:18`, a `str`-`Enum` in `schemas.py` with exactly three members, so FastAPI/pydantic rejects any other value with a 422 before the handler runs...and by the refute pass verifying no bypassing call site exists (`q` itself is safely bound as `:q`)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

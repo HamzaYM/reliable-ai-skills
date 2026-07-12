@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21876,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.18359450000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11839,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11839,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11839,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11839,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1987,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1987,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with accurate findings and concrete fixes; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "it catches bare `except Exception`, logs a warning via `log_fallover`... and unconditionally retries the same payload against the secondary vendor... **Concrete fix:** catch only `(RateLimitError, RequestTimeoutError, ServerError)` for fallover; re-raise `BadRequestError` and `AuthError` (and alert on `AuthError`); route `ContentPolicyError` to a quarantine/manual-review outcome without contacting the secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Failing over on `BadRequestError`, `AuthError`, and `ContentPolicyError` is wrong: these are definitive rejections... Concrete fix: add an explicit non-retryable denylist function, e.g. `def is_non_retryable(exc): return isinstance(exc, (BadRequestError, AuthError, ContentPolicyError))`, re-raise when it matches, and fail over only otherwise",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A \u2014 `return True` when `os.environ.get(\"STAGE\") != \"production\"`.**... an environment check should fail closed or be validated at startup... **Path D \u2014 `return True` on `RedisError`.** Fail-open when redis is unreachable... for a pipeline shipping sensitive data to external vendors, fail-closed is the safer default.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A (line 12\u201313):** if `os.environ.get(\"STAGE\") != \"production\"`... A safety gate should fail closed everywhere... never an `is-this-production` test. ... **Path C (lines 17\u201318):** `redis.incr` raises `RedisError` \u2192 return `True`... It should fail closed: catch `RedisError`, log it, and return `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the **entire document text** (`input_text` \u2014 the sensitive intake form itself), and `record.metadata`... **Concrete fix:** ... remove `input_text` entirely... allowlist specific metadata keys rather than dumping the whole dict",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`record.input_text` **verbatim** \u2014 the full sensitive intake document \u2014 and the entire `record.metadata` dict with no filtering whatsoever... never log `input_text`... filter `metadata` through an explicit **allowlist** of known-safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "read from the **`PII_SALT` environment variable on every call, with a default of the empty string**... if `PII_SALT` is unset (or set to empty), the function silently degrades to an **unsalted SHA-256**... **Concrete fix:** fail fast \u2014 raise at import/startup if `PII_SALT` is missing or empty rather than defaulting to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When `PII_SALT` is unset (or set to the empty string), the function does not fail \u2014 it silently computes a plain unsalted `sha256(applicant_id)`... Concrete fix: fail closed \u2014 `salt = os.environ[\"PII_SALT\"]` plus a check that it's non-empty, raising... when absent",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

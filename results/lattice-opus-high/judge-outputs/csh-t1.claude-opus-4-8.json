@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21008,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1347705,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7485,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7485,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7485,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7485,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1904,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1904,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is slightly better: both nail the default/copy-paste findings, but only Report 2 flags the missing global/env-level gate (expectation d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will be sent automatically**. The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, lines 11\u201312:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminder messages **will be sent automatically**. The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, lines 11\u201313:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change it. The fix is `backend/app/feature_flags.py:11\u201313` \u2014 make missing/unset default to `False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change line 12 of `backend/app/feature_flags.py` to return `False` (default off) \u2014 e.g. `return bool(tenant.settings.get(\"auto_send_reminders\"))` for the whole body, dropping the `is None \u2192 True` branch \u2014 so unset means off",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "copying the pattern from the pre-existing `compact_calendar_view_enabled`... The default-ON semantics were justified for a harmless cosmetic preference and were carried over by pattern-matching to a feature with an outbound, patient-facing, billable side effect, where the correct default is the opposite.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `25509a7` (SLOT-190) introduced `compact_calendar_view_enabled`, a purely cosmetic calendar-layout preference, with the \"unset \u2192 return True\" (grandfather-on) pattern \u2014 appropriate there... The two features sit in different risk categories (convenience-on vs. outbound-action-off), so the convenience flag's default was exactly the wrong thing to reuse.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Add a master/env gate.** Right now the only gate is the per-tenant value. For outbound messaging I'd want an environment-level master switch AND-ed with the per-tenant flag, so the whole feature can be turned off system-wide during rollout",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

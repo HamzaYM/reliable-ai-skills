@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35394,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1305107,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9973,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9973,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9973,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9973,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 3758,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3758,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger: both reports match on findings a, b, and c, but only Report 2 clearly states the shared RESULTS_DB path would cause concurrent test runs to collide/corrupt and mandates a private override, whereas Report 1 only hedges (\"be aware of the shared default\") and downplays the risk.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer C \u2014 registry (`pipeline/registry.py`): F-02 ... F-05 ... F-09 ... Three trivial edits, but all in one 11-line file \u2014 splitting them across people guarantees conflicts, so one person does all three in one commit.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Batch B \u2014 registry/config (Engineer 2): F-02 (add `aurora-1` to `MODEL_ENDPOINTS`), F-05 ... F-09 ... All three are edits to the same 11-line `pipeline/registry.py`; splitting them across people guarantees conflicts, and together they're small.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Ordering: all four streams can start simultaneously \u2014 they have zero file overlap. ... Engineer C \u2014 registry (`pipeline/registry.py`): F-02 ... F-05 ... F-09 ... one person does all three in one commit. ... Engineer A \u2014 batch runner ... F-04 + F-13 ... F-12 (pagination boundary test) ... F-12's test should be written first (red), then the F-04/F-13 fix makes it green.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ordering: because the batches are file-disjoint by construction, all four run as a single parallel wave ... Batch B \u2014 registry/config (Engineer 2): F-02 ... F-05 ... F-09 ... All three are edits to the same 11-line `pipeline/registry.py` ... Batch A ... F-12 (pagination boundary tests), F-07 ... F-14 ... F-12 is the regression test for F-04, so it must be the same owner, written test-first",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 is a calibration decision, not a fix. ... Any number an engineer picks is policy, changes historical comparability of scores, and needs a product/eval-owner sign-off. I'd route it to whoever owns the rubric for concrete values first, then it's a two-line change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is not a bug fix; it is a scoring-policy change. ... That is a product/eval-owner decision. I would escalate F-06 for a decision on the actual threshold values (without blocking the other batches on the answer), not let an engineer pick numbers.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "`tests/conftest.py:4` defaults `RESULTS_DB` to a fixed machine-wide path, `/var/tmp/llm-scoring/results.db`. Four engineers (or CI jobs) running pytest concurrently on one machine would share and clobber that database. Each needs a private `RESULTS_DB` value.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

@@ -1,0 +1,298 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "The application's runtime database connection authenticates as **`cedar_owner`, the role that owns the tables**, and in PostgreSQL a table's owner is **exempt from row-level security** unless the table is set to `FORCE ROW LEVEL SECURITY`. The migration only does `ENABLE ROW LEVEL SECURITY` (`db/migrations/0001_init.sql:20,24`), never `FORCE`. So although the `tenant_isolation` policies exist and are correctly written (lines 21-22, 25-26), they are **never evaluated** for the runtime connection \u2026 `.env:1` \u2192 `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 17855,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.308924,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 7250,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 7250,
+          "cache_read_input_tokens": 15224,
+          "inference_geo": "not_available",
+          "input_tokens": 9340,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 7250,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 7250,
+              "cache_read_input_tokens": 15224,
+              "input_tokens": 9340,
+              "output_tokens": 1106,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 1106,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "The application's runtime database connection authenticates as **`cedar_owner`, the role that owns the tables**, and in PostgreSQL a table's owner is **exempt from row-level security** unless the table is set to `FORCE ROW LEVEL SECURITY`.",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "a",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    },
+    {
+      "adjudicator_mark": {
+        "evidence": "**Immediate (config fix, the actual leak):** repoint the runtime `DATABASE_URL` to the least-privilege role \u2014 change `.env:1` and `.env.example:1` to `postgresql://cedar_app:apppw@localhost:5432/cedar` (and update the real deployment's secret/env accordingly). Because `cedar_app` does not own the tables, RLS policies will then be enforced",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 13019,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.277804,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 7119,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 7119,
+          "cache_read_input_tokens": 15224,
+          "inference_geo": "not_available",
+          "input_tokens": 9340,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 7119,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 7119,
+              "cache_read_input_tokens": 15224,
+              "input_tokens": 9340,
+              "output_tokens": 536,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 536,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "repoint the runtime `DATABASE_URL` to the least-privilege role ... Because `cedar_app` does not own the tables, RLS policies will then be enforced ... add `ALTER TABLE clients FORCE ROW LEVEL SECURITY;` and `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "c",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    },
+    {
+      "adjudicator_mark": {
+        "evidence": "Additionally, per project documentation line 39, add an explicit application-level `WHERE tenant_id = :tenant_id` in `main.py` so isolation never depends on exactly one mechanism.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 6758,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.263584,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 7063,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 7063,
+          "cache_read_input_tokens": 15224,
+          "inference_geo": "not_available",
+          "input_tokens": 9340,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 7063,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 7063,
+              "cache_read_input_tokens": 15224,
+              "input_tokens": 9340,
+              "output_tokens": 274,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 274,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "add an explicit application-level `WHERE tenant_id = :tenant_id` in `main.py` so isolation never depends on exactly one mechanism",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "d",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    },
+    {
+      "adjudicator_mark": {
+        "evidence": "**Boot-time role assertion (project documentation line 38):** on app startup, query `SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user` and also verify `current_user` is not the owner of the tenant tables; refuse to start (stop-the-line) if the connected role can bypass RLS.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 17450,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.268694,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 7091,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 7091,
+          "cache_read_input_tokens": 15224,
+          "inference_geo": "not_available",
+          "input_tokens": 9340,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 7091,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 7091,
+              "cache_read_input_tokens": 15224,
+              "input_tokens": 9340,
+              "output_tokens": 365,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 365,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "on app startup, query `SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user` and also verify `current_user` is not the owner of the tenant tables; refuse to start (stop-the-line) if the connected role can bypass RLS",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "e",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    }
+  ],
+  "pair": "mt-auth-t1-r2",
+  "repeat": 2,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "mt-auth-t1"
+}

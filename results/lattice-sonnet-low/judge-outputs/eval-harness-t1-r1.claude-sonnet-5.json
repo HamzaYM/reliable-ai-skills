@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24613,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1116762,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5367,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5367,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5367,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5367,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2778,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2778,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid code citations and correct README-grounded reasoning; Report 1 is slightly more explicit and concrete in distinguishing gate-vs-optional axis handling (answer 4 spells out renormalization for relevance/tone vs. hard block for accuracy), while Report 2 is comparably thorough but slightly more hedged (\"probably deserve distinct handling\").",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`composite()` in `aggregate.py:6-13` does `value = axis_scores.get(axis); if value is None: value = 0.0` \u2014 so a missing axis is silently treated as a score of `0.0` and folded into the weighted sum with its full weight. ... in `results/scores.csv` this is byte-for-byte the same shape as a fully-scored row",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if `value is None`, it's coerced to `0.0` before being multiplied by that axis's weight and summed (`aggregate.py:9-12`)... A record with a failed axis is therefore byte-for-byte indistinguishable in form from a fully-scored record \u2014 only the numeric composite differs.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "a fully-scored reply that legitimately got low ratings on all three axes and a reply where one axis call simply threw an exception are indistinguishable in the output... `rankings()` treats every row as equally valid... It has no way to exclude or discount degraded rows, so one dropped axis call ... can swing that agent's mean composite sharply and misrank them",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treating a failed axis call as a score of `0.0` conflates \"the axis call errored\" with \"the reply scored a 0 on that axis,\" which are very different facts... `results/scores.csv` silently mixes genuine low scores with scores deflated purely by call failures... An agent whose replies happen to hit more per-axis call failures ... will be unfairly ranked lower than an agent with identical underlying reply quality",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If `accuracy` (the load-bearing/gating axis) fails: do not compute or write a composite that looks like a normal score. Mark the record as degraded/incomplete \u2014 e.g. write `None`/empty rather than a numeric composite, or route it to a separate \"needs retry\" state",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Failed rows (or at least rows where `accuracy` \u2014 the gating axis \u2014 failed) should be excluded from `leaderboard.py`'s mean calculation, or retried, rather than silently averaged in as if they were real scores.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If `relevance` or `tone` fails, that's closer to a non-critical/optional axis \u2014 project documentation's guidance would allow renormalizing over what succeeded and flagging the result as complete... If `accuracy` fails, that's the load-bearing piece \u2014 the one that determines pass/fail... That's the more dangerous of the two failure modes",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "relevance/tone failures, being \"embellishments,\" are lower-stakes to approximate away \u2014 so a failed call should arguably be handled differently depending on which axis failed, and currently it is not.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

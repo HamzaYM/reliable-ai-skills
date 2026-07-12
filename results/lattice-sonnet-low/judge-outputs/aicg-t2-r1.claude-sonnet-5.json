@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21693,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1300962,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9917,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9917,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9917,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9917,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2186,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2186,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger overall \u2014 it commits to explicit, unhedged fixes for every issue (notably fail-closed on Redis error), whereas Report 1 hedges on the rate-limiter fail-open behavior instead of recommending denial.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "BadRequestError\" \u2014 caught, same fallover. Not appropriate. ... ContentPolicyError\" \u2014 caught, same fallover. Not appropriate. ... AuthError\" \u2014 caught, same fallover. Not appropriate. ... The fix is to catch only the transient/vendor-availability classes (RateLimitError, RequestTimeoutError, ServerError) for fallover, and let BadRequestError, ContentPolicyError, and AuthError propagate",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "BadRequestError: inappropriate to fail over. ... ContentPolicyError: inappropriate and the most serious problem. ... AuthError: inappropriate to fail over. ... Concrete fix: replace the bare except Exception with an explicit denylist function ... except NON_RETRYABLE: raise",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "this is the classic \"fail open on infra failure\" tradeoff \u2014 it prioritizes availability ... whether fail-open vs fail-closed is \"right\" depends on business priority, but the silence is a real gap either way.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Path A is the main defect: this gates safety-relevant behavior on an environment-name string comparison. ... Path C is also a defect: on any redis error ... the limiter fails open ... Concrete fix: invert both defaults. Fail closed unless an explicit dev-only flag is set, and fail closed on RedisError: ... except RedisError: return False",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It logs the entire document body (input_text) verbatim ... The fix: log the pseudonymized id (reuse the key already computed in batch_score.py, or call pseudonymize(record.applicant_id) here), drop input_text entirely (or log only a hash/length/non-content fingerprint), and log an explicit allow-list of non-sensitive metadata fields rather than the whole dict.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "input_text is logged verbatim \u2014 this is the full sensitive intake document content, logged in the clear into application logs. ... Concrete fix: log the pseudonymized id ..., drop input_text entirely or store only a hash/length, and replace record.metadata with an explicit allowlisted subset",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Fix: fail loudly rather than defaulting \u2014 e.g., salt = os.environ[\"PII_SALT\"] (raising KeyError if unset) or an explicit check that raises a clear configuration error, so a missing salt blocks startup/processing instead of silently downgrading the pseudonymization guarantee.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is a silent fail-open on a missing secret ... Concrete fix: fail hard instead of defaulting: ... salt = os.environ[\"PII_SALT\"] ... if not salt: raise RuntimeError(\"PII_SALT is not configured; refusing to pseudonymize without a salt\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

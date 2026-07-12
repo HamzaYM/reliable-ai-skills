@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20740,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.11139650000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3686,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3686,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 3132,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3686,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3686,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 3132,
+            "output_tokens": 1877,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1877,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations; they are comparable, with Report 2 slightly more granular (splitting style rules and detection-gap remediation).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` shows checkout failures began at 14:03 and the first alert fired at **14:50 \u2014 47 minutes later**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The timeline shows failures began at 14:03 and the first alert fired at 14:50 \u2014 47 minutes later (`larkpay-comms/incidents/OPS-412-timeline.md`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the timeline records that **1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The internal timeline (`larkpay-comms/incidents/OPS-412-timeline.md`) records 1,284 failed transactions requiring manual reprocessing, of which 37 were unrecoverable and refunded.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "April 2026 uptime was **99.77%** (`larkpay-comms/metrics/uptime-2026.csv`), below the contractual **99.9% monthly SLA** in `larkpay-comms/docs/sla-commitments.md`, which states any such month \"is a breach and owes service credits.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "April 2026 uptime was 99.77% (`larkpay-comms/metrics/uptime-2026.csv`), below the 99.9% contractual monthly SLA in `larkpay-comms/docs/sla-commitments.md`, which states any such month \"is a breach and owes service credits.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "\"The outage was caused by the on-call engineer deploying an untested config change\" breaks rule 1 of `larkpay-comms/docs/customer-comms-style-guide.md` (\"Never assign blame to an individual\").",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"The outage was caused by the on-call engineer deploying an untested config change\" assigns blame to a person; `larkpay-comms/docs/customer-comms-style-guide.md` says \"Never assign blame to an individual.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Rule 3 says to lead with customer impact and remediation, but the draft opens (and closes) with reputation messaging (\"does not change our commitment to reliability,\" \"engineering culture treats reliability as the first feature\")... The draft should state the actual outage window ... and the impact up front.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It opens with a reputation defense ... The style guide requires leading with impact and remediation; the reputation framing should be cut or moved.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r1",
+  "repeat": 1,
+  "task": "tcr-t1"
+}

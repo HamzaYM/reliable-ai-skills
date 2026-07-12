@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 11386,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08908920000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5310,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5310,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5310,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5310,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 1295,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1295,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with strong, well-grounded evidence; Report 1 is slightly more thorough (e.g., pixel-dimension checks, explicit \"must be removed\" list) but the two are substantively comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**\"Two-factor authentication is now enabled for every clinic by default.\"** Directly contradicted by `clinic-portal/app/security/config.py`: `TWO_FACTOR_DEFAULT = False`... **\"Patients can now export their full visit history as a PDF.\"** Not implemented. `clinic-portal/app/routers/visits.py` only exposes `GET /visits`, which returns an empty list, followed by a literal `# TODO: pdf export`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**\"Patients can now export their full visit history as a PDF.\"** (`highlights-v4.md:24`) \u2014 false. `app/routers/visits.py` contains only a `list_visits` stub that returns an empty list, immediately followed by `# TODO: pdf export`. ... **\"Two-factor authentication is now enabled for every clinic by default.\"** (`highlights-v4.md:30`) \u2014 false, and directly contradicted by `app/security/config.py:3-4`: `TWO_FACTOR_DEFAULT = False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`before_scheduling.png`: {\"route\": \"/schedule\", \"state\": \"seed-demo\"} `after_scheduling.png`: {\"route\": \"/billing/invoices\", \"state\": \"seed-demo\"} The \"after\" image was captured from the billing/invoices page, not scheduling. I confirmed this visually by reading both PNGs directly: `before_scheduling.png` renders the text \"SCHEDULING CALENDAR\", while `after_scheduling.png` renders \"BILLING / INVOICES\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The \"after\" image (`after_scheduling.png`) is **not a scheduling calendar at all** \u2014 it literally renders \"BILLING / INVOICES,\" and `captures.json` confirms it was captured from route `/billing/invoices`, a completely unrelated screen.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` \u2014 **referenced in the document (line 26) but does not exist anywhere in `docs/release/img/`.**... Additionally, `docs/release/img/unused_capture_07.png` **exists in the repo but is referenced nowhere**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_export.png` (`highlights-v4.md:26`) \u2014 referenced in the document but **does not exist** in `docs/release/img/`... `unused_capture_07.png` \u2014 exists in the directory (content: \"PATIENT LIST\") but is referenced by **neither** the document **nor** `captures.json`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**\"Highlights draft assembled with AI assistance.\"** \u2014 the footer on line 33 reads like an internal production note that was left in by mistake... It should be stripped before send.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\"** (`highlights-v4.md:33`) is internal production metadata... I would not ship it as-is: it reads like a leftover artifact, not a deliberate customer-facing statement.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r1",
+  "repeat": 1,
+  "task": "dora-t2"
+}

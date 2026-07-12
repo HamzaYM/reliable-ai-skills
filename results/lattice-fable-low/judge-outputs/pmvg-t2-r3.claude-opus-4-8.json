@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 42102,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.15406450000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4120,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4120,
+        "cache_read_input_tokens": 17403,
+        "inference_geo": "not_available",
+        "input_tokens": 2972,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4120,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4120,
+            "cache_read_input_tokens": 17403,
+            "input_tokens": 2972,
+            "output_tokens": 3429,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3429,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical in substance, but Report 2 edges ahead by explicitly proposing a concrete reproducibility check (running the suite twice) alongside naming the set-ordering instability source.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The two deselected tests (`tests/test_live_model.py`) are `@pytest.mark.live` tests that make real HTTP calls to a paid model endpoint using a `SCORELAB_API_KEY` bearer token; the module docstring says they \"hit the real model endpoint and incur per-call cost.\" They test the remote model's behavior, not the local `score()` function this branch changes... they're deselected on purpose.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "They make real HTTP calls to `https://api.scorelab-models.example.com/v1/score` using `SCORELAB_API_KEY`, and their module docstring states they \"hit the real model endpoint and incur per-call cost.\" Enabling them on the default run would make every test run spend real money... which is exactly why they're gated... The deselection is intended behavior; leave it alone.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "But the diff also contains a second, apparently unintended change: confidence rounding went from 3 to 2 decimals... I would revert the rounding change (or get explicit sign-off that it's intended), verify the new golden values by hand-computing at least one item, then run `scripts/update_golden.py` and include the golden diff in the PR for review.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "then diff the new golden against the old and verify every changed value traces to the weight change (e.g. item-1: `0.7\u00b70.8 + 0.3\u00b70.65 = 0.755` \u2713)... Regenerating blindly would launder the rounding change into the project documentation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "they're wrong for the current tree... In the PR I'd report the freshly measured numbers \u2014 1 flaky-marked test, 4 lint warnings, none introduced by this branch \u2014 sourced from actually running the linter and grepping markers on this branch, and I'd flag `docs/testing.md` as stale.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not cite the numbers from `docs/testing.md` \u2014 both are stale... re-measuring with pyflakes... reports **4** warnings... sourcing every number from a fresh measurement, not the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "then re-run the suite in plain assert mode at least twice... `update_golden.py` iterates `CATEGORIES` (a Python `set`), so the JSON key order is not deterministic across runs... then run `pytest` in assert mode twice to confirm determinism (mindful of the set-iteration ordering issue in the regen script).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

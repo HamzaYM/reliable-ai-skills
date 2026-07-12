@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 13932,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0856893,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8543,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8543,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8543,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8543,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1424,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1424,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with nearly identical substance and citations; Report 1 additionally verifies claims empirically and adds more gating details (UI mismatch, stub messaging client), while Report 2 adds idempotency/dedup concerns \u2014 comparable quality overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The deciding code is `auto_send_reminders_enabled(tenant)` in `backend/app/feature_flags.py`, lines 11\u201312:\n```python\n11    if tenant.settings.get(\"auto_send_reminders\") is None:\n12        return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, lines 11\u201312:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "No \u2014 it is the wrong default and should be inverted... Change it at `backend/app/feature_flags.py:10\u201313`. The minimal fix is to drop the `is None \u2192 return True` special case",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No \u2014 for this feature the default should be **off (opt-in)**, and I would change it... Where I'd change it \u2014 `backend/app/feature_flags.py:11-13`: drop the `is None \u2192 return True` special case so an unset value is falsy",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`25509a7` (SLOT-190, 2026-06-10) created `feature_flags.py` containing only `compact_calendar_view_enabled`, whose missing\u2192`True` (grandfather-on) default is appropriate for a UI/calendar preference... `aa4cf8d` (SLOT-214, 2026-07-01) added `auto_send_reminders_enabled` as a **byte-for-byte structural clone** of that function... the two flags sit in opposite categories (UI convenience vs. outbound messaging).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "SLOT-190 (`25509a7`) created `feature_flags.py` with `compact_calendar_view_enabled`, which defaults unset\u2192`True`. That is a **cosmetic calendar display preference**... SLOT-214 (`aa4cf8d`) added `auto_send_reminders_enabled` as a **verbatim structural clone** of that function... the two flags have opposite risk profiles.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "There is currently **no global gate** \u2014 `run()` (`reminders.py:22\u201331`) consults only the per-tenant resolver (confirmed by grep: no master/global switch anywhere; `infra/main.tf` holds only `environment`, default `\"staging\"`). A safe rollout needs a single kill-switch/rollback lever and per-environment staging",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The per-tenant flag at `reminders.py:25` is the *only* thing between \"enabled\" and \"every clinic messages every patient.\" `infra/main.tf` only defines an `environment` variable (default `\"staging\"`) \u2014 there is no global feature flag, no per-environment guard, no dry-run/canary... I'd add a global enable plus a canary/allowlist rollout",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

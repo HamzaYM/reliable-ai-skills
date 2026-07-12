@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25851,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1132173,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9305,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9305,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9305,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9305,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2912,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2912,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid code citations and clear reasoning; Report 1 states the gate-vs-optional distinction (d) somewhat more crisply and decisively, while Report 2 adds a useful (if tangential) observation that the README's gating logic isn't actually implemented in code \u2014 overall comparable quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A missing/failed axis is treated as a real score of `0.0` and multiplied by its full weight \u2014 it is not excluded, not renormalized over the remaining weights, and not flagged. ... a row like `agent-02,reply-1004,3.05` is indistinguishable, in form, from a fully-scored row.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Any axis whose value is `None` (missing key or explicit `None`) is silently substituted with `0.0` and still multiplied by its full weight. ... This is exactly the same 3-column shape (`agent_id, reply_id, composite`) as a row where all three axis calls succeeded \u2014 as confirmed by `results/scores.csv`, whose 10 rows are indistinguishable in form from each other.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "An agent who happened to get more axis-call failures (e.g. due to being scored during a rate-limited batch window, or having replies that happen to trip a parsing edge case) will show an artificially depressed mean composite and be ranked lower than agents scored under fully-healthy conditions \u2014 a ranking artifact of infrastructure reliability, not reply quality.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Because `results/scores.csv` carries no marker for which rows suffered a failure, `leaderboard.py:9-17` has no way to exclude or reweight them \u2014 `rankings()` just sums and averages every row's composite verbatim ..., so an agent's mean composite is pulled down purely by how often that agent's replies happened to hit a transient API failure, not by reply quality.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If `accuracy` fails: don't emit a composite at all for that record. Accuracy is the gating axis, so without it there is no valid pass/fail verdict to report. Write (or route to) a distinct incomplete/degraded record \u2014 e.g. a row (or separate error log) with `agent_id, reply_id, status=degraded, missing_axis=accuracy` and no composite value",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a failed accuracy call should never be silently scored as passing or failing the gate \u2014 it should be treated as \"gate status unknown,\" and that reply excluded from ranking consideration (or explicitly re-queued) rather than defaulted either direction.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "a failed `accuracy` call should block emitting any composite/pass-fail verdict for that record at all (since the gate itself is unknown), while a failed `relevance` or `tone` call can degrade gracefully via renormalization, as long as the result is clearly flagged as partial.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "composite() should either (a) refuse to produce a composite when a required axis \u2014 especially `accuracy`, given its gating role \u2014 is missing, or (b) compute a partial composite over only the successfully-scored axes with re-normalized weights, but only for axes where the README doesn't require a hard fail.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

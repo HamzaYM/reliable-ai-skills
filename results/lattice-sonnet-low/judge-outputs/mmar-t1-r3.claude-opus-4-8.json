@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16234,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.12914399999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4325,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4325,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4325,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4325,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1192,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1192,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports nail the cross-tenant leak and correctly deprioritize the f-string, but neither catches the exports.py signature break, making them comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the raw SQL it builds \u2014 `SELECT id, tenant_id, provider, starts_at, status, notes FROM appointments WHERE status = '{status.value}' AND to_tsvector(...) @@ plainto_tsquery(...) ORDER BY starts_at` \u2014 never references `tenant_id` in the `WHERE` clause or anywhere else. Every other read path in this codebase enforces tenant scoping in exactly one place, `build_appointment_query()`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`search_appointments` builds and executes a raw SQL string directly against the `appointments` table:... There is no `WHERE tenant_id = :tenant_id` clause anywhere. Any authenticated user of any tenant who calls `/appointments/search?q=...&status=booked` gets back matching appointments ... for **every tenant in the database**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "In this specific case it's not exploitable \u2014 `AppointmentStatus` is a closed `str, Enum` with fixed literal members (`booked`/`cancelled`/`completed`) validated by FastAPI before the function is ever called, so `status.value` can't carry attacker-controlled content.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it is not exploitable for injection because `status` is typed as `AppointmentStatus` (a closed `str, Enum`) and FastAPI/Pydantic will reject any request whose `status` isn't one of `booked`/`cancelled`/`completed` before the handler body runs (confirmed via `backend/app/schemas.py`). I am not listing this as a blocking defect",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

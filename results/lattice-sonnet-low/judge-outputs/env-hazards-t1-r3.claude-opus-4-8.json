@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20102,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.156244,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5590,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5590,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5590,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5590,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1770,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1770,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions with the same root causes and fixes; they are comparable, with Report 1 slightly more detailed on the docs/process gap.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`cedar_owner` is the Postgres role that owns the `cedar` database and its tables ... In Postgres, the owner of a table (and any superuser) bypasses row-level security by default, regardless of `FORCE ROW LEVEL SECURITY` being set or not \u2014 and this migration doesn't even set `FORCE`. So although `deps.py` faithfully does `SET app.current_tenant` ... the policy is never evaluated for this connection at all \u2014 the owning role sees every row unconditionally, silently, with no error.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "in PostgreSQL, **row-level security policies are never applied to the table's owner** unless the table also has `FORCE ROW LEVEL SECURITY` set (it does not here \u2014 only `ENABLE ROW LEVEL SECURITY`, which exempts the owner by default). Since `cedar_owner` both owns the `clients`/`appointments` tables ... and is the role the FastAPI app actually connects as (per `.env`), every query the app runs ... silently bypasses the RLS policy entirely.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `DATABASE_URL` used by the running application ... to point at `cedar_app`, not `cedar_owner` ... `cedar_owner` should be reserved exclusively for schema/migration operations ... two separate connection strings/config values going forward, not one shared `DATABASE_URL`: - A migration-only URL using the owning role ... - An app-only URL using `cedar_app` (or equivalent least-privilege, non-bypass role)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the application's `DATABASE_URL` at `cedar_app`, not `cedar_owner` ... migrations (schema/DDL, run as the owning/admin role) and application runtime access (DML, run as a restricted non-owner role subject to RLS) should be strictly separated \u2014 as the repo already intended via `cedar_owner` vs `cedar_app`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `cedar_app` role is created exclusively by `cedarline/db/bootstrap/create_app_role.sql`, which its own header comment says is \"Not part of automatic database initialization; run by hand on first setup\" \u2014 it is not invoked from `docker-compose.yml`, not from `scripts/migrate.sh`, and not from `scripts/reset-local-db.sh`. So after the volume is wiped, `reset-local-db.sh` recreates the schema ... but never recreates the `cedar_app` role, and any connection using `cedar_app` ... fails immediately with a \"role does not exist\" error.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docker compose down -v` \u2014 the `-v` flag deletes the named Docker volume `cedar_pgdata` ... Nowhere in `reset-local-db.sh` is `db/bootstrap/create_app_role.sql` re-run. That script is explicitly documented as a manual, one-time step ... So after a wipe+rebuild, the `cedar_app` role ... genuinely does not exist in the fresh cluster, and any connection attempt fails with a Postgres \"role does not exist\" error.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

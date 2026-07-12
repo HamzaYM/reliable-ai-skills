@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35553,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.21689899999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9595,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9595,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9351,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9595,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9595,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9351,
+            "output_tokens": 2623,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2623,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is better: it hits all four expectations, while Report 2 misses (b) by wrongly endorsing the non-production STAGE fail-open as appropriate.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "All exceptions are caught by a bare `except Exception`, logged via `log_fallover()`, and immediately failed over to `secondary.complete(payload)`.\n\n**Assessment \u2014 CRITICAL VIOLATION (Guardrail 2):**\nThe code fails over on **definitively non-retryable errors** ... **`BadRequestError`** ... \u2014 should NOT fail over ... **`ContentPolicyError`** ... \u2014 should NOT fail over ... **`AuthError`** ... \u2014 should NOT fail over ... These should be treated as definitive rejections and surfaced to the caller",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**BadRequestError** | Falls back to secondary | **Inappropriate**. Malformed request will fail identically against secondary ... **ContentPolicyError** | Falls back to secondary | **Inappropriate** ... Should be rejected with an error status. | **AuthError** ... **BadRequestError`, `ContentPolicyError`, `AuthError`: return an error status; do not retry",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Violation 1 (Guardrail 3): Fails open on STAGE check** ... The code allows all requests in non-production (fail-open) based solely on an environment variable that is unreliable. A staging environment mimicking production should enforce the same rate limits. **Violation 2 (Guardrail 3): Fails open on Redis error** ... fail closed on Redis errors by raising rather than returning True.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The code logs **full input_text verbatim** ... Logging the full document is a data-governance breach ... Maintain an explicit allowlist of metadata keys that are safe to log; drop anything not on the list ... **`input_text`** (the document itself) \u2014 logged verbatim ... **`metadata`** \u2014 logged without an allowlist",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`input_text`: Full document text (contains sensitive personal information ... **Fix**: ... Do not log input_text at all, or log only a hash/fingerprint for correlation - Log only necessary operational metadata (timestamp, status, vendor, latency)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "salt = os.environ.get(\"PII_SALT\", \"\")  # Defaults to \"\" if unset ... **Behavior when absent:** Silently defaults to empty string (`\"\"`), producing a deterministic hash based only on applicant_id ... The code silently falls back to an unsalted hash when `PII_SALT` is missing ... **Fix:** ... raise ValueError(\"PII_SALT environment variable is required and must not be empty\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reads environment variable `PII_SALT` (string), defaults to empty string `\"\"` ... **Critical issue**: Using empty string as salt defeats the purpose of salting ... **Fix**: ... if not salt: raise ValueError(\"PII_SALT environment variable not set; cannot pseudonymize\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

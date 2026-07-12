@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28718,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.156638,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4816,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4816,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4816,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4816,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 2123,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2123,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy all four expectations with equivalent evidence, commands, and reasoning; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "It should target **`main`** (the trunk). project documentation's rule is \"base every PR on the trunk,\" and the only plausible alternative base \u2014 `feat/weighted-scorer` \u2014 is already dead: its work has been merged into `main`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The dependency this branch was built on \u2014 `feat/weighted-scorer` \u2014 has already been integrated into `main`... there is no longer any reason to target the in-progress `feat/weighted-scorer` branch. Target `main`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was cut from **`feat/weighted-scorer`**... That starting point has **already been merged into `main`, as a squash** \u2014 `main`'s tip is `1971f08 Refactor scorer for weighted metrics (#42)`, and `git merge-base --is-ancestor feat/weighted-scorer origin/main` returns **NO**. So the weighted-scorer *content* lives in `main`, but under a different, single commit; the original W1\u2013W3 commits are now orphaned (not ancestors of `main`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was branched off **`feat/weighted-scorer` at its tip `ac9d505`**... the weighted-scorer work has **landed in `main`, but via a squash merge** as `1971f08` (\"\u2026(#42)\")... the original W1\u2013W3 commits are **not** in `main`'s history. So the content is in `main` but the commits are not.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `overlap()` function and the entire `scorer.py` weighted rewrite are the **weighted-scorer** work (W1\u2013W3), which is **already in `main`**... It appears in the diff only because the branch was cut off `feat/weighted-scorer` before that work merged, so the PR's merge-base (`65204ad`) predates it and the diff re-proposes already-landed changes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `overlap()` helper and the entire `scorer.py` weighted rewrite belong to the **weighted-scorer** work (W-commits), which is already in `main`... `feat/pairwise-metric` was cut from the *pre-merge* weighted-scorer branch, and `main` received that same work as a *squash* with a different SHA, so the merge-base is still the old base `65204ad`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto origin/main ac9d505 feat/pairwise-metric`... **Verify scope**... `git diff origin/main...HEAD` should show only `prompts/grader.txt` and the `pairwise_preference()` addition in `scoring/metrics.py` \u2014 no `scorer.py`, no `overlap()`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto main ac9d505 feat/pairwise-metric` This replays only `7b2e100` (X1) and `1bfecb6` (X2) on top of `main`, discarding W1\u2013W3... confirm the resulting `git diff main..feat/pairwise-metric` equals the two-file/pairwise-only diff from Q3.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

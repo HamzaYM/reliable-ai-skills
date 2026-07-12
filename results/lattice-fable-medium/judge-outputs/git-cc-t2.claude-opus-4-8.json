@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25965,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1413535,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8071,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8071,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8071,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8071,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1905,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1905,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all four questions with matching command-level rigor; they are comparable, with Report 2 adding marginal extra rigor via patch-id verification.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Base branch: `main`. ... targeting the stale `feat/weighted-scorer` branch would base the PR on a branch whose content main already contains and which will presumably be deleted.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Base branch: `main`. ... the branch this work was actually built on, `feat/weighted-scorer`, is effectively dead as a base: its content already landed on `main` via the squash commit `1971f08` \"Refactor scorer for weighted metrics (#42)\". Targeting `feat/weighted-scorer` would stack a PR on a branch whose merge already happened",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "feat/pairwise-metric was created from the tip of feat/weighted-scorer at ac9d505 ... Main gained a single commit `1971f08` \"Refactor scorer for weighted metrics (#42)\" ... Because the merge was a squash, git cannot recognize W1\u2013W3 as already-merged",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "feat/pairwise-metric` was created from the tip of `feat/weighted-scorer` (commit `ac9d505` ... `git merge-base --is-ancestor feat/weighted-scorer main` says no \u2014 `ac9d505` is not in `main`'s history \u2014 yet `git diff main feat/weighted-scorer` is empty and the patch-ids match, because PR #42 squash-merged the identical content as the single commit `1971f08`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py` \u2014 the entire rewrite to weighted scoring ... So **no, not all of it is pairwise-metric work.** ... They appear because the diff is computed from the merge base `65204ad`, which predates the squash merge",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`scoring/scorer.py` +13/\u22123 (the full weighted-metrics rewrite ... The entire `scoring/scorer.py` change and the `overlap()` function are `feat/weighted-scorer`'s W1\u2013W3 work. It appears in the diff because the merge base with `main` is the old fork point `65204ad`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git fetch origin` and confirm `origin/main` is still `1971f08` ... Rebase only the branch's own commits onto main: `git rebase --onto main ac9d505 feat/pairwise-metric`. ... `git diff main...feat/pairwise-metric` now equals the 5-line two-dot diff",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rebase only the two pairwise commits onto the current trunk tip: `git rebase --onto main ac9d505 feat/pairwise-metric`. ... `git diff main...feat/pairwise-metric` now equals the 5-insertion two-dot diff from question 3 \u2014 the diff is scoped to only the files the pairwise work meant to touch",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

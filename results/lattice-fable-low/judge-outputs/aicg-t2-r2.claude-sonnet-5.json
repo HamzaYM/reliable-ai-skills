@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22850,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0986267,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6306,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6306,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3097,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6306,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6306,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3097,
+            "output_tokens": 2514,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2514,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable depth and concrete fixes; Report 1 is slightly more assertive on the Redis fail-open fix while Report 2 hedges more, but overall quality is comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "a `BadRequestError` will fail identically on the second vendor (wasted call), an `AuthError` indicates a local credential problem, not a payload problem, and \u2014 worst \u2014 a `ContentPolicyError` means the primary explicitly rejected the payload, yet the code reroutes that sensitive applicant document to a second vendor anyway... Fix: define an explicit non-retryable denylist function, e.g. `def is_non_retryable(e): return isinstance(e, (BadRequestError, ContentPolicyError, AuthError))`, re-raise those, and only fail over on the remaining vendor error classes (not bare `Exception`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`ContentPolicyError` \u2014 the primary vendor refused the content. Automatically re-sending sensitive personal data to a second vendor to route around a policy refusal is inappropriate; this class should not fall over... Concrete fix: catch only `(RateLimitError, RequestTimeoutError, ServerError)` for fallback, re-raise `BadRequestError`/`ContentPolicyError`/`AuthError` (and anything unexpected), and log only the exception class name.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path D** \u2014 `redis.incr` raises `RedisError` \u2192 returns `True`. Fails open... **Fix:** invert the defaults \u2014 fail closed everywhere. Remove the `STAGE` check... on `RedisError`, return `False` (or raise) rather than `True`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A safety gate keyed on an exact string match, defaulting to *open*, is backwards \u2014 it should default to enforcing... for a PII pipeline I'd fail closed or alert.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "never log `input_text` verbatim \u2014 log a hash and/or length (e.g. `sha256(input_text)[:16]` plus `len`); and filter metadata through an explicit allowlist of known-safe keys (e.g. `{\"model\", \"doc_type\", \"latency_ms\"}`), dropping everything else, rather than logging the whole dict or trying to strip known-bad keys.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: log the *pseudonymized* id (`pseudonymize(record.applicant_id)`), never the input text (log a length or a content hash if traceability is needed), and either whitelist specific metadata keys or drop metadata.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Fix:** fail closed \u2014 `salt = os.environ[\"PII_SALT\"]` or an explicit check that raises (`RuntimeError(\"PII_SALT not configured\")`) at startup, so a missing secret hard-fails the job instead of silently falling back to the unsalted path.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: fail fast (`raise RuntimeError`) at startup if `PII_SALT` is missing/empty, and use `hmac.new(salt, applicant_id, sha256)`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

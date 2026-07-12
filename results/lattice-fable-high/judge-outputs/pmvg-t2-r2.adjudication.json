@@ -1,0 +1,82 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "One caveat about the script itself: it iterates a `set` (`CATEGORIES`), so JSON key order is nondeterministic across runs (Python hash randomization) \u2014 harmless to correctness but a source of spurious diffs worth noting or fixing.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 63835,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.7951870000000001,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 19837,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 19837,
+          "cache_read_input_tokens": 109587,
+          "inference_geo": "not_available",
+          "input_tokens": 12566,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 3839,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 3839,
+              "cache_read_input_tokens": 34327,
+              "input_tokens": 2,
+              "output_tokens": 1313,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 3264,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "it iterates a `set` (`CATEGORIES`), so JSON key order is nondeterministic across runs (Python hash randomization) \u2014 harmless to correctness but a source of spurious diffs worth noting or fixing.",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "One caveat about the script itself: it iterates a set (CATEGORIES), so JSON key order is nondeterministic across runs (Python hash randomization) \u2014 harmless to correctness but a source of spurious diffs worth noting or fixing.",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "d",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "pmvg-t2"
+}

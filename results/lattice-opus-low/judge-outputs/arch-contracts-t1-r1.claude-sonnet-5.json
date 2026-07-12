@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23245,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0995226,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4499,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4499,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9410,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4499,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4499,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9410,
+            "output_tokens": 2373,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2373,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 fully addresses expectation (c) by explicitly endorsing immediate/same-commit doc fixes and same-commit doc updates going forward, while Report 1 hedges and never rejects deferral or states the same-commit practice; on (a), (b), and (d) both reports are equivalent, so Report 2 is the stronger overall report.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls (a `refund(...)` accessor) should live in `medibill/backend/app/billing/gateway.py`... Places that talk to the provider outside the gateway: `medibill/backend/app/api/invoices.py:14-16`... `medibill/backend/app/workers/dunning.py:9-13`... (`errors.py:6` also imports from `chargekit`, but only the error classes \u2014 that is the sanctioned boundary exception per `errors.py:1-5` and `ARCHITECTURE.md:6-7`, not a divergence.)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls should live in `backend/app/billing/gateway.py`... Two places talk to the provider directly instead of through the gateway: `backend/app/api/invoices.py:4,14\u201316`... `backend/app/workers/dunning.py:2,9\u201313`... `backend/app/billing/errors.py:6` also imports `chargekit`, but only the SDK's error types \u2014 this is the legitimate, documented exception (ARCHITECTURE.md:5\u20137), not a violation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Claims the response contains \"exactly\" five fields: `id, tenant_id, amount_cents, currency, status`. The actual serializer `InvoiceOut` (`models/invoice.py:16-28`) returns a **sixth** field, `external_ref`, which `charge_invoice` populates (`invoices.py:17`). So \"exactly\" is wrong \u2014 the response has six fields.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual serializer `InvoiceOut` returns those **plus `external_ref`** (invoice.py:22,26\u201328), a real persisted column added in migration `0006_add_invoice_external_ref.sql`. So the response has 6 fields, not the 5 the doc enumerates \u2014 the \"exactly\" claim is wrong.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "These should be corrected now, ideally as their own small doc-fix, since they are simply stale relative to committed code... that should happen as part of (or before) the refund work, in the same commit that changes the relevant code, so the doc and code re-converge rather than the doc being weakened to match broken code... going forward keep the doc updated in the same commit as any change to the API shape, provider boundary, or webhook set (e.g. when refund accessors/handlers are added).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`ARCHITECTURE.md:15-17` claims the integration handles 4 webhook event types... The code in `webhooks.py:10-19` handles **5**... I would restate it to match the code... or, better, phrase it as a maintained list rather than a hard-coded count so future additions like a refund-specific event don't silently invalidate the doc again.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "rather than asserting a fixed count (\"4 webhook event types\") that will silently go stale every time a handler branch is added or removed, drop the number and point at the source of truth \u2014 describe it as \"the event types dispatched in `app/api/webhooks.py`\"... a hardcoded count in prose is guaranteed to drift, and here it already has.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35173,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.336651,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 25950,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 25950,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 25950,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 25950,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 2901,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2901,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical on findings, but Report 1 edges ahead by explicitly endorsing the go-forward same-commit doc policy, which Report 2 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`, as a new accessor (e.g. `refund(...)`) ... `backend/app/api/invoices.py` \u2014 imports `chargekit` at line 4 and constructs its own `chargekit.Client(api_key_env=\"CHARGEKIT_API_KEY\")` ... `backend/app/workers/dunning.py` \u2014 imports `chargekit` at line 2 and constructs a fresh client per overdue invoice ... The one legitimate, documented exception is `backend/app/billing/errors.py:6`, which imports only the SDK's error types",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls should be added as an accessor on `backend/app/billing/gateway.py` ... found exactly two places that construct their own `chargekit.Client` instead of using the gateway: `backend/app/api/invoices.py:14` ... `backend/app/workers/dunning.py:9` ... `backend/app/billing/errors.py:6` also imports from `chargekit`, but only the SDK's error classes, which is the exception the doc explicitly allows",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual serializer `InvoiceOut` in `backend/app/models/invoice.py:16\u201322` has six fields \u2014 those five plus `external_ref` \u2014 and `from_model` (lines 24\u201328) populates all six ... together with migration `backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual response model `InvoiceOut` in `backend/app/models/invoice.py:16-22` has a sixth field, `external_ref`, and `from_model` (lines 24\u201328) populates it ... together with migration `backend/migrations/0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It should be corrected **before or together with the first refund commit \u2014 not after, and not \"eventually.\"** ... Going forward, any commit that changes the invoice wire shape, the webhook dispatch, or the provider boundary must update this doc in the same commit, and the refund PR should call out its own doc changes explicitly.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "a hardcoded count of an enumerable, code-defined set is guaranteed to drift, and it already has. I would restate it without any number, pointing at the single source of truth instead",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "drop the exact-count phrasing: \"handles 4 webhook event types\" plus a closed list guarantees the sentence silently rots every time a handler is added ... Better to say the canonical list lives in `backend/app/api/webhooks.py` and enumerate without a count",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

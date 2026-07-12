@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24618,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16230050000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9624,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9624,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9624,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9624,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2088,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2088,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with accurate, well-cited diagnoses; they are essentially comparable, with Report 1 adding a bonus auth-token finding.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the deployment connects as `juniper_owner` \u2014 see `docker-compose.yml:5`, `infra/main.tf:2`, and `.env.example:1`, all `postgresql://juniper_owner:ownerpw@db:5432/juniper` ... In PostgreSQL, `ENABLE ROW LEVEL SECURITY` exempts the table owner from its policies; only `ALTER TABLE \u2026 FORCE ROW LEVEL SECURITY` subjects the owner ... (`juniper_owner` is not a superuser and has no `BYPASSRLS`, so this is specifically the owner exemption, not a superuser bypass.)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "all three deployment surfaces point the runtime at `juniper_owner` \u2014 `docker-compose.yml:5`, `.env.example:1`, and `infra/main.tf:2` all set `DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper` ... In PostgreSQL, `ENABLE ROW LEVEL SECURITY` does not apply policies to the table's owner; only `FORCE ROW LEVEL SECURITY` does ... this is *not* the superuser/`BYPASSRLS` case ... the bypass is purely the owner exemption",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It became exploitable with commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\"), dated 2026-06-17. That commit changed exactly three lines, switching the runtime `DATABASE_URL` from the low-privilege `juniper_app` role to the schema-owner `juniper_owner` role in `.env.example`, `docker-compose.yml`, and `infra/main.tf`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It became exploitable with commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\", authored 2026-06-17). That commit's diff changes exactly three lines, switching the runtime credential from the RLS-subject role to the owner role in every config surface: `.env.example:1`: `postgresql://juniper_app:apppw@\u2026` \u2192 `postgresql://juniper_owner:ownerpw@\u2026`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Primary fix \u2014 split runtime credentials from migration credentials. Change `DATABASE_URL` back to `postgresql://juniper_app:apppw@db:5432/juniper` ... Add a migration `0004`: `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the API's runtime `DATABASE_URL` back to `juniper_app:apppw` ... Add a migration `0004_force_rls.sql` with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` so even an owner connection is subject to the policy.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Defense in depth at the query layer. Add an explicit `WHERE tenant_id = :tenant_id` (from the verified claims) to the query in `backend/app/routes/appointments.py:16-19`, so a single-layer failure never yields cross-tenant data.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Defense in depth, application layer. Add an explicit `WHERE tenant_id = :tid` (from the verified claims) to the query in `backend/app/routes/appointments.py:16-19`, so isolation never depends on exactly one mechanism working.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Fail-closed startup guard. On boot, the app should assert its connection role is safe for RLS: check `current_user` is not the owner of tenant-scoped tables and has no `rolbypassrls`/superuser bit, and check `pg_class.relrowsecurity` (and ideally `relforcerowsecurity`) is true for those tables \u2014 refuse to start otherwise.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A startup assertion in the API. On boot, before serving traffic, verify the connected role cannot bypass RLS ... check that `current_user` is not the owner of the tenant tables (e.g. `pg_tables.tableowner`) or that `row_security_active('appointments')` is true in a pinned transaction. Fail closed (refuse to start) rather than log a warning.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r1",
+  "repeat": 1,
+  "task": "mt-auth-t1"
+}

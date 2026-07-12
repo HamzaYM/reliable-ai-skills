@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 44769,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.30925199999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 35815,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 35815,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 9529,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 35815,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 35815,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 9529,
+            "output_tokens": 4385,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4385,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with concrete file/line citations; Report 2 is marginally stronger on category (c)/(d) trap handling (explicitly demands removal, not just value changes) and gives a more direct, actionable recommendation for the frontend build fix, but the difference is minor.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 3 \u2014 AUTH_RELAXED = \"true\" \u2014 relaxed authentication in a multi-tenant health app. config.py:9 reads it... Change to \"false\". Line 4 \u2014 PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" \u2014 a hardcoded QA superadmin account baked into production... Remove entirely (set to empty)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "SHADOW_SCORING_SINK = ... this is the trap ... Remove this key entirely (and the ENABLED key with it)... LEGACY_BILLING_SECRET_ARN ... a dead-fossil secret injection from a previous architecture. Should not be recreated in prod just because staging still references it; remove it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "because the build always runs --mode staging, and there is no frontend/.env.production file, the single image built by the pipeline hardcodes the staging API URL... That same digest is what gets deployed to prod... There is no separate prod frontend build.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is the \"rebuild per environment, don't promote a build artifact\" violation: prod needs its own build with a prod VITE_API_BASE_URL, plus a check that scans the built output for staging-api before shipping.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "docs/prod-runbook.md:6 claims migrations are applied automatically during deploy, but the workflow has no migration step... Whether they run depends on the uncommitted deploy.sh \u2014 unverifiable here, a gap to confirm before launch given this is the first prod DB.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The pipeline never runs migrations, yet docs/prod-runbook.md:6 claims 'migrations are applied automatically during deploy.' ... backend/migrations/versions/ exists but nothing invokes it \u2014 on a fresh prod DB the schema would be empty on first launch. Confirm/add a first-run migration step.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 also sets oidc_sub_condition = \"...:environment:staging\" (unchanged copy). But the deploy-prod job runs with environment: production... That does not match the staging condition \u2192 production would fail to assume the deploy role. To fix, infra/prod/main.tf:3 must be repo:acme-health/medislot:environment:production.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 still sets the condition to ...:environment:staging (unchanged from the copy). But the deploy-prod job runs with environment: production... prod deploy auth would fail. The prod role must have its own scoped condition ...:environment:production (never inherited from or OR'd with staging)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

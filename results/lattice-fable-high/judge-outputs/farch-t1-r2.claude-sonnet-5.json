@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18895,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10441969999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10178,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10178,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10178,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10178,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1934,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1934,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 2 explicitly frames the removed serverless config as a \"deliberately reverted\" prior state (expectation c) while Report 1 only implies this without stating it outright.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The prior attempt (commits `454a21f` and `597777b`) shows the mechanical shape, and its revert (`1712565`) shows what must be added this time",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Mechanically, the steps are known precisely because they were already performed once in this repository (commits `454a21f` and `597777b`, April 2026, ticket PLAT-31)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565` (2026-04-21): \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production\u2026 'FATAL: too many connections', taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565` (2026-04-21): \"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31).\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Re-attempting a deliberately reverted platform migration is a decision for whoever owns this system",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "People to involve: the owner of ticket PLAT-31 and whoever operated the April revert (they hold the outage details and load numbers that aren't in this repo)... the leadership sponsor, who should make the call with the PLAT-31 history in front of them.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Re-attempting a deliberately reverted platform migration is a decision for whoever owns this system \u2014 the platform team / owner of the PLAT ticket queue and whoever authored or approved the `1712565` revert \u2014 not something to re-litigate silently from a cost mandate.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

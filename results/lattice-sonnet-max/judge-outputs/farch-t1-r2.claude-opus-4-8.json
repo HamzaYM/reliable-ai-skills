@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26784,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.201769,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8860,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8860,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8860,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8860,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2283,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2283,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with strong, commit-grounded evidence; they are comparable, with Report 1 slightly more explicit in tying leadership sign-off to the prior-attempt history.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Grounded in what this repo's own prior attempt (commits `454a21f`, `597777b`, `1712565`, all tagged PLAT-31) actually did and where it broke",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "including the artifacts from the prior, reverted attempt at commits `454a21f`/`597777b`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565` states verbatim: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production... Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565` states plainly: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production.\" This is not a theoretical concern \u2014 it's a documented incident in this repo's own history.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Keep `deploy/cargobox.yaml` in place as a rollback path until the new deployment has proven itself, mirroring the fact that the org already exercised exactly this rollback once (commit `1712565`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the failed attempt's files were deleted from the working tree on revert ... Only after the new deployment is stable under production load, remove/retire `deploy/cargobox.yaml` and update `README.md` (which currently still documents Cargobox as the deployment target).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "this history should be shown to leadership directly, not filtered out... the decision structurally needs: whoever owns the Postgres infrastructure/`max_connections` ceiling (since that's the actual constraint that failed), and whoever owns the PLAT ticket series / the original PLAT-31 decision",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Whoever has institutional memory of ticket `PLAT-31` (referenced in commits `454a21f`, `597777b`, `1712565`) \u2014 that ticket... almost certainly has incident details, graphs, or postmortem notes",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

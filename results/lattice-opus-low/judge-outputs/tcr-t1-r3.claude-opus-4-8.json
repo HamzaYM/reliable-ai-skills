@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23344,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.143248,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3888,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3888,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9205,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3888,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3888,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9205,
+            "output_tokens": 1989,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1989,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover all five expectations accurately with correct file citations; they are comparable, with Report 1 slightly more explicit on restructuring guidance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`incidents/OPS-412-timeline.md`: failures began 14:03, the FIRST ALERT fired at 14:50 (47 minutes later)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md`: failures began 14:03, the first alert fired at 14:50 \u2014 a **47-minute** detection gap, not \"within minutes.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`incidents/OPS-412-timeline.md` states: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states 1,284 transactions failed and required manual reprocessing, and 37 were **unrecoverable and refunded**.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`metrics/uptime-2026.csv` shows April 2026 uptime of 99.77%. `docs/sla-commitments.md` states the contractual monthly SLA is 99.9% and \"Any calendar month below 99.9% is a breach and owes service credits per the customer agreement\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "April uptime was 99.77% (`metrics/uptime-2026.csv`), below the 99.9% contractual monthly SLA. Per `docs/sla-commitments.md`, any month below 99.9% \"is a breach and owes service credits per the customer agreement\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The line \"The outage was caused by the on-call engineer deploying an untested config change\" assigns blame to an individual and exposes an internal role name. `docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"The outage was caused by the on-call engineer deploying an untested config change\" assigns blame to an individual. `docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" Must be rewritten",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 3: \"Lead with customer impact and remediation.\" The draft leads with an uptime boast ... It must be restructured to open with what customers experienced and what LarkPay is doing about it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The draft opens with an uptime boast (\"99.99% uptime... commitment to reliability\") rather than customer impact and remediation, contrary to rule 3.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r3",
+  "repeat": 3,
+  "task": "tcr-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35094,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1614252,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10283,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10283,
+        "cache_read_input_tokens": 103734,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1063,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1063,
+            "cache_read_input_tokens": 38371,
+            "input_tokens": 2,
+            "output_tokens": 1166,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4349,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations, explicitly flagging the snapshot's staleness (generated_at 2026-07-09T19:25Z) and committing to re-check live usage before relying on it, while Report 2 mentions the snapshot timestamp only in passing and never proposes re-verifying it, making Report 1 the stronger answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full run = transcript_count \u00d7 avg_tokens_per_scoring_call = 5,200 \u00d7 1,800 = 9,360,000 tokens (~9.36M) ... northpeak (primary / default): 640,000 remaining of 10,000,000. The 9.36M run is ~14.6\u00d7 the remaining allowance \u2014 short by ~8.72M tokens. It cannot come close to finishing on northpeak.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full run = transcript_count \u00d7 avg_tokens_per_scoring_call = 5,200 \u00d7 1,800 = 9,360,000 tokens (~9.36M) ... northpeak (primary/default): only 640,000 of its 10M window remaining. The run needs 14.6\u00d7 that \u2014 it overshoots by ~8.72M tokens. Primary could cover only ~355 of 5,200 transcripts before exhausting.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I'd route the run to the backend that can actually hold it \u2014 ridgeline, which has 10.8M remaining against a 9.36M need: python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Instead I'd route the whole job to the secondary backend, which has capacity now: python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary ... Ridgeline has 10.8M remaining vs. 9.36M needed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not launch via the default path. As configured, run_nightly.sh would fire all 9.36M tokens at northpeak, which has only 640K left ... Splitting isn't worth it here ... ridgeline comfortably holds the whole job \u2014 so an all-ridgeline run is the cleaner, lower-risk choice.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run the default path. It targets northpeak, which is nearly exhausted (640K left, ~93.6% of its window already spent as of the 19:25Z snapshot), so a 9.36M-token full run would blow the budget and die partway (~355 transcripts in).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The snapshot is ~3h stale. Both windows are still in the same pre-morning cycle (no reset between 19:25 and 22:30) ... Per project documentation's \"don't trust a stale signal\" rule, I'd re-pull live usage before committing; ridgeline is still clearly the safer of the two either way.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

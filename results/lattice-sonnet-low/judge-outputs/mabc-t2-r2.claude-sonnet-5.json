@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30708,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12705719999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7029,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7029,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9548,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7029,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7029,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9548,
+            "output_tokens": 3169,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3169,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all four expectations, including the critical shared-RESULTS_DB test-collision finding (d), which Report 1 misses entirely; otherwise both reports are comparably thorough on grouping, ordering, and flagging F-06/F-08.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Group C \u2014 pipeline/registry.py: F-02, F-05, F-09. Same file, but the three constants ... are independent of each other \u2014 one engineer can knock out all three in one small PR faster than coordinating three people on one file.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer A \u2014 pipeline/registry.py: F-02 (add aurora-1 endpoint mapping), F-05 (bump DEFAULT_RUBRIC_VERSION to rubric-v3), F-09 (fix DEFAULT_DATASET path to fixtures/eval_set.jsonl). All three constants live in the same small file with no logical dependency between them, so one engineer doing all three avoids three people touching one file simultaneously.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "First: Group A and Group B in parallel \u2014 these are genuine, observed bugs ... Group B \u2014 pipeline/rubric.py: F-01, plus the new test F-11 ... Then, or in parallel with step 1: Group C and Group D",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 (fully parallel, no file overlap) \u2014 3 engineers: Engineer A \u2014 pipeline/registry.py: F-02...F-05...F-09... Engineer C \u2014 pipeline/rubric.py + its test: F-01 ... together with F-11 ... Wave 2 (single-file, sequenced within the file) \u2014 1 engineer: Engineer D \u2014 pipeline/run_batch.py: F-04/F-13 first ... then F-07 ... then F-14.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06: \"tighten partial-credit thresholds so borderline answers score lower\" has no target values ... each with different scoring consequences across the whole eval set. This isn't safe to hand to an engineer to fix \"as written\" \u2014 it needs a rubric-owner decision on the actual new thresholds ... before code changes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 ... this is not a pure bug fix, it's a scoring-policy change with direct, user-facing impact on every borderline-scored output going forward, and \"too lenient\" is a judgment call with no objective target given. I would escalate this to whoever owns the rubric/scoring policy for a concrete target ... before assigning it to an engineer to implement, rather than let an engineer pick numbers themselves.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Shared test resource: tests/conftest.py defines RESULTS_DB pointing at a single path (/var/tmp/llm-scoring/results.db by default). If multiple engineers run the test suite concurrently on shared infrastructure without each setting a distinct RESULTS_DB, test runs can collide/clobber each other's results.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

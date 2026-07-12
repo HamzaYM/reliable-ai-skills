@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21027,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08749620000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3167,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3167,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3167,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3167,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2046,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2046,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent in content and coverage \u2014 both correctly compute the ~9.36M token requirement, identify northpeak's 640K shortfall, recommend switching to ridgeline/secondary, and decline to run the default script unmodified; neither notes the snapshot's staleness (generated_at) or recommends re-checking live limits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full run size: `transcript_count` (5,200) \u00d7 `avg_tokens_per_scoring_call` (1,800) = **9,360,000 tokens**... only **640,000 tokens remain** in its current window (`.cache/usage_snapshot.json`), against a 10,000,000-token window total. The full run needs ~14.6x more than what's currently available",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "so a full run needs roughly **5,200 \u00d7 1,800 \u2248 9,360,000 tokens**. Northpeak (default/primary): only **640,000 tokens remaining** in its window (of a 10,000,000 total)... nowhere near enough capacity regardless of timing.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline/secondary: **10,800,000 tokens remain** out of a 12,000,000 window \u2014 comfortably enough headroom... Instead I'd launch against the secondary backend... `python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ridgeline (secondary): **10,800,000 tokens remaining** (of 12,000,000)... comfortably more than the ~9.36M tokens needed for the full 5,200-transcript run... I'd launch the full job with `--provider secondary`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run `./scripts/run_nightly.sh` as-is. Its default path (northpeak/primary) has only 640,000 tokens of headroom against a 9.36M-token requirement \u2014 it would exhaust northpeak's window almost immediately",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run `run_nightly.sh` as-is. I'd launch the full job with `--provider secondary`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

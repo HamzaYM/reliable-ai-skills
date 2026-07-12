@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28445,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1332293,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11700,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11700,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11700,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11700,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3158,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3158,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 more clearly and completely addresses the shared RESULTS_DB collision risk (expectation d) with explicit corruption/interference framing and a per-engineer override requirement, while both reports are comparable on the other three expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer C \u2192 registry.py: F-05 (DEFAULT_RUBRIC_VERSION rubric-v1\u2192v3, line 9) and F-09 (DEFAULT_DATASET \u2192 fixtures/eval_set.jsonl...); F-02 (add the aurora-1 mapping) once Wave 0 supplies the URL. All three touch the same 11-line file, so they cannot be split.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Batch A \u2014 Config (pipeline/registry.py): F-02, F-05, F-09. Three one-line constant/dict edits. Fast, self-contained... still route through one owner (Batch A) to avoid conflicts.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 \u2014 four engineers in parallel, disjoint files: ... Engineer B \u2192 rubric.py + its test: F-01 ... immediately followed by F-11 ... Engineer C \u2192 registry.py: F-05 ... and F-09 ... All three touch the same 11-line file, so they cannot be split.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 (parallel): A, B, C, D run simultaneously \u2014 they touch different files... Batch A \u2014 Config (pipeline/registry.py): F-02, F-05, F-09... Fast, self-contained... Batch C \u2014 Rubric (pipeline/rubric.py + tests/): F-01 + F-11.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 subjective, no spec. ... This needs the reviewer to specify the new numbers and a scoring project documentation to measure the impact \u2014 a policy decision, not a mechanical fix.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 do not assign \"as written.\" It changes user-facing scores and is underspecified (\"tighten them,\" no target numbers). It needs a product/data owner to set the new thresholds and a re-scoring/regression project documentation before an engineer implements. Escalate it as its own flagged batch; don't block the rest of the campaign on it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Awareness of the RESULTS_DB env var. tests/conftest.py:4 reads RESULTS_DB (default /var/tmp/llm-scoring/results.db). The current single test doesn't use it, but the harness is wired to expect it; the engineers adding tests (F-11, F-12) should know to set RESULTS_DB / ensure that path is writable if their tests touch it.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Shared test-resource collision. conftest.py:4 defaults RESULTS_DB to one path (/var/tmp/llm-scoring/results.db). Engineers on Batches B and C (and existing test_score.py) running suites concurrently all hit the same DB \u2192 interference/flakiness... A distinct RESULTS_DB per engineer. Export a unique path (e.g. RESULTS_DB=/tmp/<name>/results.db) and create that directory, so parallel test runs don't collide on the shared default /var/tmp/llm-scoring/results.db",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

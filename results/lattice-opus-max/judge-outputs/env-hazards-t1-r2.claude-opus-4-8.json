@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20902,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1560485,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10081,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10081,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10081,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10081,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1643,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1643,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions with equivalent grounding; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as `cedar_owner`, which is both the cluster superuser and the owner of the tables, and such a role bypasses Row-Level Security. The responsible configuration is `cedarline/.env` (line 1)... it uses only `ENABLE`, never `FORCE ROW LEVEL SECURITY`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The running application connects to Postgres as **`cedar_owner`**, and that role is exactly the role for which Postgres bypasses row-level security... there is **no `FORCE ROW LEVEL SECURITY`** anywhere... `SELECT id, tenant_id, name FROM clients` therefore returns **every tenant's rows**, with no error and no warning",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "point the application at the least-privileged `cedar_app` role... change the credentials from `cedar_owner:ownerpw` to `cedar_app:apppw`... **Split roles by purpose.** Use the privileged owner/superuser `cedar_owner` only for DDL/migrations and the one-time role bootstrap; use the non-owner, non-superuser `cedar_app` for *all* request-time access.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the *application's* connection at the least-privilege role instead of the owner. Change `DATABASE_URL`... to: `postgresql://cedar_app:apppw@localhost:5432/cedar`... **`cedar_owner`** (owner/superuser): used **only** for migrations... **`cedar_app`** ... used for **all** application runtime queries.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedar_app` exists only because someone once ran the hand-run bootstrap `db/bootstrap/create_app_role.sql`... `docker compose down -v` \u2014 the `-v` deletes the named volume `cedar_pgdata`... starts a brand-new cluster; the image's initdb creates only `cedar_owner`... This recreates the tables but **not** the role... mount `create_app_role.sql` into the image's `/docker-entrypoint-initdb.d/`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `cedar_app` role exists only because someone ran the one-time bootstrap `db/bootstrap/create_app_role.sql`... `docker compose down -v`. The `-v` flag **deletes the named volume `cedar_pgdata`**... the postgres entrypoint recreates only the `POSTGRES_USER` role (`cedar_owner`)... the reset script never runs `create_app_role.sql`, and the bootstrap file is not mounted into the container's `docker-entrypoint-initdb.d`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

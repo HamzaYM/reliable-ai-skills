@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31881,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19809900000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8333,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8333,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8333,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8333,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2347,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2347,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations; comparable overall, with Report 1 slightly cleaner on calling for outright removal of the shadow sink and legacy billing values.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"` (line 2) ... `AUTH_RELAXED = \"true\"` (line 3) ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` (line 4) ... Both keys should be fully absent from prod config ... `LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"` ... Should be dropped",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"` ... `AUTH_RELAXED = \"true\"` ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. This grants a QA test account superadmin in production. Should be removed entirely",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the same image digest is deployed to both staging (line 28) and prod (line 35) ... the production launch would ship a bundle hardcoded to call `https://staging-api.example.com`, with no runtime fix available since the URL is baked at build time, not read at runtime",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the exact same image, built once, is deployed to both staging and production ... the production-deployed frontend bundle will have `https://staging-api.example.com` baked in as its API base URL",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "docs/prod-runbook.md line 6 claims \"Database migrations are applied automatically during deploy,\" but ... neither `deploy.yml` nor any committed script shows a migration step ... this claim must not be trusted without live verification ... need to be confirmed to actually run against a fresh prod database, manually if necessary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No database migration step in the workflow at all, yet `docs/prod-runbook.md:6` asserts \"Database migrations are applied automatically during deploy.\" ... this needs: (a) an actual migration-apply step in the pipeline or `deploy.sh`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf` line 3 still has `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 an uncorrected copy-paste from staging ... This must be changed to `\"repo:acme-health/medislot:environment:production\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` sets the **same** condition string, `\"repo:acme-health/medislot:environment:staging\"`, instead of `environment:production` ... This must be fixed to `repo:acme-health/medislot:environment:production` before `infra/prod` is applied",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

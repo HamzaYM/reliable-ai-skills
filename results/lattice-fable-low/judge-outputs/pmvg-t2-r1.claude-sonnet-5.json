@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31482,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1564838,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10084,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10084,
+        "cache_read_input_tokens": 101146,
+        "inference_geo": "not_available",
+        "input_tokens": 3278,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 710,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 710,
+            "cache_read_input_tokens": 38553,
+            "input_tokens": 179,
+            "output_tokens": 824,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3478,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is stronger: both match on (a), (b), and (c), but only Report 1 performs and states a concrete reproducibility check (rerunning the suite twice post-regeneration) for (d), while Report 2 only flags the nondeterminism risk without verifying reproducibility.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Enabling them on the default run would make every local and CI test run spend real money (and fail outright wherever the API key isn't set)... The deselection is an intentional cost gate, not a coverage gap.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Enabling them on the default run would make every test run cost money, require network access and a credential, and fail in any environment without the key... The deselection is intentional design, not a gap.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "then regenerate, then diff the new golden file hunk-by-hunk and confirm every changed value traces to the weight change (I verified by computation: new scores 0.755/0.56/0.925 follow arithmetically from 0.7/0.3 weights)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The right sequence: revert the rounding change (or get it explicitly agreed and documented), then regenerate, then hand-verify the new golden values against the new weights and commit the golden diff visibly in the PR.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite the numbers in `docs/testing.md` \u2014 both are wrong when re-measured.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite the numbers from `docs/testing.md` \u2014 both are wrong against the current repo.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Run the default suite (`pytest`) at least twice post-regeneration to confirm determinism; expect 3 passed, 2 deselected... after regenerating, re-run the suite in assert mode at least twice to confirm the fixture is stable",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

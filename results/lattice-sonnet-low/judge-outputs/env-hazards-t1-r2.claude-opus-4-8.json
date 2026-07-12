@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20683,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.148144,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5205,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5205,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5205,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5205,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 1600,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1600,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions; comparable, with Report 1 adding slightly more depth (latent SET vs SET LOCAL note) and Report 2 being crisper on the two-role structure.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`cedarline/.env` configures the running FastAPI app's own `DATABASE_URL` to also be `cedar_owner`, not the dedicated `cedar_app` role ... the owner of a table always bypasses row-level security policies unless the table has `FORCE ROW LEVEL SECURITY` explicitly set \u2014 and `0001_init.sql` never sets `FORCE ROW LEVEL SECURITY`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`DATABASE_URL` is set to `postgresql://cedar_owner:ownerpw@localhost:5432/cedar` \u2014 the schema-owning Postgres role ... a table owner ... is exempt from row-level security policies by default ... since the app connects as the owning role, Postgres silently skips evaluating that policy",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change the application's `DATABASE_URL` ... to connect as `cedar_app`, not `cedar_owner`. The app should never hold the owning/migration credentials at runtime. ... Keep migrations running as the owning role (`cedar_owner`) ... owner runs DDL, unprivileged app role runs DML under RLS",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_owner`: used only by `scripts/migrate.sh` / migration tooling, never referenced by the running backend.\n- `cedar_app`: the only role the FastAPI app ... ever connects with; it has `SELECT/INSERT/UPDATE/DELETE` ... but no bypass/owner/superuser privileges, so RLS policies are actually enforced",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The role `cedar_app` is created solely by `db/bootstrap/create_app_role.sql`, which per its own comment ... is a \"one-time... run by hand\" step, and it is not invoked by `reset-local-db.sh`. So after a wipe+rebuild, `cedar_app` no longer exists ... fails immediately with a \"role does not exist\" error",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It never re-runs `cedarline/db/bootstrap/create_app_role.sql`. That bootstrap file's own header states it is \"Not part of automatic database initialization; run by hand on first setup\" ... after any `-v` wipe/rebuild, the `cedar_app` role genuinely no longer exists ... someone must manually re-run `psql ... -f db/bootstrap/create_app_role.sql`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

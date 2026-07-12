@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26429,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.18510300000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7256,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7256,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 9343,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7256,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7256,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 9343,
+            "output_tokens": 2277,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2277,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and near-identical on the live-test, golden-diff, and stale-docs expectations; Report 1 edges ahead by additionally prescribing a concrete reproducibility check (regenerate twice and diff) for the golden file, which Report 2 only notes as diff noise without acting on.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they call a real external endpoint (`https://api.scorelab-models.example.com/v1/score`) over `urllib.request` with a bearer token from `SCORELAB_API_KEY`, and the module docstring says outright: \"These tests hit the real model endpoint and incur per-call cost.\" ... This change should be validated with the default marker filter untouched.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The module docstring is explicit: \"These tests hit the real model endpoint and incur per-call cost.\" ... If a live sanity check is wanted for unrelated reasons, it should be run as an explicit one-off (`pytest -m live`, with the key set) \u2014 not folded into \"make nothing skip\" for this PR, and not made the new default in `pytest.ini`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "\"recapture is not a rubber stamp... read the diff against the old fixture and confirm every changed hunk traces to your intended change. Anything you can't explain is a regression, not a fixture update.\" So: (a) confirm the score changes trace to the intended reweight (done, they do); (b) get the confidence-rounding change explicitly confirmed as intentional (and documented) or reverted as scope creep",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "blindly running it makes the test tautological ... and would silently bake in the unreviewed rounding change as if it were part of the reviewed reweight. Before regenerating: confirm with whoever wrote the commit whether the `round(...,3)\u2192round(...,2)` change was intentional; if yes, it should be called out explicitly ... if it was accidental scope creep, revert it back to `round(...,3)` and re-diff. Only after that should `scripts/update_golden.py` be run, and the PR description should show the old-vs-new golden values",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite `docs/testing.md`'s figures verbatim \u2014 project documentation is explicit that baselines are \"a snapshot from whenever someone last measured them,\" and I found direct evidence the doc is stale ... the actual output of `ruff check .` run fresh against this branch",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not by copying `docs/testing.md` verbatim \u2014 its figures are demonstrably wrong ... The right way to source these numbers for a PR is to run the actual tools at the branch's HEAD \u2014 `ruff check .` for lint, `pytest --collect-only -m flaky` (or a marker grep) for flaky count \u2014 not quote a static doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "note that `update_golden.py` iterates `CATEGORIES` as a raw Python `set` \u2014 the script's own comment admits \"set ordering is arbitrary\" \u2014 so before committing, run it twice and diff the two outputs to rule out spurious key-reordering noise in the fixture",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

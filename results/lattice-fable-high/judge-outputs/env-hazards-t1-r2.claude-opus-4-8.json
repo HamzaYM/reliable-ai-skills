@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16664,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13689550000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8403,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8403,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8403,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8403,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1601,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1601,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions with the same root causes and fixes; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The app connects to Postgres as the wrong role: `cedarline/.env` (and `.env.example`) set `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar` ... `cedar_owner` is the cluster bootstrap user ... and is also the **owner of every table** ... RLS policies are **not applied to superusers at all, and not applied to a table's owner** unless the table has `ALTER TABLE ... FORCE ROW LEVEL SECURITY` \u2014 and no `FORCE ROW LEVEL SECURITY` statement exists anywhere in the repo ... the policy is silently skipped and every tenant's rows come back.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedarline/.env` sets `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar` ... it is also the role that ran the migrations, so it **owns** the `clients` and `appointments` tables. In Postgres, superusers skip RLS unconditionally, and table owners skip it too unless the table has `FORCE ROW LEVEL SECURITY` \u2014 which `db/migrations/0001_init.sql` does not set ... the policies exist, but they are never evaluated for this connection, so the unfiltered `SELECT ... FROM clients` in `main.py` returns every tenant's rows. There is no error or warning",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Point the application at the dedicated role: change `DATABASE_URL` in `.env` ... to `postgresql://cedar_app:apppw@localhost:5432/cedar`. As a non-owner, non-superuser role, `cedar_app` is subject to the RLS policies ... **Runtime role (`cedar_app`)** ... never a table owner ... **Owner/migration role (`cedar_owner`)**: used only by `scripts/migrate.sh` and admin tasks, never by the running app.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change the application's `DATABASE_URL` in `.env` ... to connect as the least-privilege application role: `postgresql://cedar_app:apppw@localhost:5432/cedar` ... keep a strict two-role split: `cedar_owner` is used **only** by `scripts/migrate.sh` for schema changes; `cedar_app` is used for everything the running app does",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scripts/reset-local-db.sh` runs `docker compose down -v`, which deletes the named volume `cedar_pgdata` ... including the `cedar_app` role. The rebuild path is then `docker compose up -d db` ... followed by `scripts/migrate.sh` ... The role-creation script lives outside that directory, at `db/bootstrap/create_app_role.sql`, and both its own header comment and `docs/local-setup.md`/`README.md` describe it as a manual, one-time first-setup step \u2014 the reset script never runs it ... the teammate must re-run the bootstrap against the rebuilt database: `psql \"postgresql://cedar_owner:ownerpw@localhost:5432/cedar\" -f db/bootstrap/create_app_role.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `cedar_app` role is created only by `db/bootstrap/create_app_role.sql`, which `README.md` and `docs/local-setup.md` describe as a **one-time, manual, first-setup** step ... it is not in `db/migrations/`, not run by `scripts/migrate.sh`, and not mounted as a container init script ... `scripts/reset-local-db.sh`, runs `docker compose down -v`, which deletes the `cedar_pgdata` volume \u2014 that destroys the entire Postgres cluster, including all roles ... the teammate must re-run the bootstrap once against the rebuilt database: `psql \"postgresql://cedar_owner:ownerpw@localhost:5432/cedar\" -f db/bootstrap/create_app_role.sql`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

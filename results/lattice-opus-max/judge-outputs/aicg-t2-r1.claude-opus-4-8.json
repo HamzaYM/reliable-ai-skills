@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19471,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1966425,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13678,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13678,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13678,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13678,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1710,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1710,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct file/function citations and concrete fixes; they are comparable, with Report 1 slightly more exhaustive on secondary issues and Report 2 more concise with cleaner fix code.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The catch is a blanket `except Exception`, so **all six are handled identically**... **`BadRequestError` (deterministic 4xx / malformed request):** failover is **inappropriate**... replace the blanket catch with explicit handling by class \u2014 fail over only on `ServerError`/`RequestTimeoutError` (and optionally `RateLimitError` with backoff); re-raise/surface `BadRequestError`, `AuthError` (and alert), and `ContentPolicyError`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Inappropriate to fail over** (definitively non-retryable): `BadRequestError`, `ContentPolicyError`, `AuthError`. \u274c ... NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError) ... except NON_RETRYABLE:\n        raise                      # do not reroute a definitively-rejected payload\n    except Exception as e:         # rate limit / timeout / 5xx / connection \u2192 fail over",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**`STAGE != \"production\"` \u2192 returns `True`**... the limiter is a complete no-op outside production and is **fail-open by default**... **`STAGE == \"production\"`, `redis.incr(key)` raises `RedisError` \u2192 returns `True`**... **fail-open** \u2014 a redis outage silently removes all rate limiting... make the `STAGE` gate fail-closed... and on redis errors choose fail-closed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A is a fail-open hole and the primary defect.** The entire limiter is gated on the string `STAGE == \"production\"`... **Path D is the second fail-open hole.** On a Redis outage the limiter returns `True`... The guide requires failing **closed** here... fail closed by default... except RedisError:\n        return False                                    # fail closed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`input_text` = the entire raw sensitive document is dumped into application logs.**... **`metadata` is logged wholesale**... stop logging `input_text` entirely... Replace the wholesale `metadata` dump with an explicit allowlist of non-PII fields.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`input_text` \u2014 full sensitive document, logged verbatim.**... **never logged verbatim**... **`metadata` \u2014 whole dict dumped (allow-all).** The guide requires an **allowlist** of safe keys, not a wholesale dump.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "With the `\"\"` default, the function computes an **unsalted `sha256(applicant_id)`**... **It silently degrades \u2014 it does not fail.**... fail closed \u2014 read the salt with no default and raise (or refuse to start) if `PII_SALT` is missing/empty",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "because of the `\"\"` default, a missing or empty `PII_SALT` **does not fail** \u2014 the function silently computes `sha256(applicant_id)` with **no salt**... treat `PII_SALT` as required and fail closed... if not salt:\n        raise RuntimeError(\"PII_SALT is required for pseudonymization\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18014,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1139309,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9769,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9769,
+        "cache_read_input_tokens": 66993,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1078,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1078,
+            "cache_read_input_tokens": 37842,
+            "input_tokens": 2,
+            "output_tokens": 1039,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2056,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports strongly hit a, b, and d with concrete commit citations and PLAT-31-grounded sign-off recommendations, and both miss (c) by not explicitly framing the current container deployment as a deliberate, intentional state versus the removed serverless config; report 2 is slightly more precise on evidence (quoting the actual revert message) but the two are comparable overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "This repository already contains a complete record of exactly what these steps looked like the first time, in commits `454a21f` and `597777b` (April 2026)... `git log --oneline -20` in `carelog-api` \u2014 verify whether this migration was already attempted. It was: commits `454a21f`, `597777b`, `1712565`. Read the revert message before doing anything else.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this repo already has a template for this in git history: `backend/serverless_handler.py`, added in commit `454a21f`, calling `app(request)`... Per commit `1712565` (\"Revert Edgerunner migration...\"): Edgerunner serverless isolates cannot hold the SQLAlchemy connection pool between invocations.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Per `1712565`, moving `carelog-api` to Edgerunner previously took down `/reports/monthly` in production because serverless isolates cannot hold the shared SQLAlchemy pool, the stopgap of opening a fresh connection per request caused Postgres to hit `max_connections` under normal dashboard load, and the team reverted back to Cargobox rather than solve connection pooling for serverless",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The team's stopgap (commit `597777b`) was to open a dedicated `create_engine(..., poolclass=None)` per request in `serverless_handler.py`. Per the revert commit message: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Given this is the second attempt at a documented dead end, I'd also loop in whoever wrote the original revert (or the current PLAT-31 owner) to confirm the connection-pooling problem hasn't already been separately ruled out as infeasible on Edgerunner.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "whoever holds ticket PLAT-31 or its area (since this is a re-opening of prior, explicitly-reverted work, not a fresh initiative) before committing engineering time",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

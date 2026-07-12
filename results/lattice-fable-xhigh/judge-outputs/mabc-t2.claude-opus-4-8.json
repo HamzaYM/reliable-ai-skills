@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30603,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19280549999999996,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11286,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11286,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11286,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11286,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2586,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2586,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent, well-grounded detail; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer A \u2014 pipeline/registry.py: F-05 (bump DEFAULT_RUBRIC_VERSION...), F-09 (fix DEFAULT_DATASET...), and F-02 (add the aurora-1 mapping to MODEL_ENDPOINTS...) ... These are three one-line edits to a 12-line file; bundling them into one commit by one person eliminates guaranteed merge conflicts.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "registry.py is 11 lines with three findings (F-02, F-05, F-09) \u2014 same reasoning as run_batch.py, keep with one engineer.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 \u2014 four engineers fully in parallel... Engineer B \u2014 pipeline/rubric.py: F-11 first... Engineer A \u2014 pipeline/registry.py: F-05..., F-09..., and F-02 ... bundling them into one commit by one person",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 (all in parallel, day one): A's whole stream, B's whole stream, C's F-05/F-09, D's F-10... Engineer C \u2014 pipeline/registry.py: F-05... and F-09... immediately; F-02 ... only once the real endpoint URL is obtained... Engineer B \u2014 pipeline/rubric.py: F-01 ... together with F-11 (the edge-case parsing test)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 escalate, don't assign. \"Too lenient; tighten them\" specifies no target values, and changing PARTIAL_CREDIT_THRESHOLDS (score.py:3) changes the scores of every borderline answer the pipeline will ever grade \u2014 a scoring-policy decision, not an engineering one. Batch it to the pipeline owner for concrete thresholds",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 a policy decision, not a bug fix. \"Tighten the thresholds so borderline answers score lower\" names no target values. PARTIAL_CREDIT_THRESHOLDS = (0.35, 0.65) ... determines every downstream score, so changing it silently breaks comparability... This needs the rubric owner to choose and sign off on values",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A private RESULTS_DB. Export RESULTS_DB to a per-worktree temp path before running tests, because tests/conftest.py:4 otherwise defaults everyone to the shared /var/tmp/llm-scoring/results.db. ... Several engineers running the suite concurrently on one machine would stomp each other's results database unless each overrides RESULTS_DB.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "tests/conftest.py:4 defaults RESULTS_DB to the machine-global path /var/tmp/llm-scoring/results.db; engineers running tests on a shared box would share that file unless each overrides the env var. ... Set RESULTS_DB ... to a per-engineer scratch path; the default ... is shared machine-wide.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

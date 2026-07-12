@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 108368,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.34362899999999996,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7926,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7926,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7926,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7926,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 8331,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 8331,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answered better overall \u2014 it correctly flags F-06 as a product/sign-off judgment call \u2014 though it omits the local-setup/RESULTS_DB collision question (d) that both reports fail to fully address.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Team A \u2014 Registry config (F-02, F-05, F-09): 3 simple, independent changes to pipeline/registry.py",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Group A (1 engineer): F-02, F-05, F-09 - All in pipeline/registry.py ... Rationale: Single file, three simple constants; one engineer avoids merge conflicts",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Recommended execution order: 1. Start in parallel: Teams A, B, C (simplest, zero dependencies) 2. Then: Team D (Rubric fix; enables F-11 test) 3. Finally: Team E (Batch runner; most complex and interdependent)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 \u2014 Configuration & Documentation (fully parallelizable, no code dependencies) Group A (1 engineer): F-02, F-05, F-09 ... Wave 2 \u2014 Code fixes (parallelizable across file boundaries ... Group F (1 engineer): F-04, F-07, F-13, F-14 (treated as a single logical unit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "F-06: Requires product/domain decision before implementation ... Changing scoring thresholds is a product decision, not a bug fix. It affects the output of every score in the pipeline ... Escalate F-06 to a decision gate; don't assign until answered.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

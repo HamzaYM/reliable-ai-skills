@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30192,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1244791,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9802,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9802,
+        "cache_read_input_tokens": 29147,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9802,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9802,
+            "cache_read_input_tokens": 29147,
+            "input_tokens": 2,
+            "output_tokens": 3430,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3430,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reach the same correct conclusions on all four expectations, with Report 1 being marginally more rigorous (explicit git fetch/origin freshness step and explicit re-check that scoring/scorer.py shows zero diff), while Report 2 is slightly less explicit about origin freshness but adds useful extra observations (dead-code flag, stale branch cleanup suggestion); overall comparable quality, Report 1 slightly more thorough on the freshness verification.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. Per project documentation's dead-base-PR-trap rule (\"Base every PR on the trunk\"), and because in this case the branch it was actually built on (`feat/weighted-scorer`) has already had its content absorbed into `main`... Targeting `feat/weighted-scorer` as the base would be stacking on a branch whose purpose is already fulfilled; targeting `main` is the only stable option now.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. ... `feat/weighted-scorer` is not a valid target \u2014 its work has already landed on `main` (see #2), so targeting it would create a PR against a branch that's effectively obsolete/superseded.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the branch was created from commit `ac9d505` (\"branch: Created from HEAD\"), which is the tip of `feat/weighted-scorer`... `git merge-base --is-ancestor ac9d505 main` returns **NO** \u2014 `ac9d505` is *not* an ancestor of `main`. Yet `main`'s current tip `1971f08` (\"Refactor scorer for weighted metrics (#42)\"... This means `feat/weighted-scorer`'s work was already merged into `main`, but via a **squash merge that produced a new commit hash**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was branched from `feat/weighted-scorer` at commit `ac9d505`... That starting point (`feat/weighted-scorer`) has since been **merged into `main`, but via squash**... `main`'s tip `1971f08` (\"Refactor scorer for weighted metrics (#42)\", 2026-06-13)... Yet `git merge-base --is-ancestor feat/weighted-scorer main` fails: `feat/weighted-scorer` is **not** an ancestor of `main`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Three-dot diff** (`git diff main...feat/pairwise-metric`...) shows **21 insertions / 3 deletions across 3 files**: the entire `WEIGHTS`/`overlap`/weighted-`score()` rewrite of `scoring/scorer.py` and `scoring/metrics.py`... So **no \u2014 not all of it is pairwise-metric work.** Three of the five commits... are present only because the branch was forked from `feat/weighted-scorer` before that work was squash-merged into `main` as `1971f08`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a naive `main...feat/pairwise-metric` comparison... would show the changes from **all five commits**: W1, W2, W3 (weighted-scorer aggregation + `overlap()` metric) *and* X1, X2... Only the X1/X2 portion is actually pairwise-metric work. The W1\u2013W3 portion \u2014 `WEIGHTS`, `overlap()`, and the rewritten `score()` in `scoring/scorer.py` \u2014 is **not** new work; it's already on `main` under commit `1971f08` (PR #42). It's present in this branch purely as inherited history from the dependency branch it was built on top of before that dependency was squash-merged separately.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase `feat/pairwise-metric` onto current `main`**... the `--onto` form (rebasing only `X1`/`X2` onto `main`, discarding the range up to `feat/weighted-scorer`'s tip)... **Resolve/confirm the result**: after the `--onto` rebase, diff the branch against `main` again and confirm it's just the two real commits (`X1`, `X2`)... verify `scoring/scorer.py` shows no diff at all against `main`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Resync the branch onto `main`**... `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... **Confirm the resulting diff against `main` is exactly the 2-commit, 5-line change** (re-run `git diff main feat/pairwise-metric` and `git log main..feat/pairwise-metric`) before opening the PR, so the PR description and diff match.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

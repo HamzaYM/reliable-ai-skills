@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16528,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.259596,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 34308,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 34308,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 9531,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 34308,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 34308,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 9531,
+            "output_tokens": 1677,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1677,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all three expectations (including the exports.py breaking-signature defect), while Report 2 misses the nightly_export/build_appointment_query signature-break defect entirely, making Report 1 the more complete and correct sign-off.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The function signature is `search_appointments(session, tenant_id, q, status)`, and `tenant_id` **is passed in** from the API layer ... but inside the function body `tenant_id` is never referenced again. ... There is no `tenant_id` predicate anywhere in the `WHERE` clause",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is no `tenant_id` predicate anywhere in this query. `tenant_id` is accepted as a function parameter but never referenced in the SQL \u2014 I confirmed this by grepping the committed branch file (`git show feat/appointment-search:backend/app/appointments.py | grep -n tenant_id`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This PR changes `build_appointment_query`'s signature from `(session, tenant_id)` to `(session, tenant_id, filters)`, with `filters` as a **required** positional parameter (no default). `backend/app/exports.py` ... calls `build_appointment_query(session, tenant_id).all()` \u2014 with only two arguments ... the next time the nightly export job runs for any tenant, it will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` and crash",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It's not currently exploitable because FastAPI validates `status` against the `AppointmentStatus` str-Enum before the function is ever called, but it's an inconsistent, fragile pattern",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "As written, this is *not* currently exploitable through the public endpoint: `status` is typed `AppointmentStatus` in `backend/app/schemas.py`, a `str, Enum` restricted to exactly `booked` / `cancelled` / `completed`. FastAPI/pydantic validates the incoming query string against that enum before ... invoked",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

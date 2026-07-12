@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22544,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.181359,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7895,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7895,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9463,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7895,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7895,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9463,
+            "output_tokens": 1859,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1859,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy all four expectations with well-grounded citations; they are comparable, with Report 1 and Report 2 each covering the gate-axis distinction and ranking corruption in equivalent depth.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "does `value = axis_scores.get(axis)` (line 9), and if that's `None`, substitutes `0.0` (lines 10-11) before multiplying by the axis weight and summing. ... The written record is a plain float in the same `agent_id,reply_id,<float>` shape as every other row",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The missing axis is substituted with `0.0` and folded into the weighted sum exactly as if the model had genuinely scored that axis a 0 out of 10. ... a degraded record and a fully-scored record are byte-for-byte identical in shape",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It conflates \"the grading call failed\" ... with \"the model rated this reply the worst possible score on that axis\" ... A row degraded by a silent axis failure counts exactly the same as a fully-scored row ... agents that happen to draw more of these transient failures across their replies will have their mean composite pulled down",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`results/scores.csv` cannot distinguish \"this reply scored 0 on accuracy\" from \"the accuracy call errored out.\" ... every row in `scores.csv` is summed and counted identically \u2014 `sums[agent_id] += float(comp)` \u2014 with no notion of a partial or excluded row",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "a failed accuracy call should not get any numeric default at all. The row should be excluded from scoring/leaderboard aggregation (or queued for mandatory re-grading) rather than defaulted",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Accuracy call fails (the gate axis): do not write a numeric composite for that row at all. ... The row should either be left out of `results/scores.csv` entirely, or written with an explicit incomplete marker",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "For relevance/tone \u2014 the lower-stakes, additive axes \u2014 it's more defensible to either (a) also exclude the row ... or (b) compute the composite from only the successfully-scored axes with weights renormalized to sum to 1 ... a failed accuracy call should not get any numeric default at all",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Relevance or tone call fails alone ... a renormalized composite (redistribute weight across the axes that did succeed) is defensible ... A missing accuracy score cannot be handled the same way \u2014 the pipeline has lost the one signal that determines pass/fail eligibility",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19905,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09709020000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4551,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4551,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9700,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4551,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4551,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9700,
+            "output_tokens": 2132,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2132,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid, well-grounded evidence; Report 2 is marginally more precise (line numbers, direct JSON quotes, and also flags the 'production data'/seed-demo discrepancy), but the substance is comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default\" (line 30) directly contradicts `app/security/config.py`, which sets `TWO_FACTOR_DEFAULT = False`... This is a factual claim that would mislead customers... and must be removed or corrected before send. ... \"Patients can now export their full visit history as a PDF\" (line 24) is not implemented \u2014 `app/routers/visits.py` has only a stub `list_visits()` returning `[]` with a `# TODO: pdf export` comment. This claim must be removed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`app/security/config.py:4` sets `TWO_FACTOR_DEFAULT = False`, with an explicit comment \"Two-factor authentication is opt-in per clinic.\"... **Must be removed or corrected.** ... **\"Patients can now export their full visit history as a PDF.\"** Not implemented. `app/routers/visits.py` has only a stub `/visits` route returning an empty list and a `# TODO: pdf export` comment... **Must be removed**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`before_scheduling.png` renders the label \"SCHEDULING CALENDAR,\" but `after_scheduling.png` renders \"BILLING / INVOICES\"... This is corroborated independently by `captures.json`, whose own route metadata says `before_scheduling.png` was captured from `/schedule` while `after_scheduling.png` was captured from `/billing/invoices`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"before_scheduling.png\": {\"route\": \"/schedule\", ...}\n\"after_scheduling.png\": {\"route\": \"/billing/invoices\", ...}\n...Visually confirmed by opening the images: `before_scheduling.png` renders the text \"SCHEDULING CALENDAR\", but `after_scheduling.png` renders \"BILLING / INVOICES\" \u2014 a completely unrelated screen.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Referenced but missing**: `after_export.png` is referenced both in the markdown (line 26) and in `captures.json`, but does not exist in `docs/release/img/`. `captures.json` itself even annotates it as \"expected capture; no corresponding file.\"... **Present but unused**: `unused_capture_07.png` exists in `img/` (renders \"PATIENT LIST\") but is referenced neither in the markdown nor in `captures.json`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_export.png` is referenced in the doc (line 26, under \"Export your visit history\") but does not exist. `captures.json` confirms this explicitly... `unused_capture_07.png` exists on disk (reads \"PATIENT LIST\" when opened) but is not referenced anywhere in the doc \u2014 it's an orphaned capture",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the closing line **\"Highlights draft assembled with AI assistance\"** (line 33) is an internal-process/authorship disclosure that has no place in a customer email... It should be stripped before send regardless of the other fixes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The trailing line \"Highlights draft assembled with AI assistance.\"** (line 33) is an internal drafting note, not customer-facing copy. It should be stripped before send",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r2",
+  "repeat": 2,
+  "task": "dora-t2"
+}

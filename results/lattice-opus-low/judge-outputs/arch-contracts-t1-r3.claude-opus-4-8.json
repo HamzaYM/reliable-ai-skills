@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 37346,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.179148,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4837,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4837,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4837,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4837,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 3015,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3015,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations and are closely comparable; Report 2 states the \"drop the hardcoded count\" webhook recommendation more cleanly, while Report 1 is slightly stronger on separating the doc-vs-code direction of each fix.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls (e.g. a `refund(...)`) should live in `backend/app/billing/gateway.py`. ... `backend/app/api/invoices.py:14-16` \u2014 constructs its own `chargekit.Client(...)` ... `backend/app/workers/dunning.py:9-13` \u2014 constructs `chargekit.Client(...).charge(...)` inline ... `backend/app/billing/errors.py:6-9` imports `chargekit.errors` to re-export exception classes. That is the one boundary exception the doc explicitly allows ... so it is not a violation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls belong in `backend/app/billing/gateway.py` ... `backend/app/api/invoices.py:4,14-16` ... builds its own `chargekit.Client(...)` ... `backend/app/workers/dunning.py:2,9-13` ... The only legitimate non-gateway touch point is `backend/app/billing/errors.py:6`, which imports just `chargekit.errors` \u2014 and that is the explicitly documented boundary exception",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual serializer `InvoiceOut` returns a sixth field, `external_ref` (`models/invoice.py:22`, populated in `invoices.py:17`). This field was added later by migration `0006_add_invoice_external_ref.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual serializer `InvoiceOut` in `models/invoice.py:16-28` has a sixth field, `external_ref`, which `from_model` populates and `charge_invoice` sets from the provider result (`invoices.py:17`). `external_ref` is a real, persisted column (migration `0006_add_invoice_external_ref.sql`). So the response has 6 fields, not the 5 documented.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "this should happen as part of the refund change, before/with the code, not after. ... update the doc in the same change set that introduces `gateway.refund()`, and treat the doc edit as part of the definition-of-done rather than a follow-up.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the document is updated in the same commit as the code it governs \u2014 not \"eventually.\" ... this reconciliation should happen **before** the refund feature is written ... The doc change belongs in the same commit(s) as those code changes and should be called out explicitly in the PR summary.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "correct it to list all five handled types (adding `payment_pending`) and fix the count to 5. I'd also soften the framing from an exact enumeration to something the code can be verified against ... \"handles the following types, ignoring others\" is more accurate and less likely to drift again.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would restate this claim to stop hard-coding a count: rather than \"handles 4 event types: \u2026\", describe it as \"the handler in `app/api/webhooks.py` dispatches on the provider's event `type`; see that file for the current set,\" which is self-updating and won't re-drift.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

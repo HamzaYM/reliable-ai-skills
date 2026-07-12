@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22693,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10866060000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5891,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5891,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5891,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5891,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 2395,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2395,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently derive and state all four expectations with concrete git evidence (merge-base, ancestry checks, file-level diff attribution, and a correct --onto rebase plan with a post-rebase freshness check); they are comparable in substance, with Report 1 slightly more granular in per-file commit attribution and Report 2 slightly cleaner in framing the squash-vs-content distinction.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The trunk, **`main`** (`origin/main`, tip `1971f08`)... and specifically *do not* stack it on `feat/weighted-scorer`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. The only reason this branch was stacked on `feat/weighted-scorer` was the dependency on that work \u2014 and that dependency has already landed on `main`... Since the dependency is fully present in `main`, the PR should target `main` directly; there is no need to target `feat/weighted-scorer`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric` was cut from **`feat/weighted-scorer`** at commit `ac9d505` (W3)... `git merge-base --is-ancestor origin/feat/weighted-scorer origin/main` \u2192 **NO** (not an ancestor)... `main`'s `1971f08` is a **squashed/refactored** landing of that feature (PR #42) with a different tree and a different hash",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was created from the tip of `feat/weighted-scorer`. Evidence: `git merge-base feat/pairwise-metric feat/weighted-scorer` = `ac9d505`... the weighted-scorer work has been **merged into `main`, but as a squash** (PR #42 = `1971f08`), not as the original W commits... `git branch --contains d6fdbc3` (W1) returns only the two feature branches, not `main`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`  |  13 ++++++++++---... `scoring/scorer.py` \u2190 `2d3029b` (W2) + `d6fdbc3` (W1) \u2014 **entirely weighted-scorer work**... They appear in the PR diff only because that dependency landed in `main` as a refactored commit (#42) rather than as these commits, so git can't see it as shared history and re-includes W1\u2013W3 as \"new.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the extra content in the PR-style diff \u2014 the `scorer.py` changes and the bulk of `metrics.py`... is **not** part of the pairwise metric. It appears because the branch's merge-base with `main` is the old `65204ad`, not the squashed weighted-scorer landing.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase off the dead base and onto the trunk**, replaying only the pairwise commits: `git rebase --onto origin/main ac9d505 feat/pairwise-metric`... `git log origin/main..HEAD -- scoring/scorer.py` should now be **empty**. Confirm the branch tip now contains `origin/main`'s tip (`git merge-base --is-ancestor origin/main HEAD` \u2192 yes).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rebase pairwise onto `main`, excluding the weighted-scorer commits: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... `git diff main...feat/pairwise-metric` should now equal the two-dot diff (the 5-insertion pairwise-only change) with no `scorer.py`/weighted content.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

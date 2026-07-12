@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 13601,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.306507,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 42851,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 42851,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 10182,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 42851,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 42851,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 10182,
+            "output_tokens": 1257,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1257,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is stronger on expectation (b): it explicitly states the fail-open-on-RedisError default is wrong and should be inverted to fail closed, whereas Report 2 calls the fail-open behavior \"a defensible availability choice\" and only faults it for lacking a log line \u2014 missing the core expectation that the limiter should deny, not permit, when its backend is unavailable; all other expectations are hit equivalently by both.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The root cause is that `except Exception` treats a documented content-policy rejection identically to a timeout... Concrete fix: classify the six into a non-retryable denylist and re-raise those; only fail over on the rest",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: narrow the `except` to the known transient set and give the other three distinct handling... `except (RateLimitError, RequestTimeoutError, ServerError) as e: ... except AuthError: ... raise ... except (BadRequestError, ContentPolicyError): ... raise`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A rate limiter should default to enforcing and require a narrow, explicitly-named opt-out for local development, not the reverse... On infra failure, the limiter silently admits unlimited traffic \u2014 exactly when the safety control is most needed... invert the default so the function fails closed... and fail closed (with a loud log) on `RedisError`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Assessment: reasonable to skip rate limiting in dev/test... Assessment: fail-open on backend unavailability is a defensible availability choice, but the `except` block does no logging at all",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the free-text content should never appear verbatim (hash and/or length only, if it must be referenced), and the metadata should pass through an explicit allowlist of known-safe keys rather than being dumped wholesale",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "don't log document content at all, and log the pseudonym instead of the raw id... \"metadata_keys\": sorted((record.metadata or {}).keys()),  # allowlist, not wholesale",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Concrete fix: fail hard instead of falling back:\n```python\ndef pseudonymize(applicant_id):\n    salt = os.environ.get(\"PII_SALT\")\n    if not salt:\n        raise RuntimeError(\"PII_SALT is not configured; refusing to pseudonymize without a salt\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix:\n```python\ndef pseudonymize(applicant_id):\n    salt = os.environ.get(\"PII_SALT\")\n    if not salt:\n        raise RuntimeError(\"PII_SALT must be set to a non-empty value\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

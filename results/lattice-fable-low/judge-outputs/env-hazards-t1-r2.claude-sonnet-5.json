@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20110,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0810847,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4427,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4427,
+        "cache_read_input_tokens": 29179,
+        "inference_geo": "not_available",
+        "input_tokens": 3097,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4427,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4427,
+            "cache_read_input_tokens": 29179,
+            "input_tokens": 3097,
+            "output_tokens": 2196,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2196,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify the same root causes and fixes with comparable accuracy and detail; report 2 adds a bit more precision on superuser vs. owner bypass and a bonus catch about SET not accepting bind parameters, but both fully satisfy all three expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`db/migrations/0001_init.sql` does `ALTER TABLE clients ENABLE ROW LEVEL SECURITY` and creates the `tenant_isolation` policy ... \u2014 but it never runs `FORCE ROW LEVEL SECURITY`. In Postgres, a table's owner is exempt from RLS unless it is forced, so even though `backend/app/deps.py` dutifully executes `SET app.current_tenant` per request, the unqualified `SELECT ... FROM clients` in `backend/app/main.py` returns every tenant's rows.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "table owners also bypass RLS unless the table has `FORCE ROW LEVEL SECURITY` \u2014 which `db/migrations/0001_init.sql` does not set ... Because the connection is privileged, the policy is silently skipped \u2014 no error, no warning \u2014 and the query returns every tenant's rows.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Point the application at the non-owner role: change `.env`/`.env.example` `DATABASE_URL` to `postgresql://cedar_app:apppw@localhost:5432/cedar` so RLS policies actually apply to app queries; keep `cedar_owner` only for migrations ... Structurally going forward: two-role split \u2014 a privileged migration/owner role and a least-privilege runtime role (`cedar_app`, no BYPASSRLS, not the owner).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change the app's `DATABASE_URL` in `.env`/`.env.example` to `postgresql://cedar_app:apppw@localhost:5432/cedar` ... Going forward, structure DB access as two roles: `cedar_owner` used exclusively by `scripts/migrate.sh` (schema changes), and `cedar_app` used by the app engine in `backend/app/db.py`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `cedar_app` role is not created by any migration: it lives in `db/bootstrap/create_app_role.sql`, which the README, `docs/local-setup.md`, and the file's own comment describe as a \"one-time\" manual step run by hand at first setup. After a volume wipe that one-time step's effect is gone... To make it work again, the teammate must re-run `psql \"postgresql://cedar_owner:ownerpw@localhost:5432/cedar\" -f db/bootstrap/create_app_role.sql` after every reset",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_app` is created by `db/bootstrap/create_app_role.sql`, which `README.md` and `docs/local-setup.md` say to run **by hand, once, on first setup**; it is not part of migrations or any automated init. `scripts/reset-local-db.sh` runs `docker compose down -v` \u2014 the `-v` deletes the `cedar_pgdata` volume, i.e. the entire Postgres cluster, including all roles... To make it work again, the teammate must re-run the bootstrap once against the fresh cluster",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15345,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10257720000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7360,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7360,
+        "cache_read_input_tokens": 29014,
+        "inference_geo": "not_available",
+        "input_tokens": 9551,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7360,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7360,
+            "cache_read_input_tokens": 29014,
+            "input_tokens": 9551,
+            "output_tokens": 1404,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1404,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations, including the reproducibility/determinism check and the CATEGORIES set-ordering instability source (expectation d); Report 2 is comparably strong on a/b/c but never verifies reproducibility of the regenerated golden file, missing expectation d.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The deselection is intended behavior for exactly this reason, not a gap to close.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Enabling them doesn't strengthen validation of this change at all; it just changes what \"default\" means for every future run. If live coverage is wanted, it should be run deliberately and separately (`pytest -m live`, with credentials, as its own reported result) \u2014 not folded into \"make the default suite fully green.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Only after `score.py`'s diff contains exactly the intended change should the golden file be regenerated \u2014 and even then, read the before/after JSON diff line-by-line to confirm every remaining changed number is explained by that intended change",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Only once both are confirmed intended should the golden file be regenerated (script or by hand), with the before/after numbers shown explicitly in the PR so a reviewer can sanity-check the delta instead of trusting an opaque regen.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Both mismatches pre-date this branch... That makes it more important not to cite it, not less... What I'd actually report: the freshly-measured numbers with the command used to get them",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite `docs/testing.md`'s figures as-is \u2014 they're stale and at least partially wrong... What I'd actually report in the PR: run `ruff check .` and a marker-based collection... and cite that live output \u2014 not the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "re-run the golden test in normal (assert) mode at least twice to confirm the new fixture is deterministic before it's trusted... it builds its output by iterating `CATEGORIES`, which is a Python `set`, not a list \u2014 the script's own comment admits \"set ordering is arbitrary.\" Set iteration order depends on string hash randomization... could reorder keys in the JSON file with no actual value change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

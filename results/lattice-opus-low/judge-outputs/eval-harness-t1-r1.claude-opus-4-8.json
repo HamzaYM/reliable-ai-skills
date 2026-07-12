@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20597,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.145723,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4727,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4727,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4727,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4727,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 1722,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1722,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct code citations; they are comparable, with Report 1 marginally more explicit in operationalizing the gate-vs-optional axis distinction.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "where a `None` value is silently replaced with `0.0`:\n```python\nvalue = axis_scores.get(axis)\nif value is None:\n    value = 0.0\ntotal += weight * value\n```... that record is **identical in form** to a fully-scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In `grader/aggregate.py:9-12`, `composite` does `value = axis_scores.get(axis)` and then `if value is None: value = 0.0` \u2014 so the failed axis is silently treated as a **score of 0**... **In form it is identical to a fully-scored record**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A missing score and a genuine zero are different things, but this code conflates them... ranks by mean composite. Each failed axis injects a depressed value into the affected agent's mean... The zero is treated as a real data point and corrupts the aggregate.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Imputing 0 for a *missing* score conflates \"the axis scored badly\" with \"we never got an axis score.\"... `rankings()` averages `float(comp)` across all rows with no filtering... Every artificially-deflated composite drags down that agent's mean composite.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "a load-bearing failure (accuracy) must be marked degraded/incomplete and never emitted as a comparable number",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When any required axis call fails, the record should **not** be written as a normal composite row... Because accuracy is the gate axis, a missing accuracy call in particular should force a skip/retry, never a written score.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If a non-load-bearing axis (relevance or tone) fails:** renormalize the composite over the axes that succeeded... If the load-bearing axis (accuracy) fails... do **not** write a number that looks like a normal composite.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If a genuine composite is ever needed from a partial set, it should be computed by renormalizing over the axes that *did* return... not by treating missing axes as 0... Because accuracy is the gate axis, a missing accuracy call in particular should force a skip/retry, never a written score.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31016,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.20330900000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8354,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8354,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8354,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8354,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2547,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2547,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 2 edges ahead by explicitly calling for confirming the missing migration/Alembic step against the prod DB (expectation c), which Report 1 only frames as \"unverifiable.\"",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Line 2** `ENABLE_DEBUG_TOOLBAR = \"true\"` ... Change to `\"false\"`. ... **Line 3** `AUTH_RELAXED = \"true\"` ... Change to `\"false\"`. ... **Line 4** `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... it should be removed entirely ... Either clear `SHADOW_SCORING_SINK` for prod",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. A QA test account with superadmin rights baked into prod config. Must be removed entirely ... Both keys should be omitted from prod entirely ... `LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"`. ... Should not be recreated in the new environment; drop it",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the bundle shipped to production will contain `VITE_API_BASE_URL=https://staging-api.example.com` baked in, since `vite build --mode staging` is the only build that ever runs ... The production frontend would call the staging API.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "production would serve a frontend bundle with the staging API base URL (`https://staging-api.example.com`) hardcoded into its JS ... a `--mode production` build reading a `.env.production` file is required, and the pipeline needs two separate build+push steps",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "nothing in the deploy workflow, `scripts/` (which doesn't exist), or Terraform shows a migration step being invoked \u2014 this claim is unverifiable from the repo and, per project documentation's first-apply-traps guidance, should not be trusted without confirming the (missing) deploy script actually runs Alembic (`backend/migrations/versions/` has 3 revisions ...) against the prod database",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` still has `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 unchanged from staging. ... This must be fixed to `\"repo:acme-health/medislot:environment:production\"` before applying.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` still has `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 copied verbatim from staging and never updated. ... Fix: change `infra/prod/main.tf:3` to `\"repo:acme-health/medislot:environment:production\"`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 13352,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08645629999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8425,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8425,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8425,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8425,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1520,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1520,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid, well-grounded evidence; Report 1 is slightly more thorough on the 40%/production-data flags while Report 2 adds a nuanced but unnecessary caveat about attribution policy, making them roughly comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default.\" (line 30) \u2014 FALSE, contradicted by code.** `app/security/config.py:3-4` reads: `# Two-factor authentication is opt-in per clinic.` and `TWO_FACTOR_DEFAULT = False`... \"Patients can now export their full visit history as a PDF.\" (line 24) \u2014 FALSE, feature not built.** `app/routers/visits.py` has only a `list_visits` endpoint that returns `[]` (line 8-9) and an explicit `# TODO: pdf export` (line 11). There is no PDF export. **Must be removed.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Stronger account security \u2014 Two-factor authentication is now enabled for every clinic by default.\" \u2014 False; correct or remove.** `app/security/config.py` states the opposite: `TWO_FACTOR_DEFAULT = False` with the comment \"Two-factor authentication is opt-in per clinic.\"... \"Export your visit history \u2014 Patients can now export their full visit history as a PDF.\" \u2014 False (not built); remove.** `app/routers/visits.py` has only `list_visits` returning `[]` and a literal `# TODO: pdf export`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The \"after\" image does not show the scheduling calendar \u2014 it shows the **billing/invoices page**... `captures.json` line 3: `\"after_scheduling.png\": {\"route\": \"/billing/invoices\", \"state\": \"seed-demo\"}` \u2014 the file was captured from `/billing/invoices`, not the calendar.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The \"after\" image is a different screen than the \"before.\" I opened both: `before_scheduling.png` reads \"SCHEDULING CALENDAR,\" but `after_scheduling.png` reads \"BILLING / INVOICES.\" This is confirmed independently by `captures.json`, which maps `after_scheduling.png` to route `/billing/invoices`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`after_export.png` \u2014 referenced but missing (broken image).** The doc embeds it at line 26, but no such file exists in `img/`, and `captures.json` line 6 confirms: `\"state\": \"expected capture; no corresponding file\"`... **`unused_capture_07.png` \u2014 present but orphaned.** It exists in `img/` but is not referenced by the document.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Referenced but missing: `img/after_export.png`.**... no such file exists in `docs/release/img/`... **Exists but unreferenced (orphan): `img/unused_capture_07.png`.** This file is on disk (it shows \"PATIENT LIST\") but is not referenced anywhere in the document",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (line 33)** is an internal drafting note. It has no place in a polished customer-facing announcement... Remove it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\"** This is an internal process note that does not belong in a customer-facing email... at minimum it should not ship in the customer email.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r2",
+  "repeat": 2,
+  "task": "dora-t2"
+}

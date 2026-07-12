@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12497,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1073904,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8992,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8992,
+        "cache_read_input_tokens": 23558,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8992,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8992,
+            "cache_read_input_tokens": 23558,
+            "input_tokens": 9562,
+            "output_tokens": 1179,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1179,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify the tenant-isolation blocker (a) and correctly avoid flagging the SQL-injection string as an exploitable defect (c), but neither caught the nightly_export/exports.py signature-break in (b); Report 2 is somewhat more thorough overall (also flags the latent startswith bug) but the two are comparable against the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The query has no tenant_id predicate. The endpoint accepts tenant_id from the current_tenant_id dependency and passes it into search_appointments, but the SQL never uses it \u2014 it filters only on status and a full-text match on notes, then returns id, tenant_id, provider, starts_at, status, notes for every matching row across all tenants. Any authenticated tenant can read other clinics' appointments",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The WHERE clause has no tenant_id predicate. The function receives tenant_id as a parameter (passed from api.py's get_appointment_search) and silently never uses it. ... any authenticated user of tenant A calling GET /appointments/search?q=...&status=booked receives matching appointment rows for every tenant in the database",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It is not currently exploitable because status: AppointmentStatus is a FastAPI-validated str Enum limited to booked/cancelled/completed (schemas.py), so an invalid value yields a 422 before reaching the query.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It is therefore NOT currently exploitable as SQL injection. I am not counting it as the blocker on its own.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

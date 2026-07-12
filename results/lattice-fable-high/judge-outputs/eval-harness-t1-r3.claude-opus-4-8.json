@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36207,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.17858649999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8641,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8641,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8641,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8641,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 3154,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3154,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations and are comparable; Report 1 is slightly more explicit in prescribing renormalization for relevance/tone failures, while Report 2 adds sharp extra observations (append-mode duplication, missing threshold code).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "which silently converts the missing axis to a score of zero:\n\n```python\nvalue = axis_scores.get(axis)\nif value is None:\n    value = 0.0\ntotal += weight * value\n```\n\nSo a failed axis contributes `weight \u00d7 0.0` to the weighted sum... **In form, that record is completely indistinguishable from a fully-scored one**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Inside `grader/aggregate.py:6-13`, `composite()` iterates the weights and at lines 10\u201311 silently converts the missing axis to a score of zero: `if value is None: value = 0.0`... In form it is **indistinguishable** from a fully scored record",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Substituting 0 for a failed measurement conflates \"we couldn't measure this\" with \"this was measured and was the worst possible score.\"... `rankings()` (lines 9-17) reads every row, does `sums[agent_id] += float(comp)` and divides by row count. It has no way to exclude or down-weight degraded rows, so every poisoned composite drags its agent's mean straight down.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A transport error is missing data, not evidence the reply scored 0 on that axis; conflating them fabricates a score... `grader/leaderboard.py:9-17` then reads every row, does `sums[agent_id] += float(comp)` and divides by row count \u2014 so each infrastructure failure drags the affected agent's mean down as if they'd written a terrible reply.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the accuracy call fails (load-bearing axis): do not write a comparable composite row to `scores.csv`.** Either skip the row entirely and queue it for retry, or record it in a way the leaderboard structurally ignores",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a composite without an accuracy score is meaningless under the gate semantics, because you cannot know whether the reply passed the gate at all... the pipeline must **not write a composite row for that record to `results/scores.csv`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "When the accuracy call fails, there is no defensible composite to emit at all... **Relevance and tone are embellishments.** If one of those fails, a reasonable degraded composite still exists: the remaining axes can be renormalized over their surviving weights",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it does mean the record cannot be salvaged from the other two axes when accuracy is the one that failed... it rules out the tempting fallback of renormalizing weights over the axes that did succeed: a composite without an accuracy score is meaningless",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

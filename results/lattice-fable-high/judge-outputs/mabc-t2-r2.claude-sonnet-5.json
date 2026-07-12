@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24562,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12217769999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10772,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10772,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10772,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10772,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2845,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2845,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently hit all four expectations with nearly identical substance and file/line citations; they are comparable in completeness and rigor, differing mainly in stylistic framing (batches vs. named engineers).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Batch B \u2014 registry (F-02, F-05, F-09). Owns pipeline/registry.py. All three findings edit this one 11-line file, so they must belong to one engineer",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer C \u2014 pipeline/registry.py (F-02, F-05, F-09). Three one-line changes to one 12-line file: add the aurora-1 endpoint, bump DEFAULT_RUBRIC_VERSION to v3, point DEFAULT_DATASET at fixtures/eval_set.jsonl... Splitting these across people would be three PRs conflicting on adjacent lines for trivial gain.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Ordering: all four batches run in a single parallel wave, because after the by-file grouping they are fully file-disjoint... Batch C \u2014 rubric parsing (F-01 + F-11)... go to the same engineer, test-first",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ordering: all four streams start in parallel on day one, branching from f3cac92 on main, because the file sets are disjoint... Engineer B \u2014 pipeline/rubric.py (F-01, F-11).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 escalate, don't assign... Whether and how much to tighten is a product/eval-owner decision, not something an engineer should guess. Flag it as a decision request in parallel; don't block the campaign on the answer.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 a policy decision disguised as a bug... This needs the reviewer or a product owner to specify the new values (ideally justified against data) before anyone codes it",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "An isolated test database: export RESULTS_DB to a private per-engineer path before running tests, because the default in tests/conftest.py:4 is the shared /var/tmp/llm-scoring/results.db and parallel suite runs against it would collide.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A per-engineer RESULTS_DB environment variable pointing at a private path, since tests/conftest.py defaults to the machine-global /var/tmp/llm-scoring/results.db.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

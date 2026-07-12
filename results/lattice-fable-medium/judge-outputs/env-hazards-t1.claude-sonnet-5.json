@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12448,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08025170000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8164,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8164,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8164,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8164,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1242,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1242,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent and correctly hit all three expectations with comparable depth; Report 2 adds a couple of extra correctness notes (SET vs set_config, connection pooling) but this is beyond the scope of the graded expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "cedar_owner ... is also the owner of the clients and appointments tables. Postgres skips RLS policies for superusers entirely, and skips them for table owners unless the table has FORCE ROW LEVEL SECURITY \u2014 which db/migrations/0001_init.sql does not set (it only has ENABLE ROW LEVEL SECURITY plus the tenant_isolation policies).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Postgres unconditionally skips RLS for superusers, and skips it for table owners too unless FORCE ROW LEVEL SECURITY is set (the migration only uses ENABLE). So every policy evaluates to \"no restriction\" with no error or warning",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Point the application at the unprivileged role: change DATABASE_URL in .env/.env.example to postgresql://cedar_app:apppw@localhost:5432/cedar ... Going forward: reserve cedar_owner strictly for migrations (scripts/migrate.sh) and run all application traffic through cedar_app",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the application at the least-privilege role: change DATABASE_URL in .env/.env.example to postgresql://cedar_app:apppw@localhost:5432/cedar. ... Going forward, keep two strictly separated roles: cedar_owner used only by scripts/migrate.sh ..., and cedar_app for everything the running app does.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The role creation lives solely in db/bootstrap/create_app_role.sql, which README.md and docs/local-setup.md describe as a one-time manual first-setup step, and which the reset script never invokes ... So after a reset, cedar_app simply doesn't exist",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "cedar_app is created only by a manual, one-time bootstrap \u2014 db/bootstrap/create_app_role.sql, which per README.md and docs/local-setup.md is run by hand once after first docker compose up. ... scripts/reset-local-db.sh runs docker compose down -v, which deletes the cedar_pgdata volume and with it the entire cluster including the cedar_app role, then brings the DB back up and re-runs only scripts/migrate.sh \u2014 which replays db/migrations/*.sql and never recreates the role.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

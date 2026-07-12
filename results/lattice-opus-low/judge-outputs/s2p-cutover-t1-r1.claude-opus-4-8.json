@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33557,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19411300000000004,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6801,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6801,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6801,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6801,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 2828,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2828,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations; Report 2 is marginally stronger on the remove-vs-disable nuance for the shadow sink and legacy secret.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 2 \u2014 ENABLE_DEBUG_TOOLBAR = \"true\" ... Change to \"false\" (or remove). ... Line 3 \u2014 AUTH_RELAXED = \"true\" ... Change to \"false\". ... Line 4 \u2014 PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" ... Remove entirely",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Line 2 ENABLE_DEBUG_TOOLBAR = \"true\" ... should be omitted entirely ... Line 6 SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\" ... Remove this key entirely ... Line 7 LEGACY_BILLING_SECRET_ARN ... remove it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "because the build always runs --mode staging, and there is no frontend/.env.production file, the single image built by the pipeline hardcodes the staging API URL. That same digest is what gets deployed to prod ... So the production frontend would ship pointing at https://staging-api.example.com. There is no separate prod frontend build.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the same digest is deployed to staging and then prod ... the production frontend would ship with https://staging-api.example.com baked in ... prod needs its own build with a prod VITE_API_BASE_URL, plus a check that scans the built output for staging-api before shipping.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "docs/prod-runbook.md:6 claims migrations are applied automatically during deploy, but the workflow has no migration step ... unverifiable here, a gap to confirm before launch given this is the first prod DB.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No database migration step. The pipeline never runs migrations, yet docs/prod-runbook.md:6 claims \"migrations are applied automatically during deploy.\" ... on a fresh prod DB the schema would be empty on first launch. Confirm/add a first-run migration step.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 also sets oidc_sub_condition = \"...:environment:staging\" (unchanged copy). But the deploy-prod job runs with environment: production ... To fix, infra/prod/main.tf:3 must be repo:acme-health/medislot:environment:production.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 still sets the condition to ...:environment:staging (unchanged from the copy). But the deploy-prod job runs with environment: production ... The prod role must have its own scoped condition ...:environment:production",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

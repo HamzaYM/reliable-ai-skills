@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26784,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.171554,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6026,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6026,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6026,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6026,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2208,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2208,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical in substance, but Report 2 additionally includes a concrete determinism/reproducibility re-run check before committing, giving it a slight edge.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reading the test body shows these tests call a real external HTTP endpoint (`api.scorelab-models.example.com`) using a real API key from `SCORELAB_API_KEY`... cost money/quota per call... it makes every future default `pytest` run also fire live network calls unless someone remembers to re-exclude the marker, since flipping `addopts` is a persistent config change, not a one-time flag.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "does a real HTTP POST to `https://api.scorelab-models.example.com/v1/score` with a bearer token from `SCORELAB_API_KEY` \u2014 i.e. this suite hits a live, presumably billed, third-party model endpoint... costly suites must stay opt-in, and the fact that a suite is deselected is intended behavior, not something to \"fix.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "only then run `update_golden.py` and diff the resulting JSON by hand to eyeball the deltas before committing... decide separately whether the confidence-rounding change was intentional, since it's outside the stated scope of \"reweighting\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "regenerate the golden file, then diff it against the old one and confirm every changed value maps to either the weight change or the (now-documented) rounding change \u2014 nothing unexplained; (c) if it was accidental scope creep, revert that one line and regenerate golden using only the weight change",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The correct source for flaky-test counts is a live `pytest` run with markers... not a static doc that can drift out of sync with the code... the lint-warning count of \"9\" in the doc should be sourced by actually running `ruff check .`... not copied from a doc of unknown last-updated date.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "that's a hand-written snapshot from whenever someone last measured it, not something re-verified as part of this PR, and project documentation is explicit that baselines drift and must be re-measured rather than copied.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "re-run `test_scoring.py` in assert mode (no regeneration) to confirm the refreshed fixture is deterministic before committing it... then re-run `pytest` (not just once) to confirm the new fixture is stable/deterministic.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

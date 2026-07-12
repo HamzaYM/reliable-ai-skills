@@ -1,0 +1,226 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "So the API base URL in the frontend bundle that would ship to production is the literal string `https://staging-api.example.com`, baked in during the one and only build, because the build is always `--mode staging`, there's no `.env.production` even if the mode were changed, and the exact same image digest built for staging is promoted to prod rather than rebuilt. Once that container ships, there is no runtime knob on the prod container that fixes this \u2014 the string is already compiled into the static JS.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 24145,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.400559,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 10339,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 10339,
+          "cache_read_input_tokens": 18329,
+          "inference_geo": "not_available",
+          "input_tokens": 9310,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 10339,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 10339,
+              "cache_read_input_tokens": 18329,
+              "input_tokens": 9310,
+              "output_tokens": 1647,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 1647,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "the API base URL in the frontend bundle that would ship to production is the literal string `https://staging-api.example.com`, baked in during the one and only build, because the build is always `--mode staging`... and the exact same image digest built for staging is promoted to prod rather than rebuilt",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "b",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    },
+    {
+      "adjudicator_mark": {
+        "evidence": "**Migrations: unverifiable, and the one document that claims otherwise is stale.** `docs/prod-runbook.md` says \"Database migrations are applied automatically during deploy,\" but `git log` shows this file was last touched in commit `28f07ee` (2026-04-06, the staging-only commit) \u2014 three months before today (2026-07-10) and before `infra/prod` existed at all (added in `2f6572d`, 2026-07-02). The only place migration-triggering logic could live, `scripts/deploy.sh`, doesn't exist in the repo, so this claim can't be confirmed. Three migration files exist (`backend/migrations/versions/0001_base.py`, `0002_tenants.py`, `0003_billing.py`), but there's no `alembic.ini` and no visible invocation of them anywhere in the workflow.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 34976,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.437769,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 10318,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 10318,
+          "cache_read_input_tokens": 18329,
+          "inference_geo": "not_available",
+          "input_tokens": 9318,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 10318,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 10318,
+              "cache_read_input_tokens": 18329,
+              "input_tokens": 9318,
+              "output_tokens": 2398,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 2398,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "docs/prod-runbook.md says \"Database migrations are applied automatically during deploy,\" but... this claim can't be confirmed. Three migration files exist... but there's no `alembic.ini` and no visible invocation of them anywhere in the workflow",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "c",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    },
+    {
+      "adjudicator_mark": {
+        "evidence": "**The runbook's migration claim is unverifiable.** `docs/prod-runbook.md:6` states \"Database migrations are applied automatically during deploy,\" but that logic (if it exists) would have to live inside the missing `scripts/deploy.sh`. I also found no Postgres/database resource or connection-string variable anywhere in `infra/` or `backend/config.py` (confirmed via repo-wide grep for `postgres|DATABASE`), so I can't confirm from this repo that a production database has been provisioned at all, or that migrations would actually run against it.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 39020,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.46475900000000003,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 10318,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 10318,
+          "cache_read_input_tokens": 18329,
+          "inference_geo": "not_available",
+          "input_tokens": 9342,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 10318,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 10318,
+              "cache_read_input_tokens": 18329,
+              "input_tokens": 9342,
+              "output_tokens": 2933,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 2933,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "docs/prod-runbook.md:6 states \"Database migrations are applied automatically during deploy,\" but that logic (if it exists) would have to live inside the missing `scripts/deploy.sh`... I can't confirm from this repo that a production database has been provisioned at all, or that migrations would actually run against it",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "c",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "s2p-cutover-t1"
+}

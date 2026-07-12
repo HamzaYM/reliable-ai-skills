@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27813,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.17917450000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10473,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10473,
+        "cache_read_input_tokens": 15579,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10473,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10473,
+            "cache_read_input_tokens": 15579,
+            "input_tokens": 2,
+            "output_tokens": 2481,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2481,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with strong repository grounding; they are comparable, with Report 2 adding slightly more nuance (draft marker, remediation gap) but neither superior on the scored expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Failures began at 14:03; the first alert did not fire until 14:50 \u2014 **47 minutes** later \u2014 and on-call did not acknowledge until 15:05, **62 minutes** after onset (`incidents/OPS-412-timeline.md`, lines 2\u20135). \"Within minutes\" and \"immediately\" are not defensible.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md`: failures began 14:03; the **first alert fired at 14:50** \u2014 a 47-minute detection gap, not \"within minutes.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The internal timeline says the opposite: \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded\" (`incidents/OPS-412-timeline.md`, lines 9\u201310).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\" 1,284 transactions were affected and 37 were effectively lost.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "April 2026 uptime was **99.77%** (`metrics/uptime-2026.csv`, line 5). The contract states the monthly SLA is 99.9% and \"Any calendar month below 99.9% is a breach and owes service credits per the customer agreement...\" (`docs/sla-commitments.md`). April is below that line, so this incident triggered a contractual breach",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`metrics/uptime-2026.csv` shows April 2026 at **99.77%**. `docs/sla-commitments.md` says the contractual monthly SLA is 99.9% and \"Any calendar month below 99.9% is a breach and owes service credits.\" April is a breach that owes service credits.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "\"The outage was caused by the on-call engineer deploying an untested config change\" (lines 12\u201313) assigns blame to a specific person/role. Rule 1 of `docs/customer-comms-style-guide.md` is \"Never assign blame to an individual.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" The draft says \"The outage was caused by the on-call engineer deploying an untested config change,\" pinning the outage on a named role/person. Must be removed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "It opens with \"LarkPay has maintained 99.99% uptime over the past year\u2026\" (lines 3\u20134). Rule 3 of `docs/customer-comms-style-guide.md` is \"Lead with customer impact and remediation.\" Restructure so it opens with what customers experienced ... and what LarkPay did about it, not with self-praise.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rule 3: \"Lead with customer impact and remediation.\" The draft opens with an uptime boast and a reliability-culture statement; the actual customer impact ... is never stated and is in fact denied. The opening must be reordered to lead with impact and what was done.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r2",
+  "repeat": 2,
+  "task": "tcr-t1"
+}

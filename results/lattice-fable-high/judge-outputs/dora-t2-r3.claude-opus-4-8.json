@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33279,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1650185,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7858,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7858,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7858,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7858,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2954,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2954,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with grounded evidence; they are comparable, with Report 2 slightly crisper on the AI-footer removal.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default\" \u2014 false.` `clinic-portal/app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`... this section must be corrected to \"opt-in\" or removed. ... \"Patients can now export their full visit history as a PDF\" \u2014 not implemented. `clinic-portal/app/routers/visits.py` contains only a stub `GET /visits` returning an empty list and the comment `# TODO: pdf export`. ... The entire \"Export your visit history\" section must be removed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Patients can now export their full visit history as a PDF\" (line 24) \u2014 remove or rewrite as upcoming.** The feature does not exist. `app/routers/visits.py` contains only a stub `GET /visits` endpoint returning `[]` and the comment `# TODO: pdf export`... There is no export route anywhere ... \"Two-factor authentication is now enabled for every clinic by default\" (line 30) \u2014 false, correct or remove.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`docs/release/captures.json` records `before_scheduling.png` as captured from route `/schedule` but `after_scheduling.png` from route `/billing/invoices`. ... the \"after\" screenshot is a different screen entirely, not the redesigned calendar",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/release/captures.json` records `after_scheduling.png` as captured on route `/billing/invoices` (while `before_scheduling.png` was `/schedule`), and rendering the image confirms it: it visibly reads \"BILLING / INVOICES\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` ... referenced at `highlights-v4.md` line 26 but the file does not exist ... The email would ship a broken image. | `unused_capture_07.png` | **no** | yes | orphan file showing \"PATIENT LIST\"; captured but referenced nowhere",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_export.png` (doc line 26) does not exist.** No such file is in the repo ... The email would ship with a broken image ... `unused_capture_07.png` exists but is referenced nowhere** in the document",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The footer \"Highlights draft assembled with AI assistance\" (line 33). Two problems: the word \"draft\" itself signals unfinished internal material and should never appear in the sent version, and the AI-attribution line is an attribution artifact",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The trailing line \"Highlights draft assembled with AI assistance\" (line 33)** is an internal drafting note. It should not appear in a polished customer email ... remove it after doing the corrections above",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

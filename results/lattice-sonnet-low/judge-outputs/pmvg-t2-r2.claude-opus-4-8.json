@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27625,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.157219,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5060,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5060,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5060,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5060,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2021,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2021,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and largely equivalent on (a)-(c), but Report 2 additionally satisfies the reproducibility check (d) with its \"re-run assert-mode at least twice\" step, making it marginally better overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "makes real HTTP calls to `https://api.scorelab-models.example.com/v1/score` using a `SCORELAB_API_KEY` bearer token ... incur real per-call cost as the file's own docstring says ... The deselection here is by design (opt-in marker), not an accidental gap that needs closing for this change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "makes real HTTP calls ... i.e. they cost money and depend on an external service being up. `pytest.ini`'s `addopts = -m \"not live\"` is the intentional opt-in gate ... only run the live suite explicitly and separately if the team wants that specific coverage, and never make it default.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the diff also silently changed `confidence` rounding from 3 decimals to 2 decimals ... which is unrelated to \"reweight scoring\" and is itself contributing to the golden mismatch. This should be flagged/split out \u2014 an unreviewed precision change riding along with a weight change is exactly the kind of thing a blind golden-regen would paper over.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "confirm every changed hunk traces to your intended change. Anything you can't explain is a regression, not a fixture update.\" ... the `confidence` deltas ... do **not** trace to the weight change at all ... Before regenerating: split or explicitly call out the rounding-precision change, confirm with whoever owns `score.py` whether it's intentional",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Not by copying `docs/testing.md`, which is stale/inaccurate against the current code ... run `ruff check .` at PR time and cite those live numbers, not a docs file that may have drifted from the code.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "project documentation says baselines are \"a snapshot from whenever someone last measured them... re-measure the project documentation yourself before citing it.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "After regenerating, re-run the golden test at least once (ideally twice) in assert mode to confirm it's deterministic ... Only regenerate after that's resolved, then re-run assert-mode at least twice.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

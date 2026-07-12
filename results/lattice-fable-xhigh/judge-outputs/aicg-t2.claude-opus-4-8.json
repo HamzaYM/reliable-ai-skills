@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27123,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2011235,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12950,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12950,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12950,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12950,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2213,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2213,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully hit all four expectations with equivalent depth and correct fixes; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "on **any** `Exception` it logs a warning via `log_fallover` and re-sends the same payload to `secondary.complete(payload)`. ... `BadRequestError` \u2014 caught, falls over. **Wrong** ... `ContentPolicyError` \u2014 caught, falls over. **Wrong, and the most serious case** ... `AuthError` \u2014 caught, falls over. **Wrong** ... in `call_with_fallback` re-raise (never fall over) when it returns `True`; fall over only on `(RateLimitError, RequestTimeoutError, ServerError)` plus connection errors, not on bare `Exception`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Every one of them, plus any other `Exception` subclass ... is handled identically: log a warning via `log_fallover` and re-send the same payload to the secondary vendor. ... `BadRequestError` \u2014 **inappropriate** ... `ContentPolicyError` \u2014 **inappropriate and a compliance concern** ... `AuthError` \u2014 **inappropriate** ... catch only the transient ones \u2014 `except (RateLimitError, RequestTimeoutError, ServerError)` \u2192 fall back; re-raise `BadRequestError`, `ContentPolicyError`, and `AuthError`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A (line 12\u201313): `os.environ.get(\"STAGE\") != \"production\"` \u2192 returns `True`** without touching redis. ... gets **no rate limiting at all**. **Unsound** ... The safe design is fail-closed everywhere ... **Path D (lines 17\u201318, `except RedisError`): returns `True`.** If the redis backend errors, the limiter **fails open** ... A safety gate should fail closed on backend failure. ... change the `except RedisError` branch to `return False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if `os.environ.get(\"STAGE\") != \"production\"`, return `True` immediately, with no counting. ... This is fail-open on configuration ... **Path D \u2014 redis failure (lines 17\u201318):** `redis.incr` raises `RedisError` \u2192 return `True`, silently. Fail-open on infrastructure failure ... for a pipeline sending sensitive data to paid vendor APIs I would fail closed (or fall back to an in-process limiter).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`input_text` (the **entire sensitive intake document, verbatim**), and `metadata` (the whole dict, unfiltered ... replace `input_text` with a content hash plus length ... never the text itself; and filter `metadata` through an explicit **allowlist** of known-safe keys",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`record.input_text` \u2014 the **entire document text** ... and `record.metadata`, unfiltered. ... **drop `input_text` entirely** ... and either allowlist specific `metadata` keys or drop it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "It reads a salt from the `PII_SALT` environment variable \u2014 **with a default of the empty string** (`os.environ.get(\"PII_SALT\", \"\")`) ... when it is unset or empty the function **silently degrades to an unsalted `sha256(applicant_id)`** ... fail closed \u2014 `salt = os.environ[\"PII_SALT\"]` plus an explicit `if not salt: raise RuntimeError(\"PII_SALT must be set and non-empty\")`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "where `salt` is `os.environ.get(\"PII_SALT\", \"\")` ... if `PII_SALT` is unset (or set to empty), the default `\"\"` is used and the function **silently degrades to a plain unsalted SHA-256 of the applicant id**. ... raise at startup (or on first call) if `PII_SALT` is missing or empty",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

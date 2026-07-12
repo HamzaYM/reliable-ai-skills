@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26157,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13758399999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3095,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3095,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9463,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3095,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3095,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9463,
+            "output_tokens": 2028,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2028,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both correctly size the run, reroute to ridgeline, and avoid the default northpeak path; neither commits to re-checking the ~3-hour-old snapshot, though Report 1 at least cites its 19:25Z age.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "a full run needs roughly **5,200 \u00d7 1,800 \u2248 9,360,000 tokens**... **northpeak (default/primary):** only **640,000 tokens remaining** of its 10,000,000 window... Running the default command tonight as-is would run out of northpeak budget almost immediately and leave ~93% of transcripts unscored",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Required: `5,200 transcripts \u00d7 1,800 tokens/call = 9,360,000 tokens`... Northpeak (default/primary): only `640,000` tokens remaining out of a `10,000,000` window (usage_snapshot.json) \u2014 **short by about 8.72M tokens**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I'd launch with `--provider secondary` explicitly ... so the full 5,200-transcript run lands on ridgeline, which has ~10.8M tokens of headroom against a ~9.36M token requirement",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary`\nThis routes the full run to Ridgeline, which is the only backend with enough token headroom (10.8M remaining vs. 9.36M needed)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run `run_nightly.sh` unmodified tonight. I'd launch with `--provider secondary` explicitly",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run `scripts/run_nightly.sh` as-is, since its default routes to Northpeak, which lacks sufficient remaining budget",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

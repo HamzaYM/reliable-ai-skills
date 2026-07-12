@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24880,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.21198899999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10307,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10307,
+        "cache_read_input_tokens": 17238,
+        "inference_geo": "not_available",
+        "input_tokens": 9495,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10307,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10307,
+            "cache_read_input_tokens": 17238,
+            "input_tokens": 9495,
+            "output_tokens": 2113,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2113,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with correct file/function citations and concrete fixes; they are comparable, with Report 1 giving marginally more precise fix code.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`call_with_fallback` catches bare `Exception`, so **all six** are handled identically... NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)\n\ndef call_with_fallback(payload):\n    try:\n        return primary.complete(payload)\n    except NON_RETRYABLE:\n        raise\n    except Exception as e:\n        log_fallover(e)\n        return secondary.complete(payload)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "catch specific exception types from `providers.py` rather than bare `Exception`. Retry-to-secondary only for `RateLimitError`, `RequestTimeoutError`, `ServerError`. Re-raise (or explicitly fail the document) for `BadRequestError` and `AuthError`... For `ContentPolicyError`, do not automatically forward the same sensitive content to a different vendor",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path A ... Returns `True` unconditionally \u2014 no rate limiting at all. ... Path C \u2014 production, redis raises `RedisError`: returns `True`... Fix: invert both defaults. Fail closed unless an explicit, narrowly-scoped local-dev override is set (not \"not equal to production\"), and fail closed on `RedisError`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A**: `STAGE` env var is not `\"production\"`... returns `True` unconditionally, i.e., rate limiting is fully disabled... **Path D**: `STAGE == \"production\"` and `redis.incr(key)` raises `RedisError` \u2192 caught, returns `True` (fail-open)... **Fix**: ... change the `RedisError` fallback to fail-closed (return `False`...)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the **full raw `input_text`** (the actual applicant intake document content \u2014 the sensitive personal data itself...), and an unbounded `record.metadata` dict... **Fix:** log the pseudonymized ID, drop or hash the document text, and allowlist metadata keys",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the **full raw `input_text`** (the sensitive intake document content itself) directly into the application logs... **Fix**: ... never log `input_text` verbatim (log a length/hash/redacted excerpt instead, or omit entirely)... audit/allow-list what `metadata` is permitted to contain before logging it",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` silently defaults to the empty string, and the function proceeds to compute `sha256(\"\" + applicant_id)` \u2014 i.e., an **unsalted** hash... **Fix:** fail hard when the salt is absent",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`os.environ.get(..., \"\")` silently defaulting to an empty string if unset... it silently degrades to plain unsalted `SHA-256(applicant_id)`... **Fix**: fail loudly if `PII_SALT` is not set... rather than silently falling back to no salt",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

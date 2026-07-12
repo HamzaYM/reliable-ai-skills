@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22529,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10706100000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5466,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5466,
+        "cache_read_input_tokens": 29010,
+        "inference_geo": "not_available",
+        "input_tokens": 9499,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5466,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5466,
+            "cache_read_input_tokens": 29010,
+            "input_tokens": 9499,
+            "output_tokens": 2471,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2471,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit a, b, and c with essentially equivalent code citations and reasoning; Report 1 is stronger because it explicitly proposes renormalizing over surviving axes for a relevance/tone failure while disqualifying accuracy failures outright (expectation d), whereas Report 2 applies the same skip-or-flag treatment to any axis failure without distinguishing the gate axis from the optional ones in its recommended handling.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The `None` is **coerced to `0.0`** and multiplied by that axis's weight \u2014 i.e. the failed axis contributes zero as if the reply genuinely earned a 0 on it. `run_batch.py:22-23` then writes a normal three-column row `[agent_id, reply_id, composite]`... In form, the failed record is indistinguishable from a fully-scored one.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In `aggregate.py`, `composite` coerces that `None` to `0.0` and continues the weighted sum... So the failed axis contributes `weight \u00d7 0` to the composite, and `run_batch.py:22-23` writes the ordinary three-column row `[agent_id, reply_id, composite]`. In form, the failed-axis record is byte-for-byte indistinguishable from a fully-scored record",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Substituting `0.0` conflates two different things \u2014 \"the model judged this axis a 0\" and \"we never got a score for this axis.\"... The deflated rows are counted at full weight in both `sums` and `counts`, so they drag down the affected agent's mean composite.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It treats a *missing measurement* as a *measured zero*... `rankings()` sums `float(comp)` over *every* row and divides by the row count, with no exclusion. So each deflated composite drags down the mean of whichever agent happened to hit a failure.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the failed axis is accuracy (load-bearing / the gate): do not write a normal composite row at all. Either write nothing for that reply, or write it to a separate degraded/incomplete channel... It must never land in `scores.csv` as a comparable number.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Because accuracy is the gate, treat its failure as strictly disqualifying for a composite: a record with no valid accuracy score has no valid composite and must be excluded/re-run \u2014 it must never be zero-filled.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed **relevance or tone** call (embellishment axes) could legitimately be handled by renormalizing over the axes that succeeded and flagging the result \u2014 you still have the gate signal.\n- A failed **accuracy** call means you have lost the very axis that determines pass/fail. You cannot responsibly produce any composite for that reply",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 41180,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1555607,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12181,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12181,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12181,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12181,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 4447,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4447,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are highly thorough and hit all four expectations with nearly identical evidence and file/line citations; report 1 is marginally more decisive on the legacy secret ARN (explicitly calling for removal) while report 2 is marginally more nuanced on the shadow-scoring sink, but overall the two are comparable in quality and completeness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`**: a developer-convenience debug tool would be live in production. Remove the key entirely from the prod tfvars ... **`infra/prod/app.auto.tfvars:3` \u2014 `AUTH_RELAXED = \"true\"`**: relaxed authentication in a multi-tenant clinic-scheduling product handling real patient/clinic data. Remove the key entirely ... Both keys must be removed entirely so `shadow_scoring_sink` is `\"\"` ... It should be omitted from prod unless someone can demonstrate a live consumer",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`.** `backend/config.py:8` turns this into a live debug toolbar. Debug tooling must be off in production; change to `\"false\"` ... **`infra/prod/app.auto.tfvars:3` \u2014 `AUTH_RELAXED = \"true\"`.** ... change to `\"false\"` ... Either empty the sink to genuinely disable the feature in prod ... Leaving the `staging/` path is wrong in every scenario.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "So the production frontend is never built at all: production ships the staging-mode artifact, and the API base URL baked into the shipped production bundle is `https://staging-api.example.com`. Because the value is inlined at build time, there is no runtime fix ... Production needs its own build with a production env file",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Consequence: the production frontend bundle will contain the hardcoded **staging** API URL `https://staging-api.example.com` baked into its JavaScript. ... Fixing this requires either a separate production build (`--mode production` plus a new `.env.production`) with a second image/digest, or moving the API base URL to a runtime-injected configuration",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**No database migration step**. `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but the runbook is self-declared stale ... nothing in `deploy.yml` runs the three migrations ... On a brand-new production database, the full migration chain needs an explicit (likely manual) first pass \u2014 \"pipeline succeeded\" would not mean the schema exists.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**No migration step exists.** `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but nothing in the workflow runs the three migrations ... For a **first** production release, the entire schema needs to be created; there is currently no mechanism for that. The runbook is also self-dated \"last updated: 3 months ago\" \u2014 before production existed \u2014 so its claims can't be trusted for this launch.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` sets the **same staging condition** \u2014 `repo:acme-health/medislot:environment:staging`. ... The condition must be changed to `repo:acme-health/medislot:environment:production` \u2014 a production role needs its own scoped trust condition, never one shared with staging.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` \u2014 an unedited copy from staging \u2014 configures the production deploy role to trust `repo:acme-health/medislot:environment:staging` instead. ... The fix is to parameterize the role name and set the prod condition to `...:environment:production`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

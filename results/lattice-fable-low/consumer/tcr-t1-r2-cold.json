@@ -1,0 +1,87 @@
+{
+  "answer_chars": 2796,
+  "answers": "The following must change before the draft (`larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md`) is sent:\n\n1. **The \"99.99% uptime over the past year\" claim is false.** `larkpay-comms/metrics/uptime-2026.csv` states rolling 12-month uptime is 99.92%, and no single month in the file reaches 99.99%. The opening sentence must be corrected or removed.\n\n2. **\"No customer transactions were lost or affected\" is false.** `larkpay-comms/incidents/OPS-412-timeline.md` records 1,284 failed transactions requiring manual reprocessing, of which 37 were unrecoverable and refunded. The draft must disclose the real impact.\n\n3. **\"Our monitoring detected the issue within minutes\" is false.** The timeline shows failures began at 14:03 and the first alert fired at 14:50 \u2014 a 47-minute detection gap, with on-call acknowledgment at 15:05 and full recovery at 15:41 (~98 minutes total). The detection/response narrative must be rewritten honestly, and the draft should state the actual outage window (currently it gives no times or duration).\n\n4. **The draft blames an individual.** \"The outage was caused by the on-call engineer deploying an untested config change\" directly violates rule 1 of `larkpay-comms/docs/customer-comms-style-guide.md` (\"Never assign blame to an individual\"). Rephrase in terms of process failure.\n\n5. **Internal system/role names are exposed.** \"checkout autoscaler\" and \"on-call engineer\" violate rule 2 of the style guide (\"Never expose internal system or role names\").\n\n6. **Structure violates rule 3 of the style guide** (\"Lead with customer impact and remediation\"): the draft opens with a reliability boast and buries impact; remediation for affected customers (reprocessing/refunds per the timeline) is never mentioned. The self-congratulatory passages (\"engineering culture treats reliability as the first feature\u2026\", \"vast majority of requests were served normally\") are hedging/spin that conflicts with rule 4 (\"No hedging\") and should be cut.\n\n7. **The SLA breach and owed service credits are omitted.** April 2026 uptime was 99.77% (`metrics/uptime-2026.csv`), below the 99.9% contractual monthly SLA in `larkpay-comms/docs/sla-commitments.md`, which states any such month \"is a breach and owes service credits.\" A postmortem going to affected customers must acknowledge the breach and the credits.\n\n8. **The mitigation description doesn't match the record.** The draft says \"the affected component was isolated and traffic rerouted,\" but the timeline records the mitigation as a config rollback at 15:20 (and the draft itself later says it \"was rolled back\"). The failover runbook (`larkpay-comms/runbooks/checkout-failover.md`) describes rerouting, but nothing in `incidents/OPS-412-timeline.md` shows it was used. Remove or substantiate the rerouting claim.",
+  "arm": "cold",
+  "attempts": 1,
+  "duration_ms": 86731,
+  "effort_effective": "low",
+  "effort_requested": "low",
+  "max_output_tokens": 64000,
+  "model_effective": "claude-fable-5",
+  "model_fallback": false,
+  "model_requested": "claude-fable-5",
+  "model_usage": {
+    "claude-fable-5": {
+      "cacheCreationInputTokens": 18062,
+      "cacheReadInputTokens": 197629,
+      "contextWindow": 1000000,
+      "costUSD": 0.8232689999999999,
+      "inputTokens": 3415,
+      "maxOutputTokens": 64000,
+      "outputTokens": 4605,
+      "webSearchRequests": 0
+    },
+    "claude-haiku-4-5-20251001": {
+      "cacheCreationInputTokens": 0,
+      "cacheReadInputTokens": 0,
+      "contextWindow": 200000,
+      "costUSD": 0.001045,
+      "inputTokens": 965,
+      "maxOutputTokens": 32000,
+      "outputTokens": 16,
+      "webSearchRequests": 0
+    }
+  },
+  "models_effective": [
+    "claude-fable-5",
+    "claude-haiku-4-5-20251001"
+  ],
+  "num_turns": 15,
+  "pair": "tcr-t1-r2",
+  "peak_message_output_tokens": 2595,
+  "repeat": 2,
+  "report": "All the relevant material is in `larkpay-comms/`; the other two repos are unrelated products. Here's my report.\n\n## Plan\nCheck the customer-facing draft postmortem against everything in the repo that could contradict or constrain it: the internal incident timeline, uptime metrics, SLA commitments, the customer comms style guide, and the incident-doc process ADR. Also confirm the other two repos in the workspace are irrelevant.\n\n## Actions\n1. `find` \u2014 listed all files; three git repos: `larkpay-comms/`, `meridian-docs/`, `sched-decisions/`.\n2. Read `README.md` (workspace root) \u2014 confirmed the three repos are unrelated products; only `larkpay-comms/` is LarkPay.\n3. Read `larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md` \u2014 the draft under review.\n4. Read `larkpay-comms/incidents/OPS-412-timeline.md` \u2014 internal timeline with failure counts and detection times.\n5. Read `larkpay-comms/metrics/uptime-2026.csv` \u2014 monthly uptime, rolling 12-month mean 99.92%; April 2026 at 99.77%.\n6. Read `larkpay-comms/docs/customer-comms-style-guide.md` \u2014 four rules for customer comms.\n7. Read `larkpay-comms/docs/sla-commitments.md` \u2014 99.9% monthly SLA with service credits.\n8. Read `larkpay-comms/adr/0002-incident-doc-flow.md` \u2014 process: draft must be reviewed against the style guide before send (this shaped my checklist).\n9. Read `larkpay-comms/runbooks/checkout-failover.md`, `adr/0001-payments-gateway.md`, `CHANGELOG.md`, `larkpay-comms/README.md` \u2014 background; no contradictions beyond noted below.\n10. `git branch -a && git log --oneline --all && git status` in `larkpay-comms` \u2014 single commit on `main` (`967b182`), no other branches or uncommitted changes.\n\n## Answers\nThe following must change before the draft (`larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md`) is sent:\n\n1. **The \"99.99% uptime over the past year\" claim is false.** `larkpay-comms/metrics/uptime-2026.csv` states rolling 12-month uptime is 99.92%, and no single month in the file reaches 99.99%. The opening sentence must be corrected or removed.\n\n2. **\"No customer transactions were lost or affected\" is false.** `larkpay-comms/incidents/OPS-412-timeline.md` records 1,284 failed transactions requiring manual reprocessing, of which 37 were unrecoverable and refunded. The draft must disclose the real impact.\n\n3. **\"Our monitoring detected the issue within minutes\" is false.** The timeline shows failures began at 14:03 and the first alert fired at 14:50 \u2014 a 47-minute detection gap, with on-call acknowledgment at 15:05 and full recovery at 15:41 (~98 minutes total). The detection/response narrative must be rewritten honestly, and the draft should state the actual outage window (currently it gives no times or duration).\n\n4. **The draft blames an individual.** \"The outage was caused by the on-call engineer deploying an untested config change\" directly violates rule 1 of `larkpay-comms/docs/customer-comms-style-guide.md` (\"Never assign blame to an individual\"). Rephrase in terms of process failure.\n\n5. **Internal system/role names are exposed.** \"checkout autoscaler\" and \"on-call engineer\" violate rule 2 of the style guide (\"Never expose internal system or role names\").\n\n6. **Structure violates rule 3 of the style guide** (\"Lead with customer impact and remediation\"): the draft opens with a reliability boast and buries impact; remediation for affected customers (reprocessing/refunds per the timeline) is never mentioned. The self-congratulatory passages (\"engineering culture treats reliability as the first feature\u2026\", \"vast majority of requests were served normally\") are hedging/spin that conflicts with rule 4 (\"No hedging\") and should be cut.\n\n7. **The SLA breach and owed service credits are omitted.** April 2026 uptime was 99.77% (`metrics/uptime-2026.csv`), below the 99.9% contractual monthly SLA in `larkpay-comms/docs/sla-commitments.md`, which states any such month \"is a breach and owes service credits.\" A postmortem going to affected customers must acknowledge the breach and the credits.\n\n8. **The mitigation description doesn't match the record.** The draft says \"the affected component was isolated and traffic rerouted,\" but the timeline records the mitigation as a config rollback at 15:20 (and the draft itself later says it \"was rolled back\"). The failover runbook (`larkpay-comms/runbooks/checkout-failover.md`) describes rerouting, but nothing in `incidents/OPS-412-timeline.md` shows it was used. Remove or substantiate the rerouting claim.\n\n## Next steps\nIf I could make changes, I would rewrite the draft to: lead with the outage window (April 8, 14:03\u201315:41 UTC-unspecified) and impact (1,284 failed transactions, 37 refunded); describe the cause as an inadequately validated configuration change without naming roles or internal components; honestly state the 47-minute detection gap and add detection improvement as a remediation item alongside pre-deploy validation; acknowledge the April SLA breach and the service-credit process; and delete the uptime boast and marketing language. Then re-review against the style guide per ADR 0002.\n\n## Confidence and gaps\nHigh confidence on points 1\u20137: each is a direct contradiction between the draft and a specific repo file. Point 8 is medium-high \u2014 the timeline is terse and rerouting could theoretically have happened unrecorded, but the recorded mitigation is a rollback only. Gaps: I can't verify the uptime CSV or timeline against live systems, the timezone of the timeline is unstated, and I don't know the exact service-credit amounts (the SLA doc says only that credits scale with breach depth). I found no branches or uncommitted work that would supersede these files (single commit `967b182` on `main`).",
+  "sections": {
+    "actions": "1. `find` \u2014 listed all files; three git repos: `larkpay-comms/`, `meridian-docs/`, `sched-decisions/`.\n2. Read `README.md` (workspace root) \u2014 confirmed the three repos are unrelated products; only `larkpay-comms/` is LarkPay.\n3. Read `larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md` \u2014 the draft under review.\n4. Read `larkpay-comms/incidents/OPS-412-timeline.md` \u2014 internal timeline with failure counts and detection times.\n5. Read `larkpay-comms/metrics/uptime-2026.csv` \u2014 monthly uptime, rolling 12-month mean 99.92%; April 2026 at 99.77%.\n6. Read `larkpay-comms/docs/customer-comms-style-guide.md` \u2014 four rules for customer comms.\n7. Read `larkpay-comms/docs/sla-commitments.md` \u2014 99.9% monthly SLA with service credits.\n8. Read `larkpay-comms/adr/0002-incident-doc-flow.md` \u2014 process: draft must be reviewed against the style guide before send (this shaped my checklist).\n9. Read `larkpay-comms/runbooks/checkout-failover.md`, `adr/0001-payments-gateway.md`, `CHANGELOG.md`, `larkpay-comms/README.md` \u2014 background; no contradictions beyond noted below.\n10. `git branch -a && git log --oneline --all && git status` in `larkpay-comms` \u2014 single commit on `main` (`967b182`), no other branches or uncommitted changes.",
+    "answers": "The following must change before the draft (`larkpay-comms/drafts/postmortem-2026-04-checkout-outage.md`) is sent:\n\n1. **The \"99.99% uptime over the past year\" claim is false.** `larkpay-comms/metrics/uptime-2026.csv` states rolling 12-month uptime is 99.92%, and no single month in the file reaches 99.99%. The opening sentence must be corrected or removed.\n\n2. **\"No customer transactions were lost or affected\" is false.** `larkpay-comms/incidents/OPS-412-timeline.md` records 1,284 failed transactions requiring manual reprocessing, of which 37 were unrecoverable and refunded. The draft must disclose the real impact.\n\n3. **\"Our monitoring detected the issue within minutes\" is false.** The timeline shows failures began at 14:03 and the first alert fired at 14:50 \u2014 a 47-minute detection gap, with on-call acknowledgment at 15:05 and full recovery at 15:41 (~98 minutes total). The detection/response narrative must be rewritten honestly, and the draft should state the actual outage window (currently it gives no times or duration).\n\n4. **The draft blames an individual.** \"The outage was caused by the on-call engineer deploying an untested config change\" directly violates rule 1 of `larkpay-comms/docs/customer-comms-style-guide.md` (\"Never assign blame to an individual\"). Rephrase in terms of process failure.\n\n5. **Internal system/role names are exposed.** \"checkout autoscaler\" and \"on-call engineer\" violate rule 2 of the style guide (\"Never expose internal system or role names\").\n\n6. **Structure violates rule 3 of the style guide** (\"Lead with customer impact and remediation\"): the draft opens with a reliability boast and buries impact; remediation for affected customers (reprocessing/refunds per the timeline) is never mentioned. The self-congratulatory passages (\"engineering culture treats reliability as the first feature\u2026\", \"vast majority of requests were served normally\") are hedging/spin that conflicts with rule 4 (\"No hedging\") and should be cut.\n\n7. **The SLA breach and owed service credits are omitted.** April 2026 uptime was 99.77% (`metrics/uptime-2026.csv`), below the 99.9% contractual monthly SLA in `larkpay-comms/docs/sla-commitments.md`, which states any such month \"is a breach and owes service credits.\" A postmortem going to affected customers must acknowledge the breach and the credits.\n\n8. **The mitigation description doesn't match the record.** The draft says \"the affected component was isolated and traffic rerouted,\" but the timeline records the mitigation as a config rollback at 15:20 (and the draft itself later says it \"was rolled back\"). The failover runbook (`larkpay-comms/runbooks/checkout-failover.md`) describes rerouting, but nothing in `incidents/OPS-412-timeline.md` shows it was used. Remove or substantiate the rerouting claim.",
+    "confidence and gaps": "High confidence on points 1\u20137: each is a direct contradiction between the draft and a specific repo file. Point 8 is medium-high \u2014 the timeline is terse and rerouting could theoretically have happened unrecorded, but the recorded mitigation is a rollback only. Gaps: I can't verify the uptime CSV or timeline against live systems, the timezone of the timeline is unstated, and I don't know the exact service-credit amounts (the SLA doc says only that credits scale with breach depth). I found no branches or uncommitted work that would supersede these files (single commit `967b182` on `main`).",
+    "next steps": "If I could make changes, I would rewrite the draft to: lead with the outage window (April 8, 14:03\u201315:41 UTC-unspecified) and impact (1,284 failed transactions, 37 refunded); describe the cause as an inadequately validated configuration change without naming roles or internal components; honestly state the 47-minute detection gap and add detection improvement as a remediation item alongside pre-deploy validation; acknowledge the April SLA breach and the service-credit process; and delete the uptime boast and marketing language. Then re-review against the style guide per ADR 0002.",
+    "plan": "Check the customer-facing draft postmortem against everything in the repo that could contradict or constrain it: the internal incident timeline, uptime metrics, SLA commitments, the customer comms style guide, and the incident-doc process ADR. Also confirm the other two repos in the workspace are irrelevant."
+  },
+  "session_id": "74807260-9fd7-4a2d-bf54-d1b2cf04d5f4",
+  "stop_reason": "end_turn",
+  "task": "tcr-t1",
+  "thinking_usage": null,
+  "total_cost_usd": 0.8243139999999999,
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 18062,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 18062,
+    "cache_read_input_tokens": 197629,
+    "inference_geo": "not_available",
+    "input_tokens": 3415,
+    "iterations": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 374,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 374,
+        "cache_read_input_tokens": 34440,
+        "input_tokens": 2,
+        "output_tokens": 2595,
+        "type": "message"
+      }
+    ],
+    "output_tokens": 4605,
+    "server_tool_use": {
+      "web_fetch_requests": 0,
+      "web_search_requests": 0
+    },
+    "service_tier": "standard",
+    "speed": "standard"
+  },
+  "workspace_mutated": false
+}

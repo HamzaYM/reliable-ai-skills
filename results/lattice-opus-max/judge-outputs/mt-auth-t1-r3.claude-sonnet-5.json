@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19113,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10924829999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10093,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10093,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10093,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10093,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2298,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2298,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with essentially equivalent substance and citations; Report 2 is slightly more thorough (e.g., adds a schema-invariant CI check and a review checklist) but both are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`db/migrations/0003_rls.sql:1` uses `ALTER TABLE appointments ENABLE ROW LEVEL SECURITY`. In Postgres, `ENABLE` applies RLS to ordinary roles **but exempts the table's owner** (owners bypass their own tables' policies unless you additionally issue `FORCE ROW LEVEL SECURITY`...). There is no `FORCE` anywhere in the migrations... `.env.example:1`, `docker-compose.yml:5`, and `infra/main.tf:2` all set that URL to **`juniper_owner`**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In Postgres, **a table's owner bypasses that table's RLS policies unless the table is additionally marked `FORCE ROW LEVEL SECURITY`.** `ENABLE ROW LEVEL SECURITY` only constrains *non-owner, non-superuser, non-`BYPASSRLS`* roles... `docker-compose.yml:5`, `.env.example:1`, and `infra/main.tf:2` all set `DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It became exploitable on 2026-06-17 in commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\"). That commit changed the runtime `DATABASE_URL` from the least-privilege `juniper_app:apppw` to the owner `juniper_owner:ownerpw` in all three deployment surfaces \u2014 `.env.example`, `docker-compose.yml`, and `infra/main.tf`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit **`b2a23d2`** \u2014 `ROTA-214 run migrations from the api container on boot`... it changed **only** the three config files, flipping the runtime credential in each from the low-privilege app role to the owner role: `.env.example`, `docker-compose.yml`, `infra/main.tf`: `postgresql://juniper_app:apppw@db:5432/juniper` \u2192 `postgresql://juniper_owner:ownerpw@db:5432/juniper`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Primary fix \u2014 stop running the runtime as the owner. Point `DATABASE_URL` back to the least-privilege `juniper_app` role in `.env.example:1`, `docker-compose.yml:5`, and `infra/main.tf:2`... **Force RLS on the owner too:** add `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary fix (removes the leak by restoring least privilege) \u2014 revert the runtime credential to the non-owner role in all three config files... Add a migration (e.g. `db/migrations/0004_force_rls.sql`) with `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` so the policy applies even to the table owner.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Application-level tenant filter (defense in depth):** add `WHERE tenant_id = :tid` (from the verified JWT claim) to the query in `backend/app/routes/appointments.py:16-19`, so isolation doesn't depend on exactly one mechanism.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an explicit tenant predicate to `appointments.py:16-19` \u2014 `... FROM appointments WHERE tenant_id = current_setting('app.current_tenant')::uuid` (non-`missing_ok`, so it errors rather than silently broadens if the tenant is unset). This removes the single-point dependency on DB configuration",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "**Boot-time guard:** at startup, assert the connected role is not the table owner and lacks `BYPASSRLS`/superuser (query `current_user`, `pg_roles.rolbypassrls`, `rolsuper`, and table ownership), and refuse to start otherwise \u2014 treating any such warning as stop-the-line, per project documentation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Boot-time self-check.** Have the API assert at startup that its DB role is not the table owner, not a superuser, and not `BYPASSRLS` (queryable via `pg_roles`/ownership catalogs), and refuse to start otherwise \u2014 so a bad credential fails loudly instead of leaking quietly.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r3",
+  "repeat": 3,
+  "task": "mt-auth-t1"
+}

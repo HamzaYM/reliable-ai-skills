@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Eval task (one JSON object per JSONL line)",
+  "type": "object",
+  "required": ["id", "skill", "fixture", "prompt", "must_hits"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique task id."
+    },
+    "skill": {
+      "type": "string",
+      "pattern": "^[a-z0-9_.-]+(/[a-z0-9_.-]+)*$",
+      "description": "Path under skills/, e.g. change-control/git-change-control-for-agents. Must exist; '..' segments are rejected by the validator."
+    },
+    "fixture": {
+      "type": "string",
+      "pattern": "^[a-z0-9_.-]+$",
+      "description": "Directory name under eval/fixtures/ (single path segment; '..' rejected). Must exist."
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The base task prompt (what both arms and the judge see)."
+    },
+    "must_hits": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 6,
+      "description": "Pre-registered expectations, frozen by --freeze.",
+      "items": {
+        "type": "object",
+        "required": ["id", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "text": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "judge_notes": {
+      "type": "string",
+      "description": "Extra grading guidance shown to the judge (frozen too)."
+    },
+    "tags": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}

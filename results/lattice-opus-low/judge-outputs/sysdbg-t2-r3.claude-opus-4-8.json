@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20494,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.135538,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3886,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3886,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3886,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3886,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 1651,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1651,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly diagnose the config/schema mismatch and hit all four expectations; they are comparable, with Report 2 slightly more explicit on isolated-verification guidance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The file that should be changed to fix it is **`config/scoring_config.yaml`**: change `expected_label_field: label` to `expected_label_field: gold_label` so it matches the migrated eval schema.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The eval set was migrated so each record's gold label lives under the key `gold_label`, but `config/scoring_config.yaml` still declares `expected_label_field: label`. ... `record.get(\"label\")` returns `None` for **every** record ... The file to change is **`config/scoring_config.yaml`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The introducing change is commit **`53551e8` \"SCORE-77: migrate eval set to gold_label schema\"**, dated Jun 17 2026 \u2014 the same day. ... **2026-06-17**, the first `0.00` row in `pipeline/metrics/nightly_scores.csv`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**, dated `2026-06-17 13:00:00`. Evidence: `nightly_scores.csv` shows the last good day is 2026-06-16 (0.91) and the first 0.00 day is 2026-06-17",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`score_one.py` never loads the eval set or config and never compares a prediction to a gold label ... so it *cannot* exhibit the bug ... To reproduce correctly, exercise the batch path, not `score_one`: run `python -m pipeline.score_batch`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`score_one.py` only calls the classifier and prints the prediction \u2014 it never loads the config, never reads a gold label, and never performs the `prediction == gold` comparison. It therefore cannot exercise the broken code path at all ... To reproduce correctly, drive the actual failing path \u2014 the batch scorer",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The 0.0 comes from the gold field being read as `None`, which is independent of the model \u2014 any model, old or new, scores 0.0 ... Reverting the model would burn a nightly cycle, still show 0.0, and risk reinforcing the wrong \"it's the model\" conclusion.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It targets a cause (the model) that is provably not involved ... It also violates the \"never flip config in a shared environment to see what happens\" guidance. The correct next step is the one-line config fix in Answer 1, guarded by a regression test that runs the batch path end-to-end.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

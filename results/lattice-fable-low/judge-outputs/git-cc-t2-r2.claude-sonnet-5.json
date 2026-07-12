@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30000,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1748642,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15118,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15118,
+        "cache_read_input_tokens": 57164,
+        "inference_geo": "not_available",
+        "input_tokens": 3259,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5408,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5408,
+            "cache_read_input_tokens": 33437,
+            "input_tokens": 2,
+            "output_tokens": 1482,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3569,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable depth and correct git forensics; Report 2 adds a merge-tree conflict check and explicit fetch/sync freshness step, giving it a slight edge in rigor, but substantively they are equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**1. Base branch: `main`.** The dependency branch `feat/weighted-scorer` no longer needs to be the base because its content already landed on `main`... Basing on `feat/weighted-scorer` would target a now-obsolete branch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**1. Base branch: `main`.** Every PR should target the trunk. The only other candidate base is `feat/weighted-scorer` (the branch this work was stacked on), but that branch is already dead as a base... Targeting it would be a PR into a merged, obsolete branch.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`git log --graph --all` shows `feat/pairwise-metric` was created from the tip of `feat/weighted-scorer` (`ac9d505`...). That starting point has been **squash-merged into main** as `1971f08` (the \"(#42)\" PR-number suffix and the empty content diff confirm it), so the W1\u2013W3 commits are content-wise on main but not ancestry-wise \u2014 `git merge-base main feat/pairwise-metric` is still the original base `65204ad`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/pairwise-metric` was created from the tip of `feat/weighted-scorer` (`ac9d505 \"W3: token-overlap helper in metrics\"`... That starting point has since been **squash-merged into `main`**: on June 13, `1971f08 (#42)` landed on `main`, and `git diff main feat/weighted-scorer` is empty (identical trees)... the *content* is in `main` but the W1\u2013W3 *commits* are not ancestors of `main`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`: full rewrite to weighted scoring (`WEIGHTS`, weighted total) \u2014 entirely weighted-scorer work (W1/W2), **not** pairwise work. So no, not all of it is pairwise work. The extra content is present because the branch stacks on `feat/weighted-scorer`, and that parent was squash-merged \u2014 GitHub computes PR diffs from the merge-base, which is still `65204ad`, so the W changes reappear.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The rest \u2014 all of `scoring/scorer.py` and most of `metrics.py` \u2014 is the weighted-scorer work (W1\u2013W3). It appears in the diff because the branch was cut from `feat/weighted-scorer`, and when that work was squash-merged as `#42`, the original W commits were orphaned onto this branch's history; the merge base with `main` is still `65204ad`, so git counts W1\u2013W3 as \"this branch's changes\" even though `main` already has their content.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Rebase the branch onto main, dropping the already-merged parent commits: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... Verify: `git log --oneline main..feat/pairwise-metric` shows exactly 2 commits, and `git diff main...feat/pairwise-metric` now matches the 5-line two-dot diff (grader.txt + `pairwise_preference` only).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rebase only the pairwise commits onto the current trunk tip, dropping the orphaned W commits: `git rebase --onto origin/main ac9d505 feat/pairwise-metric`... Verify the result: `git log origin/main..HEAD --oneline` shows only the two X commits; `git diff origin/main` shows only `prompts/grader.txt` (+1) and `scoring/metrics.py` (+4)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

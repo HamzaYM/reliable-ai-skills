@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16977,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0976263,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9755,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9755,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9755,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9755,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1665,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1665,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are highly thorough and hit all four expectations with strong, specific evidence (commit SHAs, exact commands, file-level diff breakdowns); Report 2 adds slightly more verification rigor (merge-tree conflict simulation, explicit scope-check command) but the two are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Because the in-progress prerequisite is now merged, there is no longer any feature branch to stack on; `main` is the correct base.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`main` (the trunk).** ... So the base is `main`, and the branch must be re-pointed onto it rather than left where it sits.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was branched from **`feat/weighted-scorer` at its tip `ac9d505` (W3)** \u2014 not from `main`. ... Status of that starting point: **`feat/weighted-scorer` has already been merged into `main`, via squash-merge**, as commit `1971f08 (#42)`. ... the individual commits are **not** ancestors of main: `git merge-base --is-ancestor` reports `d6fdbc3`, `2d3029b`, `ac9d505` (and `7b2e100`, `1bfecb6`) all **NOT in main**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**It was created from `feat/weighted-scorer`, at that branch's tip `ac9d505` (\"W3: token-overlap helper in metrics\").** ... So the weighted-scorer functionality reached `main` as a squashed/refactored single commit (PR #42) with a *different SHA*, not by merging the `feat/weighted-scorer` commits. ... Not an ancestor: `git merge-base --is-ancestor feat/weighted-scorer origin/main` returns `1`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "That extra 16/3 is present **because the branch was cut from `feat/weighted-scorer` before that branch was squash-merged**. The three-dot diff is computed from the old merge-base `65204ad`, so it re-includes W1\u2013W3... `scoring/scorer.py` (+10/\u22123) ... **Weighted-scorer dependency (W1\u2013W3), 16 insertions / 3 deletions:** all of `scoring/scorer.py` (+10/\u22123)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`scoring/scorer.py` \u2014 `+10/-3`: docstring \"flat\"\u2192\"weighted\", `import ... overlap`, `WEIGHTS = {...}`, and a weighted `total` computation \u2192 **entirely weighted-scorer work** (W1). ... A three-dot PR diff measured from that root therefore re-shows the weighted changes as if new, even though `main` already has equivalent content.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Ensure `main` is current** so it includes the `#42` squash. Here local `main` already equals `origin/main` (`git rev-parse main origin/main` \u2192 both `1971f08\u2026`)... **Rebase the branch onto main, dropping the already-merged W commits**... `git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... **Verify the result.** After rebase, `git log --oneline main..feat/pairwise-metric` should list only the two replayed pairwise commits, and `git diff --stat main...feat/pairwise-metric` should now match the two-dot result (`grader.txt` +1, `metrics.py` +4, 5 insertions).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto origin/main feat/weighted-scorer feat/pairwise-metric` ... `git diff origin/main...HEAD` \u2192 now only `grader.txt +1` and `metrics.py +4`; `scorer.py` gone. Scope check (per project documentation): `git log origin/main..HEAD -- scoring/scorer.py` \u2192 empty (branch no longer touches files it didn't mean to).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23063,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1085593,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10087,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10087,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10087,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10087,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2234,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2234,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable substance; Report 1 is slightly more explicit about a final pre-commit determinism re-check, while Report 2 more concretely demonstrates the nondeterminism by reproducing differing key orders \u2014 overall the two are roughly equally strong.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "each POSTs to a real endpoint ... using a secret os.environ['SCORELAB_API_KEY'] ... Correct action: leave the deselection alone and only run -m live deliberately when you specifically need to validate the live endpoint \u2014 which this change does not touch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deselection is deliberate (live: opt-in), and \"nothing is skipped\" is not a real quality goal \u2014 technically these are deselected, not skipped, and that is correct by design.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Only after every remaining golden delta is confirmed intended do you regenerate the fixture \u2014 recapturing is not a rubber stamp; an unexplained hunk is a regression to investigate, not to launder into the project documentation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Verify the new values are intended. I confirmed 0.755/0.56/0.925 are exactly what 0.7/0.3 weights produce \u2014 they are correct for the intended reweighting. Resolve the undocumented second change first. ... Decide whether it's intended; if not, revert it (it's out of scope for this PR); if yes, document it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Not by citing docs/testing.md. Those figures are a stale snapshot and both are wrong against the current code; I re-measured instead",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite docs/testing.md; it is stale, and I would report measured numbers instead",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If the fixture is meant to be stable, the script should iterate ITEMS in list order or sort_keys=True; then regenerate and re-run the offline suite twice to confirm it's green *and* deterministic before committing.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "watch that its set-iteration produces nondeterministic key ordering (I reproduced item-3/item-1/item-2 vs item-2/item-3/item-1 across hash seeds), which can add spurious churn to the committed file.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}
