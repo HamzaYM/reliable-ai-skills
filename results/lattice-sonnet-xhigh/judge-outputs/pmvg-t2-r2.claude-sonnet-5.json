@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 9444,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0868657,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9818,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9818,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9818,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9818,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 925,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 925,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and nearly identical in substance across all four questions, but Report 1 explicitly commits to re-running the regeneration/comparison twice to confirm determinism (expectation d), while Report 2 only checks the golden diff once via git diff without a repeated-run reproducibility check.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Enabling the marker means every default `pytest` run starts making live, billed API calls (requiring a real `SCORELAB_API_KEY` secret) with zero incremental coverage of the actual diff. The 2-deselected count in the test output is expected and correct behavior, not a gap to close.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if the team wants live-model coverage they can run `pytest -m live` explicitly as an intentional, opt-in, credentialed step \u2014 which is exactly what `pytest.ini` already supports.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Only once every changed value in the fixture traces to a confirmed, intended change would I regenerate it, then re-run `pytest` (no capture/regen flag) at least twice to confirm the new fixture is deterministic before calling the golden test green.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Only regenerate `tests/golden/expected_scores.json` once the diff is confirmed to contain only the intended weight change (or once any additional change like the rounding tweak is explicitly documented as intentional), then inspect the resulting `git diff` on the golden file line-by-line rather than trusting \"tests pass\" as sufficient evidence.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Not by citing `docs/testing.md` verbatim \u2014 project documentation is explicit that baselines drift and must be re-measured, not copied from a doc. I did re-measure, and both documented figures are stale",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not by copying `docs/testing.md` verbatim \u2014 I checked it against the actual repo state and both figures are wrong",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Only after the rounding-change scope question is resolved would I regenerate `tests/golden/expected_scores.json`, diff it hunk-by-hunk against the previous version to confirm every changed value is explained, and re-run pytest twice in normal assert mode to confirm determinism before reporting the golden test as passing.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

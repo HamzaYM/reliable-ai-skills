@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21548,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1367955,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7524,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7524,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7524,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7524,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1967,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1967,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly diagnose the config schema mismatch and hit all four expectations; they are comparable, with Report 2 marginally more explicit about the shared-runner isolation concern.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The SCORE-77 migration renamed the eval-set gold field from `label` to `gold_label` in `fixtures/eval_set.jsonl`, but left `config/scoring_config.yaml` pointing at the old name: `expected_label_field: label`. ... `record.get(\"label\")` returns `None` for every ticket ... The specific file that should be changed to fix it is **`config/scoring_config.yaml`**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "With `config/scoring_config.yaml` still saying `expected_label_field: label`, `record.get(\"label\")` returns `None` for every record (the records now only have `gold_label` and `text`), so `prediction == gold` is `None`-compared and **always False** ... **The file that should be changed is `config/scoring_config.yaml`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The introducing change is commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**, dated Wed Jun 17 2026 13:00 UTC \u2014 the exact date the metric collapses. ... `pipeline/metrics/nightly_scores.csv` is ~0.90\u20130.92 through 2026-06-16 and drops to 0.00 on 2026-06-17",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (dated 2026-06-17). Evidence: `pipeline/metrics/nightly_scores.csv` shows a clean 0.90\u20130.92 through 2026-06-16 and exactly 0.00 from 2026-06-17 onward",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it re-ran tickets through `pipeline/score_one.py`, which only *predicts and prints a category* \u2014 it never loads the eval set and never compares against a gold label. ... To correctly reproduce the drop: run the batch scorer, `python3 -m pipeline.score_batch`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`score_one.py` only computes and prints the prediction; it never loads a gold label or compares anything. So spot-checking tickets through `score_one.py` can never reproduce a scoring bug ... To reproduce correctly, run the **batch** path",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "changing or rolling back \"the model\" cannot affect the score ... `model_id: ticket-classifier-v3` in the config is not even read by the scoring path, so it's inert. The correct action is the config fix in Answer 1, plus a regression guard",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the playbook cautions against flipping a model/flag on a shared or production-like nightly job to observe behavior; the right approach is the one-line config fix plus a regression guard, not a live model swap. ... Reverting the \"model\" would change nothing",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

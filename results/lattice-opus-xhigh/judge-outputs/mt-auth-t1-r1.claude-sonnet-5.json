@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23398,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1114953,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9080,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9080,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9080,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9080,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2904,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2904,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all five expectations including the application-layer tenant-filter defense-in-depth recommendation, while Report 2 misses that point despite otherwise matching on root cause, commit attribution, primary fix, and startup check.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In PostgreSQL, a table's owner is exempt from row-level security policies unless the table is set to FORCE ROW LEVEL SECURITY. Migration db/migrations/0003_rls.sql:1 only issues ENABLE ROW LEVEL SECURITY (plus the tenant_isolation policy at lines 2-3); it never issues FORCE.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the application connects to Postgres as juniper_owner, which is the owner of the appointments table, and the migration uses ENABLE ROW LEVEL SECURITY, not FORCE ROW LEVEL SECURITY. In PostgreSQL, the table owner is exempt from its own RLS policies unless FORCE ROW LEVEL SECURITY is set.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit b2a23d2 (ROTA-214, \"run migrations from the api container on boot,\" Fixture Bot, 2026-06-17). Its diff changes DATABASE_URL from postgresql://juniper_app:apppw@... to postgresql://juniper_owner:ownerpw@... in three places: .env.example:1, docker-compose.yml:5, and infra/main.tf:2.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit b2a23d2 \u2014 \"ROTA-214 run migrations from the api container on boot\" (Fixture Bot, Wed Jun 17 2026). Its diff changes the runtime DATABASE_URL from juniper_app:apppw to juniper_owner:ownerpw in all three deployment configs: .env.example, docker-compose.yml, infra/main.tf.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Primary fix (root cause): stop serving requests as the table owner. Point the runtime DATABASE_URL back to the least-privilege juniper_app role in .env.example:1, docker-compose.yml:5, infra/main.tf:2, and any real deployment secret store.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary fix \u2014 stop serving requests as the table owner. Revert the runtime DATABASE_URL back to juniper_app in .env.example:1, docker-compose.yml:5, and infra/main.tf:2.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an explicit tenant predicate in backend/app/routes/appointments.py:16-19, e.g. WHERE tenant_id = current_setting('app.current_tenant')::uuid (or bind claims[\"tenant_id\"]), so the query is correct even if RLS is off.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Add a boot-time assertion in backend/app/db.py (or app startup) that the connected role is not the table owner and has no BYPASSRLS/superuser attribute, and fail startup if it does \u2014 the reference explicitly recommends treating any such warning as stop-the-line.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Enforce least-privilege at startup. Add a boot-time assertion that the connected role is not the table owner and has no BYPASSRLS/superuser attribute (e.g., check pg_roles / has_table_privilege), failing fast otherwise.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r1",
+  "repeat": 1,
+  "task": "mt-auth-t1"
+}

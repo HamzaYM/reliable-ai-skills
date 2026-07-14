@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16696,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10401969999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10073,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10073,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10073,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10073,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1971,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1971,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently arrive at essentially identical, fully correct root causes and fixes for all three expectations; Report 2 adds a sharper critique of the existing test suite's blind spot, but overall the two are comparable in substance and completeness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Postgres row-level security is bypassed unconditionally for superusers, and also for table owners unless the table has FORCE ROW LEVEL SECURITY set \u2014 which 0001_init.sql never sets. So cedar_owner is exempt from RLS for two independent reasons at once.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In Postgres, RLS policies are never applied to superusers, and by default are not applied to a table's owner either (that requires ALTER TABLE ... FORCE ROW LEVEL SECURITY, which 0001_init.sql never adds \u2014 and even if it did, superuser status alone bypasses RLS regardless of FORCE).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Keep cedar_owner (or an equivalently privileged schema-owning role) reserved exclusively for scripts/migrate.sh / schema migrations \u2014 never for serving live app traffic. Concretely, use two separate env vars (e.g. DATABASE_URL for the app, MIGRATIONS_DATABASE_URL for migrate.sh) so the two roles can never be accidentally collapsed into one connection string again",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "cedar_owner (or a dedicated migration role) should be used only by scripts/migrate.sh / CI migration jobs to create/alter schema \u2014 never by the running API.\n  - cedar_app should be the only role the FastAPI process ever authenticates as, and it should keep least-privilege grants",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The cedar_app role is created only by cedarline/db/bootstrap/create_app_role.sql, which is explicitly commented \"Not part of automatic database initialization; run by hand on first setup,\"... reset-local-db.sh then only calls ./scripts/migrate.sh, which runs the db/migrations/*.sql files as cedar_owner \u2014 none of those migrations create cedar_app; only the bootstrap script does, and reset-local-db.sh never invokes it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "cedar_app is not created by this process at all: it only ever gets created by manually running db/bootstrap/create_app_role.sql (explicitly documented in that file as \"One-time bootstrap... Not part of automatic database initialization; run by hand on first setup,\"... reset-local-db.sh ... only re-runs migrate.sh \u2014 it never re-invokes create_app_role.sql, and docker-compose.yml has no /docker-entrypoint-initdb.d mount that would auto-run it either.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

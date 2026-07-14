@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20423,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13467700000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14290,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14290,
+        "cache_read_input_tokens": 29150,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 14290,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 14290,
+            "cache_read_input_tokens": 29150,
+            "input_tokens": 2,
+            "output_tokens": 2092,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2092,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is stronger: it matches Report 2 on (a), (c), (d) but clearly hits (b) by prescribing fail-closed behavior on Redis errors and a narrow explicit override for the environment bypass, whereas Report 2 explicitly defends the fail-open Redis behavior as a \"defensible tradeoff\" and only asks for logging, missing the core expectation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "replace the blanket except Exception with an explicit denylist function per project documentation's guardrail 2, e.g.: NON_FAILOVER_ERRORS = (BadRequestError, AuthError, ContentPolicyError) ... except NON_FAILOVER_ERRORS: raise",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "catch the specific provider exceptions instead of bare Exception, and branch: transient classes (RateLimitError, RequestTimeoutError, ServerError) fail over to secondary as today; BadRequestError and ContentPolicyError should not blindly retry the same payload against another vendor \u2014 re-raise or return an explicit error status; AuthError should raise/alert rather than degrade silently.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "replace the STAGE != \"production\" check with an explicit, narrowly-named local-dev override, and change the except RedisError branch to return False (fail closed).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this is a deliberate availability-over-strictness choice (don't let a redis outage block the whole batch job), which is a defensible tradeoff for a non-security-critical limiter ... At minimum this should log a warning so an ongoing redis outage doesn't go unnoticed",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "log only an allowlisted, minimal set of fields \u2014 the pseudonymized ID (reuse the key already computed in batch_score.py rather than the raw applicant_id), a hash/length of input_text instead of the text itself ... and an explicit allowlist of metadata keys known to be non-sensitive",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "stop logging raw applicant_id and input_text. Log the pseudonymized id ... and either omit input_text entirely or log a non-reversible derivative (e.g., length, a hash, or a truncated non-PII summary) instead of the document body. Audit what metadata actually contains before logging it too",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "salt = os.environ[\"PII_SALT\"]  # KeyError if unset \u2014 no empty-string fallback\\n    if not salt:\\n        raise RuntimeError(\"PII_SALT is set but empty\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "fail loudly if PII_SALT is not set (e.g., raise at import/startup time, or in pseudonymize itself, rather than defaulting to \"\") rather than silently degrading pseudonymization strength.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

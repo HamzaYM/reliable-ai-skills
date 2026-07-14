@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19544,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1319325,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7511,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7511,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7511,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7511,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1773,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1773,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are essentially equivalent, correctly hitting all four expectations with the same root cause, commit, reproduction path, and model-swap assessment.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`ticket-scorer/config/scoring_config.yaml` sets `expected_label_field: label`. ... But `ticket-scorer/fixtures/eval_set.jsonl` records use the key `\"gold_label\"`, not `\"label\"` ... Since `record.get(\"label\")` always returns `None` ... The fix belongs in **`ticket-scorer/config/scoring_config.yaml`**: change `expected_label_field: label` to `expected_label_field: gold_label`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The root cause is a stale config key in `ticket-scorer/config/scoring_config.yaml`. Line 2 reads: `expected_label_field: label` but `fixtures/eval_set.jsonl` records now use the key `\"gold_label\"` ... `record.get(gold_field)` returns `None` for every record ... The fix is a one-line change to `ticket-scorer/config/scoring_config.yaml`: change `expected_label_field: label` to `expected_label_field: gold_label`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "introduced by commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\" ... That commit renamed every record's label key from `label` to `gold_label` in `fixtures/eval_set.jsonl` ... but did not update `config/scoring_config.yaml`'s `expected_label_field` ... `pipeline/metrics/nightly_scores.csv` ... shows accuracy 0.90 (06-14), 0.92 (06-15), 0.91 (06-16), then 0.00 on 06-17",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The regression began with commit `53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\" ... but did not update the `expected_label_field` value in `config/scoring_config.yaml` ... corroborated directly by the nightly metrics log (`pipeline/metrics/nightly_scores.csv` ...): accuracy was 0.90/0.92/0.91 on 2026-06-14/15/16, then drops to exactly `0.00` starting 2026-06-17 \u2014 the same date as commit `53551e8`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The investigation used `pipeline/score_one.py`, which ... only calls `predict_category(normalize_simple(text))` and prints the prediction. It never reads `config/scoring_config.yaml`, never loads a gold label, and never computes a hit/miss comparison. So it is structurally incapable of exercising the buggy code path ... run the actual nightly entry point, `pipeline/score_batch.score()` ... against `fixtures/eval_set.jsonl`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py` (`score_single`) never scores anything against a gold label ... It contains no gold-field lookup, no config read, and no comparison logic at all. So re-running \"failing tickets\" one at a time through `score_one.py` can never reproduce a scoring bug ... The correct way to reproduce the drop is to run the actual batch scorer, `pipeline/score_batch.py`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Swapping the \"model\" therefore cannot change the outcome, since the bug is in the label-field lookup (`config[\"expected_label_field\"]`), which is independent of any model. Acting on this plan would burn effort/rollout risk on an unrelated system while leaving the actual defect ... fully in place.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This plan should not be acted on \u2014 it addresses a nonexistent cause and won't fix anything. There is no real ML model in this pipeline ... the `model_id` field in `config/scoring_config.yaml` is never read anywhere ... would burn time on a rollback that leaves the actual bug ... completely unaddressed",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24146,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1095054,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4802,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4802,
+        "cache_read_input_tokens": 29008,
+        "inference_geo": "not_available",
+        "input_tokens": 9507,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4802,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4802,
+            "cache_read_input_tokens": 29008,
+            "input_tokens": 9507,
+            "output_tokens": 2898,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2898,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently and correctly identify the same root cause, fix, and wipe/rebuild explanation with equivalent depth and file-level specificity; they are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Postgres row-level security does not apply to either of those cases: a superuser bypasses RLS entirely, and a table owner is exempt from RLS by default unless the table is declared FORCE ROW LEVEL SECURITY. db/migrations/0001_init.sql only does ENABLE ROW LEVEL SECURITY (lines 21 and 25), never FORCE.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "in PostgreSQL, ENABLE ROW LEVEL SECURITY does not apply policies to the table's owner \u2014 the owner (and superusers / BYPASSRLS roles) skip RLS silently unless the table also has FORCE ROW LEVEL SECURITY, which this migration never sets. So even though deps.tenant_connection correctly runs SET app.current_tenant, the policy is simply never evaluated for the cedar_owner connection. Every request sees every tenant's rows, with no error or warning.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Point the application at the dedicated, unprivileged role: change DATABASE_URL in .env/.env.example to postgresql://cedar_app:apppw@localhost:5432/cedar... Going forward, the application should always connect as cedar_app (owner/superuser roles reserved for migrations and admin only)... The core one-line fix is the role in DATABASE_URL; the migration hardening is the safety net.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary: point the application's DATABASE_URL at the least-privilege cedar_app role instead of cedar_owner (update .env/.env.example to postgresql://cedar_app:apppw@localhost:5432/cedar)... Going forward, adopt the strict two-role model: cedar_owner (schema owner) is used only to run migrations; the running app connects only as the least-privilege cedar_app.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "cedar_app is created only by db/bootstrap/create_app_role.sql, which \u2014 per its own header comment, docs/local-setup.md, and README.md \u2014 is a one-time manual step, explicitly not part of database initialization or migrations... The -v deletes the cedar_pgdata volume..., destroying the entire Postgres cluster \u2014 and roles are cluster-global objects, so cedar_app is destroyed with it. up -d db then creates a fresh cluster whose only role is the bootstrap cedar_owner, and the reset script proceeds straight to migrate.sh, which recreates tables but not the role... To make it work again, the cedar_app role must be re-created in the fresh cluster: re-run psql ... -f db/bootstrap/create_app_role.sql.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The cedar_app role lives only in db/bootstrap/create_app_role.sql, which is explicitly not part of automatic initialization (its header comment says so) and is only a manual one-time step in docs/local-setup.md. Crucially, reset-local-db.sh re-runs migrate.sh but does not re-run the role bootstrap. So after a reset, cedar_app no longer exists... To make it work again, the create_app_role.sql bootstrap must be re-run against the fresh cluster, e.g. psql \"postgresql://cedar_owner:ownerpw@localhost:5432/cedar\" -f db/bootstrap/create_app_role.sql",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

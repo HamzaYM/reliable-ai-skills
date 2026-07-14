@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 10447,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.07443690000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7642,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7642,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7642,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7642,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 1073,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1073,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with equivalent substance and rigor; Report 1 additionally cross-checks against another reviewer's pass, but both are comparable in quality on the graded criteria.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The query has **no `tenant_id` predicate**. `search_appointments` receives `tenant_id` (passed from `api.py:get_appointment_search`) but never uses it in the WHERE clause",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The function receives `tenant_id` as a parameter but **never uses it**. The raw SQL selects `id, tenant_id, provider, starts_at, status, notes FROM appointments` filtered only by `status` and a full-text match on `notes` \u2014 there is no `WHERE tenant_id = :tenant_id`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`backend/app/db.py:7` changed `build_appointment_query(session, tenant_id)` \u2192 `build_appointment_query(session, tenant_id, filters)` where `filters` is a **required** positional arg (no default). `backend/app/exports.py:9` still calls `build_appointment_query(session, tenant_id).all()` with only 2 args.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Location: `backend/app/db.py` new signature `build_appointment_query(session, tenant_id, filters)` (required, no default) vs. caller `backend/app/exports.py:9`, `build_appointment_query(session, tenant_id)`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "*SQL injection via `f\"WHERE status = '{status.value}'\"`* \u2014 **refuted as exploitable.** `status` is typed `AppointmentStatus` in the FastAPI handler; FastAPI validates the query param against the 3-value enum before the body runs (invalid \u2192 422), so `status.value` can only ever be one of three hardcoded literals. The user-controlled `q` is safely bound as `:q`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "As written it is *not* exploitable through the HTTP endpoint, because `get_appointment_search` types `status: AppointmentStatus` and FastAPI validates the query param against the enum, so `status.value` can only ever be `booked`/`cancelled`/`completed` (I confirmed the enum in `schemas.py`).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

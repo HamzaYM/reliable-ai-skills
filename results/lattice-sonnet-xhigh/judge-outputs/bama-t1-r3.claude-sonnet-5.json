@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20240,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.25500100000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 36467,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 36467,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 36467,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 36467,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 2171,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2171,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable rigor; Report 1 additionally flags that score_one() is a stub returning hardcoded 0.0 scores, an extra correctness catch not required by the expectations but adds value.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the default backend (northpeak) has only **640,000 tokens remaining \u2014 about 6.8% of the 9,360,000 needed**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "northpeak has only ~6.8% of what's needed, an ~8.72M-token shortfall.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Ridgeline (secondary) has 10,800,000 remaining, comfortably covering the 9,360,000 needed, leaving ~1,440,000 tokens (\u224815%) of headroom",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ridgeline (secondary): 10,800,000 tokens remaining of a 12,000,000 window... That comfortably covers the ~9.36M-token job with about 1.44M tokens (~15%) of headroom to spare.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Explicitly target the secondary backend: run `python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary` (or edit `run_nightly.sh` to pass `--provider secondary`) rather than relying on the default.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** run `scripts/run_nightly.sh` / the bare default command as-is. Instead I'd launch it explicitly against the provider with headroom:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is a few hours stale, I'd want to re-check current remaining quota (not just the cached snapshot) immediately before kicking off an unattended overnight run",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'd also flag, not silently trust, that the usage snapshot is ~3 hours old relative to the 22:30 UTC start time (generated 19:25Z) ... Before actually kicking off a 9M+-token job I'd want a fresh usage check (or build in a safety margin) rather than launching purely off a 3-hour-old number",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

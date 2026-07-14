@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35234,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.17918800000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13747,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13747,
+        "cache_read_input_tokens": 110490,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1066,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1066,
+            "cache_read_input_tokens": 41830,
+            "input_tokens": 2,
+            "output_tokens": 850,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3838,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answers all four expectations, including an explicit reproducibility check (re-running twice, naming the set-ordering/hash-randomization instability source), while Report 1 misses that concrete reproducibility verification for the regenerated golden file.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Consequence of enabling them: you'd need network egress and a real (paid) API key, you'd introduce cost and potential flakiness from an external dependency, and \u2014 critically \u2014 you still wouldn't validate the score.py weight change... Enabling live is a distraction from actually validating the diff.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the deselection is intentional, not a bug to \"fix.\"... If live coverage is ever needed, it should stay opt-in and be run deliberately with a real key, not folded into \"make nothing skip.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Only after the diff matches the stated intent should update_golden.py be run \u2014 and even then, the resulting diff to expected_scores.json should be reviewed line-by-line by a human before merging, not trusted automatically.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "diff the regenerated expected_scores.json against the current committed version hunk-by-hunk, confirming every changed number traces either to the reweighting (expected) or to the now-explained rounding change \u2014 nothing left unaccounted for.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite docs/testing.md's \"2 known-flaky tests\" and \"9 lint warnings\" verbatim, because I could verify neither, and one is actively contradicted by the code",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not by quoting docs/testing.md \u2014 I checked it against the actual source and it's stale on both figures",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Re-run python3 -m pytest -v (no regen) at least twice to confirm the suite is green and the new fixture is stable/deterministic (relevant here specifically because of the set-iteration-order note above).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

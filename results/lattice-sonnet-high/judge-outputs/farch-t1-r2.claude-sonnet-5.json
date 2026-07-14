@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36937,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.129643,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9693,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9693,
+        "cache_read_input_tokens": 29150,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9693,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9693,
+            "cache_read_input_tokens": 29150,
+            "input_tokens": 2,
+            "output_tokens": 3842,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3842,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly surface the prior Edgerunner attempt and its documented connection-exhaustion cause with commit citations and tie their recommendations to it, but Report 2 more explicitly and precisely establishes that the container deployment is the deliberate current state and that the serverless files were purposely removed via the revert, giving it a slight edge overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Run git show 1712565, git show 454a21f, and git show 597777b in carelog-api \u2014 these are the full record of the prior attempt, the stopgap fix, and the revert reasoning",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "git log --oneline --all in carelog-api/ \u2014 shows this exact migration was already tried and reverted (commits 454a21f, 597777b, 1712565, ticket PLAT-31).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the stopgap mitigation \u2014 opening a fresh Postgres connection per request instead of using a pool (597777b) \u2014 was tried in this codebase and caused /reports/monthly to exhaust Postgres's max_connections in production under \"normal dashboard load,\" per the revert commit message.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit 1712565's message states this migration was already deployed and failed: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production.\" The revert body adds: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "a backend/serverless_handler.py wrapping the FastAPI app, and a deploy/edgerunner.toml with [service] name/entry and [scaling] per_request = true. These files don't exist on main today (removed in the revert), but can be recovered from that commit as a starting point.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the decision to re-attempt should not be made by an engineer alone... I'd recommend involving: Whoever owns the PLAT-31 ticket / the original migration decision, since they have the incident context that may not be fully captured in the commit messages.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the Platform team appears to own both Cargobox and this migration path already and has direct institutional knowledge of why it failed \u2014 they should lead any new attempt... Given the prior attempt caused a production outage (\"taking the endpoint down\"), anyone owning incident response/reliability sign-off for this service should also review the plan before a second attempt ships.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

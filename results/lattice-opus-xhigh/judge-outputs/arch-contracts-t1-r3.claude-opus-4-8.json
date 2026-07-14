@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29629,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16258050000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8593,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8593,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8593,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8593,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2533,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2533,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both cover a\u2013c well, but Report 1 answered better overall because it correctly recommends dropping the hardcoded webhook count in favor of pointing at the code, whereas Report 2 merely bumps 4 to 5.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund provider calls should live in the single vendor-boundary module, `backend/app/billing/gateway.py`... `backend/app/api/invoices.py:14-16` \u2014 the charge route builds its own `chargekit.Client(...)`... `backend/app/workers/dunning.py:9-13` \u2014 the dunning worker calls `chargekit.Client(...).charge(...)` inline... `backend/app/billing/errors.py:6` imports `from chargekit import errors` \u2014 this is the one *sanctioned* exception... so it is not a violation.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls for refunds should live in `backend/app/billing/gateway.py`, as a new accessor (e.g. `refund(...)`)... `backend/app/api/invoices.py:14\u201316` \u2014 `charge_invoice` builds `chargekit.Client(...)`... `backend/app/workers/dunning.py:9\u201313` \u2014 `run_dunning_pass` builds `chargekit.Client(...).charge(...)` inline... `backend/app/billing/errors.py` also imports from `chargekit` (line 6), but it only re-exports error classes and makes no provider calls \u2014 this is the explicitly documented exception, not a violation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual serializer `InvoiceOut` (`backend/app/models/invoice.py:16-28`) has a sixth field, `external_ref`, and the charge route populates and returns it... The word \"exactly\" makes this a hard mismatch \u2014 the doc is missing `external_ref`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`InvoiceOut` (`backend/app/models/invoice.py:15\u201328`) now carries a sixth field, `external_ref` (line 22), and `charge_invoice` populates it (`invoices.py:17`)... So the doc undercounts the response shape by one field.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "drift between this doc and the code is a bug to fix, not a \"someday\" item, and the fix lands **in the same commit as the code it governs**... the doc edit ships in the **same commit** as the refund code and is called out explicitly in the PR summary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "these are pre-existing discrepancies independent of refunds, so I'd flag them now (this review) and fix the doc in the same change set that touches this area \u2014 ideally *before or alongside* writing refund code... any PR that changes those contracts \u2014 including the refund PR \u2014 should update `ARCHITECTURE.md` in the same PR.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A hard-coded count of handlers is guaranteed to drift (it already has). Rather than just bumping \"4\"\u2192\"5\"... I'd drop the count and point at the single source of truth \u2014 e.g. \"the webhook event types handled are enumerated in `backend/app/api/webhooks.py`.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

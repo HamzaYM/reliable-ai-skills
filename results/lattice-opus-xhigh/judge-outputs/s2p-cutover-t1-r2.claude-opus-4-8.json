@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28895,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1882095,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11028,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11028,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11028,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11028,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2516,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2516,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct file/line citations; comparable overall, with Report 2 marginally more thorough (also flags missing checkout, Dockerfile, and id-token permissions).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. ... **Change to `\"false\"`.** ... `infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. ... This is a hardcoded QA superadmin identity \u2014 a backdoor in production. **Remove it entirely (empty string).**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:6` `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"` ... **Remove the key entirely** ... `infra/prod/app.auto.tfvars:7` `LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"` \u2014 a dead fossil from a previous billing architecture ... remove the key.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "There is no `.env.production` (confirmed via `find`) and no `--mode production` build. So the production frontend ships with **`https://staging-api.example.com`** baked in \u2014 the live prod site would call the staging API. To fix: add `frontend/.env.production` with the prod URL and build the prod image with `--mode production`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`deploy-prod` then deploys **\"the same already-built digest\"** ... production would ship a bundle hard-pointed at the staging API. There is **no `.env.production`** ... Fix: add `frontend/.env.production` with the real prod API URL and build a separate prod bundle with `--mode production`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**No database migration step, despite the runbook.** `docs/prod-runbook.md` claims \"Database migrations are applied automatically during deploy,\" but `deploy.yml` has **no** migration step. For a brand-new prod database this means nothing creates the schema during launch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/prod-runbook.md:6` claims migrations apply automatically, but that runbook is \"last updated 3 months ago\" ... nothing in the repo proves the pipeline does this. Confirm explicitly and plan a manual first migration pass.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Prod** (`infra/prod/main.tf:3`) still sets `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 the copy-paste bug. ... the prod role currently **trusts the staging environment** instead ... **Fix: change `infra/prod/main.tf:3` to `...:environment:production`.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` still sets the trust condition to `...environment:staging` (inherited by the copy). ... Fix: set `infra/prod/main.tf:3` to `oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"` \u2014 production needs its own scoped trust condition, never staging's.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

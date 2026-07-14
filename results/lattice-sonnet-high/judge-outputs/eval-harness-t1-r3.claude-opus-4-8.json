@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29999,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.17069,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9837,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9837,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9837,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9837,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 2328,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2328,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable on (a)-(c), but Report 1 additionally nails expectation (d) by explicitly endorsing renormalizing over succeeded axes for relevance/tone while forbidding it for accuracy, making it slightly better overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`value = axis_scores.get(axis)` retrieves `None`, and the code explicitly does `if value is None: value = 0.0` \u2014 so the missing axis is treated as a real score of zero and folded into the weighted sum ... This is byte-for-byte the same row shape whether all three axis calls succeeded or one of them silently failed and was replaced with 0.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Here, `None` is silently coerced to `0.0` and multiplied by that axis's weight. There is no branch that raises, skips the row, or flags it \u2014 `composite()` always returns a plain float. ... This is exactly the same schema as a row where all three axis calls succeeded",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Treating a missing/failed axis score as a literal `0.0` conflates \"we don't know\" with \"we know it's the worst possible score\" ... `leaderboard.py:9-17` then reads every row unconditionally, sums composites per `agent_id`, and divides by row count to get a mean \u2014 it has no way to exclude or discount a row degraded by a call failure.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It conflates \"we don't know this axis's score\" with \"this axis scored the worst possible value (0).\" ... a transient API failure \u2014 pure infrastructure noise, unrelated to reply quality \u2014 silently drags down an agent's mean composite and thus its position in `sorted(means.items(), ...)`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The row should be marked degraded/incomplete \u2014 e.g. a `status` column value like `incomplete` or `accuracy_failed`, with the composite field left blank/null rather than populated ... `leaderboard.py` should then exclude incomplete rows from the mean rather than averaging in a phantom \"hard fail.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "since the gate decision itself is unknown, that row's gate status is undetermined and it should be held out of ranking entirely (not reweighted across relevance/tone either, since that would silently disable the gate for that row).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If `relevance` or `tone` fails (non-load-bearing \"embellishment\" axes): it's defensible to renormalize the composite over the two axes that did succeed ... If `accuracy` fails: since it's the load-bearing/gating axis, no composite that \"looks comparable\" to a fully-scored row should be written.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20050,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11117460000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6609,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6609,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9499,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6609,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6609,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9499,
+            "output_tokens": 2288,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2288,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify the same root causes and fixes with comparable depth and accuracy; Report 1 adds slightly more historical git-commit sourcing while Report 2 adds a regression-test suggestion, but neither is substantively stronger against the expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In Postgres, the table owner is exempt from a table's row-security policies by default (only `ALTER TABLE ... FORCE ROW LEVEL SECURITY` \u2014 not present anywhere in this migration \u2014 would apply RLS to the owner too). On top of that, `cedar_owner` is the `POSTGRES_USER` from `docker-compose.yml`, which Postgres's init entrypoint creates as a full superuser, and superusers bypass RLS unconditionally regardless of any `FORCE` setting.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In PostgreSQL, row-level security policies are not applied to a table's owner unless `FORCE ROW LEVEL SECURITY` is also set (it isn't, here), and \u2014 more decisively \u2014 **superusers always bypass RLS entirely**, regardless of `FORCE`. Since `cedar_owner` is both the owner and a superuser, `ENABLE ROW LEVEL SECURITY` has no effect on any connection made as `cedar_owner`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `cedarline/.env` and `.env.example` so the running application connects as `cedar_app`, e.g. `DATABASE_URL=postgresql://cedar_app:apppw@localhost:5432/cedar`, and leave `cedar_owner` reserved for `scripts/migrate.sh` / one-off admin work only... `cedar_owner` should be usable **only** by `scripts/migrate.sh` and `db/bootstrap/create_app_role.sql` \u2014 never referenced by `backend/app/*`. `cedar_app` should be the sole credential the running app and the test suite use",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change `cedarline/.env` (and `.env.example`, and any deploy/staging equivalent, e.g. under `infra/`) so the app's `DATABASE_URL` uses `cedar_app`, not `cedar_owner`... **Migration/schema-owner role** (`cedar_owner`) \u2014 used only by `scripts/migrate.sh` / deploy-time migration tooling. Never referenced by the running API process. **Application runtime role** (`cedar_app`) \u2014 used exclusively by `backend/app/db.py`'s engine for all request traffic.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "That bootstrap file is explicitly documented as a manual, one-time step \u2014 its own header comment says \"Not part of automatic database initialization; run by hand on first setup,\" and both `README.md` and `docs/local-setup.md` list it as a separate step 2... Since `reset-local-db.sh`... never invokes that bootstrap script, every full reset wipes out the `cedar_app` role along with the rest of the cluster state, and nothing recreates it automatically.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`db/bootstrap/create_app_role.sql`... is explicitly documented, in both its own header comment and `README.md`/`docs/local-setup.md`, as a **one-time, manual** step \u2014 it lives in `db/bootstrap/`, not `db/migrations/`, and `scripts/migrate.sh` only iterates `db/migrations/*.sql`. `reset-local-db.sh` never calls it... So after any `reset-local-db.sh` run..., `cedar_app` is gone, and any connection attempt using it... fails immediately with Postgres's `FATAL: role \"cedar_app\" does not exist`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19507,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1374815,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8130,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8130,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8130,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8130,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1734,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1734,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports HIT all four expectations; Report 2 adds marginally more depth on malformed-value handling and the master-switch gate.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will be sent** automatically. The decision is made in `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, line 11\u201312:",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Yes \u2014 reminders **will be sent automatically**. The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, specifically:",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Where I'd change it: `backend/app/feature_flags.py`, line 12 \u2014 return `False` instead of `True` for the unset case",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it is the wrong default. This flag governs **automated outbound messaging** ... must default to **off** on a null/missing/malformed value ... Invert the `None` branch in `backend/app/feature_flags.py:11\u201312` so an unset value returns `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the `is None \u2192 return True` pattern was introduced in commit `25509a7` (SLOT-190) for `compact_calendar_view_enabled` \u2014 a calendar *display layout* preference ... Applying the same \"absent means on\" default to an action that dispatches real SMS/email to patients changes the stakes entirely",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `25509a7` (SLOT-190) introduced `compact_calendar_view_enabled` ... The two flags are in different blast-radius categories: the calendar-view flag is a harmless UI preference where grandfather-on is fine, whereas the reminders flag triggers automated outbound SMS/email.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add a global gate / safety valve.** The batch `run()` in `reminders.py` has no global kill-switch, no environment guard ... I'd add a global enable flag and a dry-run/preview path before go-live.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This resolver is the *only* gate \u2014 there is no env-level master switch anywhere ... **Add an env-level master switch and AND it with the per-tenant value.**",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15744,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1254225,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7662,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7662,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7662,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7662,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1447,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1447,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are essentially equivalent, correctly identifying all four points; Report 2 slightly more explicitly names the shared-runner caution, but they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`config/scoring_config.yaml` still declares `expected_label_field: label`, but the eval records now use the key `gold_label`. So `record.get(\"label\")` returns `None` for **every** record ... The file that should be changed is **`config/scoring_config.yaml`**: change `expected_label_field: label` to `expected_label_field: gold_label`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The config `config/scoring_config.yaml` still says `expected_label_field: label`, but every eval record is now keyed `gold_label`. So `record.get(\"label\")` returns `None` for all 11 records ... The specific file that should be changed is **`config/scoring_config.yaml`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It began on **2026\u201106\u201117** and was introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (dated 2026\u201106\u201117). Evidence: `pipeline/metrics/nightly_scores.csv` shows 0.91\u20130.92 through 2026\u201106\u201116 and 0.00 on 2026\u201106\u201117 ... `git show 53551e8` renamed `label`\u2192`gold_label` across `fixtures/eval_set.jsonl` and updated `REQUIRED_KEYS` in `score_batch.py`, but did not update the config",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It began on **2026-06-17**, introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** ... `pipeline/metrics/nightly_scores.csv` shows the last good day 2026-06-16 (0.91) and the first 0.00 on 2026-06-17 ... it renamed `label`\u2192`gold_label` in `fixtures/eval_set.jsonl` and updated `REQUIRED_KEYS` in `score_batch.py`, but ... `config/scoring_config.yaml` was not updated",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It re-ran failing tickets through `pipeline/score_one.py`, which only **predicts and prints a category** \u2014 it never loads the eval set, the config, or the gold labels, and never performs the `prediction == gold` comparison ... To reproduce the drop correctly: run the **batch** scorer, `python3 -m pipeline.score_batch`, and observe `accuracy=0.00`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it re-ran failing tickets through `pipeline/score_one.py`, but that path **only emits a prediction and never compares against a gold label** \u2014 the buggy line (`record.get(gold_field)`) lives solely in `score_batch.py`. So the spot-check exercised a code path that structurally cannot contain the bug ... reproduce at the layer where scoring actually happens \u2014 the batch path",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "There is **no model in this pipeline** to roll back ... Reverting a \"model\" would leave the config/eval mismatch in place and accuracy would stay at 0.0 ... The correct action is the one-line config fix in Answer 1, not a model change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is no model in this pipeline ... a model rollback would leave accuracy at 0.0 and cost a day chasing phantom flakiness. It also runs against the playbook's caution about flipping a config/model in a shared environment \"to see what happens\" instead of fixing the identified defect.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r1",
+  "repeat": 1,
+  "task": "sysdbg-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26579,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1075149,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8649,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8649,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8649,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8649,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 2825,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2825,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable rigor and citation quality; Report 2 is marginally stronger on (c) with an explicit rejection of deferring to a follow-up ticket, but the difference is minor overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "backend/app/api/invoices.py:4,14-16 \u2014 import chargekit, then client = chargekit.Client(...) and client.charge(...) inline... backend/app/workers/dunning.py:2,9-13 \u2014 import chargekit, then chargekit.Client(...).charge(...) inline... The only legitimate boundary user besides the gateway is backend/app/billing/errors.py:6, which imports only the SDK's error classes... that is the documented exception and is fine.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "backend/app/api/invoices.py:14-16 \u2014 charge_invoice constructs its own chargekit.Client(...) and calls client.charge(...) directly. backend/app/workers/dunning.py:9-13 \u2014 run_dunning_pass constructs its own chargekit.Client(...)... A third file, backend/app/billing/errors.py:6, imports chargekit.errors, but that is the explicitly sanctioned exception... not a violation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual serializer InvoiceOut (models/invoice.py:15-28) has a sixth field, external_ref, which from_model populates. This field is real and used: migration 0006_add_invoice_external_ref.sql added the column, and invoices.py:17 sets invoice.external_ref = result.reference",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "InvoiceOut (backend/app/models/invoice.py:16-28) also includes a sixth field, external_ref (line 22), populated by the charge route (invoices.py:17).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Timing: surface both discrepancies now, before any refund code is written... The doc edits themselves should land in the same commit as the code they describe \u2014 the external_ref correction with whatever touches the response, and the boundary correction with the commit that adds gateway.refund() and fixes the two bypasses.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Timing: do the doc update as part of the refund PR, not before and not \"later.\"... This should not be a separate low-priority follow-up ticket that never gets done (which is how MEDB-214's drift happened).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the claim is wrong on both counts: the number \"4\" is really 5... drop the hardcoded count entirely \u2014 per \"don't cite a number, read the source,\" a count like \"4\" is guaranteed to drift and here already has. I'd either point at webhooks.py as the single source of truth for which event types are handled, or describe the set without a leading tally.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "stop hardcoding a bare count in prose next to the list \u2014 a fixed number like \"4\" is exactly what silently rotted here. Either drop the count and let the enumerated list stand, or add a note that backend/app/api/webhooks.py is the source of truth so the doc is checked against it.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

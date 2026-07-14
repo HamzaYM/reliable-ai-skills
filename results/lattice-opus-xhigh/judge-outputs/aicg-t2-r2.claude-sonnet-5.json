@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 11653,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11345469999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13038,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13038,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13038,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13038,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1249,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1249,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent substance and correct concrete fixes; report 2 adds a bit more compliance/residency framing but both are comparable in coverage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`except Exception` catches **every** exception class the primary can raise ... BadRequestError ... Inappropriate ... ContentPolicyError ... Inappropriate and risky ... AuthError \u2014 Inappropriate. ... Concrete fix: catch only the transient classes and fall over on those; re-raise the rest",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Because the handler catches bare `Exception`, **all six are treated identically** ... Inappropriate to fail over (definitively non-retryable \u2014 should be a denylist that re-raises): BadRequestError ... AuthError ... ContentPolicyError ... Concrete fix: classify errors with an explicit denylist ... and re-raise the non-retryable ones instead of failing over.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path A \u2014 non-production bypass \u2192 returns `True` when `os.environ.get(\"STAGE\") != \"production\"` ... Path D \u2014 Redis error \u2192 `RedisError` \u2192 returns `True`. Assessment: fail-open when the backend is unavailable ... Concrete fixes: invert the environment default ... and decide fail-open vs fail-closed on `RedisError` deliberately \u2014 for a cost/abuse control, prefer fail-closed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Path A \u2014 `STAGE != \"production\"` \u2192 `return True`. ... fails open by default and gates that on an environment-name check ... Path C ... `redis.incr` raises `RedisError` \u2192 `return True`. ... Per Guardrail 3 this should fail *closed*. ... on backend error, deny",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`record.input_text` \u2014 the **entire intake document verbatim**. This is the most serious issue ... drop `input_text` entirely (or replace with a non-reversible content hash / length / token count), and whitelist non-PII metadata fields rather than dumping the whole dict",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`input_text` is logged verbatim.** ... Writing full document text into application logs is a direct PII leak ... Fix: drop it, or log only `sha256(input_text)` plus a length, not the text. ... log only an explicit set of known-safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "if `PII_SALT` is missing or empty, the function silently computes an **unsalted** `sha256(applicant_id)` and still returns a normal-looking hex digest ... Concrete fix: require the secret and fail loudly instead of defaulting",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the `get(..., \"\")` default makes `salt == \"\"`, so the function silently computes `sha256(applicant_id)` \u2014 an **unsalted hash** \u2014 and returns a normal-looking digest with no error ... Concrete fix: require the salt and fail closed if it's missing",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 63295,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.27002250000000005,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13336,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13336,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13336,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13336,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 4796,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4796,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable: both reports hit all four expectations; Report 1 is broader (batch-abort, TTL) while Report 2 maps more crisply to the fail-closed/deny-instead prescription in (b).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "it catches the bare `Exception`, which catches **all six** ... `BadRequestError` \u2014 indicates the payload itself is malformed ... should be surfaced/raised rather than retried. ... `ContentPolicyError` ... should not be caught by the blanket `except Exception` and forwarded to secondary; it should be handled distinctly ... `AuthError` ... Concrete fix: catch a narrower set of retryable exceptions explicitly, e.g. RETRYABLE = (RateLimitError, RequestTimeoutError, ServerError)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "All six are handled identically ... That is wrong for three of the six: `BadRequestError` ... `ContentPolicyError` ... `AuthError` ... The other three are legitimately retryable/fail-over-able: `RateLimitError`, `RequestTimeoutError`, `ServerError` ... **Fix:** replace the blanket `except Exception` with an explicit denylist ... NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path A \u2014 non-production ... it is a fail-open default: if `STAGE` is simply never set ... the limiter is silently disabled in what may actually be production traffic ... Path C \u2014 production, redis unavailable (`RedisError`): returns `True`, i.e., fails open ... there is no path in this code that fails *closed* \u2014 every error/misconfiguration mode defaults to \"allow.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it gates fail-open/fail-closed behavior on an environment-name string comparison ... Any environment where `STAGE` is unset, misspelled, or a pre-prod environment mirroring production ... silently disables rate limiting entirely ... **Fix:** invert both defaults. Fail closed unless an explicit, narrowly-named override flag is set ... and on `RedisError` return `False` (or raise) rather than `True`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`input_text` is the actual document body ... written verbatim into logs ... `metadata` is logged with no filtering at all ... must not log `input_text` or unvetted `metadata` verbatim \u2014 log only a non-reversible reference (e.g., a content hash/length, or a document id) and an explicit allowlist of non-sensitive metadata fields",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`input_text` is the raw applicant intake document body ... logged verbatim ... `metadata` is logged wholesale with no allowlist ... **Fix:** ... drop `input_text` entirely or replace it with a hash/length ... and replace `metadata` with an explicit allowlist of known-safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` defaults to the **empty string** if `PII_SALT` is unset \u2014 it does not raise or warn ... `pseudonymize` silently degrades to plain unsalted `sha256(applicant_id)` ... Concrete fix: fail closed instead of silently degrading: salt = os.environ[\"PII_SALT\"]  # raises KeyError if unset",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When `PII_SALT` is not set, `os.environ.get` silently defaults to the empty string, and the function proceeds to hash `applicant_id` **unsalted** ... **Fix:** salt = os.environ[\"PII_SALT\"]  # raise KeyError/explicit error if unset ... so a missing/empty salt hard-fails the batch job",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

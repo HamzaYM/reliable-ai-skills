@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33490,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1166537,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8346,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8346,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8346,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8346,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 3567,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3567,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reach the same correct diagnosis, cite the same commit and CSV evidence, and give essentially equivalent answers to all four questions; they are comparable in quality, with Report 1 offering slightly more granular commit-history detail (config file's edit history) and Report 2 offering a slightly cleaner deterministic-reproduction demonstration.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The file to fix is `ticket-scorer/config/scoring_config.yaml` \u2014 change `expected_label_field: label` to `expected_label_field: gold_label` so it matches the renamed field in `fixtures/eval_set.jsonl`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The file that needs to change is **`ticket-scorer/config/scoring_config.yaml`**: `expected_label_field` should be `gold_label`, not `label`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The regression began on 2026-06-17, introduced by commit 53551e8031cfb03aaeda4ba0c8bf22b9aa849cbe, \"chore(eval): migrate eval set to gold_label schema (SCORE-77),\" ... pipeline/metrics/nightly_scores.csv shows accuracy at 0.90\u20130.92 every day from 2026-05-20 through 2026-06-16, then drops to exactly 0.00 starting 2026-06-17",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The regression began on 2026-06-17, introduced by commit 53551e8 (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"). That commit renamed the gold-label key ... and updated score_batch.py's REQUIRED_KEYS set to match ... The recorded nightly accuracy log ... shows 2026-06-16,0.91 immediately followed by 2026-06-17,0.00",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "pipeline/score_one.py (which the note used to \"re-run failing tickets\") only calls predict_category(normalize_simple(text)) and prints the prediction \u2014 it never loads fixtures/eval_set.jsonl, never reads config/scoring_config.yaml, and never compares against a gold label. It is structurally incapable of surfacing a gold-label-field mismatch",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "pipeline/score_one.py (used for the spot-checks) calls predict_category(normalize_simple(text)) and just prints the label \u2014 it never loads config/scoring_config.yaml, never reads a gold label, and never computes accuracy at all... single-item runs structurally cannot exercise that logic.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "it would leave the actual defect (the stale expected_label_field: label in the config) in place, so the nightly accuracy would very likely stay at 0.00 even after the \"rollback,\" further muddying the investigation. I'd recommend against this plan and instead fix the one-line config mismatch identified in Answer 1.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the actual defect is a config/data mismatch (expected_label_field: label vs. the eval set's gold_label key) that has nothing to do with which model or model version is used for predictions \u2014 reverting a \"model\" would leave config/scoring_config.yaml unchanged and accuracy would stay at exactly 0.0.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

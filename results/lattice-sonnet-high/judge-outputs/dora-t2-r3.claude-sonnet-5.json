@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20000,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1155468,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9532,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9532,
+        "cache_read_input_tokens": 66576,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1256,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1256,
+            "cache_read_input_tokens": 37426,
+            "input_tokens": 2,
+            "output_tokens": 1086,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2284,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid grounding; Report 1 is somewhat more thorough overall (also flags the unsourced 40% stat and production-data caption issue), but both fully satisfy the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Patients can now export their full visit history as a PDF\" (line 22-26) \u2014 false, do not ship.\" ... \"Two-factor authentication is now enabled for every clinic by default\" (line 28-30) \u2014 false, do not ship.\" ... \"clinic-portal/app/security/config.py sets TWO_FACTOR_DEFAULT = False\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Line 24, \\\"Patients can now export their full visit history as a PDF.\\\" This is not implemented... Line 30, \\\"Two-factor authentication is now enabled for every clinic by default.\\\" This is directly contradicted by app/security/config.py, which reads: ... TWO_FACTOR_DEFAULT = False.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the \"after\" image is not a picture of the scheduling calendar at all. Per `captures.json`, `after_scheduling.png` was captured from route `/billing/invoices`, not `/schedule`, and opening the image confirms it \u2014 it literally reads \"BILLING / INVOICES,\" while `before_scheduling.png` reads \"SCHEDULING CALENDAR.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_scheduling.png` was captured from route `/billing/invoices` (per `captures.json`), and reading that image confirms it literally renders \"BILLING / INVOICES\" \u2014 a completely unrelated screen.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` \u2014 **referenced in the doc (line 26) but does not exist on disk.** ... `unused_capture_07.png` \u2014 **exists on disk but is not referenced anywhere in the document.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_export.png` is referenced in the document (line 26) but **does not exist** in `docs/release/img/` ... `img/unused_capture_07.png` exists in the repo (renders \"PATIENT LIST\") but is referenced by neither the document nor `captures.json`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the closing line \"Highlights draft assembled with AI assistance.\" (line 33) is an internal drafting/process note, not customer-facing copy... it should not go out unreviewed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "line 33, the trailing note **\"Highlights draft assembled with AI assistance.\"** ... it should be removed regardless of the other content issues.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

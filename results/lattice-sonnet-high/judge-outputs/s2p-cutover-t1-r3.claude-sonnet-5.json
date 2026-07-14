@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 55484,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.256428,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 19479,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 19479,
+        "cache_read_input_tokens": 119280,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1693,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1693,
+            "cache_read_input_tokens": 46939,
+            "input_tokens": 2,
+            "output_tokens": 1225,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6369,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations with concrete file/line citations; Report 1 is marginally more decisive in calling for outright removal of the shadow-scoring sink value, while Report 2 offers a softer 'or leave it empty' framing but still substantively equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Both keys must be removed entirely from infra/prod/app.auto.tfvars ... it should not be recreated in prod just because staging still has it; if it's genuinely needed, prod needs its own real secret ARN, not staging's. ... AUTH_RELAXED... Must be removed entirely, not merely flipped to \"false\". ... PRESET_ADMIN_ACCOUNTS... This must be deleted from prod config",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix requires two things: either point the sink at a real prod bucket/prefix or leave it empty for launch ... LEGACY_BILLING_SECRET_ARN... Should be repointed to the actual production billing secret. ... AUTH_RELAXED... Should be \"false\". ... PRESET_ADMIN_ACCOUNTS... Should be removed/emptied for prod",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the API base URL baked into the bundle that ships to production is https://staging-api.example.com, sourced from frontend/.env.staging, because the frontend is built exactly once with --mode staging and that identical artifact is promoted to prod rather than rebuilt with production config.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the production frontend bundle ... has https://staging-api.example.com compiled into it as its API base URL. Every request the production UI makes will go to the staging backend, not a production backend. This is a build-pipeline defect, not something that can be fixed by editing infra/prod/* alone.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No migration runner appears anywhere in the pipeline. ... this needs explicit manual confirmation before relying on \"the pipeline succeeded\" as proof the prod schema is current \u2014 especially since prod's database has never been migrated at all",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No database migration step appears anywhere in the workflow, yet docs/prod-runbook.md:6 states \"Database migrations are applied automatically during deploy.\" ... this claim in the runbook is unverifiable from the committed code and should be checked before launch, not trusted at face value.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 sets the identical oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\" \u2014 it was not updated when copied from staging ... must be fixed to \"repo:acme-health/medislot:environment:production\" before infra/prod/ is applied.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 has the same, uncorrected value: \"repo:acme-health/medislot:environment:staging\". ... the staging pipeline, not just the production pipeline, would be able to assume the production deploy role and act as medislot-prod. This is a privilege-escalation / environment-isolation bug",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

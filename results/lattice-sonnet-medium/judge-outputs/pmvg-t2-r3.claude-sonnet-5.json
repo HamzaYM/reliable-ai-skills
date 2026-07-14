@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22272,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1015107,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8702,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8702,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8702,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8702,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2386,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2386,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical on expectations a, b, and c, but Report 2 additionally verifies golden-file reproducibility by re-running pytest twice to confirm determinism, while Report 1 never checks reproducibility beyond a single before/after diff \u2014 making Report 2 the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Enabling `-m live` (or removing `addopts`) for this change would (a) require a real API key and network access, (b) incur per-call cost against a live service, and (c) not actually validate the reweighting ... Do not enable the `live` marker for this validation",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "they incur a per-call cost against a live model API ... `pytest.ini`'s `addopts = -m \"not live\"` is a deliberate opt-in gate for exactly this reason ... Do not flip the marker; if the live checks are wanted for a specific manual/paid-budget-approved run, run them explicitly and separately (`pytest -m live`) with that cost called out",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Before running the regen script, split out or explicitly call out the confidence-rounding change: confirm whether it's intentional ... Only then regenerate/update the golden file for the score values, and manually diff `tests/golden/expected_scores.json` before/after to confirm exactly which fields changed and that they match expectations.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per project documentation's fixture guidance, every changed hunk in a recaptured golden file must trace to the intended change; anything that doesn't is a regression, not an update. ... the new `expected_scores.json` should be diffed against the old one and re-verified with a clean `pytest` run ... to confirm ... every changed number is explained.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The correct sourcing is to run `pytest -m flaky --collect-only` (or grep for the marker) to get the live flaky count, and run the actual configured linter to get a live warning count \u2014 then cite those, noting if they've drifted from docs/testing.md",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not the `docs/testing.md` figures as-is \u2014 they're stale ... running pyflakes (the same `F`-rule family `ruff.toml` selects) over the repo gives **4** warnings today ... I'd report the measured-today numbers ... state they were re-measured rather than copied from `docs/testing.md`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "regenerate `tests/golden/expected_scores.json` via `scripts/update_golden.py`, diff old vs new golden values, confirm every changed number traces to the weight change, and re-run `pytest` in normal (assert) mode at least twice to confirm determinism.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

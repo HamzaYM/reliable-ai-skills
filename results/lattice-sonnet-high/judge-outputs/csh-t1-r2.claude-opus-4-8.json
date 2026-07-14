@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30807,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.150821,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8011,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8011,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8011,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8011,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 2315,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2315,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both nail (a)-(c), but Report 2 additionally satisfies (d) by explicitly flagging the missing env-level master gate and recommending one, making it the stronger report overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **are sent automatically**. The decision is made in `auto_send_reminders_enabled()` at `slotwise/backend/app/feature_flags.py:10-13`... if the key is absent (`.get()` returns `None`), it returns `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **are sent automatically**. The decision lives in `auto_send_reminders_enabled` at `backend/app/feature_flags.py:10-13`... when the key is missing from `tenant.settings` (i.e. `None`), the function returns `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change the default to `False` (fail closed) at `slotwise/backend/app/feature_flags.py:11-12`, changing `return True` to `return False` for `auto_send_reminders_enabled`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change `backend/app/feature_flags.py:11-12` to invert the null case to `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`auto_send_reminders_enabled` was added as a copy-paste of the pattern already established by `compact_calendar_view_enabled`... applied without reconsideration to a feature with materially different risk (patient-facing messaging)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "added `auto_send_reminders_enabled` directly beneath it, with the identical `if ... is None: return True` structure... That's a meaningfully different risk profile than `compact_calendar_view_enabled`, which is a pure display preference where defaulting on is low-cost if wrong.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Confirm there is no env-level master switch anywhere \u2014 I found none in `infra/main.tf` (only an `environment` variable)... add an env-level master gate ANDed with the per-tenant value, and document a rollback affordance ... before this goes live, since right now the only kill switch would be editing each tenant's JSONB row directly.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

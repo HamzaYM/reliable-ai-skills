@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19067,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.14501750000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8913,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8913,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8913,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8913,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1706,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1706,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three expectations with the same substance; they are comparable, with Report 1 marginally more detailed but not materially better.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the connection is built from `DATABASE_URL` (`backend/app/db.py:6`), and `.env:1` / `.env.example:1` set `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`. ... In PostgreSQL, RLS policies are **not enforced for superusers, nor for the table owner** (the owner is exempt unless `FORCE ROW LEVEL SECURITY` is set, which it is not here). `cedar_owner` is both. So `SELECT ... FROM clients` returns every tenant's rows regardless of `app.current_tenant`, with no error or warning.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`.env` / `.env.example` set `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`. So the app connects as **`cedar_owner`**. ... a table owner bypasses RLS unless `FORCE ROW LEVEL SECURITY` is set. `cedar_owner` is both. Therefore the `tenant_isolation` policy is never evaluated for the app's connections.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Keep two distinct roles, permanently** (matches the schema's intent and the two-role model): `cedar_owner` used **only** for running migrations (it owns the tables / DDL); `cedar_app` used for **all** application runtime traffic. ... Change `DATABASE_URL` in `.env`/`.env.example` to `postgresql://cedar_app:apppw@localhost:5432/cedar`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Set `DATABASE_URL` in `.env`/`.env.example` to `postgresql://cedar_app:apppw@localhost:5432/cedar` so the FastAPI app (`db.py`) connects as the non-owner, non-superuser role that RLS governs. Keep `cedar_owner` only for migrations ... two distinct roles \u2014 a privileged migration/owner role (`cedar_owner`) used only for DDL, and a least-privilege runtime role (`cedar_app`, DML-only, subject to RLS) used by the app.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedar_app` is created **only** by the one-time bootstrap `db/bootstrap/create_app_role.sql`, which is deliberately not part of automatic init ... It is not mounted into the container's `docker-entrypoint-initdb.d` and is not called by `scripts/migrate.sh`. ... `scripts/reset-local-db.sh:3` runs `docker compose down -v`, which **removes the `cedar_pgdata` volume** ... reset-local-db.sh:6` then runs only `scripts/migrate.sh` ... re-run the bootstrap by hand",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `cedar_app` role is created *only* by `db/bootstrap/create_app_role.sql`, which is explicitly a **one-time manual step** ... `scripts/reset-local-db.sh` runs `docker compose down -v`, which **deletes the `cedar_pgdata` volume** ... The reset script **never re-runs `create_app_role.sql`**. So after a wipe, the fresh cluster has `cedar_owner` but not `cedar_app`. ... re-run `psql ... -f db/bootstrap/create_app_role.sql` after the reset.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

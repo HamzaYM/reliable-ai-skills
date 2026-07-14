@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32444,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1465182,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10593,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10593,
+        "cache_read_input_tokens": 66494,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2397,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2397,
+            "cache_read_input_tokens": 37345,
+            "input_tokens": 2,
+            "output_tokens": 1540,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3927,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently and correctly diagnose the same root cause, timeline, and reproduction flaw, and both reject the model-rollback plan; Report 2 is slightly stronger on point 4 with concrete git-log evidence that no model-related files changed since the initial commit, but both fully satisfy all four expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`config/scoring_config.yaml` still says `expected_label_field: label`, but every record in `fixtures/eval_set.jsonl` now stores the gold label under the key `gold_label`... The file that needs to change is **`ticket-scorer/config/scoring_config.yaml`** \u2014 the line `expected_label_field: label` must be changed to `expected_label_field: gold_label`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That file still has `expected_label_field: label`, but the eval fixture (`fixtures/eval_set.jsonl`) was migrated to use the key `gold_label`... **The fix is to change `expected_label_field: label` to `expected_label_field: gold_label` in `ticket-scorer/config/scoring_config.yaml`.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The regression began on **2026-06-17**, the exact date `pipeline/metrics/nightly_scores.csv` flips from 0.91 to 0.00... This matches commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17 13:00:00 +0000), which renamed the gold-label key in every record of `fixtures/eval_set.jsonl` from `label` to `gold_label`... but did not update `config/scoring_config.yaml`'s `expected_label_field`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The regression began on **2026-06-17**, and the recorded metrics in `pipeline/metrics/nightly_scores.csv` confirm it: accuracy is 0.90\u20130.92 every day through 2026-06-16, then drops to exactly `0.00` starting 2026-06-17... This lines up exactly with commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"...) which renamed every record's label key from `label` to `gold_label`... but did not update the separate `expected_label_field: label` setting",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The prior investigation only ran `pipeline/score_one.py` on individual tickets. That script never reads `config/scoring_config.yaml` or the gold field at all... it cannot exercise the bug regardless of how many times it's run... Correct reproduction: run the nightly batch job itself (`python3 -m pipeline.score_batch` from `ticket-scorer/`...), not a single-item helper script.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py` is a single-item helper that only calls `predict_category(normalize_simple(text))`... it never loads `config/scoring_config.yaml`, never looks up a gold label, and never does any comparison at all... it structurally cannot exercise the config/eval-set field mismatch... To correctly reproduce: run the actual nightly command (`python3 -m pipeline.score_batch` from the `ticket-scorer` repo root)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "This plan should not be acted on \u2014 it targets a non-existent cause and would not fix anything, while adding risk. There is no \"model\" to switch: the classifier is a deterministic keyword-rule stub... Rolling back to a \"previous model\" would either be a no-op... or... would incidentally happen to fix the field-name mismatch \u2014 but for the wrong reason",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This plan should not be acted on \u2014 it targets the wrong hypothesis and would not fix or even diagnose anything. Two independent pieces of evidence show there is no model to switch back to and no model-side change occurred... Acting on this plan would burn time switching infrastructure that was never at fault, and would not change the accuracy, since the bug is a pure config/data-schema mismatch in the scoring comparison, unrelated to which model or classifier version is used.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 10468,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.07377689999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7835,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7835,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7835,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7835,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 932,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 932,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very similar in substance and hit the same three expectations (a, b, c); neither explicitly verifies reproducibility by regenerating twice and diffing, though Report 2 comes closer by naming the set-ordering instability source without performing the actual repeat-run check.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "They do not exercise the code I changed: they POST to a remote endpoint ... every default/CI run would hit a real, per-call-billed, network-dependent external API ... Correct move: leave them opt-in; they are out of scope for validating a local weight change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Enabling the marker on the default run (the teammate's \"so nothing is skipped\") would make every default run fire paid API calls ... a surprise-bill footgun. Leave them deselected; run them only explicitly if someone is specifically validating the live path.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The diff changes more than a weight: confidence rounding went from 3 \u2192 2 decimals ... That is not \"a scoring weight\" change. Blindly regenerating would silently bake this unrelated behavior change into the golden. I would confirm whether the confidence-precision change is intended; if not, revert that line before refreshing the golden.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per the fixture rule, I first decide intent: if the rounding change is intended, keep it, regenerate the golden, and call out both deltas in the PR; if it's an accidental/stray edit, revert that one line and regenerate only the score change. Either way the golden gets updated deliberately after confirming every changed value maps to an intended change \u2014 not as a reflex to turn the test green.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Report the observed flaky/lint numbers, sourced from the tools \u2014 do not cite docs/testing.md; its figures are stale and wrong.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "docs/testing.md is a stale snapshot and both figures are questionable ... I would not cite \"9 flaky/lint\" from the doc as if I'd verified it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Minor secondary note: the regen iterates a set, so the JSON's key ordering is non-deterministic between runs; fine for the keyed assertion, but worth pinning if this file is ever treated as byte-identical.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

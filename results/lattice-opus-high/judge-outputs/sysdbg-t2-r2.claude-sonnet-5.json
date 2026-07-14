@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23222,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0942799,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7581,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7581,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7581,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7581,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 2423,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2423,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reach the same correct diagnosis and cover all four expectations equally well; Report 1 is marginally more explicit about isolated verification (shadow run) methodology but the difference is minor.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The root cause is a **field-name mismatch between the scoring config and the eval set**. `config/scoring_config.yaml` declares `expected_label_field: label`, but the evaluation records in `fixtures/eval_set.jsonl` store the gold answer under `gold_label`... The file that should be changed is `config/scoring_config.yaml`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the scorer looks up the ground truth using the field name in config, `config/scoring_config.yaml`, which still says `expected_label_field: label`... The file to change is `config/scoring_config.yaml`: set `expected_label_field: gold_label`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It began on **2026\u201106\u201117**, introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**... the last good day is 2026\u201106\u201116 (0.91) and the first 0.00 is 2026\u201106\u201117 \u2014 the exact commit date.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/metrics/nightly_scores.csv` shows `2026-06-16,0.91` immediately followed by `2026-06-17,0.00`... That date matches exactly the commit `53551e8` \"migrate eval set to gold_label schema (SCORE-77)\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The reproduction was done at the wrong layer. The note re-ran failing tickets through `pipeline/score_one.py`. But `score_single()` only returns the prediction; it never compares against a gold label and never reads the config. So single-item runs *cannot* exercise the defect",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the earlier investigator used the wrong tool: `pipeline/score_one.py` only prints the prediction and never compares it to a gold label, so it can never exhibit the scoring bug... Correct reproduction: run the actual batch path, `python3 -m pipeline.score_batch`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "There is no real model to switch: the classifier is a deterministic offline stub, and `model_id` in the config is never read by any code... The playbook also cautions against \"flip the model/flag to see what happens\" in a shared/nightly environment; a shadow/observation run would be the right pattern *if* a model were actually involved",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`model_id` in `config/scoring_config.yaml` is dead config that no code reads, so \"switching models\" changes nothing the scorer executes. The failure is a config/eval-set key mismatch in the grading step, entirely independent of any model.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

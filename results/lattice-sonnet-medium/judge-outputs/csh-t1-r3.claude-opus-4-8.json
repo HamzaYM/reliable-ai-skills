@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26593,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1516405,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7825,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7825,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7825,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7825,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2429,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2429,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and cover (a), (b), (c) equally well, but Report 2 additionally flags the missing global/env-level gate (d), making it slightly better overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will be sent automatically**. The decision is made in `auto_send_reminders_enabled` at `slotwise/backend/app/feature_flags.py:11-12`:\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will be sent automatically**, even though the clinic never touched the toggle. This is decided by `auto_send_reminders_enabled` in `backend/app/feature_flags.py:10-13`... Line 12 (`return True` when the key is `None`/missing) is the exact line that flips a clinic that has never opened the settings UI into \"reminders on.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "it should default to \"off\" (`False`) until a clinic admin explicitly enables it... I would change the default at `slotwise/backend/app/feature_flags.py:11-12`, flipping the \"is None\" branch to `return False`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it's the wrong default... missing/null must mean **off**... I would change line 11-12 of `backend/app/feature_flags.py` so that a missing/`None` value returns `False` instead of `True`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "its `git show` diff is a near-verbatim copy of `compact_calendar_view_enabled`... it inherited a default-on/opt-out convention from a cosmetic setting via copy-paste, without a review of the differing risk profile (rendering preference vs. outbound patient messaging).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`auto_send_reminders_enabled` was added ... as a near-verbatim copy of `compact_calendar_view_enabled`... Contrast with `compact_calendar_view_enabled` in the same file ... a genuinely low-risk UI preference where defaulting missing\u2192True is fine ... A UI-preference default was mechanically reused for a flag that now controls real outbound patient communication, without re-evaluating blast radius.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Confirm there's no env-level master switch expected in production config; I found none in the backend, so the per-tenant value is the *only* gate \u2014 worth double-checking against deploy/ops config outside this repo before flipping anything.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

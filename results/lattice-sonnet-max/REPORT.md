@@ -6,23 +6,23 @@
 - Max output tokens (pinned, both arms): 64000
 - Judge panel: claude-sonnet-5 + claude-opus-4-8 (both pinned at --effort medium)
 - Adjudicator: claude-fable-5 (pinned at --effort medium, invoked once per disputed report-slot mark, two-of-three majority)
-- claude CLI: 2.1.206 (Claude Code)
+- claude CLI: 2.1.207 (Claude Code)
 - Seed: 12550176211171039998
 - Preregistered: yes
 - Freeze: 2026-07-10T08:32:03Z (task file sha256 b378c7964428)
 - Repeats: 3 consumer / 1 judge
-- Wall clock: 1332.2 s
+- Wall clock: 1022.2 s
 
 ## Aggregate
 
-Cold 57/65 (87.7%) | Loaded 65/65 (100.0%) | Delta +8
+Cold 60/68 (88.2%) | Loaded 68/68 (100.0%) | Delta +8
 
 The denominator is the frozen must-hit count over included tasks,
 computed from the data.
 
-Judge panel disagreement: 12 of 195 must-hit marks (6.2%) carried a disputed report slot.
+Judge panel disagreement: 14 of 204 must-hit marks (6.9%) carried a disputed report slot.
 
-Adjudication: 13 of 390 report-slot marks disputed; 13 adjudicated by claude-fable-5 at --effort medium (3.3% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 7, report_2 6; by arm: cold 7, loaded 6.
+Adjudication: 15 of 408 report-slot marks disputed; 15 adjudicated by claude-fable-5 at --effort medium (3.7% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 7, report_2 8; by arm: cold 8, loaded 7.
 
 Combination rule: per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator.
 
@@ -30,16 +30,17 @@ Repeat-level aggregates (replicated cell; every repeat ran in its own isolated w
 
 | Repeat | Cold | Loaded | Delta (pp) |
 |---|---|---|---|
-| r1 | 58/65 (89.2%) | 65/65 (100.0%) | +10.8 |
-| r2 | 59/65 (90.8%) | 65/65 (100.0%) | +9.2 |
-| r3 | 58/65 (89.2%) | 64/65 (98.5%) | +9.2 |
+| r1 | 61/68 (89.7%) | 68/68 (100.0%) | +10.3 |
+| r2 | 61/68 (89.7%) | 68/68 (100.0%) | +10.3 |
+| r3 | 61/68 (89.7%) | 67/68 (98.5%) | +8.8 |
 
-Endpoint mean over repeats: cold 89.7% | loaded 99.5% | delta +9.7 pp.
+Endpoint mean over repeats: cold 89.7% | loaded 99.5% | delta +9.8 pp.
 
 ## Per-skill results
 
 | Skill | Tasks | Cold hits | Loaded hits | Delta | Result |
 |---|---|---|---|---|---|
+| adversarial-review/multi-model-adversarial-review | 1 | 3/3 | 3/3 | +0 | FAIL |
 | architecture-and-contracts/architecture-contracts-as-law | 1 | 2/4 | 4/4 | +2 | PASS |
 | auth-and-tenancy/multi-tenant-auth-reference | 1 | 3/5 | 5/5 | +2 | PASS |
 | campaign-execution/multi-agent-batch-campaigns | 1 | 3/4 | 4/4 | +1 | PASS |
@@ -205,6 +206,20 @@ Cold 3/4, loaded 4/4, threshold 3: PASS
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports cover grouping, ordering, and the F-06 judgment call equally well, but Report 1 correctly identifies the shared RESULTS_DB path collision risk and the need to override it, which Report 2 dismisses as dead config — making Report 1 slightly stronger overall. | claude-sonnet-5: Report 1 covers all four expectations, including correctly flagging the RESULTS_DB collision risk and recommending an env-var override, whereas Report 2 explicitly dismisses that same finding as "dead config" and "not required," missing expectation (d); on (a)-(c) the two are comparable.
 
+### mmar-t1 (adversarial-review/multi-model-adversarial-review)
+
+Cold 3/3, loaded 3/3, threshold 2: FAIL
+
+| Expectation | Cold | Loaded |
+|---|---|---|
+| a | HIT | HIT |
+| b | HIT | HIT |
+| c | HIT | HIT |
+
+Judge panel disagreed (excluded from both arms): c
+
+Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit all three expectations with equivalent substance; Report 1 is marginally cleaner in keeping the raw-SQL interpolation explicitly non-blocking, while Report 2 backs its findings with execution-based confirmation — overall comparable. | claude-sonnet-5: Both reports correctly and thoroughly identify the tenant-scoping defect (a) and the exports.py breaking-signature regression (b); Report 1 passes expectation (c) by explicitly concluding the status interpolation is not exploitable, while Report 2 fails it by listing the SQL string interpolation as its own numbered defect ("c) Secondary but real") that should be fixed before sign-off, contrary to the expectation that such a defect not be reported as blocking.
+
 ### mt-auth-t1 (auth-and-tenancy/multi-tenant-auth-reference)
 
 Cold 3/5, loaded 5/5, threshold 4: PASS
@@ -295,6 +310,7 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit a
 | farch-t1 | yes |
 | git-cc-t2 | yes |
 | mabc-t2 | yes |
+| mmar-t1 | yes |
 | mt-auth-t1 | yes |
 | pmvg-t2 | yes |
 | s2p-cutover-t1 | yes |
@@ -303,9 +319,8 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit a
 
 ## Run notes
 
-- Excluded tasks: mmar-t1
-- Exclusions by failing arm: loaded 1
-- Scrub substitutions: 146
+- Excluded tasks: none
+- Scrub substitutions: 151
 - Workspace mutation warnings: aicg-t2-r1-loaded, arch-contracts-t1-r2-loaded, csh-t1-r1-cold, csh-t1-r2-cold, csh-t1-r2-loaded, csh-t1-r3-loaded, eval-harness-t1-r2-loaded, git-cc-t2-r1-loaded, git-cc-t2-r2-loaded, git-cc-t2-r3-loaded, mabc-t2-r1-loaded, pmvg-t2-r1-cold, pmvg-t2-r1-loaded, pmvg-t2-r2-loaded, pmvg-t2-r3-loaded, sysdbg-t2-r1-cold, sysdbg-t2-r1-loaded, sysdbg-t2-r2-cold, sysdbg-t2-r2-loaded, sysdbg-t2-r3-cold, sysdbg-t2-r3-loaded
 
 ## Limitations

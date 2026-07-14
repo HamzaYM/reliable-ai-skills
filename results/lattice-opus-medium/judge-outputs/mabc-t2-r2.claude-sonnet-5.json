@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 44921,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1437423,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9839,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9839,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9839,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9839,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 4702,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4702,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 correctly identifies the RESULTS_DB collision risk and mitigation (hit d) but structurally defers F-11 to a separate later wave rather than the early concurrent stage (miss b); Report 2 nails the staged ordering with F-11 (hit b) but incorrectly dismisses the RESULTS_DB risk as unnecessary setup (miss d) \u2014 both tie on a/c, so overall the reports are comparable, each missing one of the two harder expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Eng A \u2014 registry.py: F-02, F-05, F-09. Three independent one-liners, one file, one owner (they'd otherwise collide line-by-line if split).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Lane A \u2014 pipeline/registry.py: F-02, F-05, F-09. Three independent one-line config edits ... Trivial, no coupling. One engineer.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Lane C \u2014 pipeline/rubric.py + rubric test: F-01, then F-11. ... Ordering across lanes: A and E are the lowest-risk, no-decision, fast-to-merge lanes \u2014 land them first ... B and C run fully in parallel with everyone else (different files).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 behavior change, not a bug. ... I'd batch it for a product/owner decision on the new PARTIAL_CREDIT_THRESHOLDS values before anyone edits score.py.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 not a mechanical fix; it needs a decision. ... That is a scoring-policy call the reviewer/product owner must sign off on, plus a re-baselining of expected scores \u2014 not something an engineer should pick numbers for unilaterally.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Their own RESULTS_DB, e.g. export RESULTS_DB=/var/tmp/llm-scoring/<name>.db, so parallel test runs don't share the single default DB in tests/conftest.py.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Note (not a blocker): tests/conftest.py reads RESULTS_DB (default /var/tmp/llm-scoring/results.db); nothing in the current tests uses it, so no setup is required, but it's there if new tests need a results DB.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

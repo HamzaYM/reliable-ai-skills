@@ -1,4 +1,4 @@
-# A/B eval report: lattice-opus-xhigh
+# A/B eval report: lattice-opus-xhigh-v2
 
 - Consumer model: claude-opus-4-8
 - Consumer effort: xhigh
@@ -6,25 +6,35 @@
 - Max output tokens (pinned, both arms): 64000
 - Judge panel: claude-sonnet-5 + claude-opus-4-8 (both pinned at --effort medium)
 - Adjudicator: claude-fable-5 (pinned at --effort medium, invoked once per disputed report-slot mark, two-of-three majority)
-- claude CLI: 2.1.206 (Claude Code)
-- Seed: 18298687130425410989
+- claude CLI: 2.1.207 (Claude Code)
+- Seed: 11942927258849618434
 - Preregistered: yes
 - Freeze: 2026-07-10T08:32:03Z (task file sha256 b378c7964428)
-- Repeats: 1 consumer / 1 judge
-- Wall clock: 93.6 s
+- Repeats: 3 consumer / 1 judge
+- Wall clock: 83.7 s
 
 ## Aggregate
 
-Cold 61/68 (89.7%) | Loaded 67/68 (98.5%) | Delta +6
+Cold 64/68 (94.1%) | Loaded 68/68 (100.0%) | Delta +4
 
 The denominator is the frozen must-hit count over included tasks,
 computed from the data.
 
-Judge panel disagreement: 2 of 68 must-hit marks (2.9%) carried a disputed report slot.
+Judge panel disagreement: 6 of 204 must-hit marks (2.9%) carried a disputed report slot.
 
-Adjudication: 3 of 136 report-slot marks disputed; 3 adjudicated by claude-fable-5 at --effort medium (2.2% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 2, report_2 1; by arm: cold 1, loaded 2.
+Adjudication: 7 of 408 report-slot marks disputed; 7 adjudicated by claude-fable-5 at --effort medium (1.7% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 5, report_2 2; by arm: cold 4, loaded 3.
 
 Combination rule: per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator.
+
+Repeat-level aggregates (replicated cell; every repeat ran in its own isolated workspace with no shared session state):
+
+| Repeat | Cold | Loaded | Delta (pp) |
+|---|---|---|---|
+| r1 | 61/68 (89.7%) | 67/68 (98.5%) | +8.8 |
+| r2 | 64/68 (94.1%) | 68/68 (100.0%) | +5.9 |
+| r3 | 61/68 (89.7%) | 67/68 (98.5%) | +8.8 |
+
+Endpoint mean over repeats: cold 91.2% | loaded 99.0% | delta +7.8 pp.
 
 ## Per-skill results
 
@@ -32,12 +42,12 @@ Combination rule: per report-slot must-hit mark: both primary judges score every
 |---|---|---|---|---|---|
 | adversarial-review/multi-model-adversarial-review | 1 | 3/3 | 3/3 | +0 | FAIL |
 | architecture-and-contracts/architecture-contracts-as-law | 1 | 4/4 | 4/4 | +0 | FAIL |
-| auth-and-tenancy/multi-tenant-auth-reference | 1 | 4/5 | 5/5 | +1 | PASS |
-| campaign-execution/multi-agent-batch-campaigns | 1 | 3/4 | 3/4 | +0 | FAIL |
+| auth-and-tenancy/multi-tenant-auth-reference | 1 | 5/5 | 5/5 | +0 | FAIL |
+| campaign-execution/multi-agent-batch-campaigns | 1 | 3/4 | 4/4 | +1 | PASS |
 | change-control/git-change-control-for-agents | 1 | 4/4 | 4/4 | +0 | FAIL |
 | cost-and-safety-guardrails/ai-cost-tracking-and-guardrails | 1 | 4/4 | 4/4 | +0 | FAIL |
 | cost-and-safety-guardrails/budget-aware-model-allocation | 1 | 3/4 | 4/4 | +1 | PASS |
-| cost-and-safety-guardrails/config-and-secrets-hygiene | 1 | 3/4 | 4/4 | +1 | PASS |
+| cost-and-safety-guardrails/config-and-secrets-hygiene | 1 | 4/4 | 4/4 | +0 | FAIL |
 | debugging-playbooks/failure-archaeology | 1 | 4/4 | 4/4 | +0 | FAIL |
 | debugging-playbooks/systematic-debugging-playbook | 1 | 4/4 | 4/4 | +0 | FAIL |
 | deploy-and-infra/environment-and-build-hazards | 1 | 3/3 | 3/3 | +0 | FAIL |
@@ -45,7 +55,7 @@ Combination rule: per report-slot must-hit mark: both primary judges score every
 | docs-and-compliance/consent-and-regulated-data-reference | 1 | 4/4 | 4/4 | +0 | FAIL |
 | docs-and-compliance/docs-of-record-and-arbitration | 1 | 4/4 | 4/4 | +0 | FAIL |
 | evals-and-scoring/llm-eval-harness-and-scoring-pipeline | 1 | 3/4 | 4/4 | +1 | PASS |
-| tiered-review/tiered-consultancy-review | 1 | 4/5 | 5/5 | +1 | PASS |
+| tiered-review/tiered-consultancy-review | 1 | 5/5 | 5/5 | +0 | FAIL |
 | validation-gates/pre-merge-validation-gate | 1 | 3/4 | 4/4 | +1 | PASS |
 
 ## Per-task must-hits
@@ -104,14 +114,14 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit e
 
 ### csh-t1 (cost-and-safety-guardrails/config-and-secrets-hygiene)
 
-Cold 3/4, loaded 4/4, threshold 3: PASS
+Cold 4/4, loaded 4/4, threshold 3: FAIL
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
 | b | HIT | HIT |
 | c | HIT | HIT |
-| d | MISS | HIT |
+| d | HIT | HIT |
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports are strong and equivalent on (a)-(c), but Report 2 additionally identifies the missing global/environment-level gate and recommends adding one, making it the better answer overall. | claude-sonnet-5: Both reports are strong and nearly identical on (a)-(c), but only Report 2 identifies the missing global/deploy-level gate and recommends adding one, giving it the edge overall.
 
@@ -183,12 +193,12 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit e
 
 ### mabc-t2 (campaign-execution/multi-agent-batch-campaigns)
 
-Cold 3/4, loaded 3/4, threshold 3: FAIL
+Cold 3/4, loaded 4/4, threshold 3: PASS
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
-| b | HIT | MISS |
+| b | HIT | HIT |
 | c | HIT | HIT |
 | d | MISS | HIT |
 
@@ -210,14 +220,14 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit a
 
 ### mt-auth-t1 (auth-and-tenancy/multi-tenant-auth-reference)
 
-Cold 4/5, loaded 5/5, threshold 4: PASS
+Cold 5/5, loaded 5/5, threshold 4: FAIL
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
 | b | HIT | HIT |
 | c | HIT | HIT |
-| d | MISS | HIT |
+| d | HIT | HIT |
 | e | HIT | HIT |
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports are excellent and nearly identical on the core diagnosis; Report 1 edges ahead by also recommending an explicit application-layer tenant filter as a second isolation layer, which Report 2 omits. | claude-sonnet-5: Report 1 covers all five expectations including the application-layer tenant-filter defense-in-depth recommendation, while Report 2 misses that point despite otherwise matching on root cause, commit attribution, primary fix, and startup check.
@@ -232,6 +242,8 @@ Cold 3/4, loaded 4/4, threshold 3: PASS
 | b | HIT | HIT |
 | c | HIT | HIT |
 | d | MISS | HIT |
+
+Judge panel disagreed (excluded from both arms): d
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Report 2 answered the task better: it matches Report 1 on live-test gating, golden diff-tracing, and stale-doc re-measurement, but additionally catches and defends the regeneration reproducibility issue (set-ordered nondeterminism) that Report 1 misses. | claude-sonnet-5: Report 2 matches Report 1 on the first three expectations but additionally discovers and documents the golden-file reproducibility issue (nondeterministic set ordering) with a concrete twice-run verification, which Report 1 omits entirely — making Report 2 the stronger, more complete answer.
 
@@ -263,15 +275,17 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports are e
 
 ### tcr-t1 (tiered-review/tiered-consultancy-review)
 
-Cold 4/5, loaded 5/5, threshold 4: PASS
+Cold 5/5, loaded 5/5, threshold 4: FAIL
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
 | b | HIT | HIT |
-| c | MISS | HIT |
+| c | HIT | HIT |
 | d | HIT | HIT |
 | e | HIT | HIT |
+
+Judge panel disagreed (excluded from both arms): e
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Report 2 is stronger: it fully nails the SLA-breach point by citing April's 99.77% in uptime-2026.csv against the 99.9% monthly SLA, which Report 1 missed. | claude-sonnet-5: Report 2 covers all five expectations, including the April SLA breach with both required file citations (metrics/uptime-2026.csv and docs/sla-commitments.md); Report 1 only estimates a "likely" breach without citing the actual uptime CSV data, missing expectation (c).
 
@@ -300,8 +314,8 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Report 2 is strong
 ## Run notes
 
 - Excluded tasks: none
-- Scrub substitutions: 21
-- Workspace mutation warnings: csh-t1-cold, eval-harness-t1-loaded, mabc-t2-cold, pmvg-t2-cold, pmvg-t2-loaded, sysdbg-t2-cold, sysdbg-t2-loaded
+- Scrub substitutions: 55
+- Workspace mutation warnings: csh-t1-cold, csh-t1-r1-cold, csh-t1-r2-cold, csh-t1-r2-loaded, eval-harness-t1-loaded, eval-harness-t1-r1-loaded, eval-harness-t1-r2-cold, mabc-t2-cold, mabc-t2-r1-cold, mabc-t2-r1-loaded, mabc-t2-r2-cold, pmvg-t2-cold, pmvg-t2-loaded, pmvg-t2-r1-cold, pmvg-t2-r1-loaded, pmvg-t2-r2-cold, pmvg-t2-r2-loaded, sysdbg-t2-cold, sysdbg-t2-loaded, sysdbg-t2-r1-cold, sysdbg-t2-r1-loaded, sysdbg-t2-r2-cold, sysdbg-t2-r2-loaded
 
 ## Limitations
 

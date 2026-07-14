@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31296,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.33327529999999994,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 39361,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 39361,
+        "cache_read_input_tokens": 148341,
+        "inference_geo": "not_available",
+        "input_tokens": 10,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1068,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1068,
+            "cache_read_input_tokens": 38293,
+            "input_tokens": 2,
+            "output_tokens": 999,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3308,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 matches Report 1 on the token-shortfall analysis and backend recommendation, but only Report 2 flags the snapshot's staleness (generated_at vs. current time) and recommends re-checking live limits, making it the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full run = ... 5200 \u00d7 1800 = 9,360,000 tokens (~9.36M) ... northpeak (default/primary): remaining 640,000 of a 10M window \u2192 short by 8,720,000 tokens. The run does not fit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full run \u2248 5200 \u00d7 1800 = 9,360,000 tokens ... northpeak (the default target): remaining 640,000 tokens (of a 10M window). That covers only ~6.8% of the run \u2014 a shortfall of ~8.72M tokens. The default path cannot complete.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline (secondary): remaining 10,800,000 of a 12M window \u2192 the 9.36M run fits, with ~1,440,000 tokens of headroom. ... Instead I'd route the job to the secondary backend, which has enough capacity: python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ridgeline (secondary): remaining 10,800,000 tokens (of a 12M window). That covers the ~9.36M run with ~1.44M to spare ... Instead I'd route the job to the backend with headroom: python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not launch the default path. Sending the full run to northpeak would exhaust its 640k remaining almost immediately and fail/throttle far short of completion, missing the 07:00 deadline",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run the default (run_nightly.sh \u2192 northpeak). With only 640K tokens left against a ~9.36M need, the default run would exhaust northpeak and fail long before finishing",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The snapshot is generated_at 2026-07-09T19:25:00Z but I'm treating now as 22:30 UTC \u2014 it's ~3 hours old. project documentation warns against trusting a stale signal, so ideally I'd refresh telemetry before launching.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27868,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1520938,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10982,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10982,
+        "cache_read_input_tokens": 105506,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1204,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1204,
+            "cache_read_input_tokens": 38927,
+            "input_tokens": 2,
+            "output_tokens": 1050,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3361,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations equally well; Report 1 gives a more thorough grounded explanation for the SQL-injection non-issue (citing the enum and Pydantic validation), while Report 2 stays silent on it (also compliant) but adds an unverified, lower-confidence tangent about SQLAlchemy's .all() method.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`tenant_id` is accepted as a parameter but never appears in the SQL text or the bound-params dict. Every other read path in this codebase (`list_appointments` \u2192 `build_appointment_query` in `db.py`, and `exports.py`'s `nightly_export`) filters explicitly by `Appointment.tenant_id == tenant_id`... `search_appointments` bypasses `build_appointment_query` entirely and writes its own SQL, silently dropping the one scoping mechanism this system has.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`tenant_id` is accepted as a function argument but is never referenced in the WHERE clause. Every other read path in this codebase goes through `build_appointment_query()` in `backend/app/db.py`... `search_appointments` bypasses that helper entirely with hand-written SQL and drops the tenant filter.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The signature changed from `build_appointment_query(session, tenant_id)` to `build_appointment_query(session, tenant_id, filters)` with **no default value** for `filters`. `exports.py`'s `nightly_export()` \u2014 not touched by this PR \u2014 still calls `build_appointment_query(session, tenant_id)` with two positional arguments... every call to `nightly_export()`... will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`backend/app/exports.py` (completely untouched by this PR... still calls `build_appointment_query(session, tenant_id)` with only two positional arguments at line 9 of `nightly_export()`. This will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` the next time the nightly per-tenant CSV export runs",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "status is typed `AppointmentStatus` in `api.py`, a closed `str, Enum` (`schemas.py`) with only `booked`/`cancelled`/`completed` as members, and FastAPI/Pydantic rejects any non-member value with a 422 before the handler runs \u2014 so there is no live SQL-injection path through the real endpoint today.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

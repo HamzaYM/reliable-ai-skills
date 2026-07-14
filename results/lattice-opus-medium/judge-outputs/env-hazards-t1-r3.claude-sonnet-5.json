@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27643,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.14603299999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11369,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11369,
+        "cache_read_input_tokens": 67340,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2331,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2331,
+            "cache_read_input_tokens": 38189,
+            "input_tokens": 2,
+            "output_tokens": 1266,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3538,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly and thoroughly identify the same root causes and fixes for all three questions; Report 1 is slightly more precise with file/line citations (e.g. explicitly naming docker-entrypoint-initdb.d), while Report 2 adds a bit more forward-looking remediation detail \u2014 overall the two are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Responsible file/config: cedarline/.env (and .env.example) \u2014 DATABASE_URL points the app at cedar_owner instead of cedar_app... In PostgreSQL, RLS policies are not enforced for superusers, nor for the table owner (the owner is exempt unless FORCE ROW LEVEL SECURITY is set, which it is not here). cedar_owner is both.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "cedar_owner is the cluster superuser and the object owner... In Postgres, a superuser always bypasses RLS, and a table owner bypasses RLS unless FORCE ROW LEVEL SECURITY is set. cedar_owner is both. Therefore the tenant_isolation policy is never evaluated for the app's connections.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Point the app at the least-privilege role. Change DATABASE_URL in .env/.env.example to postgresql://cedar_app:apppw@localhost:5432/cedar... Keep two distinct roles, permanently (matches the schema's intent and the two-role model): cedar_owner used only for running migrations (it owns the tables / DDL); cedar_app used for all application runtime traffic.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change the application's connection role to cedar_app. Set DATABASE_URL in .env/.env.example to postgresql://cedar_app:apppw@localhost:5432/cedar so the FastAPI app (db.py) connects as the non-owner, non-superuser role that RLS governs. Keep cedar_owner only for migrations (migrate.sh) and the one-time bootstrap.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "cedar_app is created only by the one-time bootstrap db/bootstrap/create_app_role.sql, which is deliberately not part of automatic init (its own header: \"Not part of automatic database initialization; run by hand on first setup\"... It is not mounted into the container's docker-entrypoint-initdb.d and is not called by scripts/migrate.sh... scripts/reset-local-db.sh:3 runs docker compose down -v, which removes the cedar_pgdata volume... reset-local-db.sh:6 then runs only scripts/migrate.sh (schema), which never touches create_app_role.sql.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The cedar_app role is created only by db/bootstrap/create_app_role.sql, which is explicitly a one-time manual step... scripts/reset-local-db.sh runs docker compose down -v, which deletes the cedar_pgdata volume (the entire Postgres cluster, including all roles), then docker compose up -d db (fresh cluster with only cedar_owner, created from POSTGRES_USER) and ./scripts/migrate.sh... The reset script never re-runs create_app_role.sql.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

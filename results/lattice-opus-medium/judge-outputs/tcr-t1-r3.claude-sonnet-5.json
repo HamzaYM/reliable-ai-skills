@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23163,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09059529999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7012,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7012,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7012,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7012,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2427,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2427,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is more complete: it explicitly cites metrics/uptime-2026.csv for both the false 99.99%/actual 99.92% rolling figure and the April 99.77% breach, whereas Report 2 computes the April figure independently from the incident timeline without citing the uptime CSV, missing the required dual-file citation for expectation (c).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`incidents/OPS-412-timeline.md`: failures began 14:03, but the first alert fired at 14:50 \u2014 **47 minutes later**, not \"within minutes.\" Detection was slow, not fast.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per `incidents/OPS-412-timeline.md`: failures began 14:03, but the FIRST ALERT did not fire until 14:50 \u2014 **47 minutes**, not \"within minutes.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`incidents/OPS-412-timeline.md` states 1,284 transactions failed and required manual reprocessing, and **37 were unrecoverable and refunded**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`metrics/uptime-2026.csv` shows April 2026 at 99.77%, and `docs/sla-commitments.md` says any calendar month below 99.9% \"is a breach and owes service credits per the customer agreement.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`docs/customer-comms-style-guide.md` Rule 1: \"Never assign blame to an individual.\" Reframe as an organizational/process cause.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" Must be rewritten in terms of process/system, not a person.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Style guide Rule 3: \"Lead with customer impact and remediation.\" It should open with what happened to customers and what LarkPay is doing about it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rule 3 requires leading with customer impact and remediation. The draft instead opens with a reliability/uptime boast (lines 3, 16\u201319) and buries (and misstates) impact. Reorder to lead with what happened to customers and what LarkPay is doing.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r3",
+  "repeat": 3,
+  "task": "tcr-t1"
+}

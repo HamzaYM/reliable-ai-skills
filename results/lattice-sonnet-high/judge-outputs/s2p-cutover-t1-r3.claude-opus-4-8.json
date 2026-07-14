@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28955,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2165905,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13770,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13770,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13770,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13770,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 2479,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2479,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct file/line citations; they are comparable, with Report 1 marginally more detailed but no substantive coverage difference.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`ENABLE_DEBUG_TOOLBAR = \"true\"`** (`infra/prod/app.auto.tfvars:2`)... This must be **omitted entirely** from prod ... **`PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** (`infra/prod/app.auto.tfvars:4`) ... This must be **deleted** from prod config ... Both keys must be removed entirely from `infra/prod/app.auto.tfvars`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. ... Should be `\"false\"`. ... `infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. ... Should be removed/emptied for prod",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the API base URL baked into the bundle that ships to production is `https://staging-api.example.com`, sourced from `frontend/.env.staging`, because the frontend is built exactly once with `--mode staging` and that identical artifact is promoted to prod rather than rebuilt with production config.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "because there is no prod-specific build step and no `.env.production`, the production frontend bundle \u2014 the one that will actually ship to real clinic users this week \u2014 has `https://staging-api.example.com` compiled into it as its API base URL.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No migration runner appears anywhere in the pipeline. ... `docs/prod-runbook.md:6` asserts \"Database migrations are applied automatically during deploy,\" but that claim is unverifiable ... this needs explicit manual confirmation before relying on \"the pipeline succeeded\" as proof the prod schema is current",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**No database migration step appears anywhere in the workflow**, yet `docs/prod-runbook.md:6` states \"Database migrations are applied automatically during deploy.\" ... this claim in the runbook is unverifiable from the committed code and should be checked before launch, not trusted at face value.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` sets the **identical** `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 it was not updated when copied from staging ... must be fixed to `\"repo:acme-health/medislot:environment:production\"` before `infra/prod/` is applied.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` has the *same, uncorrected* value: `\"repo:acme-health/medislot:environment:staging\"`. ... it should read `repo:acme-health/medislot:environment:production` ... the `deploy-staging` job's token ... *does* satisfy `infra/prod`'s trust condition as written",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

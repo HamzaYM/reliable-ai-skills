@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18676,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1361735,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7990,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7990,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7990,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7990,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1737,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1737,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with correct citations; Report 2 is more thorough and precise, but they are comparable on the graded expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The timeline shows failures began at 14:03 but the first alert did not fire until 14:50 \u2014 a **47-minute** detection gap ... (`incidents/OPS-412-timeline.md:2-6`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md`: failures began 14:03; the **first alert fired at 14:50 \u2014 47 minutes later**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The internal record directly contradicts this: \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded\" (`incidents/OPS-412-timeline.md:9-10`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "April 2026 uptime was **99.77%** (`metrics/uptime-2026.csv:6`), which is below the contractual **monthly** 99.9% SLA. Per `docs/sla-commitments.md:3-5`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/sla-commitments.md`: the contractual **monthly** SLA is 99.9% ... `metrics/uptime-2026.csv` shows April 2026 at **99.77%** ... April is therefore a breach and credits are owed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "This breaks `docs/customer-comms-style-guide.md`: rule 1 \"Never assign blame to an individual\" (the on-call engineer)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" This must be rewritten in terms of the system/process, not a person.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "plus the self-congratulatory openings (lines 1-4, 16-17), break rule 4 \"No hedging\" and rule 3 \"Lead with customer impact and remediation\" (`docs/customer-comms-style-guide.md:3-6`). The document leads with an uptime boast rather than with what happened to customers and what is being done about it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 3: \"Lead with customer impact and remediation.\" The draft instead opens with a (false) 99.99% reliability boast ... while the only remediation appears in the last line ... restructured to lead with impact and remediation",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r2",
+  "repeat": 2,
+  "task": "tcr-t1"
+}

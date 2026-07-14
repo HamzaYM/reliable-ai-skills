@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24647,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.181863,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7202,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7202,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 9343,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7202,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7202,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 9343,
+            "output_tokens": 2169,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2169,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports discover and cite the prior Edgerunner attempt (454a21f/597777b) and its revert (1712565) with the connection-exhaustion root cause, and both tie the recommendation to that history; Report 1 is sharper on ownership/decision-routing while Report 2 adds more codebase-specific risk detail (missing Postgres driver, unbounded join).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "note answer 3 below: this exact migration was already built and reverted once. The steps that follow describe the mechanical shape of the migration as it was actually implemented in this repo's history (commits `454a21f`/`597777b`, now reverted)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Recreate `backend/serverless_handler.py`, an entry shim wrapping the existing FastAPI `app` object for per-request invocation (this file existed before, at commit `454a21f`, and was deleted in the revert `1712565`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the prior attempt's commit message (`597777b`) states Edgerunner \"runs each request in a fresh isolate and does not keep the SQLAlchemy connection pool between invocations.\" ... `1712565` (2026-04-21, the revert) records the outcome: *\"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"*",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git show 1712565` records that the identical migration was deployed to production and reverted because \"serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres max_connections in production,\" with the commit body adding: \"the per-request connections opened faster than Postgres could recycle them and tripped the connection limit.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`454a21f` (2026-04-14, \"Add Edgerunner serverless deploy for API (PLAT-31)\") added `backend/serverless_handler.py` and `deploy/edgerunner.toml` ... The team reverted fully back to the Cargobox container with the shared pool.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Recreate `deploy/edgerunner.toml` declaring `service.name`, `service.entry`, and `scaling.per_request = true` (same \u2014 existed at `454a21f`, deleted at `1712565`). ... The architecture that caused the failure is still exactly what's deployed today.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the fact that this was already attempted and reverted is itself information the decision-owner needs; re-attempting it silently (even in a modified form) is not something to do without surfacing that history explicitly. ... Whoever owns/owned PLAT-31 (the repo's own ticket scheme, per `README.md`) \u2014 they have direct context on the original outage",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "whoever has institutional memory of the PLAT-31 incident, since the commit trail is the only record of it found; and whoever owns the cost-vs-reliability tradeoff (leadership, since they're driving the ask) should sign off only after a technical spike shows the connection-pooling problem is actually solved, not before.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30677,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1430231,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11879,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11879,
+        "cache_read_input_tokens": 68157,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2020,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2020,
+            "cache_read_input_tokens": 39008,
+            "input_tokens": 2,
+            "output_tokens": 1068,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3063,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit a, b, and c equally well, but Report 2 explicitly distinguishes gate-axis (accuracy) failure handling from optional-axis (relevance/tone) failure handling (renormalize vs. withhold), while Report 1 explicitly rejects renormalization for any axis, missing expectation d \u2014 making Report 2 the stronger, more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The failed axis is silently imputed as 0 \u2014 the worst possible score \u2014 and the record is written as if it were a completed grade. ... In form, a partially-failed record is identical to a fully-scored one: three columns, a plain numeric composite, no null, no flag, no marker.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So the failed axis contributes weight * 0.0 = 0; the surviving axes contribute their full weight. The missing input is silently treated as a genuine score of zero. ... How it compares in form to a fully-scored record: identically.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Treating a missing score as a zero score conflates \"we don't know\" with \"it scored the worst possible\" \u2014 those are different facts... Each zero-filled failure both lowers the numerator (deflated composite) and still increments the denominator (counts[agent] += 1), so an agent's mean is dragged down twice over.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A zero is a real, comparable data point; a missing score is not \u2014 and this code conflates the two by coercing None \u2192 0.0... It has no way to know some composites are degraded, so it folds spuriously-low values into the mean and counts the failed row as a legitimate data point in the denominator.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If an axis (any axis \u2014 and non-negotiably accuracy, the gate) still has no real score, do not write a normal composite row. Either skip/hold the record for re-scoring, or write it with an explicit, non-numeric status so it is distinguishable",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Accuracy failed (load-bearing gate): do not write a comparable composite. Write the record marked degraded/incomplete \u2014 e.g. an empty/null composite plus an explicit status column ... It must not enter the leaderboard as an ordinary number.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Relevance or tone failed, accuracy succeeded: renormalize the weighted mean over the surviving axes (divide by the sum of surviving weights so the composite stays on the same 0\u201310 scale) and flag the row renormalized \u2014 do not insert a 0. ... Accuracy failed (load-bearing gate): do not write a comparable composite.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

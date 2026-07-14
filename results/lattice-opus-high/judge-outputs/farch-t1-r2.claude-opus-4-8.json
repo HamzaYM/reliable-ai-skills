@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 39714,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1757855,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8427,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8427,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8427,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8427,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 3135,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3135,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation; Report 2 is marginally stronger by explicitly confirming the current tree state (serverless files removed, HEAD on main), but they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the migration was already attempted and reverted.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This migration was already attempted under ticket PLAT-31 and reverted in production.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Edgerunner runs each request in a fresh isolate that does not retain that pool (stated in `git show 597777b`). The prior fix opened a dedicated Postgres connection per request. Under normal dashboard load, `/reports/monthly` opened connections faster than Postgres could recycle them, hit `FATAL: too many connections`, and took the endpoint down in production \u2014 forcing a revert back to Cargobox (`git show 1712565`, commit message and diff).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`1712565` \u2014 the **revert**: \"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31).\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The identical migration (PLAT-31) was implemented, patched, deployed, and reverted after a production outage caused by Postgres connection exhaustion \u2014 the underlying shared-pool architecture in `backend/app/main.py` has not changed since.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The current tree confirms the rollback stuck: HEAD is `e004559` on `main`, and `backend/serverless_handler.py` and `deploy/edgerunner.toml` no longer exist.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Given this is a repeat of a reverted production incident, the decision should not be made by one engineer. Involve: the platform/PLAT owner of ticket PLAT-31 (whoever led the prior attempt and revert)... so the cost saving is weighed against the known reliability risk with full knowledge that it already failed once.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "reattempting a settled battle is a decision for whoever owns the system, not something an engineer should quietly redo... Surface the PLAT-31 history to whoever owns PLAT tickets / the platform decision and to leadership driving the cost-cut, so the prior outage is on the table before money or time is committed.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27748,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1561005,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8632,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8632,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8632,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8632,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2261,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2261,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and near-identical on the default-value analysis, but Report 2 additionally identifies the missing global/env-level gate and recommends adding one, so it answers the task slightly more completely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **are sent automatically**. The decision is made in `backend/app/feature_flags.py:10-13`:... Line 11-12: if the key is absent from the tenant's JSONB `settings` dict ... the function returns `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will be sent automatically**. In `slotwise/backend/app/feature_flags.py:10-13`: ... The deciding line is `feature_flags.py:12` (`return True`), reached whenever `tenant.settings.get(\"auto_send_reminders\")` is `None`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "it's the wrong default for a feature that automatically contacts a clinic's patients by SMS and email ... I'd change `backend/app/feature_flags.py:11-12` so a missing value defaults to `False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No \u2014 this default is wrong, and I'd change it. ... I would change `feature_flags.py:11-12` to invert the missing/null case to `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It was copy-pasted from an unrelated, lower-stakes flag. Git history shows `feature_flags.py` originated in commit `25509a7` (SLOT-190) with exactly one function, `compact_calendar_view_enabled`, which defaults missing/`None` to `True` \u2014 reasonable for a cosmetic calendar-layout preference ... SLOT-214 then added `auto_send_reminders_enabled` with the **identical** structure",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the pattern originates in commit `25509a7` ... which added `compact_calendar_view_enabled` with the `is None \u2192 return True` shape ... the two flags sit in different risk categories \u2014 one is a display preference, the other triggers real outbound SMS/email to patients",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Add an env-level master switch, AND'd with the per-tenant value.** Right now there is no env-level gate anywhere in the repo (`grep`/`infra/main.tf` show nothing) \u2014 the per-tenant flag is the *only* control. ... should ship behind a global kill switch that can turn the whole batch job off in one place",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30885,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19103949999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11038,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11038,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11038,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11038,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 2623,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2623,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable: both correctly cover (a), (b), and (c); both miss (d), though Report 2 alone surfaces conftest.py/RESULTS_DB yet wrongly concludes it doesn't matter rather than flagging the shared-DB collision risk.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Group B \u2014 `pipeline/registry.py`: F-02, F-05, F-09**. Three independent one-line constant edits ... give to **one engineer** as a single small PR rather than splitting three ways \u2014 the coordination overhead of three people editing an 11-line file would exceed the work itself.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Owner A \u2014 `pipeline/registry.py`**: F-02 (add `aurora-1` endpoint), F-05 (bump `DEFAULT_RUBRIC_VERSION`), F-09 (fix `DEFAULT_DATASET` path). All three are independent constant edits in the same small file \u2014 bundling them in one engineer avoids three people touching the same 11-line file.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Group C \u2014 `pipeline/rubric.py`: F-01 + F-11**. Fix `Rubric.parse` ... and write the edge-case test ... in the same pass ... One engineer, start immediately. ... **Group B \u2014 `pipeline/registry.py`: F-02, F-05, F-09** ... give to **one engineer** as a single small PR",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Wave 1 (fully parallel...)**: Owner A (registry.py) and Owner B (prompt files) run first and concurrently ... **Wave 2 ...**: Owner C (rubric.py) and Owner D (run_batch.py) run concurrently ... Owner C ... F-01 ... and F-11 (add the missing edge-case parsing test)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06 needs a decision, not just an engineer.** \"Too lenient... tighten them\" gives no target numbers ... I would route this to whoever owns the rubric/grading policy ... to get explicit new threshold values *before* assigning it as an implementation task ... silently change every future score.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 ... this is a product/behavior decision, not a bug fix. The finding names no target values, and `PARTIAL_CREDIT_THRESHOLDS = (0.35, 0.65)` in `pipeline/score.py` directly determines every downstream score this pipeline produces ... should be escalated as its own item, not silently assigned. I'd surface this to whoever owns the rubric/scoring policy",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

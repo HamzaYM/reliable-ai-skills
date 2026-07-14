@@ -1,0 +1,113 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47022,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.208828,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5380,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5380,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 5380,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 5380,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 3985,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3985,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is substantially better: it is grounded in the actual juniper repo and correctly identifies the ROTA-214 commit and owner-exemption mechanism, whereas Report 1 describes a mismatched \"cedar\" codebase, wrongly attributes the mechanism partly to superuser, and gets the exploit-timeline commit wrong.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "which is both the schema/table owner (it runs the migrations via scripts/migrate.sh) and the cluster superuser (POSTGRES_USER: cedar_owner in docker-compose.yml; the postgres image makes POSTGRES_USER a superuser). In Postgres, a superuser bypasses Row-Level Security unconditionally, and a table owner also bypasses it unless the table has FORCE ROW LEVEL SECURITY.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "a table's owner is exempt from RLS policies when only ENABLE is set \u2014 the policy is simply not applied to the owner role. FORCE is what makes the policy apply to the owner as well. The deployment connects as juniper_owner (docker-compose.yml:5, .env.example:1), which is the role that created/owns the appointments table",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": ".env/.env.example were created pointing at cedar_owner in commit a24f68f (CED-1 ... 2026-05-04) ... the runtime has never used a non-bypassing role.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Commit b2a23d2 \u2014 \"ROTA-214 run migrations from the api container on boot\" ... The diff changes the runtime DATABASE_URL in both docker-compose.yml and .env.example (and infra/main.tf) from juniper_app:apppw to juniper_owner:ownerpw.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "change the runtime DATABASE_URL to the least-privilege cedar_app role ... Force RLS at the DB layer: add a migration with ALTER TABLE clients FORCE ROW LEVEL SECURITY; and ALTER TABLE appointments FORCE ROW LEVEL SECURITY;",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Revert the runtime DATABASE_URL back to the low-privilege juniper_app role ... Add defense-in-depth in the migration: add ALTER TABLE appointments FORCE ROW LEVEL SECURITY; in a new migration",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Application-level filter (belt and suspenders): add WHERE tenant_id = :tenant_id to queries in main.py so a future RLS misconfiguration can't silently leak.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Boot-time guard: in backend/app/db.py (or a FastAPI startup hook in main.py), assert the connected role is not superuser and cannot bypass RLS ... and refuse to start otherwise",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "add a startup assertion or CI check that the runtime DATABASE_URL role is not the owner of RLS-protected tables ... and refuse to boot if a protected table is owned by the connecting role, or if any tenant table has RLS enabled but not forced",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r1",
+  "repeat": 1,
+  "task": "mt-auth-t1"
+}

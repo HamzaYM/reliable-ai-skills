@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20639,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1329212,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9863,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9863,
+        "cache_read_input_tokens": 104014,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1111,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1111,
+            "cache_read_input_tokens": 37905,
+            "input_tokens": 2,
+            "output_tokens": 902,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2577,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent, correctly identifying the cross-tenant data leak and the exports.py breakage while correctly ruling out SQL injection as exploitable; Report 2 is slightly more precise on verification methodology but the two are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The function accepts `tenant_id` as a parameter but never uses it. ... There is no `tenant_id = :tenant_id` predicate anywhere. Every other read path in this codebase goes through `build_appointment_query()`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The new function accepts `tenant_id` as a parameter but never uses it in the raw SQL it builds ... There is no `WHERE tenant_id = :tenant_id` predicate",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This PR changes `build_appointment_query(session, tenant_id)` to `build_appointment_query(session, tenant_id, filters)`, making `filters` a **required** positional argument with no default. `backend/app/exports.py`'s `nightly_export()` \u2014 not touched by this PR \u2014 still calls `build_appointment_query(session, tenant_id)` with only two arguments.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The PR changes `build_appointment_query(session, tenant_id)` to `build_appointment_query(session, tenant_id, filters)`, with `filters` as a **required** positional parameter (no default). `backend/app/exports.py`, used by the nightly per-tenant CSV export job (`nightly_export`), still calls it with the old two-argument form",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "is not currently exploitable \u2014 `status` is typed as the `AppointmentStatus` enum on the FastAPI route, and Pydantic/FastAPI rejects any query value that doesn't match one of the three fixed enum members (`booked`/`cancelled`/`completed`) with a 422 before the handler body runs, so only fixed literals ever reach the f-string.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "so it isn't exploitable through the current route. It's still bad practice (any future direct caller of `search_appointments` with an untrusted string would be SQL-injectable) and should be fixed to use a bound parameter for consistency and defense-in-depth.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24529,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2079975,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13651,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13651,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13651,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13651,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2182,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2182,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully hit all four expectations with correct fixes; they are comparable, with Report 1 marginally more detailed.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`call_with_fallback` catches bare `Exception`, so **every one of these six classes \u2014 and anything else, including unrelated bugs \u2014 is treated identically**: log a warning, then unconditionally retry on `secondary`. ... but definitively-rejected payloads (`BadRequestError`, `AuthError`, `ContentPolicyError`) must not ... catch only `providers.RateLimitError, providers.RequestTimeoutError, providers.ServerError` ... and let non-retryable classes propagate to the caller as a hard failure rather than falling over.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it catches the bare `Exception`, so every one of the six is handled identically ... `BadRequestError` and `ContentPolicyError` describe a problem with the *payload itself* ... this should be handled distinctly, e.g. re-raised or returned as a scoring failure without a second vendor call. ... only fall over to `secondary` for the transient classes (`RateLimitError`, `RequestTimeoutError`, `ServerError`); re-raise or convert to a typed failure result for `BadRequestError`/`ContentPolicyError` without calling `secondary`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A** \u2014 `os.environ.get(\"STAGE\") != \"production\"`: returns `True` (allowed) unconditionally ... **This is an environment-name gate on fail-open/fail-closed behavior, which project documentation explicitly calls out as unreliable** ... **Path D** \u2014 ... `redis.incr` raises `RedisError`: returns `True` (allowed), i.e. **fails open** ... change the `except RedisError` branch to `return False` (fail closed) rather than `return True`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A \u2014 non-production stage:** ... returns `True` unconditionally ... a fragile allow-list-of-one-string gate ... **Path D \u2014 production, Redis error:** `RedisError` is caught \u2192 returns `True` (fail open) ... **Concrete fix:** ... fail closed on `RedisError` (return `False` ...) rather than `True`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`input_text` is logged **verbatim and in full** \u2014 this is the actual intake document content ... `metadata` is logged as a whole object with **no allowlist** ... (b) drop `input_text` from the log entirely ... (c) replace `record.metadata` with an explicit allowlist, e.g. `{k: record.metadata[k] for k in ALLOWED_METADATA_KEYS if k in record.metadata}`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The entire raw document body (`input_text`) ... is written verbatim into logs ... drop `input_text` entirely from the audit log ... and either whitelist known-safe `metadata` fields or omit `metadata` unless it's been vetted not to contain PII.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` **defaults to the empty string** if `PII_SALT` is unset. There is no check, error, or warning \u2014 the function silently proceeds to hash `applicant_id` completely unsalted ... remove the `\"\"` default and raise (e.g., `raise RuntimeError(\"PII_SALT is not set\")`) if `PII_SALT` is missing or empty",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` silently defaults to the empty string, so pseudonymization silently degrades to `SHA256(applicant_id)` \u2014 an unsalted hash ... **Concrete fix:** fail loudly instead of defaulting \u2014 `salt = os.environ[\"PII_SALT\"]` (raising `KeyError`) or an explicit check that raises a clear configuration error if `PII_SALT` is unset or empty",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

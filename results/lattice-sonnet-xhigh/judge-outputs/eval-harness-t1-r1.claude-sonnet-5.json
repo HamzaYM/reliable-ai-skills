@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23359,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11608259999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6951,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6951,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9531,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6951,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6951,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9531,
+            "output_tokens": 2472,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2472,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly diagnose the None\u21920.0 bug and its ranking consequences, but only Report 2 explicitly distinguishes handling for the gate axis (accuracy, exclude/flag) versus the optional axes (relevance/tone, defensible to renormalize over succeeded axes), which Report 1 treats uniformly (retry-then-exclude for all axes).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A missing/failed axis is coalesced to `0.0` and folded into the same weighted sum as a real score... So the record for a row with a failed axis call is **identical in form** to a fully-scored row: `agent_id, reply_id, composite_float`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A missing/`None` axis score is silently treated as a literal `0.0` and folded into the weighted sum at full weight... Once written to `results/scores.csv`, a degraded record is byte-for-byte indistinguishable in form from a complete one \u2014 same schema, same numeric range, no way to tell them apart",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Coalescing \"the model call failed / we have no data\" to `0.0` (the worst possible score on a 0\u201310 scale) conflates *missing information* with *the worst possible measured outcome*... `rankings()` (`leaderboard.py:9-17`) takes a plain arithmetic mean of the `composite` column per `agent_id`, with no notion of \"valid\" vs \"failure-degraded\" rows",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The code conflates \"the model said 0\" with \"we never asked\" \u2014 treating a failed API call as if it were a real, terrible grade... `leaderboard.py:9-17` reads every row in `scores.csv` with equal trust, summing `comp` into `sums[agent_id]` and dividing by `counts[agent_id]` for a mean \u2014 degraded and complete rows are weighted identically.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "a failed accuracy call must not be silently converted into a passing *or* failing gate outcome \u2014 it should be treated as \"unscored,\" which means retry-then-exclude, never retry-then-zero.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**accuracy fails** (the gate axis, regardless of whether relevance/tone succeeded): do not write a composite number at all in the normal column \u2014 it would misrepresent the one axis that determines pass/fail. Write the row with an explicit incomplete/degraded marker",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**relevance or tone fails, accuracy succeeds:** renormalize the composite over the axes that did return a score... and write that value, but write it as *flagged* partial/renormalized... **accuracy fails** (the gate axis...): do not write a composite number at all in the normal column",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

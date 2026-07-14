@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 40696,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.135542,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9529,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9529,
+        "cache_read_input_tokens": 29150,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9529,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9529,
+            "cache_read_input_tokens": 29150,
+            "input_tokens": 2,
+            "output_tokens": 4299,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4299,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly cover the gateway/invoices/dunning attribution and the external_ref discrepancy, but Report 2 more explicitly and completely addresses the documentation-process expectations (c and d) \u2014 rejecting deferral and recommending dropping the hardcoded webhook count \u2014 making it the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund provider calls should live in `medibill/backend/app/billing/gateway.py`... I found two places, beyond the documented exception, that talk to the provider a different way... `medibill/backend/app/api/invoices.py:4,14`... `medibill/backend/app/workers/dunning.py:2,9`... The one legitimate, documented exception is `medibill/backend/app/billing/errors.py:6`, which imports only `chargekit.errors` (exception classes), not the client \u2014 matching the doc's carve-out exactly",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls belong in `medibill/backend/app/billing/gateway.py:1-17`... `backend/app/api/invoices.py:4,14` \u2014 `charge_invoice()` does `import chargekit`... `backend/app/workers/dunning.py:2,9-13` \u2014 `run_dunning_pass()` does `import chargekit`... exactly these four files reference `chargekit`: `gateway.py` (intended boundary), `errors.py` (documented exception), and `invoices.py` + `dunning.py` (undocumented violations)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual `InvoiceOut` dataclass (`medibill/backend/app/models/invoice.py:16-22`) has 6 fields \u2014 it also includes `external_ref`, added in commit `c23da88` (2026-06-18) alongside migration `0006_add_invoice_external_ref.sql`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`InvoiceOut` in `backend/app/models/invoice.py:16-22` has six fields \u2014 the five listed plus `external_ref`, which `from_model()` (`invoice.py:24-28`) populates and which `invoices.py:17` sets from the charge result's `reference`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It should be corrected on all three points, and the correction should happen before refund work begins, not after \u2014 a developer picking up this ticket would otherwise read the doc, believe gateway.py is the only call site to check/extend... (no explicit statement rejecting deferral to a separate cleanup ticket, nor an explicit endorsement that doc updates should land in the same commit/PR as the code going forward)",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "this document is meant to function as merge-blocking law, kept current in the same commit as any change to what it governs \u2014 drift is a bug, not a \"someday\" cleanup... must be documented in `docs/ARCHITECTURE.md` in the *same commit/PR* as the code change, with the doc update called out explicitly in the PR summary \u2014 not deferred.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Fix the count and list to include `payment_pending` (5 types, not 4) \u2014 this is a plain factual error introduced by the `c23da88` commit not updating the doc. (no recommendation to drop the hardcoded number in favor of pointing at the code)",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "a raw count like \"4 webhook event types\" is exactly the kind of statement that silently goes stale as branches are added (as just happened). Consider dropping the count and instead pointing at the source of truth \u2014 e.g. \"handles the event types enumerated in `app/api/webhooks.py`'s `payment_webhook` handler\"",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

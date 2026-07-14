@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29827,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1421034,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9529,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9529,
+        "cache_read_input_tokens": 23558,
+        "inference_geo": "not_available",
+        "input_tokens": 9499,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9529,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9529,
+            "cache_read_input_tokens": 23558,
+            "input_tokens": 9499,
+            "output_tokens": 3291,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3291,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reach the same correct diagnosis, culprit commit, and rebuttal of the flaky-model theory with essentially equivalent evidence; Report 2 is marginally stronger on expectation (d) by explicitly stating it verified the fix restores 0.91 via an offline re-run, but both fully satisfy all four expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The eval records now carry the key `gold_label` (fixtures/eval_set.jsonl), but `config/scoring_config.yaml` still says `expected_label_field: label`. So `record.get(\"label\")` returns `None` for **every** record... The file that should be changed is `config/scoring_config.yaml`: `expected_label_field: label` must become `expected_label_field: gold_label`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The defect is a stale field name in **`config/scoring_config.yaml`**: it still reads `expected_label_field: label`. The SCORE-77 migration renamed the gold-label field in `fixtures/eval_set.jsonl`... from `label` to `gold_label`, but left the config pointing at `label`... Since records no longer have a `label` key, `record.get(\"label\")` returns `None` for every row... The fix is one line: set `expected_label_field: gold_label` in `config/scoring_config.yaml`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It began on **2026-06-17**, introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (Fixture Bot, dated 2026-06-17). Evidence: `git show 53551e8` renames every fixture key from `label` to `gold_label`... `pipeline/metrics/nightly_scores.csv` shows accuracy at 0.91 on 2026-06-16 and 0.00 on 2026-06-17 onward \u2014 the drop lands exactly on the commit date.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It began on **2026-06-17**, introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (committed 2026-06-17 13:00 UTC). Evidence: `nightly_scores.csv` shows the last healthy score on 2026-06-16 (0.91) and the first 0.00 on 2026-06-17 \u2014 the same day as the commit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The engineer reproduced with `pipeline/score_one.py`, but that tool **never scores against a gold label** \u2014 it just runs the classifier and prints the prediction. So it structurally *cannot* exercise the broken comparison... Correct reproduction: run the actual batch path \u2014 `python3 -m pipeline.score_batch` from the repo root \u2014 and observe `accuracy=0.00`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py` only calls `predict_category(...)` and prints a category \u2014 it never loads the eval set, never reads `expected_label_field`, and never compares a prediction to a gold label... The correct way to reproduce is to run the actual scoring path: `python -m pipeline.score_batch`, which deterministically yields `accuracy=0.00` every time.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "It targets the model, but the model/classifier is not implicated at all: predictions are correct, and the score is zero purely because the gold field is never read. Rolling back the model would leave accuracy at 0.00... It also runs against the playbook's guidance not to \"flip the model in a shared/production-like environment to see what happens\" \u2014 and here it wouldn't even be diagnostic.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The failure is in the scoring harness (a field-name mismatch), not in the model or its predictions. Every prediction is compared against `None` regardless of which model produced it, so swapping the model back would still yield 0.0 \u2014 wasting effort and, worse, falsely \"confirming\" a model cause and burying the real one.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r1",
+  "repeat": 1,
+  "task": "sysdbg-t2"
+}

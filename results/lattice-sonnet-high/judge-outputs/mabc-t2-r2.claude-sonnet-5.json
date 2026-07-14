@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31411,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.14124489999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12329,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12329,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12329,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12329,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 3421,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3421,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with concrete file/line citations; Report 2 goes further by also surfacing an undocumented pre-existing failing test and more explicitly ruling out 'separate checkout alone' as sufficient for the RESULTS_DB risk, making it marginally more rigorous overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Group A \u2014 pipeline/registry.py (one engineer, one PR): F-02 ... F-05 ... F-09 ... All three edit the same 11-line file on adjacent/overlapping lines. Splitting these across engineers guarantees merge conflicts for no benefit \u2014 one person should take the whole file in a single pass.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Batch | Owner | Findings | Files\nB | Engineer 2 | F-02, F-05, F-09 | pipeline/registry.py",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Group A and Group C's F-08 check go first \u2014 they're small, self-contained, and don't block anyone... Group D's F-01/F-11 can run in parallel with Group B since they touch a different file",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Batches A, B, C, E start together, in parallel, on day one. Each owns a completely disjoint set of files (prompts/*.txt vs registry.py vs rubric.py vs run_batch.py), so there is zero collision risk between them",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06's threshold change is a product/scoring-policy decision, not a mechanical bug fix. ... I would not let an engineer pick new numbers unilaterally; this needs sign-off from whoever owns the rubric/scoring policy",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 ... has no target values \u2014 it names a direction, not a decision. ... this should be escalated as a flagged item and not block the rest of the campaign, with implementation deferred until specific thresholds (or a rule for deriving them) come back.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Awareness of tests/conftest.py's RESULTS_DB default (/var/tmp/llm-scoring/results.db, overridable via the RESULTS_DB env var) \u2014 ... whoever writes new tests (F-11, F-12) should check whether it needs creating or whether RESULTS_DB should be overridden to something ephemeral per engineer to avoid two people writing to the same path if they run tests at the same time.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "tests/conftest.py:4 defines RESULTS_DB defaulting to the fixed absolute path /var/tmp/llm-scoring/results.db. ... parallel test runs across engineers' worktrees pointed at that same absolute path would collide. ... each engineer should set their own RESULTS_DB env override to a local scratch path rather than relying on the shared default.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

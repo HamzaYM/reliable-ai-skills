@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30799,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1625805,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8508,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8508,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8508,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8508,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2577,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2577,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with commit-cited prior-attempt evidence; they are comparable, with Report 1 slightly crisper on ownership sign-off and Report 2 slightly more explicit on the deliberate container-vs-serverless file state.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "This is precisely what commits `454a21f` \u2192 `597777b` \u2192 `1712565` already did, and then undid, under ticket PLAT-31.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Based on the repo's own prior attempt (commits `454a21f`/`597777b`/`1712565`), the mechanical steps are:",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The revert commit `1712565` states directly: \"serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres `max_connections` in production.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565`'s message states plainly: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "already did, and then undid, under ticket PLAT-31 ... `deploy/cargobox.yaml` \u2014 shows the current deployment runs `replicas: 2`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Remove/retire `deploy/cargobox.yaml` and the container-specific `Dockerfile` CMD (`uvicorn ...`) once Edgerunner is proven ... the repo already has a template for this in the reverted `backend/serverless_handler.py`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "this needs to be raised explicitly with whoever owns PLAT-31 / the on-call or backend team that authored the original revert, since they already spent real incident time discovering this failure mode \u2014 re-litigating it silently would repeat that cost.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Whoever files `PLAT-N` tickets for this project should be looped in given the `PLAT-31` history, so the team doesn't unknowingly repeat a known-failed change",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

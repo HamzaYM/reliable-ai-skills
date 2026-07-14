@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 37605,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1991105,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10261,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10261,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10261,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10261,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 3288,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3288,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy all four expectations; they are comparable, with Report 2 slightly sharper on tying the sign-off recommendation to the PLAT-31 owner.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "shows the migration was already done once (`454a21f`, `597777b`) and reverted (`1712565`) with a specific, documented failure mode",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "these are essentially the exact steps this repository already took once, in commits `454a21f` \u2192 `597777b`, and the attempt was reverted in production (`1712565`, ticket PLAT-31)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565` documents a real production incident: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\" ... (per `597777b`'s commit message, isolates don't retain the pool)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Edgerunner's per-request isolate model does not preserve that pool between invocations (per the `597777b` commit's own description of Edgerunner's behavior), so this exact pattern already caused `/reports/monthly` to exhaust Postgres's `max_connections` in production, per the revert message in `1712565`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the only changes since the revert are an unrelated SQLAlchemy version bump (`1b834c5`) and a trivial test tidy (`e004559`) ... Only decommission `Dockerfile`/`deploy/cargobox.yaml` after Edgerunner has run under real production load",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Re-add an Edgerunner entry point equivalent to the deleted `backend/serverless_handler.py` ... and a `deploy/edgerunner.toml` service definition (the previous versions are visible in `git show 454a21f`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "whoever owns that budget decision should be told up front that the \"cheap\" path already failed once for a concrete technical reason",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Whoever owns PLAT-31 (the platform/infra team that authored and reverted the original attempt) should be looped in first ... Leadership should be told explicitly that this was already tried and caused an outage",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

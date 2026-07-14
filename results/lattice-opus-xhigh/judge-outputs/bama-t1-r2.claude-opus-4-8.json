@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22598,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.29144,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 23898,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 23898,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 23898,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 23898,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 1972,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1972,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical, but Report 2 additionally recommends re-checking live usage before relying on the ~3h-stale snapshot, giving it the edge.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full run size: `transcript_count` 5,200 \u00d7 `avg_tokens_per_scoring_call` 1,800 = **\u2248 9,360,000 tokens (~9.36M)**... **northpeak (primary/default):** window total 10,000,000, **remaining 640,000**... the run does not fit \u2014 by a wide margin. 9.36M needed vs. 640K remaining \u2192 a deficit of **~8.72M tokens**; northpeak could score only ~355 of 5,200 transcripts (~7%) before exhausting its window.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 transcripts \u00d7 1,800 tokens/call = **9,360,000 tokens (~9.36M)**... **northpeak (primary/default):** 640,000 tokens remaining (of a 10M window). A 9.36M run is **~14.6\u00d7 the remaining budget**... it would blow through the window almost immediately.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I'd launch the same job against the `secondary` backend, which has the capacity... ridgeline covers the full 9.36M with ~1.44M to spare... On **ridgeline (secondary), the run fits:** 10.8M remaining vs. 9.36M needed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'd route the run to the secondary provider, which has headroom... Ridgeline (secondary) has 10.8M remaining and bills against a **separate** per-window allowance... so it comfortably covers the full run",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run the default nightly path tonight \u2014 it targets northpeak, which has only 640K of the ~9.36M tokens the run needs",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** use the default path. I'd route the run to the secondary provider, which has headroom",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is `generated_at` 19:25:00Z but \"now\" is 22:30 UTC, so it's **~3 hours stale**. I'd re-check live usage before firing, per the guidance not to trust a stale budget signal.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r2",
+  "repeat": 2,
+  "task": "bama-t1"
+}

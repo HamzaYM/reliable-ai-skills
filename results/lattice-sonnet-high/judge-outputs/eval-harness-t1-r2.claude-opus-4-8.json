@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26875,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.172249,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9992,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9992,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9992,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9992,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 2320,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2320,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 2 edges ahead by explicitly endorsing renormalizing over surviving axes for relevance/tone while suppressing on accuracy failure, fully satisfying the gate-vs-optional distinction Report 1 leaves implicit.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`aggregate.py:9-11` explicitly maps a missing/`None` axis score to `0.0` before multiplying by that axis's weight. So a failed call is treated exactly as if the model had scored that axis a hard `0/10`... This is byte-for-byte the same shape as a fully-scored row",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A missing/failed axis is coerced to `0.0` and included in the weighted sum with its full weight... Compared in form to a fully-scored record: **the row is byte-for-byte identical in shape**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Substituting `0.0` for a missing score conflates \"we have no signal\" with \"this is the worst possible reply\"... A deflated row is averaged in with the agent's legitimate scores, pulling that agent's mean down.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Zero is a real, comparable data point (a reply that actually failed the accuracy bar); a missing score from an infrastructure failure is not the same thing, and `aggregate.py` conflates them.... A degraded row is weighted identically to a clean row in the mean.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "a failed accuracy call should be handled with gate-aware logic (e.g., explicitly mark/exclude the record as \"ungraded\" rather than implicitly asserting \"this reply is factually wrong\")... it should route to manual review or a retry queue rather than being asserted as a hard fail or silently averaged in.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If **accuracy** (the gate axis) fails: don't write a composite at all for that record... The record should be marked degraded/incomplete... not appended to `scores.csv` as an ordinary row that `leaderboard.py` will happily average in.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "If **relevance** or **tone** (embellishment axes) fail: it's reasonable to renormalize the composite over the axes that did succeed... and still write a row \u2014 but that row must be explicitly flagged as computed-from-partial-axes... an accuracy-call failure should probably suppress/defer the whole record",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

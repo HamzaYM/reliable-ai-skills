@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26423,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10122690000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7500,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7500,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7500,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7500,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 2926,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2926,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reach the same correct diagnosis and cover all four expectations with essentially equivalent rigor; Report 2 is marginally more explicit in proposing a concrete isolated re-run/verification step for expectation (d), but the two are comparable in overall quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The config `config/scoring_config.yaml` still says `expected_label_field: label`, but the migration renamed the label field in every eval record from `label` to `gold_label`. So `record.get(\"label\")` now returns `None` for every record... The specific file to change is **`config/scoring_config.yaml`**: change `expected_label_field: label` to `expected_label_field: gold_label`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It still says `expected_label_field: label`, but the eval set was migrated so that every record's gold label lives under `gold_label`... In `pipeline/score_batch.py:42`, `gold_field = config[\"expected_label_field\"]` resolves to `\"label\"`, so `gold = record.get(\"label\")` returns `None` for every record... The fix is to change `expected_label_field` from `label` to `gold_label` in `config/scoring_config.yaml`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It began on **2026-06-17**, introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (dated 2026-06-17). Evidence: `pipeline/metrics/nightly_scores.csv` shows ~0.90\u20130.92 daily through 2026-06-16, then `0.00` on 2026-06-17 and every day since \u2014 a clean step exactly on the commit date.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It began on **2026-06-17**, introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (Fixture Bot, 2026-06-17 13:00 UTC)... The metrics log (`pipeline/metrics/nightly_scores.csv`) corroborates the timing precisely: 0.91/0.90/0.92 through 2026-06-16, then `0.00` starting **2026-06-17** and every night after.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the investigation failed to reproduce because it used the wrong tool: `score_one.py` only predicts a category and prints it; it never loads the eval set, never reads `expected_label_field`, and never compares against a gold label. So spot-checking tickets one-by-one exercises only the (healthy) prediction path and structurally cannot surface a gold-comparison bug.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`score_one.py` only prints the prediction \u2014 it never loads the eval set, never reads a gold field, and never performs the comparison where the bug lives. So confirming predictions \"look correct\" says nothing about the batch score... The single-item path structurally cannot exhibit the defect, which is why it was \"not reproducible in isolation.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Do not do it \u2014 it would waste effort and could make things worse. The scoring stub makes no model call, so no model choice can change the outcome; accuracy would stay pinned at 0.00... It also treats a bug the playbook warns against \u2014 flipping a config in a shared/nightly environment to \"see what happens\" as a diagnostic, when a one-line read-only run already gives the answer.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "will not work and should not be acted on. There is no model in this pipeline to switch: the classifier is a deterministic keyword stub... Changing the model therefore cannot affect the score, because the accuracy is being driven to 0.0 by comparing predictions against a `None` gold value, not by any model behavior... The correct action is to fix `expected_label_field: gold_label` in `config/scoring_config.yaml` and re-run the batch scorer to confirm recovery to ~0.91.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

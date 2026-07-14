@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21246,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1519395,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9124,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9124,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9124,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9124,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1888,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1888,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger: it hits all four expectations including the missing env-level global gate, which Report 1 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will be sent automatically**. The decision is made in `auto_send_reminders_enabled` at `backend/app/feature_flags.py:10-13`:",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will be sent automatically**. The decision is made by `auto_send_reminders_enabled` in `backend/app/feature_flags.py:10-13`:",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change `backend/app/feature_flags.py:12` from `return True` to `return False` inside `auto_send_reminders_enabled`, so a clinic that has never explicitly enabled the feature does not have reminders sent on its behalf.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change `backend/app/feature_flags.py:11-12` so a missing/`None` value resolves to `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`auto_send_reminders_enabled` (added in `aa4cf8d`, SLOT-214) is a line-for-line structural copy of `compact_calendar_view_enabled`... A harmless UI default doesn't transfer to a communications-consent default just because the code shape is convenient to copy.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `25509a7` (\"SLOT-190 tenant settings and calendar view preference\"...) introduced the *first* resolver, `compact_calendar_view_enabled`... The two flags are in different risk categories per project documentation's own framework (display preference vs. automated outbound messaging to patients)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Check for an env-level master switch**: I grepped the whole `slotwise` tree and found none \u2014 `auto_send_reminders_enabled` is the *only* gate before real patient contact info gets a message sent... I'd want a deploy-wide kill switch independent of the per-tenant JSONB value",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

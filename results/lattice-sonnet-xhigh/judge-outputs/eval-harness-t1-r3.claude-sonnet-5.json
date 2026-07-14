@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 42772,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2146895,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14763,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14763,
+        "cache_read_input_tokens": 153715,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 833,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 833,
+            "cache_read_input_tokens": 43079,
+            "input_tokens": 2,
+            "output_tokens": 980,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4942,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 fully addresses all four expectations, including the required distinction that relevance/tone failures can be handled by renormalizing over succeeded axes while accuracy failures cannot; Report 2 covers (a), (b), and (c) equally well but never reaches that specific asymmetric-handling conclusion, only asserting the two cases 'should not be handled identically' without specifying how.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A missing/failed axis is silently treated as a score of 0.0 and folded into the weighted sum at full weight... A degraded record is structurally indistinguishable from a fully-scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the missing axis is silently treated as a score of 0.0... a call-failure row is byte-for-byte indistinguishable in form from a fully-scored row.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "a zero is a real, comparable data point; a missing score is not, and conflating them corrupts every downstream aggregate.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "one corrupted row is 50% of an agent's average \u2014 enough to flip relative rankings between agents whose replies are actually comparable in quality.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If accuracy fails (the load-bearing/gate axis): do not write a composite number at all for that record. Write a row that is visibly incomplete",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The safest choice given the stated intent is to exclude the row from scoring entirely until accuracy is actually obtained, rather than guessing in either direction.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If relevance or tone fails, it might be defensible to renormalize the remaining two axes' weights to sum to 1 and still call the result \"complete\"... If accuracy fails, treating it as 0.0 doesn't just distort the composite proportionally \u2014 it collides with the explicit hard-fail semantics",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

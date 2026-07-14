@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17634,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13881300000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9310,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9310,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9310,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9310,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 1285,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1285,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions with the same root causes, fixes, and file references; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`cedar_owner` is both the superuser and the table owner, so it bypasses RLS unconditionally and silently: the `SET app.current_tenant` call executes without error, but the policy is never consulted, and `SELECT id, tenant_id, name FROM clients` returns every tenant's rows.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Postgres row-level security is bypassed for the table owner (and for superusers) by default**, unless the table is also altered with `FORCE ROW LEVEL SECURITY`. ... Since the app connects as `cedar_owner` (the table owner), every query it runs ... silently ignores the `tenant_isolation` policy entirely",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Keep `cedar_owner` reserved strictly for schema-owning work ... Change `cedarline/.env` (and `.env.example`) so the application's `DATABASE_URL` points at `cedar_app`, not `cedar_owner` ... one schema-owning role used only for migrations, one least-privilege role used for everything the running app does.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_owner` (or a similarly privileged role) should be used **only** for schema changes/migrations (DDL), never wired into the running application. `cedar_app` \u2014 a non-owner, RLS-bound, least-privilege role \u2014 should be the **only** role the FastAPI app ... ever connects as at runtime.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `cedar_app` role was created out-of-band by manually running `db/bootstrap/create_app_role.sql` ... explicitly described as a \"one-time\" step \"run by hand on first setup\"), and `reset-local-db.sh` never calls that script. So after a wipe+rebuild, `cedar_app` simply doesn't exist in the new cluster yet.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docker compose down -v` removes the named volume `cedar_pgdata` ... Postgres reinitializes with only the default role from `POSTGRES_USER: cedar_owner` ... `cedar_app` no longer exists. `./scripts/migrate.sh` then only replays `db/migrations/*.sql` ... it never re-runs `db/bootstrap/create_app_role.sql`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

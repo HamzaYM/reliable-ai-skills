@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 13297,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1321027,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15515,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15515,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 15515,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 15515,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1384,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1384,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations with concrete fixes; they are comparable in substance, with Report 2 slightly more explicit in tying findings to stated project documentation/policy language.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "catch a narrow, explicit tuple of transient exceptions (RateLimitError, RequestTimeoutError, ServerError) for the fallback-and-warn behavior; re-raise BadRequestError immediately (it needs a code/payload fix, not a second vendor); treat ContentPolicyError as terminal \u2014 log at error/distinct severity and return a distinguishable \"blocked\" status rather than forwarding to secondary; treat AuthError as a configuration failure that logs at error/critical (or raises)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)\n\ndef call_with_fallback(payload):\n    try:\n        return primary.complete(payload)\n    except NON_RETRYABLE:\n        raise\n    except Exception as e:\n        log_fallover(e)\n        return secondary.complete(payload)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "invert the stage check to fail closed by default (explicitly allow-list non-limited stages, or require a validated enum rather than a loose string compare); on RedisError, either fail closed or fail open only with an explicit error-level log so it's observable",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "invert the default to fail-closed everywhere, gate the bypass on a narrowly-named explicit flag rather than an environment-name comparison, add a TTL for a true rate window, and fail closed on RedisError.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "drop input_text entirely from the log record (at most a length or a hash for correlation, never content), and replace verbatim metadata logging with an explicit allow-list of known-safe fields.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ALLOWED_METADATA_KEYS = {\"document_type\", \"source_channel\", \"intake_date\"}\n\ndef log_call(applicant_key, input_text, metadata, status, vendor=None):\n    safe_metadata = {k: metadata[k] for k in ALLOWED_METADATA_KEYS if k in metadata}\n    logger.info(\"llm_call %s\", json.dumps({\n        \"applicant_id\": applicant_key,\n        \"input_text_hash\": hashlib.sha256(input_text.encode()).hexdigest(),",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "fail loudly (raise RuntimeError/ValueError) if PII_SALT is unset or empty rather than defaulting to \"\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if not salt:\n        raise RuntimeError(\"PII_SALT is not configured; refusing to pseudonymize without a salt\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

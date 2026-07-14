@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 45998,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2114715,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10682,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10682,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10682,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10682,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 3593,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3593,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is stronger: it places F-11 in the early concurrent stage and clearly states the shared results-DB path collision requiring RESULTS_DB overrides, both of which Report 2 misses.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Batch A \u2014 Config (`pipeline/registry.py`), 1 engineer:** F-02 (add `aurora-1` endpoint), F-05 (default rubric version v1\u2192v3, pending confirmation \u2014 see Q3), F-09 (fix `DEFAULT_DATASET` to `eval_set.jsonl`). Three findings, one file \u2192 one owner, done sequentially.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Engineer C** \u2192 `pipeline/registry.py`: **F-02 + F-05 + F-09**. All three are one-line config edits in the same file; batching them to one person is faster than three people serializing on it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Wave 1 (parallel):** Batches A, B, C, D run simultaneously \u2014 different files, zero contention. ... **Batch C \u2014 Rubric parsing (`pipeline/rubric.py`), 1 engineer:** F-01 ... plus **F-11** (rubric-parse edge-case test), written test-first. ... registry.py (F-02/F-05/F-09) ... each have exactly one owner",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06 \u2014 do not let an engineer just pick the numbers; escalate it.** ... a subjective, user-facing *scoring policy* change ... Changing them alters the scores of already-graded outputs, so the numbers should come from whoever owns scoring policy, not from a coder's guess. Batch it and flag it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06 \u2014 do not assign as a routine fix.** ... Changing `PARTIAL_CREDIT_THRESHOLDS` re-scores everything and there are no target numbers in the finding. This needs the reviewer/product owner to specify the new thresholds and sign off before an engineer touches `pipeline/score.py`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`tests/conftest.py` reads `RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\")` \u2014 a single shared default path. Parallel test runs pointed at the same `/var/tmp/llm-scoring/results.db` can collide, so each engineer must set `RESULTS_DB` to a unique path in their own worktree",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

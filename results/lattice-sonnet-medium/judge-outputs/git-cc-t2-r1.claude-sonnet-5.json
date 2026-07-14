@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22567,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10569669999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9004,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9004,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9004,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9004,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2535,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2535,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently verify the same facts (dead base, squashed #42, three-dot vs two-dot diff divergence, rebase plan with concrete re-verification) and hit all four expectations comparably well; Report 2 adds an explicit git merge-base --is-ancestor check, giving it a marginally more rigorous ancestry proof.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "main. The weighted-scorer work that feat/pairwise-metric was built on top of has already landed on main ... there's no reason to target feat/weighted-scorer since that branch's work is already upstream",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "main. Per project documentation's dead-base rule, every PR should target the trunk, not another feature branch ... There is no reason to stack this PR on feat/weighted-scorer; its content is already on main.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "feat/pairwise-metric ... was branched from the tip of feat/weighted-scorer (ac9d505 \"W3: token-overlap helper in metrics\") ... main advanced independently to 1971f08 \"Refactor scorer for weighted metrics (#42)\" ... feat/weighted-scorer is now dead/obsolete as a branch \u2014 its content is already in main and it should not be merged or targeted.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the weighted-scorer work feat/pairwise-metric depends on already landed on main, but it landed as an independent, presumably squashed/rewritten commit (PR #42) rather than by merging feat/weighted-scorer itself. feat/weighted-scorer is therefore a dead base \u2014 a real branch that still exists on the remote, but is superseded",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The merge-base diff (git diff main...feat/pairwise-metric, which is what GitHub computes and would render in the PR): 21 lines across three files, additionally including the full scorer.py rewrite ... It's present purely as a side effect of stacking on an in-progress branch that later landed via squash-merge rather than fast-forward/rebase.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Three-dot (git diff main...feat/pairwise-metric) ... 3 files, 21 insertions, including the entire feat/weighted-scorer payload (the overlap() function, the WEIGHTS dict, and the rewritten scorer.py ...) ... carried along because feat/pairwise-metric was branched on top of it before it merged into main on its own path.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Rebase feat/pairwise-metric onto current main: git rebase --onto main feat/weighted-scorer feat/pairwise-metric ... re-verify the diff is exactly the 5-line pairwise change: git diff main feat/pairwise-metric --stat should match git diff main...feat/pairwise-metric --stat once the branch is rebased",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rebase feat/pairwise-metric onto current main (git rebase main ... or git rebase --onto main feat/weighted-scorer feat/pairwise-metric ...) ... re-verify the diff is clean and scoped: git diff main...feat/pairwise-metric should drop back to the 2-file/5-line diff ... and git log main..feat/pairwise-metric should show only the X1/X2-equivalent commit(s) with main's 1971f08 in its ancestry.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

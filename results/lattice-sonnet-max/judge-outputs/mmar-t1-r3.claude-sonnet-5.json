@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27076,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1414884,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15141,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15141,
+        "cache_read_input_tokens": 28988,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 15141,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 15141,
+            "cache_read_input_tokens": 28988,
+            "input_tokens": 2,
+            "output_tokens": 2796,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2796,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent, hitting all three expectations with near-identical evidence and reasoning; Report 1 is slightly more internally consistent by explicitly excluding the SQL-interpolation issue from its \"currently exploitable\" defects, while Report 2 lists it as blocking despite also conceding no current exploitability, a minor inconsistency.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The function receives `tenant_id` as a parameter but never uses it \u2014 the hand-written SQL only filters on `status` and a full-text match against `notes`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`tenant_id` is accepted as a parameter but never appears in the SQL text or in the bound params. It does not call `build_appointment_query`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`backend/app/db.py:7` changes `build_appointment_query`'s signature from `(session, tenant_id)` to `(session, tenant_id, filters)`, making `filters` a required positional argument with no default ... `backend/app/exports.py:9` (`nightly_export`), which this PR does not touch, still calls `build_appointment_query(session, tenant_id)` with two arguments.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`build_appointment_query`'s signature changed from `(session, tenant_id)` to `(session, tenant_id, filters)`, with `filters` a required positional argument (no default). `backend/app/exports.py` ... still calls the old two-argument form: `build_appointment_query(session, tenant_id).all()` at line 9.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I want to be precise about severity here: I verified this is **not currently exploitable for injection**, because `AppointmentStatus` ... is a closed `str, Enum` with exactly three members ... it is not, by itself, a currently-exploitable break the way #1 and #2 are.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Current concrete exploitability:** none via the shipped route today \u2014 `backend/app/api.py:18` types the parameter as `status: AppointmentStatus`, and `AppointmentStatus` ... is a fixed 3-member enum (`booked`/`cancelled`/`completed`); FastAPI/Pydantic validates the incoming query string against those exact values before `search_appointments` is ever called, so an attacker cannot currently smuggle extra characters through this specific parameter.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

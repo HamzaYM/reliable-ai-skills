@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 40761,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1396693,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9850,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9850,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9850,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9850,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 4428,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4428,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger: it correctly identifies that the shared RESULTS_DB default causes parallel test collisions and requires an env-var override (report 1 wrongly claims the default is fine), while both reports are otherwise comparable on file-ownership grouping and flagging F-06 as needing sign-off, and both fail to place F-11 in a genuinely early concurrent stage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer A \u2014 pipeline/registry.py: F-02 (add aurora-1 endpoint), F-05 (DEFAULT_RUBRIC_VERSION \u2192 v3), F-09 (DEFAULT_DATASET \u2192 fixtures/eval_set.jsonl). Three one-line config edits in one file.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer A \u2014 pipeline/registry.py: F-02 (add aurora-1 endpoint), F-05 (DEFAULT_RUBRIC_VERSION \u2192 v3), F-09 (DEFAULT_DATASET \u2192 fixtures/eval_set.jsonl). Three config edits, one file.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 needs a decision, not just a fix. \"Partial-credit thresholds\u2026 are too lenient; tighten them\" is a subjective policy change with no target values given, and it silently alters scores for every output the pipeline grades. This needs the rubric/product owner to specify the new thresholds and to decide whether historical scores must be recomputed... I'd route it through a quick sign-off before an engineer picks numbers.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 escalate, don't assign as a mechanical fix. \"Tighten the partial-credit thresholds so borderline answers score lower\" is a deliberate change to user-facing scores, and it doesn't specify the new values... That's a product/scoring decision, not a bug fix; per the playbook, flag behavior changes and get a decision rather than guessing.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Optionally the RESULTS_DB env var \u2014 tests/conftest.py reads it, defaulting to /var/tmp/llm-scoring/results.db; the default works, so it's only needed if pointing at a different results DB.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Shared test resource: tests/conftest.py:4 defaults every suite to one RESULTS_DB at /var/tmp/llm-scoring/results.db. Parallel pytest runs across worktrees collide on that path unless each engineer overrides RESULTS_DB.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

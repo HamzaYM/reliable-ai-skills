@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20086,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1370025,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7902,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7902,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7902,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7902,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1819,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1819,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports fully and correctly answer all three questions with the same root causes, fixes, and file-specific evidence.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as **`cedar_owner`** ... is also the **owner of the `clients`/`appointments` tables**. ... in PostgreSQL, RLS policies are **not enforced against the table owner (and superusers) by default** \u2014 the owner bypasses all row-level policies unless the table is additionally marked `FORCE ROW LEVEL SECURITY`, which it is not ... the policy is simply skipped for the `cedar_owner` connection, and `SELECT id, tenant_id, name FROM clients` in `main.py` returns **every tenant's rows**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`DATABASE_URL` points the application at the **`cedar_owner`** role. ... `cedar_owner` is the role that **owns** the `clients`/`appointments` tables ... **the owner of a table is exempt from that table's row-level-security policies unless the table is set to `FORCE ROW LEVEL SECURITY`**. The migration only runs `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` ... never `FORCE`. So ... the policy is **silently skipped** for the owner connection ... `SELECT ... FROM clients` returns every tenant's rows.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Point the application at the **non-owner `cedar_app` role**: change `DATABASE_URL` ... Structurally: keep a clean separation between the **owner/DDL role** (`cedar_owner`, used only for migrations/schema \u2014 `migrate.sh`) and the **runtime application role** (`cedar_app`, least-privilege, used by the app and the isolation tests).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change the application's `DATABASE_URL` ... to connect as the **least-privilege `cedar_app`** role \u2014 a non-owner with no `BYPASSRLS` \u2014 so RLS policies actually apply to it. Reserve `cedar_owner` strictly for running migrations ... This is the two-role model: a schema-owning role for migrations only, and a least-privilege app role for everything the running app does.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedar_app` is created **only** by `db/bootstrap/create_app_role.sql`, which is an explicitly **one-time, manual** step ... It is **not** part of `scripts/migrate.sh` and **not** part of `scripts/reset-local-db.sh`. ... `scripts/reset-local-db.sh` runs `docker compose down -v`, and the `-v` **deletes the `cedar_pgdata` volume** ... Because the reset flow never re-runs the role bootstrap, `cedar_app` no longer exists after a wipe. ... re-run `psql ... -f db/bootstrap/create_app_role.sql` as `cedar_owner` after the reset.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `cedar_app` role is created **only** by `db/bootstrap/create_app_role.sql`, which is a **one-time manual step** ... It is **not** in `db/migrations/` ... and is **not** mounted into Postgres's `docker-entrypoint-initdb.d`. ... `scripts/reset-local-db.sh` ... runs `docker compose down -v`, which **deletes the `cedar_pgdata` volume** ... it **never re-runs `create_app_role.sql`**. ... re-run `psql ... -f db/bootstrap/create_app_role.sql` by hand after each reset.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

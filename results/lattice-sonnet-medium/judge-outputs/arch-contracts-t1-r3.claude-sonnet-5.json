@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30846,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11505069999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8787,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8787,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8787,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8787,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 3266,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3266,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical on (a)-(c), but Report 2 better satisfies (d) by explicitly recommending dropping the hardcoded count in favor of pointing to source, whereas Report 1 merely updates the number to 5 without abandoning the count-based approach.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in medibill/backend/app/billing/gateway.py (medibill/backend/app/billing/gateway.py:1-17)... Any new provider exception types belong in medibill/backend/app/billing/errors.py, the one documented exception to the rule... medibill/backend/app/api/invoices.py:4,14-16 \u2014 charge_invoice() does import chargekit... medibill/backend/app/workers/dunning.py:2,9-13 \u2014 run_dunning_pass() does import chargekit...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in medibill/backend/app/billing/gateway.py, alongside charge() and create_customer()... medibill/backend/app/api/invoices.py:4,14 \u2014 imports chargekit and constructs chargekit.Client(...) directly... medibill/backend/app/workers/dunning.py:2,9 \u2014 the nightly dunning retry worker imports chargekit... The only legitimate documented exception is medibill/backend/app/billing/errors.py:6, which imports just chargekit.errors for exception types \u2014 that one matches the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "InvoiceOut (medibill/backend/app/models/invoice.py:16-22) has six fields, not five \u2014 it also includes external_ref, which is populated from the provider's charge result (invoice.external_ref = result.reference, medibill/backend/app/api/invoices.py:17) and persisted via migration 0006_add_invoice_external_ref.sql.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual InvoiceOut dataclass (medibill/backend/app/models/invoice.py:16-22) has a sixth field, external_ref: str | None, which is also serialized in from_model() (invoice.py:24-28) and returned from charge_invoice() (invoices.py:17-18). This is backed by a real DB column added in migration 0006_add_invoice_external_ref.sql:1.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "this update is already overdue \u2014 it should have landed in the same PR that added external_ref/payment_pending. Practically: it should happen now, before refund work starts... At minimum, doc corrections should land in the same PR as any future code change that touches these areas.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this doc is meant to function as merge-blocking law, with drift treated as a bug, updated in the same commit as any change to what it governs \u2014 not \"the doc needs updating eventually.\"... the same PR that adds gateway.refund() must update docs/ARCHITECTURE.md's webhook and payment-integration sections... in that same commit, not after.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I would change it to read \"5 webhook event types: payment_succeeded, payment_failed, payment_pending, refund_created, dispute_opened\" \u2014 and... I'd also flag it as a claim worth re-verifying whenever webhooks.py changes rather than treating the doc as authoritative by default.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "What I'd change: drop the count (\"4 webhook event types\") and either (a) let the list of named types be the statement of record without asserting a total, or (b) if a canonical enumeration is genuinely needed, point at the single source of truth (e.g., \"see the kind == checks in app/api/webhooks.py for the current, authoritative list\") rather than duplicating a number that will silently go stale again \u2014 as it already has once.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

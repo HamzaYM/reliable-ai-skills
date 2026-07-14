@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23224,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1386927,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13776,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13776,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13776,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13776,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2601,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2601,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable substance; Report 1 is slightly more decisive on AuthError in router.py while Report 2 hedges with \"consider,\" but both are thorough and essentially equivalent in coverage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "BadRequestError \u2014 wrong: currently fails over... AuthError \u2014 wrong: currently fails over... ContentPolicyError \u2014 wrong, and the most serious... catch only providers.RateLimitError, providers.RequestTimeoutError, providers.ServerError (or catch Exception, check isinstance(e, NON_RETRYABLE) and re-raise/return an error result immediately without calling secondary), and let non-retryable classes propagate to the caller as a hard failure rather than falling over.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "only fall over to secondary for the transient classes (RateLimitError, RequestTimeoutError, ServerError); re-raise or convert to a typed failure result for BadRequestError/ContentPolicyError without calling secondary; log AuthError distinctly (e.g. log.error) and consider not routing PII to a second vendor when the first vendor's credentials are broken, since that's not the scenario fallback was designed for.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This is an environment-name gate on fail-open/fail-closed behavior, which project documentation explicitly calls out as unreliable... change the except RedisError branch to return False (fail closed) rather than return True, since an inability to check the limit should block, not silently permit.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a fragile allow-list-of-one-string gate for a control whose entire purpose is protecting a paid, shared, rate-limited vendor... fail closed on RedisError (return False, or return a distinct \"unknown/degraded\" status the caller treats conservatively) rather than True.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "drop input_text from the log entirely, or replace it with a hash/short truncation (e.g., hashlib.sha256(record.input_text.encode()).hexdigest() plus a length, not the content); (c) replace record.metadata with an explicit allowlist, e.g. {k: record.metadata[k] for k in ALLOWED_METADATA_KEYS if k in record.metadata}",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "drop input_text entirely from the audit log (or replace it with a non-reversible fingerprint such as a hash/length, if traceability is needed), and either whitelist known-safe metadata fields or omit metadata unless it's been vetted not to contain PII.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "remove the \"\" default and raise (e.g., raise RuntimeError(\"PII_SALT is not set\")) if PII_SALT is missing or empty, so the pipeline fails hard at startup/first use rather than silently degrading to unsalted hashing.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "fail loudly instead of defaulting \u2014 salt = os.environ[\"PII_SALT\"] (raising KeyError) or an explicit check that raises a clear configuration error if PII_SALT is unset or empty, so a misconfigured deployment cannot silently start producing weakly-pseudonymized (effectively de-anonymizable) applicant IDs.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

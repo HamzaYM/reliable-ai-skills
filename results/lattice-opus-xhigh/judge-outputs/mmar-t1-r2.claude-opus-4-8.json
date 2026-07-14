@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 11975,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.11472249999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7698,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7698,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7698,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7698,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1007,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1007,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully hit all three expectations with equivalent accuracy; they are comparable, with Report 2 marginally more detailed but no more correct.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The raw SQL ... It has **no `tenant_id` predicate**. The function receives `tenant_id` ... but never uses it. So any authenticated tenant calling `/appointments/search` gets matching appointments belonging to **every tenant in the database**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is **no `tenant_id` predicate**. `tenant_id` is accepted as a parameter and passed in from `Depends(current_tenant_id)`, but it never appears in the WHERE clause ... any authenticated user of any tenant calling `GET /appointments/search?q=<term>&status=booked` receives matching appointment rows ... for **every tenant in the database**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The PR made `filters` a required positional parameter but did not update `exports.py`, which still calls the function with two arguments. `nightly_export()` will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` for every tenant, breaking the nightly per-tenant CSV export job.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "its unchanged caller `backend/app/exports.py:9` (`nightly_export`), which still calls `build_appointment_query(session, tenant_id)` with two arguments ... Calling `nightly_export` now raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` before any DB work happens. The nightly per-tenant CSV export is fully broken for every tenant.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `q` param is safely bound (`:q`), but `status.value` is interpolated via f-string. As currently wired it is **not** exploitable: `status` is typed `AppointmentStatus(str, Enum)` (`schemas.py`) with only `booked`/`cancelled`/`completed`, and FastAPI rejects any query value outside the enum",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the `f\"WHERE status = '{status.value}'\"` f-string is a bad pattern but **not** currently exploitable, because FastAPI validates `status` against the `AppointmentStatus` enum so `status.value` can only be `booked`/`cancelled`/`completed` ... The `q` parameter is correctly bound (`:q`) and safe.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

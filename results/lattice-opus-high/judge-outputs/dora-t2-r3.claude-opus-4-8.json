@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21257,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1368125,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7550,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7550,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7550,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7550,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 1954,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1954,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with equivalent grounding and correctness; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\u274c **\"Export your visit history \u2014 Patients can now export their full visit history as a PDF.\"** Not implemented. `app/routers/visits.py` contains only `list_visits` (which returns `[]`) and the comment `# TODO: pdf export`. The feature does not exist ... This section must be removed. ... \u274c **\"Two-factor authentication is now enabled for every clinic by default.\"** Directly contradicted by code. `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` ... and must be corrected or removed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**\"Two-factor authentication is now enabled for every clinic by default.\"** \u2014 False. `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` ... **Remove or rewrite before sending.** ... **\"Patients can now export their full visit history as a PDF.\"** \u2014 Not implemented. `app/routers/visits.py` contains only `list_visits` (which returns `[]`) and a literal `# TODO: pdf export`. There is no export endpoint. **Remove this section**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`after_scheduling.png` visibly reads \"BILLING / INVOICES\", and `captures.json` confirms its route is `/billing/invoices` \u2014 an unrelated billing screen, not the calendar.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it renders the text **\"BILLING / INVOICES\"**, and `captures.json` confirms it was captured from `\"route\": \"/billing/invoices\"`. ... it does not show the new calendar at all.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`after_export.png` \u2014 referenced but missing.** ... no file exists in `docs/release/img/`. ... **`unused_capture_07.png` \u2014 exists but orphaned.** The file is present in `img/` ... but is not referenced by the document and not listed in `captures.json`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_export.png` \u2014 **does not exist**. It is referenced on line 26 of the document but is absent from `docs/release/img/`, so this is a broken image link. ... `unused_capture_07.png` \u2014 present in the img folder ... but used nowhere in the document. Leftover/orphan asset.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\"** This is internal build-provenance/attribution text. ... it should be raised with the owner and, at minimum, removed from the customer-facing version.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Footer line \"Highlights draft assembled with AI assistance.\" (line 33)** \u2014 an internal drafting note. It has no place in a polished customer announcement and should be removed.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

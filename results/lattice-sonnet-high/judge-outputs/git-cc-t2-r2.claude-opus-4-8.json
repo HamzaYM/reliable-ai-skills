@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 108480,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.327974,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9165,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9165,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9165,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9165,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 8900,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 8900,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 1 edges ahead by including an explicit re-fetch and a post-rebase re-diff freshness check confirming weighted-scorer content is gone, which Report 2 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. Per project documentation's dead-base-PR rule ... `feat/pairwise-metric` should never be opened against `feat/weighted-scorer` as its base",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. There is no other integration branch in this repo ... and `feat/weighted-scorer` \u2014 the branch this work depended on \u2014 has already had its content merged into `main` via `1971f08 \"Refactor scorer for weighted metrics (#42)\"`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric` (tip `1bfecb6`) was branched from `feat/weighted-scorer`'s tip (`ac9d505`), not from `main`. ... it is **not an ancestor of `main`** (`git merge-base --is-ancestor feat/weighted-scorer main` \u2192 `NO`) ... its work has already been re-delivered to `main` through a separate PR (#42)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/pairwise-metric` was branched from the tip of `feat/weighted-scorer` (commit `ac9d505`...) ... `feat/weighted-scorer` ... is **not an ancestor of `main`** (`git merge-base --is-ancestor ac9d505 main` \u2192 exit 1), yet its *content* is already fully present in `main` ... a **squash-merge of `feat/weighted-scorer` into `main` as PR #42**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "could also show all 5 commits including 3 that look like they're re-adding functionality already on `main`, which would be confusing and incorrect for review ... they're present because the branch was legitimately stacked on `feat/weighted-scorer` before that work landed on `main` via a different route",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "at the **commit level**, `feat/pairwise-metric` is carrying 5 commits ahead of `main`, 3 of which ... are not new work at all \u2014 they're the exact same weighted-scorer changes already shipped in `main` under commit `1971f08` ... because the branch was built on top of `feat/weighted-scorer` before that work was squash-merged, and `feat/pairwise-metric` was never rebased afterward",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto origin/main feat/weighted-scorer feat/pairwise-metric` ... After rebasing, diff the result against `main` again (`git diff origin/main HEAD`) and confirm it's *exactly* the 5-line pairwise-metric change ... with no residual weighted-scorer content",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

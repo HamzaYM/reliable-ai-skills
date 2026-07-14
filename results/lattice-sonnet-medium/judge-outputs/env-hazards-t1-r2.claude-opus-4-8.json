@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25544,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1542225,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9174,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9174,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9174,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9174,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1963,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1963,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable: both reports fully and correctly answer all three questions; Report 2 adds extra depth (and a secondary deps.py claim), while Report 1 is tighter, but neither has a scoreable advantage.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`cedar_owner` is the Postgres role passed as `POSTGRES_USER` in `cedarline/docker-compose.yml`, i.e. the role that owns the `cedar` database/cluster and created all the tables ... In Postgres, table owners (and superusers) **bypass row-level security policies by default** ... So every request to `GET /clients` ... executes `SELECT id, tenant_id, name FROM clients` as `cedar_owner`. Because `cedar_owner` owns the table, the RLS policy is silently never evaluated",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedarline/.env` sets `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar` \u2014 the FastAPI app ... connects as `cedar_owner` for all normal request traffic ... row-level security policies are **never applied to the table owner** ... unless the table has `FORCE ROW LEVEL SECURITY` set ... `0001_init.sql` never issues `ALTER TABLE clients FORCE ROW LEVEL SECURITY`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`cedar_owner` (schema-owning role) used **only** by `scripts/migrate.sh` / migration tooling, never by the running application. - `cedar_app` (the existing least-privilege role from `db/bootstrap/create_app_role.sql`) used for **all** application runtime traffic \u2014 this is what `DATABASE_URL` ... should point at.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the application's runtime `DATABASE_URL` at the dedicated `cedar_app` role (created by `db/bootstrap/create_app_role.sql`), not `cedar_owner`. `cedar_owner`/the Postgres init superuser should be reserved for running migrations/DDL only, never for serving application traffic.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `cedar_app` role is **not** part of that image bootstrap and is not in `db/migrations/`; it lives only in `db/bootstrap/create_app_role.sql`, which both `README.md:6-9` and `docs/local-setup.md:6` explicitly call a **one-time, run-by-hand** step, and `reset-local-db.sh` never invokes it. So after a wipe, `cedar_app` simply doesn't exist until someone re-creates it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`down -v` removes that volume, so the entire cluster (including the manually-created `cedar_app` role ...) is gone. After reset, only `cedar_owner` exists again; `cedar_app` was never re-created because `reset-local-db.sh` only calls `migrate.sh`, not `db/bootstrap/create_app_role.sql` ... fails immediately with a Postgres \"role \\\"cedar_app\\\" does not exist\" error.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

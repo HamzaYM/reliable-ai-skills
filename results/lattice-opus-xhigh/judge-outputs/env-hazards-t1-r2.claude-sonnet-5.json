@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14408,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09432969999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9445,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9445,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9445,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9445,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1607,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1607,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently arrive at the same correct root causes and fixes for all three questions; Report 2 is marginally more explicit about the docker-entrypoint-initdb.d mechanism, but both fully satisfy all expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "That policy is never enforced for the app's connection, for two reasons, both true here: - **The app connects as the table owner.** ... Postgres **does not apply RLS policies to a table's owner unless the table is set to `FORCE ROW LEVEL SECURITY`** \u2014 and the migration only uses `ENABLE`. So the owner bypasses the policy.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Table owner.** Migrations are applied by `cedar_owner` ... so `cedar_owner` owns `clients`/`appointments`. A table's owner bypasses RLS by default unless the table is declared `FORCE ROW LEVEL SECURITY` \u2014 and `0001_init.sql` never does that.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Keep a strict split: DDL/migrations run as the privileged `cedar_owner`; the application connects **only** as `cedar_app` (a non-owner, non-superuser role with just the DML grants already present in `create_app_role.sql`). The app must never use owner/superuser credentials.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`cedar_owner`** \u2014 schema owner, used **only** to run migrations/DDL. The app must never connect as this role. **`cedar_app`** \u2014 used for **all** application runtime access; least-privilege, no bypass attribute, holds only the SELECT/INSERT/UPDATE/DELETE grants it already has.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `cedar_app` role is created **only** by `db/bootstrap/create_app_role.sql`, which is explicitly a manual, one-time step \u2014 its own comment says \"Not part of automatic database initialization; run by hand on first setup\" ... `scripts/reset-local-db.sh` runs `docker compose down -v`. The `-v` flag **deletes named volumes**, destroying `cedar_pgdata` ... but **nothing in the reset path re-runs `create_app_role.sql`**, so `cedar_app` is never recreated.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docker compose up -d db` re-initializes a fresh cluster, creating only `cedar_owner` (from `POSTGRES_USER`). `create_app_role.sql` is **not** mounted into `/docker-entrypoint-initdb.d/`, so it does not run on init. `scripts/migrate.sh` (which the reset then runs) only executes `db/migrations/*.sql` \u2014 it creates tables, not roles.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

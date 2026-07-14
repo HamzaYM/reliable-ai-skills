@@ -1,4 +1,4 @@
-# A/B eval report: lattice-opus-high
+# A/B eval report: lattice-opus-high-v2
 
 - Consumer model: claude-opus-4-8
 - Consumer effort: high
@@ -6,43 +6,53 @@
 - Max output tokens (pinned, both arms): 64000
 - Judge panel: claude-sonnet-5 + claude-opus-4-8 (both pinned at --effort medium)
 - Adjudicator: claude-fable-5 (pinned at --effort medium, invoked once per disputed report-slot mark, two-of-three majority)
-- claude CLI: 2.1.206 (Claude Code)
-- Seed: 12510775035205085811
+- claude CLI: 2.1.207 (Claude Code)
+- Seed: 18338661954751828545
 - Preregistered: yes
 - Freeze: 2026-07-10T08:32:03Z (task file sha256 b378c7964428)
-- Repeats: 1 consumer / 1 judge
-- Wall clock: 47.8 s
+- Repeats: 3 consumer / 1 judge
+- Wall clock: 89.5 s
 
 ## Aggregate
 
-Cold 59/68 (86.8%) | Loaded 67/68 (98.5%) | Delta +8
+Cold 61/68 (89.7%) | Loaded 67/68 (98.5%) | Delta +6
 
 The denominator is the frozen must-hit count over included tasks,
 computed from the data.
 
-Judge panel disagreement: 2 of 68 must-hit marks (2.9%) carried a disputed report slot.
+Judge panel disagreement: 9 of 204 must-hit marks (4.4%) carried a disputed report slot.
 
-Adjudication: 2 of 136 report-slot marks disputed; 2 adjudicated by claude-fable-5 at --effort medium (1.5% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 1, report_2 1; by arm: cold 2, loaded 0.
+Adjudication: 11 of 408 report-slot marks disputed; 11 adjudicated by claude-fable-5 at --effort medium (2.7% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 7, report_2 4; by arm: cold 7, loaded 4.
 
 Combination rule: per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator.
+
+Repeat-level aggregates (replicated cell; every repeat ran in its own isolated workspace with no shared session state):
+
+| Repeat | Cold | Loaded | Delta (pp) |
+|---|---|---|---|
+| r1 | 59/68 (86.8%) | 67/68 (98.5%) | +11.8 |
+| r2 | 60/68 (88.2%) | 66/68 (97.1%) | +8.8 |
+| r3 | 61/68 (89.7%) | 67/68 (98.5%) | +8.8 |
+
+Endpoint mean over repeats: cold 88.2% | loaded 98.0% | delta +9.8 pp.
 
 ## Per-skill results
 
 | Skill | Tasks | Cold hits | Loaded hits | Delta | Result |
 |---|---|---|---|---|---|
-| adversarial-review/multi-model-adversarial-review | 1 | 2/3 | 3/3 | +1 | PASS |
+| adversarial-review/multi-model-adversarial-review | 1 | 3/3 | 3/3 | +0 | FAIL |
 | architecture-and-contracts/architecture-contracts-as-law | 1 | 4/4 | 4/4 | +0 | FAIL |
 | auth-and-tenancy/multi-tenant-auth-reference | 1 | 4/5 | 5/5 | +1 | PASS |
 | campaign-execution/multi-agent-batch-campaigns | 1 | 2/4 | 4/4 | +2 | PASS |
-| change-control/git-change-control-for-agents | 1 | 3/4 | 3/4 | +0 | FAIL |
+| change-control/git-change-control-for-agents | 1 | 4/4 | 3/4 | -1 | FAIL |
 | cost-and-safety-guardrails/ai-cost-tracking-and-guardrails | 1 | 4/4 | 4/4 | +0 | FAIL |
-| cost-and-safety-guardrails/budget-aware-model-allocation | 1 | 4/4 | 4/4 | +0 | FAIL |
+| cost-and-safety-guardrails/budget-aware-model-allocation | 1 | 3/4 | 4/4 | +1 | PASS |
 | cost-and-safety-guardrails/config-and-secrets-hygiene | 1 | 3/4 | 4/4 | +1 | PASS |
 | debugging-playbooks/failure-archaeology | 1 | 4/4 | 4/4 | +0 | FAIL |
 | debugging-playbooks/systematic-debugging-playbook | 1 | 4/4 | 4/4 | +0 | FAIL |
 | deploy-and-infra/environment-and-build-hazards | 1 | 3/3 | 3/3 | +0 | FAIL |
 | deploy-and-infra/staging-to-prod-cutover-campaign | 1 | 4/4 | 4/4 | +0 | FAIL |
-| docs-and-compliance/consent-and-regulated-data-reference | 1 | 3/4 | 4/4 | +1 | PASS |
+| docs-and-compliance/consent-and-regulated-data-reference | 1 | 4/4 | 4/4 | +0 | FAIL |
 | docs-and-compliance/docs-of-record-and-arbitration | 1 | 4/4 | 4/4 | +0 | FAIL |
 | evals-and-scoring/llm-eval-harness-and-scoring-pipeline | 1 | 3/4 | 4/4 | +1 | PASS |
 | tiered-review/tiered-consultancy-review | 1 | 5/5 | 5/5 | +0 | FAIL |
@@ -61,6 +71,8 @@ Cold 4/4, loaded 4/4, threshold 3: FAIL
 | c | HIT | HIT |
 | d | HIT | HIT |
 
+Judge panel disagreed (excluded from both arms): b
+
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit all four expectations with concrete file/function citations and fixes; they are comparable, with Report 2 marginally crisper on the fail-closed prescriptions. | claude-sonnet-5: Both reports fully and equivalently identify all four core defects with concrete fixes; Report 1 adds extra context (compliance/region-locking, lifetime-cap counter issue, batch error-isolation gap) while Report 2 adds test-coverage gaps and cites project-doc guardrails more explicitly — overall comparable in substance.
 
 ### arch-contracts-t1 (architecture-and-contracts/architecture-contracts-as-law)
@@ -78,6 +90,19 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit e
 
 ### bama-t1 (cost-and-safety-guardrails/budget-aware-model-allocation)
 
+Cold 3/4, loaded 4/4, threshold 3: PASS
+
+| Expectation | Cold | Loaded |
+|---|---|---|
+| a | HIT | HIT |
+| b | HIT | HIT |
+| c | HIT | HIT |
+| d | MISS | HIT |
+
+Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit all four expectations with correct numbers and citations; comparable, with Report 2 adding a model-change caveat and Report 1 adding reset-timing analysis. | claude-sonnet-5: Both reports independently hit all four expectations with essentially equivalent numbers and reasoning; Report 2 adds a bonus caveat about the model change (nimbus-large vs atlas-mini) not required by the expectations, but overall the two are comparable in substance.
+
+### consent-t2 (docs-and-compliance/consent-and-regulated-data-reference)
+
 Cold 4/4, loaded 4/4, threshold 3: FAIL
 
 | Expectation | Cold | Loaded |
@@ -85,19 +110,6 @@ Cold 4/4, loaded 4/4, threshold 3: FAIL
 | a | HIT | HIT |
 | b | HIT | HIT |
 | c | HIT | HIT |
-| d | HIT | HIT |
-
-Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit all four expectations with correct numbers and citations; comparable, with Report 2 adding a model-change caveat and Report 1 adding reset-timing analysis. | claude-sonnet-5: Both reports independently hit all four expectations with essentially equivalent numbers and reasoning; Report 2 adds a bonus caveat about the model change (nimbus-large vs atlas-mini) not required by the expectations, but overall the two are comparable in substance.
-
-### consent-t2 (docs-and-compliance/consent-and-regulated-data-reference)
-
-Cold 3/4, loaded 4/4, threshold 3: PASS
-
-| Expectation | Cold | Loaded |
-|---|---|---|
-| a | HIT | HIT |
-| b | HIT | HIT |
-| c | MISS | HIT |
 | d | HIT | HIT |
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Report 1 answered better: it matches Report 2 on (a), (b), and (d) but correctly identifies that consent_receipts should be preserved as proof of consent (c), whereas Report 2 concludes deleting it is acceptable and misses that requirement. | claude-sonnet-5: Report 1 correctly identifies that erase_user.py wrongly deletes consent_receipts (the PII-free proof-of-consent that should be preserved), matching expectation (c) precisely; Report 2 instead argues consent_receipts deletion is defensible and misdirects preservation praise toward consent_audit (which the erase job doesn't even touch), missing (c). Both reports are equally strong and correct on (a), (b), and (d).
@@ -151,7 +163,7 @@ Cold 3/4, loaded 4/4, threshold 3: PASS
 | c | HIT | HIT |
 | d | MISS | HIT |
 
-Judge panel disagreed (excluded from both arms): d
+Judge panel disagreed (excluded from both arms): c, d
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit all four expectations; Report 1 is slightly more thorough (explicit renormalization and CSV-schema fixes), but they are comparable in substance. | claude-sonnet-5: Report 1 is stronger: it explicitly proposes different handling for the two cases—renormalize-and-keep for a failed relevance/tone (non-load-bearing) versus never-emit-a-comparable-composite for a failed accuracy (gate) axis—fully satisfying expectation (d), while Report 2 argues accuracy failures are worse but converges both cases on the same retry-or-mark-incomplete remedy without distinguishing handling.
 
@@ -166,18 +178,22 @@ Cold 4/4, loaded 4/4, threshold 3: FAIL
 | c | HIT | HIT |
 | d | HIT | HIT |
 
+Judge panel disagreed (excluded from both arms): c
+
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports fully satisfy all four expectations with strong grounding in the git history; they are comparable, with Report 2 slightly crisper on stakeholder roles. | claude-sonnet-5: Both reports independently discovered the same prior PLAT-31 attempt/revert, cited the same commits and root cause, and gave equivalent sign-off recommendations — the two are comparable in substance, with Report 2 slightly more explicit about the connection-pooler prerequisite and Report 1 slightly more explicit about the "deliberate revert" framing.
 
 ### git-cc-t2 (change-control/git-change-control-for-agents)
 
-Cold 3/4, loaded 3/4, threshold 3: FAIL
+Cold 4/4, loaded 3/4, threshold 3: FAIL (regression)
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
 | b | HIT | HIT |
-| c | MISS | MISS |
+| c | HIT | MISS |
 | d | HIT | HIT |
+
+Judge panel disagreed (excluded from both arms): d
 
 Judge comparative verdict (no score weight): claude-opus-4-8: The reports are comparable: both correctly identify main as base, the weighted-scorer origin and its #42 landing, and the range-rebase fix, and both make the same omission on expectation (c) by claiming the net file diff is clean rather than reporting scorer.py re-appearing. | claude-sonnet-5: Both reports are nearly equivalent in substance and structure (same commands, same conclusions on base branch, ancestry, and rebase plan); neither explicitly reports scoring/scorer.py re-appearing in the main-diff, both instead claiming the diff is clean — a shared miss on expectation (c).
 
@@ -192,16 +208,18 @@ Cold 2/4, loaded 4/4, threshold 3: PASS
 | c | HIT | HIT |
 | d | MISS | HIT |
 
+Judge panel disagreed (excluded from both arms): b
+
 Judge comparative verdict (no score weight): claude-opus-4-8: Report 1 answered better: it matches Report 2 on registry ownership and F-06 escalation, but additionally states the F-11-early concurrent staging and the shared RESULTS_DB corruption risk that Report 2 only mentions in passing. | claude-sonnet-5: Report 1 hits all four expectations cleanly (including the shared-file registry.py handling, the early-concurrent placement of F-11, F-06 escalation, and the RESULTS_DB collision risk with a concrete mitigation), while Report 2 misses on keeping F-11 concurrent in the early stage (it sequences F-11 into a later "Wave 2") and only vaguely flags RESULTS_DB as something testers "may need," without stating the collision/corruption risk or that a separate checkout alone is insufficient.
 
 ### mmar-t1 (adversarial-review/multi-model-adversarial-review)
 
-Cold 2/3, loaded 3/3, threshold 2: PASS
+Cold 3/3, loaded 3/3, threshold 2: FAIL
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
-| b | MISS | HIT |
+| b | HIT | HIT |
 | c | HIT | HIT |
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Report 1 is stronger: it catches the exports.py signature-break regression that Report 2 misses, while both nail the cross-tenant leak and correctly handle the SQL-injection string. | claude-sonnet-5: Report 1 is more complete — it catches both the cross-tenant leak (a) and the exports.py runtime-breaking signature mismatch (b), while Report 2 only catches (a) and mentions build_appointment_query is used by nightly_export without noting the broken call signature; both correctly avoid over-flagging the SQL string as exploitable injection (c).
@@ -273,6 +291,8 @@ Cold 5/5, loaded 5/5, threshold 4: FAIL
 | d | HIT | HIT |
 | e | HIT | HIT |
 
+Judge panel disagreed (excluded from both arms): e
+
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports HIT all five expectations with correct citations; they are comparable, with Report 2 slightly more thorough on additional issues. | claude-sonnet-5: Both reports hit all five expectations with essentially equivalent citations; Report 2 is somewhat more thorough overall (e.g., catching the unsupported 'traffic rerouted' claim and the narrow remediation scope) but this doesn't affect coverage of the graded expectations, so the two are comparable on the scored criteria.
 
 ## Comprehension check (stage B, unblinded, non-scoring)
@@ -300,8 +320,8 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports HIT a
 ## Run notes
 
 - Excluded tasks: none
-- Scrub substitutions: 28
-- Workspace mutation warnings: csh-t1-cold, mabc-t2-cold, mmar-t1-loaded, pmvg-t2-cold, pmvg-t2-loaded, sysdbg-t2-cold, sysdbg-t2-loaded
+- Scrub substitutions: 38
+- Workspace mutation warnings: csh-t1-cold, eval-harness-t1-r1-cold, mabc-t2-cold, mabc-t2-r1-cold, mmar-t1-loaded, mmar-t1-r1-loaded, pmvg-t2-cold, pmvg-t2-loaded, pmvg-t2-r1-cold, pmvg-t2-r1-loaded, pmvg-t2-r2-cold, pmvg-t2-r2-loaded, sysdbg-t2-cold, sysdbg-t2-loaded, sysdbg-t2-r1-cold, sysdbg-t2-r1-loaded, sysdbg-t2-r2-cold, sysdbg-t2-r2-loaded
 
 ## Limitations
 

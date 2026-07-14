@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33689,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1960725,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10997,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10997,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10997,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10997,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 2842,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2842,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with precise file/line citations; they are comparable, with Report 2 slightly more explicit on confirming migrations and Report 1 adding the shadow-sink code-path detail.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`ENABLE_DEBUG_TOOLBAR = \"true\"`** \u2014 `infra/prod/app.auto.tfvars:2`. ... Change to `\"false\"`. ... **`PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** \u2014 `infra/prod/app.auto.tfvars:4`. ... Remove it entirely (set to `\"\"`). ... **`SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"`** \u2014 `infra/prod/app.auto.tfvars:6`. ... Change to a production sink (e.g. `.../prod/observations/`) or set the sink to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`app.auto.tfvars:3` `AUTH_RELAXED = \"true\"`** ... **Omit entirely.** ... **`app.auto.tfvars:4` `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** ... **Omit entirely.** ... **`app.auto.tfvars:6` `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"`** ... This line must be **removed entirely**.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Because the build runs `--mode staging`, Vite loads `frontend/.env.staging`, which sets `VITE_API_BASE_URL=https://staging-api.example.com` ... That value is baked into the JS bundle. ... That one image is then deployed to **both** environments ... Consequence: the production frontend bundle ships hardcoded to call `https://staging-api.example.com`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the **production bundle's API base URL comes from `frontend/.env.staging`** and points at `https://staging-api.example.com`. ... The same digest is deployed to both environments ... Fix: add `frontend/.env.production` with the real prod API URL, build a separate prod bundle with `--mode production`, deploy a distinct prod digest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**No database migration step.** The runbook (`docs/prod-runbook.md:6`) claims \"Database migrations are applied automatically during deploy,\" but `deploy.yml` contains no migration step at all. ... For a first prod launch against an empty database, nothing in the pipeline creates the schema.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but `grep` for `alembic|migrat|upgrade head` finds **no migration step** in the workflow ... Per the first-apply trap, confirm explicitly whether migrations run on first prod deploy; as written, the schema would not be created/updated automatically.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Production (broken as committed):** `infra/prod/main.tf:3` *also* sets `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 copied unchanged. But the prod job runs under `environment: production`, so its token sub is `...:environment:production`, which does **not** match ... It must be changed to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` **still says `...environment:staging`** (copied verbatim ...). But the `deploy-prod` job runs with `environment: production` ... That does **not** match the staging condition ... Fix: prod must use `oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

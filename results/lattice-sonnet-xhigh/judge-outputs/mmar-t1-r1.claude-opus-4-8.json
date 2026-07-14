@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27858,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.46411600000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 34084,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 34084,
+        "cache_read_input_tokens": 23102,
+        "inference_geo": "not_available",
+        "input_tokens": 9345,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10982,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10982,
+            "cache_read_input_tokens": 23102,
+            "input_tokens": 2,
+            "output_tokens": 1018,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2600,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 answered the task better: both caught the missing tenant filter and both correctly declined to treat the raw-SQL status interpolation as an exploitable injection, but only Report 1 found the second blocker \u2014 the now-required `filters` parameter breaking the untouched `nightly_export` caller in backend/app/exports.py.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Defect A \u2014 Cross-tenant data leak (PHI exposure) in the new search endpoint. File: `backend/app/appointments.py`, function `search_appointments` ... There is no `tenant_id` predicate anywhere in the `WHERE` clause, and no ORM-level auto-scoping exists anywhere in the codebase",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**File/location:** `backend/app/appointments.py`, function `search_appointments` (lines 10\u201319 on `feat/appointment-search`) ... There is no `tenant_id` predicate anywhere in this query. `tenant_id` is accepted as a function parameter but never referenced in the SQL",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This PR changes `build_appointment_query`'s signature from `(session, tenant_id)` to `(session, tenant_id, filters)`, with `filters` as a **required** positional parameter (no default). `backend/app/exports.py` (the nightly per-tenant CSV export job, `nightly_export`) calls `build_appointment_query(session, tenant_id).all()` \u2014 with only two arguments \u2014 and this file is **not part of the diff at all** ... the next time the nightly export job runs for any tenant, it will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` and crash",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`status.value` is f-string-interpolated directly into the SQL text rather than bound as a parameter (unlike `q`, which correctly uses `:q`). It's not currently exploitable because FastAPI validates `status` against the `AppointmentStatus` str-Enum before the function is ever called",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "As written, this is *not* currently exploitable through the public endpoint: `status` is typed `AppointmentStatus` in `backend/app/schemas.py`, a `str, Enum` restricted to exactly `booked` / `cancelled` / `completed`. FastAPI/pydantic validates the incoming query string against that enum before `get_appointment_search` ... is ever invoked ... it does not by itself justify blocking the way finding #1 does.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 8800,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0695099,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7341,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7341,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7341,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7341,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 884,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 884,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit a, b, and c equally well; Report 2 additionally identifies the missing global/env-level gate and recommends adding one (expectation d), which Report 1 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "For a clinic that never touched the setting, `settings` has no `auto_send_reminders` key, so `.get()` returns `None` and the function returns `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A clinic that never opened the setting has no `auto_send_reminders` key in its JSONB `settings`, so `.get(...)` returns `None` and the function returns `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change `backend/app/feature_flags.py:11-12` to return `False` on `None` (default off), making the backend agree with what the UI displays and requiring an explicit opt-in.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change it to invert the default at `backend/app/feature_flags.py:11\u201313` so `None` (and any non-true value) returns `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it was **copied from the calendar-view preference**. `git show aa4cf8d` (SLOT-214) shows `auto_send_reminders_enabled` was added as a near-verbatim clone of `compact_calendar_view_enabled`... The two features have opposite risk profiles, so reusing the calendar-view's default-on convention without reconsidering it is the root of the problem.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`aa4cf8d` (SLOT-214) then added `auto_send_reminders_enabled` as a byte-for-byte structural copy of that resolver, inheriting the same `is None \u2192 return True`. That was **not a sound basis**: ... an outbound-messaging flag is in the opposite category from a calendar-view preference.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Add an env-level master switch** and AND it with the per-tenant value. Right now `reminders.py:25` is gated *only* by the per-tenant flag \u2014 there is no global kill switch (confirmed: no `getenv`/`environ` anywhere). Without one there is no fast rollback and no staged rollout.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

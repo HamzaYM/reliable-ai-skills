@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19328,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0871869,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7453,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7453,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7453,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7453,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 2008,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2008,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit a-d equally well, but Report 2 additionally identifies that the draft defers its sole remediation commitment to the final line (and adds a process/review-gate point via adr/0002), making it the stronger of the two.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "failures began at 14:03 but the first alert did not fire until 14:50 \u2014 a 47-minute detection gap, not \"within minutes.\" On-call acknowledged at 15:05 and mitigation landed at 15:20, ~77 minutes after onset \u2014 not \"immediately.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "failures began at 14:03 and the \"FIRST ALERT fires (paging)\" at 14:50 \u2014 a 47-minute detection gap, not \"minutes.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`incidents/OPS-412-timeline.md` states 1,284 transactions failed and required manual reprocessing, and 37 were unrecoverable and refunded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`metrics/uptime-2026.csv` shows April 2026 uptime of 99.77%. `docs/sla-commitments.md` says the contractual monthly SLA is 99.9% and any month below that is a breach owing service credits that scale with the depth of the breach. April is a clear breach (0.13 points below)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/sla-commitments.md`: \"The contractual MONTHLY uptime SLA is 99.9%. Any calendar month below 99.9% is a breach and owes service credits.\" `metrics/uptime-2026.csv` shows `2026-04,99.77`, which is below 99.9% \u2014 so April is a contractual breach that owes credits.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The draft says \"The outage was caused by the on-call engineer deploying an untested config change.\" `docs/customer-comms-style-guide.md` rule 1 forbids assigning blame to an individual, and rule 2 forbids exposing internal role names (\"on-call engineer\").",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The draft: \"The outage was caused by the on-call engineer deploying an untested config change.\" `docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" This sentence must be rewritten to describe the cause without pinning it on a person.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The draft opens with reputation-management lines (\"does not change our commitment,\" \"engineering culture treats reliability as the first feature,\" \"designed for graceful degradation,\" \"the vast majority of requests... were served normally\") and buries the one remediation (\"We will add a pre-deploy validation step\") in the final line. ... Restructure to lead with impact and remediation and drop the hedging/marketing.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r3",
+  "repeat": 3,
+  "task": "tcr-t1"
+}

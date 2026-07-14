@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24617,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10119099999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7980,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7980,
+        "cache_read_input_tokens": 29150,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7980,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7980,
+            "cache_read_input_tokens": 29150,
+            "input_tokens": 2,
+            "output_tokens": 2699,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2699,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with proper citations; Report 2 is somewhat more thorough (e.g., explicitly ties the ordering issue to the deferred remediation line and adds extra findings like the mitigation-description discrepancy), but both fully satisfy the graded expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "failures began at 14:03, the first alert didn't fire until 14:50 (47 minutes later)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "failures began 14:03, but the paging alert did not fire until 14:50 \u2014 a 47-minute detection gap, not \"minutes.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "\"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\" That is a direct contradiction of the draft's claim",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\" Transactions that were unrecoverable and had to be refunded were, by definition, lost/affected.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`metrics/uptime-2026.csv:6` shows April 2026 uptime at 99.77%. `docs/sla-commitments.md:3-4` defines the contractual SLA as monthly 99.9%, states any month below that is a breach, and that breaches \"owe service credits per the customer agreement",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md` defines the contractual monthly uptime SLA as 99.9%, with any month below that constituting a breach... `larkpay-comms/metrics/uptime-2026.csv` shows April 2026 (`2026-04,99.77`) fell below that threshold.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`docs/customer-comms-style-guide.md:5-6` states: \"Never assign blame to an individual\" ... The draft (`drafts/...md:12-14`) states: \"The outage was caused by the on-call engineer deploying an untested config change.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Style guide rule 1: \"Never assign blame to an individual.\" The draft states: \"The outage was caused by the on-call engineer deploying an untested config change.\" This must be rewritten",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "`docs/customer-comms-style-guide.md:7` requires the communication to \"Lead with customer impact and remediation.\" The draft instead opens with a marketing claim about historical uptime (`drafts/...md:3-4`) before ever describing what happened to customers. The structure needs to be reordered.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The draft instead opens with a reliability/uptime claim and self-congratulatory framing (\"our engineering culture treats reliability as the first feature\u2026 our track record reflects that commitment\"), and buries the one remediation line (\"We will add a pre-deploy validation step\u2026\") at the very end.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r2",
+  "repeat": 2,
+  "task": "tcr-t1"
+}

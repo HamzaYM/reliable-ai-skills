@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17796,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13937549999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9557,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9557,
+        "cache_read_input_tokens": 15579,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9557,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9557,
+            "cache_read_input_tokens": 15579,
+            "input_tokens": 2,
+            "output_tokens": 1283,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1283,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with essentially equivalent substance and correctness; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The SQL filters only on `status` and a full-text match against `notes`; there is **no `tenant_id` predicate**. `search_appointments` receives `tenant_id` (from the `current_tenant_id` auth dependency) but never uses it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The function accepts `tenant_id` but never references it \u2014 there is no `WHERE tenant_id = \u2026`. So any authenticated user of any tenant calling `/appointments/search?q=<term>&status=booked` receives matching appointment rows from **every tenant in the database**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "now takes a **required** third positional parameter with no default. The un-updated caller is `backend/app/exports.py:9`: `build_appointment_query(session, tenant_id).all()`... raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` on every run",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the PR adds `filters` as a **required** positional parameter with no default; the un-updated caller is `backend/app/exports.py`, `nightly_export` (line 9)... `exports.py` is not touched by the PR and still passes two arguments, so `nightly_export` raises `TypeError`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It is **not exploitable as currently wired**: the endpoint types the param `status: AppointmentStatus` (schemas.py \u2014 a `str, Enum` of `booked/cancelled/completed`), so FastAPI validates it and returns HTTP 422 for anything else; `status.value` is therefore always one of three safe literals.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It is *not* exploitable through the current endpoint: `status: AppointmentStatus` is a `str, Enum` with three fixed members (`booked`/`cancelled`/`completed`) that FastAPI validates before the handler runs, so `.value` can only ever be one of three safe literals... (For contrast, `q` *is* correctly bound as `:q`.)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

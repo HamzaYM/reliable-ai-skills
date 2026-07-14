@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36019,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1710615,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8446,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8446,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8446,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8446,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2932,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2932,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable on the core reasoning, but Report 2 edges ahead by adding a concrete reproducibility check (regenerate then re-run twice) that Report 1 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they POST to a real external model endpoint (`https://api.scorelab-models.example.com/v1/score`) via `_live_call`, and the module docstring states they \"hit the real model endpoint and incur per-call cost.\" ... The `live` marker being opt-in is a deliberate design choice, and it's the correct one. Validation should keep `-m \"not live\"` and leave these off.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "these tests make a network POST to `https://api.scorelab-models.example.com/v1/score` using the `SCORELAB_API_KEY` secret, and the file's own docstring says they \"hit the real model endpoint and incur per-call cost.\" ... every ordinary test run would spend real money and require network access plus a secret ... Removing that opt-in gate is exactly the failure the guidance warns about.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "update the golden's score values, and do it by **reviewing the resulting diff line-by-line** so you're consciously blessing exactly the score deltas and nothing else ... it's a genuine output regression",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "First I trace every changed value back to an intended change ... Running `update_golden.py` now would launder this precision-loss regression into the golden file where nobody would notice it ... Only after the diff contains **only** explainable hunks do I regenerate the golden.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Source them from the repository by measurement, **not** by quoting `docs/testing.md` \u2014 that doc is stale on both figures",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** cite the `docs/testing.md` figures (\"2 flaky\", \"9 lint warnings\") \u2014 those are a stale snapshot, and I re-measured instead",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "`update_golden.py` iterates the `CATEGORIES` **set**, so the JSON key order is non-deterministic across runs (I reproduced three different orderings) ... I'd regenerate, then re-run in assert mode twice to confirm determinism (and ideally fix the script to iterate the ordered `ITEMS`) before committing",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

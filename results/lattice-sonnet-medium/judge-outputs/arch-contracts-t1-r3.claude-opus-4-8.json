@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32283,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1642795,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8522,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8522,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8522,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8522,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2631,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2631,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent on expectations a\u2013c, but Report 2 wins overall by correctly recommending dropping the hardcoded webhook count in favor of pointing at the code, which Report 1 misses.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py` ... Two places instantiate `chargekit.Client` directly, bypassing `gateway.py`, and neither is the documented `errors.py` exception:\n- `medibill/backend/app/api/invoices.py:4,14-16` ...\n- `medibill/backend/app/workers/dunning.py:2,9-13`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py` ... There are two places that talk to `chargekit` directly, bypassing `gateway.py`:\n- `medibill/backend/app/api/invoices.py:4,14` ...\n- `medibill/backend/app/workers/dunning.py:2,9` ... The only legitimate documented exception is `medibill/backend/app/billing/errors.py:6`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`InvoiceOut` (medibill/backend/app/models/invoice.py:16-22) has six fields, not five \u2014 it also includes `external_ref`, which is populated from the provider's charge result ... and persisted via migration `0006_add_invoice_external_ref.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual `InvoiceOut` dataclass (medibill/backend/app/models/invoice.py:16-22) has a sixth field, `external_ref: str | None` ... backed by a real DB column added in migration `0006_add_invoice_external_ref.sql:1`. So the doc is out of date \u2014 the response has 6 fields, not 5, and the doc doesn't mention `external_ref` at all.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it should happen now, before refund work starts, so that whoever implements refunds is working from an accurate contract instead of a stale one ... At minimum, doc corrections should land in the same PR as any future code change that touches these areas",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "updated in the same commit as any change to what it governs \u2014 not \"the doc needs updating eventually.\" ... the same PR that adds `gateway.refund()` must update `docs/ARCHITECTURE.md`'s webhook and payment-integration sections ... in that same commit, not after.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "drop the count (\"4 webhook event types\") and either (a) let the list of named types be the statement of record without asserting a total, or (b) if a canonical enumeration is genuinely needed, point at the single source of truth ... rather than duplicating a number that will silently go stale again",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

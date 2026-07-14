@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25160,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10826269999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8679,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8679,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8679,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8679,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2872,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2872,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with comparable depth and accuracy; Report 2's RLS mechanism explanation is slightly more precise (avoids the unverified 'superuser' claim), but overall the two are essentially equivalent in coverage and quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "cedar_owner is the POSTGRES_USER from cedarline/docker-compose.yml, i.e. the Postgres cluster's initial role \u2014 it is a superuser and, via cedarline/scripts/migrate.sh, also the role that ran the migrations and therefore owns the clients/appointments tables. In Postgres, row-level security is bypassed for two overlapping reasons here: (a) superusers always bypass RLS regardless of any policy, and (b) even a non-superuser table owner bypasses RLS by default unless the table was explicitly altered with FORCE ROW LEVEL SECURITY \u2014 which cedarline/db/migrations/0001_init.sql never does",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "in Postgres, ENABLE ROW LEVEL SECURITY does not apply to the table's owner (or any role with BYPASSRLS) by default \u2014 RLS is only enforced against the owner if the table is additionally marked FORCE ROW LEVEL SECURITY. The migration never runs ALTER TABLE clients FORCE ROW LEVEL SECURITY... Because the app connects as cedar_owner \u2014 the table owner \u2014 every query it runs silently bypasses the tenant_isolation policy",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change the running application's DATABASE_URL (in cedarline/.env, and the deployed equivalent) from cedar_owner to cedar_app, so the app connects with the least-privilege, RLS-subject role for all normal request traffic. cedar_owner (or any owner/superuser role) should be reserved exclusively for running migrations (scripts/migrate.sh already does this correctly and can keep using cedar_owner).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change the application's DATABASE_URL (in cedarline/.env, .env.example, and any deployed secret equivalent) to use the dedicated, non-owner role cedar_app... Structurally, keep two distinct roles going forward, never conflate them: cedar_owner (or a migrations-only role) \u2014 owns the schema, used exclusively by scripts/migrate.sh / CI migration jobs. Never used to serve requests. cedar_app \u2014 least-privilege, RLS-subject role...",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "cedar_app was never created by the Postgres image's automatic init mechanism; per cedarline/docs/local-setup.md step 2, it's created by manually running db/bootstrap/create_app_role.sql as a one-time step... It is not baked into any init script Postgres runs automatically on container start (there's no docker-entrypoint-initdb.d wiring for it), and reset-local-db.sh only re-runs docker compose up -d db + ./scripts/migrate.sh \u2014 it never re-runs create_app_role.sql... the fresh Postgres cluster has only the roles Postgres creates automatically (cedar_owner, the POSTGRES_USER); cedar_app no longer exists anywhere.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "-v deletes the named volume cedar_pgdata, which wipes the whole cluster, including the cedar_app role \u2014 it only exists because db/bootstrap/create_app_role.sql was run by hand once, as documented in cedarline/README.md and docs/local-setup.md: \"One-time bootstrap ... Not part of automatic database initialization; run by hand on first setup.\" The reset script... never calls this bootstrap file, so after a reset the fresh cluster has only cedar_owner (from the compose env vars) \u2014 cedar_app simply doesn't exist.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

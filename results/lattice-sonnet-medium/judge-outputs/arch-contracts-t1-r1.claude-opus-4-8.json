@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36184,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1675475,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8108,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8108,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8108,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8108,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2940,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2940,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and hit every expectation; Report 2 is marginally more explicit on tying doc updates to the same commit/PR, but they are comparable overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The sanctioned integration point is `medibill/backend/app/billing/gateway.py`... A refund function (e.g., `refund(...)`) should be added to `gateway.py`... Two places instantiate `chargekit.Client` directly and bypass the gateway entirely:\n   - `medibill/backend/app/api/invoices.py:4,14`... - `medibill/backend/app/workers/dunning.py:2,9`... with `app/billing/errors.py` (which only re-exports `chargekit.errors` classes...) as the sole documented exception.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls belong in `backend/app/billing/gateway.py`... Two places bypass `gateway.py`... `medibill/backend/app/api/invoices.py:4,14`... `medibill/backend/app/workers/dunning.py:2,9`... The only sanctioned exception is `medibill/backend/app/billing/errors.py:6`, which imports just `chargekit.errors` for exception types and explicitly documents itself as the boundary exception.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`InvoiceOut` in `backend/app/models/invoice.py:16-22` has a sixth field, `external_ref`... This field was added by migration `0006_add_invoice_external_ref.sql`... while doc claims \"exactly the fields: id, tenant_id, amount_cents, currency, status\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual response, `InvoiceOut` in `medibill/backend/app/models/invoice.py:16-22`, has six fields \u2014 the five listed plus `external_ref`. That field was added in commit `c23da88`... via migration `0006_add_invoice_external_ref.sql`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/ARCHITECTURE.md` should be updated now, as a fix-up (or at minimum flagged in the refund PR), rather than deferred to \"later\"... treat this as a pre-existing bug and route those two call sites through `gateway.py` as part of (or immediately before) the refund work",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "both existing discrepancies should have been fixed already, in the same commits that caused them... should be corrected before or alongside starting the refund feature, not bundled invisibly into the refund PR... the same commit/PR that adds `gateway.refund()` must update the doc again",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The actual handler... handles **5** types \u2014 the same 4 plus `payment_pending`... replace the hardcoded count with a reference to the code as the source of truth... since this list has already drifted once",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the doc both undercounts (says 4, code handles 5) and omits `payment_pending` entirely... drop the count and... describe the property instead of listing/counting... That formulation survives the next event type being added without going stale",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

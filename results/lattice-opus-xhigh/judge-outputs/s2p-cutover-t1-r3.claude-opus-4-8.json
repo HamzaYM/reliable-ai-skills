@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29548,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.18992650000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11245,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11245,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11245,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11245,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2491,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2491,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comprehensive and hit all four expectations; they are comparable, with Report 1 slightly cleaner on removing the legacy secret and Report 2 adding extra pipeline gaps.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 2 \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. ... Line 4 \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. ... Line 6 \u2014 `SHADOW_SCORING_SINK ...` **Remove this key entirely** ... Line 7 \u2014 `LEGACY_BILLING_SECRET_ARN ...` **Remove the key.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. ... Remove it (set to empty). ... `SHADOW_SCORING_SINK ...` Change to a prod sink (`.../prod/...`) or empty it",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production frontend ships with `https://staging-api.example.com` compiled into it. Real production users' browsers would call the staging API. Because the URL is baked at build time, there is no runtime fix \u2014 the frontend must be **rebuilt** for production",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So the API base URL in the shipped production bundle is `https://staging-api.example.com` ... deploy-prod deploys **the same digest** ... Fix: add a `frontend/.env.production` with the prod API URL and build the prod artifact with `--mode production`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/prod-runbook.md:6` says \"Database migrations are applied automatically during deploy,\" but nothing in `deploy.yml` runs migrations ... don't assume \"pipeline succeeded\" means the schema is current.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The runbook (`docs/prod-runbook.md:6`) says \"Database migrations are applied automatically during deploy,\" but the workflow has no migration step ... On a fresh prod DB nothing meaningful gets created.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` passes the **same** `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` ... prod must set `oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` was copied unchanged and still sets `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` ... Fix: set prod's `oidc_sub_condition` to `repo:acme-health/medislot:environment:production`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

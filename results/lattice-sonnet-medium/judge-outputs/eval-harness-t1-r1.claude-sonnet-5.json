@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26794,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11408770000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9650,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9650,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9650,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9650,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2809,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2809,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly diagnose the zero-substitution bug and its ranking impact, but Report 2 goes further by explicitly deriving the axis-dependent remedy (renormalize for relevance/tone, block/flag for accuracy) that the task's questions were steering toward, while Report 1 only partially gestures at this distinction.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A `None` axis score is silently coerced to `0.0` and folded into the weighted sum exactly as if the model had genuinely scored that axis a `0`... A row born from a transient network error is byte-for-byte indistinguishable, in form, from a row where the model genuinely rated an axis 0.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`value is None` is coerced to `0.0` and still multiplied by that axis's full weight... a record with a failed axis is byte-for-byte identical in form/shape to a fully-scored record: same three columns, same numeric type, no failure marker, no partial/degraded flag.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "No \u2014 it conflates \"unknown/unscored\" with \"worst possible score,\" and does so silently... `grader/leaderboard.py` (`rankings()`) reads `scores.csv` with no way to detect or exclude affected rows \u2014 it just averages `float(comp)` per agent... one failed call drags that agent's mean down by roughly half, which is large enough to flip rank order among agents whose \"true\" quality is similar.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treating a missing axis score as `0.0` manufactures a real, comparable-looking data point out of an input that was never observed... Every zero-filled composite is averaged in at full weight alongside genuine scores. An agent that happens to hit more axis-call failures... will have its mean composite pulled down for reasons entirely unrelated to reply quality.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "accuracy call failures in particular should never be allowed to trigger the pass/fail gate \u2014 the gate should only ever fire on a genuine sub-threshold accuracy score, never on a missing one. A missing accuracy score should route to \"needs re-scoring / retry\" rather than \"fail.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If `accuracy`'s call fails: don't write a composite at all for that row (or write one explicitly marked degraded/incomplete, separate from the numeric column readers currently consume)... The row should be queued for retry and excluded from `leaderboard.py`'s averaging until accuracy is actually scored, not silently folded in as a real data point.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "If `relevance` and/or `tone` fails but `accuracy` succeeds: renormalize the composite over the weights of the axes that did return... and mark the row as complete since the gating axis was actually evaluated... So the correct policy is axis-dependent: accuracy failures need to be treated as blocking/incomplete, not renormalized around; relevance/tone failures can be renormalized.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

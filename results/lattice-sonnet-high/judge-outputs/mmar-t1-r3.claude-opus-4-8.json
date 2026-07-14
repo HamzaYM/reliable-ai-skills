@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15947,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.12735950000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7818,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7818,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7818,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7818,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 1464,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1464,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with correct, well-grounded findings; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The function accepts `tenant_id` as a parameter but never uses it. The raw SQL it builds is... There is no `tenant_id = :tenant_id` predicate anywhere. Every other read path in this codebase goes through `build_appointment_query()`... any authenticated caller of `/appointments/search?q=...&status=...` gets matching appointment rows... from **every tenant in the database**, not just their own.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The new function accepts `tenant_id` as a parameter but never uses it in the raw SQL it builds... There is no `WHERE tenant_id = :tenant_id` predicate, and the query even `SELECT`s the `tenant_id` column of every matching row. Any authenticated user of any clinic tenant who hits `GET /appointments/search?q=...&status=...`... will receive matching appointments... from **every tenant in the system**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This PR changes `build_appointment_query(session, tenant_id)` to `build_appointment_query(session, tenant_id, filters)`, making `filters` a **required** positional argument with no default. `backend/app/exports.py`'s `nightly_export()` \u2014 not touched by this PR \u2014 still calls `build_appointment_query(session, tenant_id)` with only two arguments... raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The PR changes `build_appointment_query(session, tenant_id)` to `build_appointment_query(session, tenant_id, filters)`, with `filters` as a **required** positional parameter (no default). `backend/app/exports.py`, used by the nightly per-tenant CSV export job (`nightly_export`), still calls it with the old two-argument form... raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` on every invocation",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the f-string interpolation of `status.value` into the raw SQL (`f\"WHERE status = '{status.value}'\"`) looks like a SQL-injection smell, but is not currently exploitable \u2014 `status` is typed as the `AppointmentStatus` enum on the FastAPI route, and Pydantic/FastAPI rejects any query value that doesn't match one of the three fixed enum members (`booked`/`cancelled`/`completed`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`search_appointments` builds the `status` clause via an f-string (`f\"WHERE status = '{status.value}' \"`) rather than a bound parameter. As called from the API, `status` is typed `AppointmentStatus` (a `str, Enum` in `backend/app/schemas.py`), so FastAPI/Pydantic rejects any value outside `booked`/`cancelled`/`completed` with a 422 before this code runs \u2014 so it isn't exploitable through the current route.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

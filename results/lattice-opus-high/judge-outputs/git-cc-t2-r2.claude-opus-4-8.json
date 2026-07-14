@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 84652,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.38443550000000004,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11633,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11633,
+        "cache_read_input_tokens": 235421,
+        "inference_geo": "not_available",
+        "input_tokens": 18,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 758,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 758,
+            "cache_read_input_tokens": 28252,
+            "input_tokens": 2,
+            "output_tokens": 2981,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5845,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both nail base=main, the stacked origin, and the squash-merge #42 status, but Report 1 correctly identifies that the GitHub PR (three-dot) diff re-includes scorer.py while Report 2 wrongly calls the diff clean \u2014 making Report 1 the better answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. The dependency this branch was built on \u2014 `feat/weighted-scorer` \u2014 has already landed in `main` ... there is no dependency branch to target; the PR should go against `main`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`main`** (the trunk). The dependency this branch was built on \u2014 `feat/weighted-scorer` \u2014 is no longer a valid base: its content has already landed in `main` as PR #42 (`1971f08`). Targeting `feat/weighted-scorer` would be the classic dead-base trap",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was cut from **`feat/weighted-scorer`** ... it has been **squash-merged into `main`** as PR #42 (`1971f08`) ... `git branch --merged main` does **not** list it, because a squash merge creates a brand-new commit with no ancestry link to W1/W2/W3.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was cut from **`feat/weighted-scorer`** ... That starting point is **already merged into main \u2014 via squash, not fast-forward.** Evidence: `git merge-base --is-ancestor feat/weighted-scorer main` \u2192 **NO** ... main's `1971f08` (#42) is a squashed copy of the weighted work under a new hash.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**GitHub renders PRs with the three-dot (merge-base) diff**, and `git diff main...feat/pairwise-metric` shows **3 files, 21 insertions / 3 deletions**: - `scoring/scorer.py` (+13/-3): the weighted-scorer refactor ... They reappear because the branch was cut from the pre-merge `feat/weighted-scorer` and that branch was **squash-merged**, leaving the merge-base at the old base `65204ad`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase onto `main`, dropping the already-merged weighted commits** \u2014 `git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... `git diff main...feat/pairwise-metric` should contain only `pairwise_preference()` and the `grader.txt` line (no `scorer.py`, no `overlap()`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git fetch origin`; confirm local `main` == `origin/main` (`1971f08`) ... **Rebase the branch onto main, dropping the redundant weighted commits:** `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`. This replays only `7b2e100` and `1bfecb6` ... `git log --oneline main..feat/pairwise-metric` should show exactly the two pairwise commits",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

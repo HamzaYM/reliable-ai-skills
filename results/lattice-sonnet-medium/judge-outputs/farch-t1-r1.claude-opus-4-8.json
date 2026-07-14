@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30012,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1658945,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8971,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8971,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8971,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8971,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2513,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2513,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comparable \u2014 each fully identifies the prior reverted Edgerunner attempt, quotes the revert commit's recorded cause, treats the container as the deliberate state, and ties sign-off to the PLAT-31 owner.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`git log --oneline --all` in `carelog-api` shows a previous attempt at this identical migration (commits `454a21f`, `597777b`, `1712565`) that was reverted after a production outage.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This repository already contains a worked example of exactly these steps, from the abandoned attempt (commits `454a21f` and `597777b`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565`'s message states verbatim: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31).\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565` states verbatim: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31),\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "However \u2014 this is precisely the sequence this repository already tried and abandoned. See Q3/Q4.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Update CI/CD to build/deploy to Edgerunner instead of (or alongside) building the Docker image in `backend/Dockerfile` and deploying via `deploy/cargobox.yaml`.... the abandoned attempt (commits `454a21f` and `597777b`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Given this is a repeat of a previously-reverted, production-impacting migration (ticket PLAT-31), whoever owns that ticket/postmortem and the on-call/infra team responsible for the Postgres instance's `max_connections` limits should be involved before scoping is finalized",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "get explicit sign-off from the PLAT-31 stakeholders given the documented prior outage, before any code changes are made.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

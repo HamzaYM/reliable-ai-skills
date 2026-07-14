@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 34261,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.20112349999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11764,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11764,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11764,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11764,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2717,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2717,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 answers the task better: both cover (a)\u2013(c) comparably, but only Report 1 identifies the shared conftest.py RESULTS_DB path collision (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`pipeline/registry.py` is a smaller but real collision point.** F-02, F-05, and F-09 all edit this 11-line config file (`MODEL_ENDPOINTS`, `DEFAULT_RUBRIC_VERSION`, `DEFAULT_DATASET`)... three engineers submitting three concurrent branches against one tiny file still means unnecessary merge/rebase overhead \u2014 one owner avoids it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Same-file convergence in `pipeline/registry.py`:** F-02, F-05, F-09 are three one-line edits to an 11-line file. Low semantic risk since they're different lines, but three engineers opening three concurrent PRs on the same tiny file still means avoidable rebase churn \u2014 better as one PR.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Wave 1 (start immediately, in parallel):** Workstream B (batch runner...), Workstream A (rubric parsing, self-contained), Workstream C for F-05/F-09 (self-contained; F-02 can start once the endpoint-URL convention is confirmed... A fix always ships with its test in the same workstream (F-01+F-11...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Run Groups A, B, and C in parallel immediately \u2014 they touch disjoint files, have no ambiguity, and are quick wins... Group C \u2014 Rubric parsing... F-01... bundled with F-11 (add the edge-case parsing test)... Group A \u2014 Config/registry cleanup... F-02... F-05... F-09... One engineer, one small PR.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06** (\"tighten thresholds so borderline answers score lower\") specifies no target numbers. `PARTIAL_CREDIT_THRESHOLDS = (0.35, 0.65)` is a scoring-policy value... a product/rubric-owner decision, not a mechanical fix... I'd escalate for a concrete target before assigning.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06** (\"partial-credit thresholds... too lenient; tighten them\") \u2014 this is a product/quality-bar judgment call, not a fully-specified bug... since these thresholds affect every score the pipeline produces, an arbitrary change is a real quality-bar risk... This needs a rubric-owner/product decision on target thresholds... before it's implementable.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`tests/conftest.py` defines `RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\")` \u2014 a single absolute filesystem path, not scoped per engineer/worktree... any engineer whose test touches it should override `RESULTS_DB` to a private path rather than rely on the shared default, or a second parallel test run could stomp on the same file.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

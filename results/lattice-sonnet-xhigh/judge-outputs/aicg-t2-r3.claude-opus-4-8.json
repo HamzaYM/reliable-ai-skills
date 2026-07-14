@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21928,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.21772350000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15250,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15250,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 15250,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 15250,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1881,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1881,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with correct file/function citations and concrete fixes; they are comparable, with Report 1 slightly more detailed but Report 2 equally accurate.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`call_with_fallback` uses one blanket `except Exception`, so all six are handled identically: log a `warning` via `log_fallover` (router.py:9-10) and retry the exact same `payload` against `secondary`.... **`BadRequestError`** \u2014 this signals a malformed request... Retrying the identical malformed payload against `secondary`... **Concrete fix**: catch a narrow, explicit tuple of transient exceptions (`RateLimitError`, `RequestTimeoutError`, `ServerError`) for the fallback-and-warn behavior; re-raise `BadRequestError` immediately... treat `ContentPolicyError` as terminal... treat `AuthError` as a configuration failure that logs at `error`/`critical` (or raises)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`call_with_fallback` uses a single bare `except Exception as e:` that treats every one of these classes... identically: log a warning via `log_fallover`, then retry the exact same `payload` against `secondary.complete`.... Concrete fix: replace the bare catch with an explicit denylist... `NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)`... `except NON_RETRYABLE: raise`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A \u2014 non-production**: `os.environ.get(\"STAGE\") != \"production\"` is true whenever `STAGE` is unset, empty, or anything other than the exact case-sensitive string `\"production\"`... Returns `True` unconditionally... **Path D \u2014 production, `RedisError`**: caught, returns `True` (fail-open)... **Concrete fix**: invert the stage check to fail closed by default... on `RedisError`, either fail closed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A \u2014 `STAGE != \"production\"` \u2192 `return True` unconditionally.**... **Path C \u2014 production, Redis raises `RedisError` \u2192 `return True`.** Fails open on infrastructure failure... i.e., invert the default to fail-closed everywhere, gate the bypass on a narrowly-named explicit flag rather than an environment-name comparison, add a TTL for a true rate window, and fail closed on `RedisError`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It logs, at `INFO` level, a JSON blob containing: the raw (non-pseudonymized) `applicant_id`, the full raw `input_text` (the actual applicant intake document content...), and the entire `metadata` dict verbatim with no field allow-list or redaction.... **Concrete fix**: ... drop `input_text` entirely from the log record (at most a length or a hash for correlation, never content), and replace verbatim `metadata` logging with an explicit allow-list of known-safe fields.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`record.input_text` is logged verbatim, in full.** This is the entire applicant intake document content \u2014 the sensitive personal data itself... **`record.metadata` is logged in full with no filtering.** There's no allowlist of which metadata keys are safe to log... sensitive-data logging should use an explicit allowlist (\"drop anything not on the list\")",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "if `PII_SALT` is unset, `os.environ.get(\"PII_SALT\", \"\")` silently defaults to the empty string. The function raises nothing, logs nothing, and still returns a well-formed 64-character hex digest... **Concrete fix**: fail loudly (raise `RuntimeError`/`ValueError`) if `PII_SALT` is unset or empty rather than defaulting to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if `PII_SALT` is unset, the function silently computes `sha256(applicant_id)` \u2014 an unsalted hash \u2014 and returns it with no error, warning, or any signal... its absence should raise, not degrade silently.... `if not salt: raise RuntimeError(\"PII_SALT is not configured; refusing to pseudonymize without a salt\")`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

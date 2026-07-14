@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 53737,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2198536,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 16954,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 16954,
+        "cache_read_input_tokens": 70562,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4690,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4690,
+            "cache_read_input_tokens": 41413,
+            "input_tokens": 2,
+            "output_tokens": 1292,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5999,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 more precisely satisfies the strict removal requirements for the shadow-sink and legacy-secret traps and explicitly calls for confirming the migration step before release, giving it a clean sweep on all four expectations, while Report 2 misses the explicit migration call-to-action and softens the shadow-sink/legacy-secret fixes into optional verification rather than removal.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:5-6` `SHADOW_SCORING_ENABLED = \"false\"` / `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"` ... Both keys should be **omitted entirely** from prod, not merely toggled to `\"false\"`... `infra/prod/app.auto.tfvars:7` `LEGACY_BILLING_SECRET_ARN = ...` Should be **removed entirely** unless someone can show a live consumer of it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. A debug toolbar should never be enabled in production ... Change to `\"false\"`. ... `infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. ... it should not exist in prod at all \u2014 the value should be removed/emptied",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "this is a compile-time substitution, not something read at runtime... The **same digest** \u2014 the same already-built image containing the staging API URL \u2014 is what `deploy-prod` deploys... This is the exact \"rebuild per environment, don't promote a build artifact wholesale\" trap project documentation describes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No production-specific frontend build (see answer 2) \u2014 a hard blocker for a correct prod launch, not just a nice-to-have. ... the identical container image, built once with the staging-mode bundle, is deployed to both environments.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "docs/prod-runbook.md:6 asserts migrations \"are applied automatically during deploy,\" but with deploy.sh missing, this can't be confirmed from anything in the repo, and the runbook is stale... this needs to be explicitly confirmed (not assumed) before the first release",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 the production deploy role's trust policy still only trusts the **staging** GitHub Environment's OIDC identity. This must be changed to `\"repo:acme-health/medislot:environment:production\"` (a distinct, prod-scoped condition, never shared/OR'd with staging's).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` has the **same, uncorrected** value: `\"repo:acme-health/medislot:environment:staging\"`. So as currently written, once `infra/prod` is applied, the production deploy role's trust policy will only trust tokens carrying `environment:staging`, not `environment:production`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

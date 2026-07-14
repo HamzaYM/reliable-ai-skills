@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35703,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1343539,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10894,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10894,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10894,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10894,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 3610,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3610,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 more clearly and forcefully calls out that migrations must be explicitly run/confirmed given the runbook's false claim, while Report 2 raises the issue but stops short of an explicit corrective recommendation; otherwise both reports are comparably thorough and accurate.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 4 \u2014 PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\": ... Omit entirely. ... Line 6 \u2014 SHADOW_SCORING_SINK = ...: Omit both SHADOW_SCORING_ENABLED and SHADOW_SCORING_SINK entirely. ... LEGACY_BILLING_SECRET_ARN ...: Omit entirely.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "app.auto.tfvars:2 ENABLE_DEBUG_TOOLBAR = \"true\" ... Change to \"false\". ... app.auto.tfvars:4 PRESET_ADMIN_ACCOUNTS ... Remove it entirely (set to \"\"); no test account should have superadmin in prod.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`--mode staging` makes Vite load `frontend/.env.staging`, so **`VITE_API_BASE_URL=https://staging-api.example.com` is baked into the shipped bundle** ... prod needs its own rebuild against a prod `VITE_API_BASE_URL`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The CI build (deploy.yml:14) runs npx vite build --mode staging \u2014 hardcoded to staging mode, with no separate prod build. So the shipped bundle always has https://staging-api.example.com baked in. ... The production frontend would therefore point at the staging API. To fix: add frontend/.env.production with the prod API URL and build the prod artifact with --mode production",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No database migration step anywhere in the pipeline. docs/prod-runbook.md:6 claims \"migrations are applied automatically during deploy,\" but no job invokes any migration ... For a first prod launch the schema won't exist yet \u2014 migrations must be run manually first; \"pipeline succeeded\" will not mean the schema is current.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Migrations: the runbook (prod-runbook.md:6) says DB migrations run automatically during deploy ... But migrations happen only inside the missing deploy.sh; there's no visible migration step or first-run seeding for a brand-new prod DB. Unverified whether prod's database is provisioned at all.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the condition is the **same copied string, `\u2026environment:staging`** \u2014 it was not retargeted. ... It must be `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "But the prod role's condition still reads `...:environment:staging` (infra/prod/main.tf:3, uncorrected copy). ... Fix: change infra/prod/main.tf:3 to oidc_sub_condition = \"repo:acme-health/medislot:environment:production\".",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

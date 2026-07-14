@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 13323,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1115217,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12197,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12197,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12197,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12197,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1505,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1505,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable depth and near-identical concrete fixes; Report 2 adds slightly more analysis on downstream implications (vendor/outcome tracking, region compliance) but neither is clearly superior on the core expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Assessment: the handling is inappropriate for the three non-retryable classes and dangerously broad overall.** Concrete fix: replace the blanket catch with an explicit denylist, e.g. a `is_non_retryable(exc)` helper returning `True` for `BadRequestError`, `AuthError`, and `ContentPolicyError`; in `call_with_fallback`, re-raise those, and fail over only for `RateLimitError`, `RequestTimeoutError`, `ServerError` (and connection-level errors).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix:** catch only the transient set and fall over solely for those; re-raise the rest:\n```python\nfrom pipeline.llm.providers import (primary, secondary,\n    RateLimitError, RequestTimeoutError, ServerError)\nTRANSIENT = (RateLimitError, RequestTimeoutError, ServerError)\n...\nTreat `ContentPolicyError`/`BadRequestError`/`AuthError` as non-retryable (raise/alert); never re-send flagged content to a second vendor.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "a direct violation of \"rate limiting fails closed, everywhere, by default; do not gate on an 'is this production' check.\" ... Fix: return `False` (fail closed) on `RedisError`, and surface/alert on the backend failure rather than swallowing it into an \"allow.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "limiting should key off an explicit config, and unknown/missing values should default to *enforcing*, not bypassing. ... prefer fail-closed for a limiter guarding sensitive/expensive calls",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Fix: do not log the content at all; if a reference is needed, log a truncated preview or a hash and/or a length, never the raw text. ... Fix: define an explicit allowlist of safe-to-log metadata keys (e.g. document type, model id, token counts, latency) and emit only those, dropping everything else.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix:** drop `input_text` entirely (or store only a SHA-256 hash / length / redacted excerpt); log `pseudonymize(record.applicant_id)` instead of the raw id; replace the wholesale `metadata` dump with an explicit allow-list of non-PII fields",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Fix: require `PII_SALT` \u2014 raise a clear error (fail closed) if it is unset or empty rather than defaulting to `\"\"`; prefer HMAC-SHA256 with the salt as the key",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix:** fail fast \u2014 require a non-empty secret at startup instead of defaulting to `\"\"`; use a keyed HMAC (`hmac.new(key, applicant_id, sha256)`) with a high-entropy secret ... treat a missing/weak secret as a hard configuration error.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

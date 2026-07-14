@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25476,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1511655,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8295,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8295,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8295,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8295,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 2205,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2205,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports nail the core defect and consequences; Report 1 is stronger because it explicitly distinguishes the gate axis (accuracy \u2192 hold/degrade) from optional axes (relevance/tone \u2192 renormalize over succeeded axes), which Report 2 misses by refusing any composite whenever any axis is absent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Inside `composite`, a `None` axis is silently replaced with `0.0`:\n```python\n# grader/aggregate.py:8-13\nvalue = axis_scores.get(axis)\nif value is None:\n    value = 0.0\ntotal += weight * value\n```\nSo the failed axis contributes `weight \u00b7 0` ... The record written is a normal three-column row `agent_id,reply_id,composite` that is **byte-for-byte indistinguishable in form** from a fully-scored row.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That dict is passed straight to `composite()`, which converts the missing axis to `0.0` and still weights it in:\n```python\n# grader/aggregate.py:6-13\n...    value = axis_scores.get(axis)\n    if value is None:\n        value = 0.0          # <-- missing score treated as a zero score\n...``` ... in form the failed-axis record is indistinguishable from a fully-scored one",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "specifically conflating a missing score with a real zero ... Each failure-contaminated row drags an agent's mean composite down exactly as if that agent had written a genuinely bad reply.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treating a *missing* score as a *zero* score conflates \"we don't know this axis\" with \"this axis scored the worst possible value.\" ... `rankings()` treats every row as a legitimate data point ... A deflated composite therefore drags the agent's mean *down*",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the failed axis is accuracy (load-bearing/gate):** do not write a composite that looks comparable to a fully-scored row. Mark the record as degraded/incomplete ... leave the composite empty/`null` rather than a number ... It must be excludable by the leaderboard.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treat a failed accuracy call as strictly non-passing-unknown, never as a zero/fail:** such a record must be marked incomplete and re-run or excluded, never allowed to contribute a fabricated composite.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the axes should **not** be handled identically: a failed accuracy call should degrade/hold the record; a failed relevance/tone call may be renormalized ... If the failed axis is relevance or tone (embellishment):** renormalize the composite over the axes that actually returned (divide by the sum of the succeeded weights) and flag it complete",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

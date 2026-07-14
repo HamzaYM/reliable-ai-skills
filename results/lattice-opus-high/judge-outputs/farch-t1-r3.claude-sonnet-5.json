@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20332,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0939159,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8274,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8274,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8274,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8274,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 2083,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2083,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with strong, specific citations of the PLAT-31 commits and rollback reason; Report 2 is marginally more explicit in tying its sign-off recommendation to the prior-attempt owner, but the two are essentially comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "This exact migration was already done and reverted in production under PLAT-31: `454a21f` added the Edgerunner deploy; `597777b` added a per-request Postgres connection; `1712565` reverted the whole thing.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this migration was already attempted under PLAT-31 and reverted in production. ... `git show 1712565` / `597777b` / `454a21f`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The recorded reason (`git show 1712565`): \"serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres `max_connections` in production.\" The revert body adds: \"the per-request connections opened faster than Postgres could recycle them and tripped the connection limit (`FATAL: too many connections`), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Opening a dedicated Postgres connection per request (`597777b`) exhausted Postgres `max_connections` under normal dashboard load \u2014 `FATAL: too many connections` \u2014 and took `/reports/monthly` down. That is why `1712565` reverted the entire migration back to the Cargobox container.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It is a settled battle: tried under PLAT-31, failed in production, deliberately reverted back to the Cargobox container.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That is why `1712565` reverted the entire migration back to the Cargobox container.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "My recommendation: pause and bring the finding to whoever owns the `carelog-api` platform / PLAT ticket queue (the \"PLAT-N\" owner) and, given the production-outage history, whoever owns the Postgres/database capacity.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Who should be involved: the author/owner of PLAT-31 (whoever ran and reverted the prior attempt \u2014 check `git log` authorship/ticket), the platform/infra team that owns Postgres capacity (`max_connections` is the binding constraint), a DBA for the pooler decision, and leadership \u2014 so the cost/benefit is made with the prior-outage context on the table rather than as an unqualified \"just make it serverless.\"",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

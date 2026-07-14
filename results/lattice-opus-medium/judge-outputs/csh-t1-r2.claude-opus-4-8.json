@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18463,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1229365,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7046,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7046,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7046,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7046,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1619,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1619,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and cover a, b, and c equally; Report 1 answers the task better overall because it additionally identifies the absence of a global/environment-level gate and recommends adding one, which Report 2 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The decision is made in `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, lines 11-12:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The decision is in `backend/app/feature_flags.py`, `auto_send_reminders_enabled`, lines 11\u201312:\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```\nFor a tenant whose `settings` dict lacks the key, `.get(...)` returns `None`, so the function returns `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "anything that triggers outbound messaging or automated action should default **off** when the value is null/missing... I would change it in `backend/app/feature_flags.py`, lines 11-13, so missing/null means off \u2014 e.g. drop the special-case and just `return bool(tenant.settings.get(\"auto_send_reminders\"))`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The safe default for a message-*sending* feature is *off*... I would change `backend/app/feature_flags.py:12` from `return True` to `return False` (fail-closed)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "grandfather-on is appropriate for `compact_calendar_view`, a UI-only convenience preference, but the same default was carried over to an outbound-messaging feature without re-deciding it... copying a convenience-feature resolver's null-handling into an action-taking feature is exactly the mistake to avoid.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "SLOT-214 (`aa4cf8d`) added `auto_send_reminders_enabled` as an almost identical copy of that function... a default that is harmless for a visual preference becomes actively risky when it decides whether real messages go out to patients.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add an env-level master switch** and AND it with the per-tenant value, so the feature is off everywhere until deliberately turned on and there's a single kill switch. Today the job gates on the per-tenant value alone (`reminders.py:25`); there is no master gate",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

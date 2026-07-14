@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12362,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0794097,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8033,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8033,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8033,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8033,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1234,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1234,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with comparable rigor and specificity; Report 2 adds slightly more corroborating detail (existing test reference, docstring quotes) but the substance is equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the function accepts `tenant_id` as a parameter but never uses it. The hand-written SQL filters only on `status` and a full-text match against `notes`... it has no `tenant_id` predicate... So any authenticated caller from any clinic who hits `/appointments/search` receives matching appointment rows belonging to every other tenant",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It filters only on `status` and a full-text match against `notes`. There is no `WHERE tenant_id = ...` clause. `tenant_id` is passed in (`api.py:21` \u2192 `search_appointments(session, tenant_id, q, status)`) but is never referenced in the query",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`filters` is now a required positional parameter, but `exports.py` still calls with two arguments, so `nightly_export()` raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` at runtime. The nightly per-tenant CSV export fails for every tenant.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`exports.py` was not updated by the PR (confirmed: `git diff` of that file is empty). Every run of `nightly_export` now raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`. The nightly per-tenant CSV export breaks for all tenants.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the f-string `f\"WHERE status = '{status.value}'\"` (`appointments.py:16`) looks like injection, but `status` is typed `AppointmentStatus` (a closed `str, Enum` of `booked/cancelled/completed`, `schemas.py`), so FastAPI validates the query param and rejects anything else with 422... Both my refutation and the independent security reviewer's attempt to break it confirmed it is not exploitable as written.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is not currently exploitable because `status: AppointmentStatus` is a `str, Enum` that FastAPI validates (invalid input \u2192 422), so `status.value` can only be `booked`/`cancelled`/`completed`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

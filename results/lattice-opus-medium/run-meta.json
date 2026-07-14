@@ -17,30 +17,34 @@
     "floor_rule": "a must-hit whose disputed mark has no adjudicator result (adjudicator failure after the pre-registered retry) is excluded from both arms of that comparison as a judge-failure exclusion, never as a disagreement; when more than one third of a comparison's must-hit marks are excluded this way, the entire paired comparison is excluded and reported; adjudicated disagreements never trigger this floor",
     "input": "minimal by construction: the disputed expectation text, the two blinded report slots exactly as the primary judges saw them, and the judging frame; invoked once per disputed report-slot mark",
     "model": "claude-fable-5",
-    "models_effective": [],
+    "models_effective": [
+      "claude-fable-5",
+      "claude-haiku-4-5-20251001"
+    ],
     "rule": "per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator",
     "schema": "eval/schemas/adjudicator.schema.json"
   },
   "auth_mode": "subscription-login",
-  "claude_cli_version": "2.1.206 (Claude Code)",
+  "claude_cli_version": "2.1.207 (Claude Code)",
   "cold_arm_isolation": {
-    "ambient_user_skills": [
-      "budget-aware-allocation",
-      "codex-adversarial-review",
-      "codex-advisory-opinion",
-      "consulting-company-framework",
-      "framer",
-      "framer-code-components",
-      "tiered-review"
-    ],
+    "ambient_user_skills": [],
     "skill_tool": "consumers run with --allowedTools Read,Grep,Glob,Bash, which exposes no Skill tool, so user-level and project-level skills cannot be invoked in either arm",
     "workspace": "cold workspaces are staged into a fresh temp directory and asserted to contain no .claude directory before every consumer run"
   },
   "concurrency": 4,
+  "consolidation_provenance": {
+    "method": "deterministic file-level splice of two independent raw handoffs into one repeats=3 run directory, via eval/harness/scoring.py's own pair_id repeat-numbering scheme (task_id -> -r1, source 2x's -r1/-r2 -> -r2/-r3). No scores were computed or altered by this script -- scores.json for this directory is regenerated centrally via `python3 eval/run.py --report`.",
+    "not_a_live_run": true,
+    "source_1x_created_at": "2026-07-10T23:41:48Z",
+    "source_1x_run_id": "lattice-opus-medium",
+    "source_2x_created_at": "2026-07-12T22:03:35Z",
+    "source_2x_run_id": "lattice-opus-medium-2x"
+  },
   "consumer_models_effective": [
+    "claude-haiku-4-5-20251001",
     "claude-opus-4-8"
   ],
-  "created_at": "2026-07-10T23:41:48Z",
+  "created_at": "2026-07-12T22:03:35Z",
   "effort": "medium",
   "effort_mechanism": {
     "advertised_levels": [
@@ -120,6 +124,7 @@
         "effort_requested": "medium",
         "model_requested": "claude-opus-4-8",
         "models_effective": [
+          "claude-haiku-4-5-20251001",
           "claude-opus-4-8"
         ]
       },
@@ -128,6 +133,7 @@
         "effort_requested": "medium",
         "model_requested": "claude-sonnet-5",
         "models_effective": [
+          "claude-haiku-4-5-20251001",
           "claude-sonnet-5"
         ]
       }
@@ -142,39 +148,12 @@
     "mechanism": "CLAUDE_CODE_MAX_OUTPUT_TOKENS environment variable on every consumer invocation, identical in both arms and at every effort level",
     "value": 64000
   },
-  "merge_history": [
-    {
-      "merged_from": "lattice-opus-medium-part2",
-      "merged_task_ids": [
-        "env-hazards-t1",
-        "farch-t1",
-        "s2p-cutover-t1",
-        "sysdbg-t2"
-      ],
-      "note": "raw artifacts (consumer/judge-inputs/judge-outputs) copied, order-key and tasks/skill_hashes/excluded_tasks dicts unioned; scores/REPORT regenerated via --report afterward",
-      "source_run_id": "lattice-opus-medium-part2",
-      "source_seed": 9776661827187132542
-    },
-    {
-      "merged_from": "lattice-opus-medium-part3",
-      "merged_task_ids": [
-        "consent-t2",
-        "dora-t2",
-        "eval-harness-t1",
-        "pmvg-t2",
-        "tcr-t1"
-      ],
-      "note": "raw artifacts copied, order-key/tasks/skill_hashes/excluded_tasks dicts unioned; scores/REPORT regenerated via --report afterward",
-      "source_run_id": "lattice-opus-medium-part3",
-      "source_seed": 3045222357324254651
-    }
-  ],
   "model": "claude-opus-4-8",
   "preregistered": true,
-  "repeats": 1,
-  "resumed": false,
-  "run_id": "lattice-opus-medium",
-  "seed": 7742485137540372977,
+  "repeats": 3,
+  "resumed": true,
+  "run_id": "lattice-opus-medium-v2",
+  "seed": 12435064653901011027,
   "skill_hashes_at_run": {
     "adversarial-review/multi-model-adversarial-review": "d30b88b62a3e843ecbed237591da98ce299c80199c4e1916dda2189d72843ef2",
     "architecture-and-contracts/architecture-contracts-as-law": "60758196cf2fd74dee923f454dbb98aecd16e0d27eb6df3330fac4c8c2a0a63b",
@@ -373,12 +352,22 @@
     "cross_model_fallback": "a consumer run answered by a model other than the requested one is invalid: one retry, then the task is excluded-as-invalid",
     "truncated_by_limit": "a consumer run whose output hit the pinned ceiling is invalid: one retry, then the task is excluded-as-invalid"
   },
-  "wall_clock_seconds": 1507.0,
+  "wall_clock_seconds": 127.1,
   "workspace_mutation_warnings": [
     "git-cc-t2-loaded",
+    "mabc-t2-r1-cold",
+    "mmar-t1-r1-loaded",
+    "pmvg-t2-cold",
+    "pmvg-t2-loaded",
+    "pmvg-t2-r1-cold",
+    "pmvg-t2-r1-loaded",
+    "pmvg-t2-r2-cold",
+    "pmvg-t2-r2-loaded",
     "sysdbg-t2-cold",
     "sysdbg-t2-loaded",
-    "pmvg-t2-cold",
-    "pmvg-t2-loaded"
+    "sysdbg-t2-r1-cold",
+    "sysdbg-t2-r1-loaded",
+    "sysdbg-t2-r2-cold",
+    "sysdbg-t2-r2-loaded"
   ]
 }

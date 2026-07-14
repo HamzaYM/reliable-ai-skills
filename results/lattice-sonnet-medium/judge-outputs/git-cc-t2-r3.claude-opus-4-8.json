@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25332,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16590749999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9350,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9350,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9350,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9350,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2339,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2339,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all four questions with essentially equivalent depth; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. The branch `feat/pairwise-metric` was built on top of `feat/weighted-scorer`... there is no reason to target the now-obsolete `feat/weighted-scorer` branch, and doing so would produce a PR against a branch whose own work is stranded off of `main`'s history.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. Per project documentation's rule \"base every PR on the trunk,\" and since `feat/weighted-scorer` \u2014 the branch this work actually depends on \u2014 has already been merged into `main` (see Q2), there is no live intermediate branch left to stack on.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric`... was created on top of `feat/weighted-scorer`'s tip, `ac9d505`... `feat/weighted-scorer` is **not an ancestor of `main`** (`git merge-base --is-ancestor feat/weighted-scorer main` \u2192 `NO`). Meanwhile `main` moved forward on 2026-06-13 via PR #42, which squash-merged that exact `feat/weighted-scorer` content into a single commit.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "was branched from `ac9d505`... the tip of `feat/weighted-scorer`... That starting point (`feat/weighted-scorer`) is **dead** \u2014 it has already been squash-merged into `main`... `git branch --contains feat/weighted-scorer` does not list `main`, confirming the original three W-commits are not literally in `main`'s history; they were merged via squash under a different commit hash, in PR #42.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Three-dot diff (`git diff main...feat/pairwise-metric`... this is what GitHub actually shows for a PR) \u2014 21 lines across 3 files, additionally including: `scoring/scorer.py`: the entire weighted-scoring rewrite... **This weighted-scorer content is not pairwise-metric work.** It's present only because `feat/pairwise-metric` branched from `feat/weighted-scorer` before that work was (squash-)merged into `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**21 lines across 3 files** \u2014 `prompts/grader.txt`, `scoring/metrics.py`, and `scoring/scorer.py`. This reintroduces the entire `overlap()` function and the `WEIGHTS`-based scoring rewrite in `scorer.py`... they are dependency baggage from in-progress work that has since landed under a different commit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric`. This replays only the commits unique to `feat/pairwise-metric`... dropping `W1`/`W2`/`W3` entirely... Verify afterward with `git diff main feat/pairwise-metric` \u2014 it should match today's 5-line two-dot diff, and now `git diff main...feat/pairwise-metric` (three-dot) should match it too, confirming the branch is truly rebased and merge-base has moved to `main`'s tip.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` to drop the now-redundant W-commits... **Re-verify the diff is scoped correctly** after the rebase: `git diff main...feat/pairwise-metric`... should show only the ~5-line pairwise addition (`pairwise_preference` in `scoring/metrics.py`, the grader-prompt line)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29298,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16222300000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8593,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8593,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8593,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8593,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 2517,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2517,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable, but Report 2 answers better overall because it fully satisfies expectation (d) by recommending dropping the hardcoded count in favor of pointing at the code, whereas Report 1 only recommends bumping the number to 5.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`app/billing/gateway.py` is meant to be \"the single place the chargekit provider client is built,\" ... So a new `refund(...)` accessor belongs in `gateway.py`... Two places construct their own `chargekit.Client`... `medibill/backend/app/api/invoices.py:4,14-16`... `medibill/backend/app/workers/dunning.py:2,9-13`... The only file that legitimately deviates by the doc's own definition is `medibill/backend/app/billing/errors.py:6-9`... this is explicitly called out as the documented exception",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... There are two other places that talk to the provider directly, bypassing the gateway module entirely: `medibill/backend/app/api/invoices.py:4`... `medibill/backend/app/workers/dunning.py:2`... The only sanctioned exception is `medibill/backend/app/billing/errors.py:6`, which imports just the SDK's error classes",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`InvoiceOut` (`medibill/backend/app/models/invoice.py:16-22`) has six fields, not five: `id`, `tenant_id`, `amount_cents`, `currency`, `status`, and `external_ref`. `external_ref` was added by migration `0006_add_invoice_external_ref.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`InvoiceOut` (medibill/backend/app/models/invoice.py:16-22) now has a sixth field, `external_ref`, added in commit `c23da88` (MEDB-214) together with migration `medibill/backend/migrations/0006_add_invoice_external_ref.sql:1`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It should be corrected before, or as part of, the refund feature work \u2014 not deferred further... Treat the doc update as part of the same PR/ticket that adds refund support, not a follow-up",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/ARCHITECTURE.md` should be corrected now, before the refund feature is built on top of it... it should be fixed *before* any refund-related PR lands... This correction should have happened in the same commit as `c23da88` (MEDB-214)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "the specific count (\"4\") and the specific enumerated list are both stale... the fix isn't just to bump \"4\" to \"5\" (that number will drift again the next time someone adds an event type... I'd change the doc to either drop the count and list the handled types by pointing at the `if kind == ...` chain in `webhooks.py` as the source of truth",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

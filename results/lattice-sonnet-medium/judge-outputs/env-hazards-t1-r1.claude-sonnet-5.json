@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20724,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10037070000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8843,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8843,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8843,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8843,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2279,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2279,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly diagnose all three issues and hit every expectation; Report 2 is somewhat more precise on the RLS mechanism (explicitly naming FORCE ROW LEVEL SECURITY and distinguishing owner-bypass from superuser-bypass) while Report 1 is comparably thorough and slightly more concise \u2014 overall comparable quality with Report 2 marginally more technically rigorous.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`DATABASE_URL` is set to `postgresql://cedar_owner:ownerpw@localhost:5432/cedar`, and `db.py` builds its single SQLAlchemy `engine` straight from that `DATABASE_URL`. `cedar_owner` is the role docker-compose creates via `POSTGRES_USER: cedar_owner`... which is a Postgres superuser. Superuser (and any `BYPASSRLS`) connections bypass row-level security unconditionally and silently... because the connection is opened as `cedar_owner`, Postgres returns every row in `clients` regardless of the tenant setting.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "in Postgres, row-level security policies are never applied to superusers, and are not applied to the table owner either unless the table has FORCE ROW LEVEL SECURITY set (which it does not here \u2014 the migration only has ENABLE ROW LEVEL SECURITY). Since cedar_owner is both the table owner and a superuser, it bypasses RLS on both counts",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Structurally, going forward the app should maintain a firm separation: `cedar_owner` (or an equivalent schema-owning/superuser role) should be used **only** by `scripts/migrate.sh` / the migration tooling, never by the running application; `cedar_app` (least-privilege, `NOBYPASSRLS`, `NOSUPERUSER`) should be the only role the FastAPI app, and anything in `backend/app/`, ever connects as.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the roles should be split for good: keep a migration/owner role (`cedar_owner`, superuser, used only by `migrate.sh` / schema changes / bootstrap) fully separate from the runtime application role (`cedar_app`, least-privilege, subject to RLS, used by `DATABASE_URL` for the running API and by the test suite)... the credential swap above is the actual fix.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedar_app`, by contrast, is created by `db/bootstrap/create_app_role.sql`, which per the README and `docs/local-setup.md` is explicitly a \"one-time\" script meant to be run by hand after the very first `docker compose up -d db` \u2014 it is not wired into Postgres's automatic `/docker-entrypoint-initdb.d` bootstrap and is not invoked anywhere in `reset-local-db.sh`... So once the volume is wiped and recreated, `cedar_app` simply doesn't exist in the new cluster until someone manually re-runs `psql \"$DATABASE_URL\" -f db/bootstrap/create_app_role.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_app` was created by `db/bootstrap/create_app_role.sql`, described in that file itself as \"One-time bootstrap ... Not part of automatic database initialization; run by hand on first setup.\" Because it's a manual, one-off `psql` invocation and not part of `migrate.sh` or `reset-local-db.sh`, wiping the volume permanently removes the `cedar_app` role along with everything else, and the reset script never recreates it",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

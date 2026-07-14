@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30209,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1504195,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8577,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8577,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8577,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8577,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2048,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2048,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical in substance, but Report 2 additionally adds an explicit multi-run determinism check, so it answers the task slightly better overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they make real HTTP calls to `https://api.scorelab-models.example.com/v1/score` using `os.environ['SCORELAB_API_KEY']`... Enabling `-m live` (or removing `addopts`) for this change would (a) require a real API key and network access, (b) incur per-call cost against a live service... This is a case of \"nothing is skipped\" sounding thorough but actually just adding cost and external dependency with zero coverage of the change under review.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "they incur a per-call cost against a live model API... `pytest.ini`'s `addopts = -m \"not live\"` is a deliberate opt-in gate for exactly this reason... Do not flip the marker; if the live checks are wanted for a specific manual/paid-budget-approved run, run them explicitly and separately (`pytest -m live`) with that cost called out, not folded into \"the suite.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "manually diff `tests/golden/expected_scores.json` before/after to confirm exactly which fields changed and that they match expectations... Regenerating golden values would launder that second change into the fixture without review. Before running the regen script, split out or explicitly call out the confidence-rounding change",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "every changed hunk in a recaptured golden file must trace to the intended change; anything that doesn't is a regression, not an update. The `score` deltas trace cleanly to the weight change and are fine to bless. The `confidence` rounding change does not trace to \"reweighting\" at all",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "that file is static documentation, not live measurement, and it doesn't match what's actually in the repo... The correct sourcing is to run `pytest -m flaky --collect-only` (or grep for the marker) to get the live flaky count, and run the actual configured linter to get a live warning count \u2014 then cite those, noting if they've drifted from docs/testing.md",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not the `docs/testing.md` figures as-is \u2014 they're stale... I'd report the measured-today numbers (1 flaky test, 4 lint warnings, 0 new lint warnings in touched files), state they were re-measured rather than copied from `docs/testing.md`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "regenerate `tests/golden/expected_scores.json` via `scripts/update_golden.py`, diff old vs new golden values, confirm every changed number traces to the weight change, and re-run `pytest` in normal (assert) mode at least twice to confirm determinism.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

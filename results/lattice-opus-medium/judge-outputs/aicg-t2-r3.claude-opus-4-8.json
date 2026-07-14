@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25994,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1711185,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10629,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10629,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10629,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10629,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2001,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2001,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent specificity and correct fixes; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The function catches a bare `except Exception`, so *every* error class the primary can raise is treated identically... `BadRequestError` \u2192 fallover. **Wrong.**... `ContentPolicyError` \u2192 fallover. **Wrong and the most serious.**... `AuthError` \u2192 fallover. **Wrong.**... Concrete fix: replace the bare catch with an explicit denylist helper, e.g. `NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)`; in the `except`, `if isinstance(e, NON_RETRYABLE): raise` and only fall over on the rest (rate-limit/timeout/server/connection errors).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Because the handler is a single bare `except Exception`, **all six are treated identically**... `BadRequestError`: **inappropriate.**... `ContentPolicyError`: **inappropriate.** A content-policy rejection is a deterministic property of the input; retrying on the secondary won't help and, worse, sends the same sensitive document to a *second* vendor... `AuthError`: **inappropriate.**... Concrete fix: catch only a defined set of retryable exceptions... and let `BadRequestError`, `ContentPolicyError`, `AuthError` propagate",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A \u2014 `os.environ.get(\"STAGE\") != \"production\"` \u2192 `return True`.**... **Fails open, and unsafe.**... must *not* gate on an environment-name check... **Path C \u2014 `except RedisError: return True`.** When the backing store errors, the call is allowed. **Fails open**... Fix: `return False` (fail closed) on `RedisError`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**(a) Non-production path:**... returns `True` immediately... a typo or differing convention (`\"prod\"`, `\"Production\"`) silently disables all rate limiting in prod. Fail-open by default is risky... **(d) Redis-error path:** any `RedisError` from `incr` returns `True`. Assessment: **fail-open**... For a safety/cost control this should generally fail *closed*",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`record.input_text` \u2014 the **full intake document text, verbatim**... do not log `input_text` (drop it, or log only a truncated SHA-256 digest for correlation)... `record.metadata` \u2014 logged as an **opaque whole blob**... Guardrail requires an **allowlist** of safe metadata keys, dropping everything else... replace `record.metadata` with `{k: record.metadata[k] for k in ALLOWED_METADATA_KEYS if k in record.metadata}`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the **raw `applicant_id`** and the **raw `input_text`** \u2014 i.e. the full sensitive intake document text... Concrete fix: never log `input_text` (log a length, hash, or document id instead)... and scrub/allowlist `metadata` since it can also carry PII.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "if `PII_SALT` is unset it silently falls back to an **empty salt**, producing an *unsalted* SHA-256 of the applicant id... Concrete fix: fail closed \u2014 `salt = os.environ[\"PII_SALT\"]` or an explicit check that raises if the salt is missing/empty",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the environment variable `PII_SALT`, which **defaults to the empty string** when unset... if `PII_SALT` is missing (or empty), the function silently degrades to an **unsalted** `sha256(applicant_id)`... Concrete fix: require the salt in production (raise if `PII_SALT` is unset/empty rather than defaulting to `\"\"`)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47609,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2256565,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11602,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11602,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11602,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11602,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 3769,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3769,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable, but Report 1 edges ahead by clearly stating the pipeline lacks a migration step and calling for an explicit first migration, which Report 2 misses.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"` (`infra/prod/app.auto.tfvars:2`)... this should be **omitted from prod entirely**... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` (`infra/prod/app.auto.tfvars:4`)... it must be removed... `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"` (`infra/prod/app.auto.tfvars:6`)... This key must be fully absent in prod",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"` (line 2)... must be `\"false\"` in production... `AUTH_RELAXED = \"true\"` (line 3)... must be `\"false\"` in prod... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` (line 4)... it should be removed entirely (empty string)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the staging API URL gets baked directly into the compiled JS bundle at that point; it is not read at runtime... Both `deploy-staging` and `deploy-prod` jobs (lines 22-35) then deploy **that same digest**... the production container will ship the frontend bundle hardcoded to call `https://staging-api.example.com`... \"rebuild per environment; don't promote a build artifact wholesale\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "is baked into the static JS as a literal string at build time, not read at runtime... `deploy-staging`... and `deploy-prod`... both consume `needs.build-frontend.outputs.digest` \u2014 the **same image digest**... the JS served to real clinic users will call `https://staging-api.example.com`... the pipeline needs a `--mode production` step (and a `.env.production`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No step in the pipeline runs database migrations. `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but that's not backed up by anything in `deploy.yml`... this launch needs both a first Terraform apply and a confirmed, explicit first migration pass \u2014 neither is provided by this pipeline as it stands.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` sets the *same* `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` (not `environment:production`)... this must be changed to `\"repo:acme-health/medislot:environment:production\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`medislot/infra/prod/main.tf:3` still has `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 **unchanged from the staging copy**. But `deploy-prod`... runs under GitHub Environment `production`, which means its OIDC token's `sub` claim will be `repo:acme-health/medislot:environment:production`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

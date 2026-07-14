@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24823,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1801505,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11932,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11932,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11932,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11932,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1805,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1805,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct file/function citations, concrete fixes, and compliance context; they are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "It catches a **bare `Exception`**, so *every* error class the primary can raise is treated identically... `BadRequestError` \u2014 definitively non-retryable. Failing over is **wrong**... Concrete fix: replace the blanket catch with an explicit denylist... re-raise those, and fail over only for `RateLimitError`, `RequestTimeoutError`, `ServerError` (and connection-level errors).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**All six are handled identically**: a single blanket `except Exception`... `BadRequestError` \u2014 **inappropriate**... `ContentPolicyError` \u2014 **inappropriate and the most serious**... `AuthError` \u2014 **inappropriate**... **Concrete fix:** catch only the transient set and fall over solely for those; re-raise the rest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A \u2014 env gate returns `True`.** Condition: `STAGE` is anything other than exactly `\"production\"`... this fails *open* and gates on an environment-name check... **Path C \u2014 `redis.incr` raises `RedisError`, returns `True`.**... Fix: return `False` (fail closed) on `RedisError`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**(a) Non-production bypass** \u2014 `os.environ.get(\"STAGE\") != \"production\"` returns `True` unconditionally... unknown/missing values should default to *enforcing*, not bypassing... **(d) Redis failure**... returns `True`. **Assessment: silent fail-open.**... prefer fail-closed for a limiter guarding sensitive/expensive calls",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`input_text` (full document, verbatim).** This dumps the entire sensitive intake form into application logs... Fix: do not log the content at all... **`metadata` (whole dict, verbatim).**... Fix: define an explicit allowlist of safe-to-log metadata keys... and emit only those",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It writes the **full raw intake document** (`input_text`)... plus... the entire `metadata` dict... **Concrete fix:** drop `input_text` entirely (or store only a SHA-256 hash / length / redacted excerpt)... replace the wholesale `metadata` dump with an explicit allow-list of non-PII fields",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "because of the `\"\"` default, if `PII_SALT` is unset (or empty) the function **silently** computes an **unsalted** `sha256(applicant_id)`... Fix: require `PII_SALT` \u2014 raise a clear error (fail closed) if it is unset or empty rather than defaulting to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if `PII_SALT` is unset or empty, `salt` **silently defaults to `\"\"`**, so the output degrades to `sha256(applicant_id)` \u2014 a plain unsalted hash, with no error or warning... **Concrete fix:** fail fast \u2014 require a non-empty secret at startup instead of defaulting to `\"\"`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

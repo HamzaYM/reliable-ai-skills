@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 43326,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.17951040000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11933,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11933,
+        "cache_read_input_tokens": 103758,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3597,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3597,
+            "cache_read_input_tokens": 37485,
+            "input_tokens": 2,
+            "output_tokens": 1328,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4841,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit (a)-(d) with proper citations; Report 2 additionally and explicitly captures expectation (e) \u2014 that the draft defers its only remediation commitment to the last line and should be restructured to lead with impact/remediation \u2014 while Report 1 only gestures at the ordering issue without stating the remediation-at-end problem, making Report 2 the stronger, more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The timeline shows failures began at 14:03 but the first alert did not fire until 14:50 \u2014 a **47-minute** detection gap \u2014 with on-call acknowledgement only at 15:05 and full recovery at 15:41, ~98 minutes after onset (`incidents/OPS-412-timeline.md:2-6`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md`: failures began 14:03; the **first alert fired at 14:50 \u2014 47 minutes later**; on-call acknowledged at 15:05 \u2014 62 minutes after impact began.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The internal record directly contradicts this: \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded\" (`incidents/OPS-412-timeline.md:9-10`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "April 2026 uptime was **99.77%** (`metrics/uptime-2026.csv:6`), which is below the contractual **monthly** 99.9% SLA. Per `docs/sla-commitments.md:3-5`, \"Any calendar month below 99.9% is a breach and owes service credits ... (credits scale with the depth of the breach).\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/sla-commitments.md`: the contractual **monthly** SLA is 99.9%, and \"Any calendar month below 99.9% is a breach and owes service credits.\" `metrics/uptime-2026.csv` shows April 2026 at **99.77%**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "This breaks `docs/customer-comms-style-guide.md`: rule 1 \"Never assign blame to an individual\" (the on-call engineer) and rule 2 \"Never expose internal system or role names\" (\"on-call engineer\", \"checkout autoscaler\"). ... Rewrite in customer-appropriate terms and remove the internal specifics.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" This must be rewritten in terms of the system/process, not a person.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The draft instead opens with a (false) 99.99% reliability boast (lines 3\u20134) and adds a second self-congratulatory passage... while the only remediation appears in the last line. The self-congratulatory filler should be cut and the document restructured to lead with impact and remediation.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r2",
+  "repeat": 2,
+  "task": "tcr-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32240,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1889865,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10552,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10552,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10552,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10552,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2758,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2758,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent grounding; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Group A \u2014 `pipeline/registry.py` (F-02, F-05, F-09):** three independent one-line/one-entry config edits ... One engineer, one PR",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer C: F-02 + F-05 + F-09, all in `pipeline/registry.py` \u2014 bundled to one owner because they're three edits to the same 12-line file; splitting them across engineers would produce three near-simultaneous diffs to adjacent lines for no benefit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Group C \u2014 `pipeline/rubric.py` + tests (F-01, F-11):** one engineer ... Start second, in parallel with Group B ... with the two test-only findings (F-11, F-12) sequenced *after* their respective fixes land",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer C: F-02 + F-05 + F-09, all in `pipeline/registry.py` \u2014 bundled to one owner ... Engineer D: F-01 (`pipeline/rubric.py`) plus F-11 (new rubric-parsing edge-case test ...)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 needs a threshold decision before it's actionable as an engineering task. ... it should go back to whoever owns the rubric/grading criteria for specific target values first.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 asks to \"tighten\" `PARTIAL_CREDIT_THRESHOLDS` in `pipeline/score.py` \u2014 this changes the score every saved answer in every dataset receives, not just a code defect ... needs an explicit decision (specific new threshold values, and sign-off from whoever owns the scoring rubric)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`tests/conftest.py` defaults `RESULTS_DB` to a fixed path, `/var/tmp/llm-scoring/results.db`. If multiple engineers run the test suite concurrently on a shared machine/CI runner without overriding `RESULTS_DB`, they can read/write the same file and produce flaky or corrupted results ... An explicit override for `RESULTS_DB` (e.g. a per-engineer temp path)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`tests/conftest.py` defines `RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\")` \u2014 a single real filesystem path. If engineers ... run their suites concurrently on the same machine/CI without overriding `RESULTS_DB` ... parallel test runs could read/write the same file and produce flaky or corrupted results",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

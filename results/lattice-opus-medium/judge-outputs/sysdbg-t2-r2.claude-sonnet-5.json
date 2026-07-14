@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22532,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0905263,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7208,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7208,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7208,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7208,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2336,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2336,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent, correctly identifying the same root cause, commit, reproduction flaw, and rejecting the model-rollback plan; report 2 additionally verifies model_id is unused via grep, a minor edge.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The file to change is config/scoring_config.yaml: expected_label_field should be gold_label.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The file that should be changed is config/scoring_config.yaml: expected_label_field: label \u2192 expected_label_field: gold_label.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "pipeline/metrics/nightly_scores.csv shows 0.91 on 2026-06-16 and 0.00 on 2026-06-17 onward. Commit 53551e8 \"migrate eval set to gold_label schema (SCORE-77)\" is dated 2026-06-17, and its diff (git show 53551e8) changes eval_set.jsonl and REQUIRED_KEYS to gold_label while leaving the config's expected_label_field: label unchanged.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit 53551e8 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\" (dated Wed Jun 17 2026). Evidence: git show 53551e8 renamed label\u2192gold_label in fixtures/eval_set.jsonl and updated REQUIRED_KEYS in score_batch.py, but did not touch config/scoring_config.yaml... The metrics log pipeline/metrics/nightly_scores.csv shows accuracy holding at ~0.90\u20130.92 through 2026-06-16 and dropping to 0.00 exactly on 2026-06-17",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "pipeline/score_one.py only calls predict_category and prints the label \u2014 it never loads gold labels or compares against them. So spot-checking individual tickets can never surface a scoring/comparison bug... Correct reproduction: run the batch scorer (python3 -m pipeline.score_batch) \u2014 it reproduces 0.00 deterministically.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The investigation could not reproduce it because it re-ran tickets through pipeline/score_one.py, which never compares the prediction to a gold label \u2014 it only prints the prediction. The bug lives only in the batch path (score_batch.py, which alone reads expected_label_field), so single-item runs can never surface it... To reproduce correctly, exercise the real batch scoring path against the eval set: run python -m pipeline.score_batch",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "There is no model in the loop: classification is done by a deterministic offline keyword stub, and model_id in the config is an unused string. Reverting it changes nothing; the score would stay at 0.0, likely reinforcing the false \"flaky model\" theory and wasting effort.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It rests on the false premise that a model is involved. There is no model: the classifier is pure keyword rules with no network/model call, and model_id in the config is never read anywhere in the code (grep confirms no usage). Rolling a model back would change nothing; accuracy would stay 0.0",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

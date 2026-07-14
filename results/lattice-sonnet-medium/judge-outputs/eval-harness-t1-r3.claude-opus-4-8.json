@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19875,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1528805,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9569,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9569,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9569,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9569,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1733,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1733,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations with correct code citations; Report 2 adds concrete CSV-row evidence while Report 1 is cleaner, but they are substantively equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "So a missing axis silently becomes `0.0` and is folded into the weighted sum using its full normal weight ... a row where accuracy silently failed and scored 0.0 is byte-for-byte indistinguishable in form from a row where the agent's reply actually got a 0/10 on accuracy.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A missing/`None` axis score is coerced to `0.0` and multiplied by that axis's weight ... that row has the *identical shape* to a fully-scored row",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Treating \"no score\" as \"score of 0\" conflates two very different situations ... any agent whose replies happen to hit more transient failures ... gets an unfairly lower mean composite and thus an unfairly lower rank",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treating a `None` (call failed / never happened) the same as an actual score of `0.0` ... conflates \"no signal\" with \"worst possible signal.\" ... `leaderboard.py:9-17` sums these composites per `agent_id` and divides by count to get a mean, with no way to exclude or even detect the degraded rows.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "any row with a missing accuracy score should not be treated as \"passed the gate\" at all (i.e. should not be published as a normal comparable score) until it's actually re-scored",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If **accuracy** fails: do not write a numeric composite at all. Write the row as degraded/incomplete ... `leaderboard.py` should skip these rows (or count them separately) rather than averaging in a value computed from an incomplete gate.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "For relevance/tone failures, a defensible alternative (if retry fails) is to exclude just that axis and re-normalize the composite over the remaining weights \u2014 but that should still be marked in the output, not silent.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If **relevance or tone** fails ... renormalizing the composite over the two axes that did succeed ... would be a defensible degrade-gracefully outcome ... If **accuracy** fails, that's the load-bearing/gate axis ... the pipeline should *not* emit a composite that looks comparable",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

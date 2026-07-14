@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19923,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13338150000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7740,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7740,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7740,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7740,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1741,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1741,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly hit all three expectations and are comparable; Report 2 is slightly more thorough while Report 1 is more concise, but their core findings match.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Cross-tenant data leak in the new search endpoint \u2014 `backend/app/appointments.py:10-20` (`search_appointments`)... There is no `WHERE tenant_id = ...` clause. Any authenticated caller for tenant A who hits `GET /appointments/search?q=...&status=booked` gets back matching appointments for **every tenant**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Cross-tenant data leak \u2014 `backend/app/appointments.py`, `search_appointments` (new function)... There is no `tenant_id` filter anywhere in this query. The function receives `tenant_id` as a parameter but never references it in the SQL body... any authenticated user of *any* tenant can call `GET /appointments/search?q=...&status=...` and receive other tenants' appointments",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The PR changes `build_appointment_query`'s signature from `(session, tenant_id)` to `(session, tenant_id, filters)` with `filters` as a **required** positional argument... `exports.py`'s `nightly_export` was not updated and still calls `build_appointment_query(session, tenant_id)` with only two arguments... it raised `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Breaking change to `build_appointment_query` crashes the nightly export job... `backend/app/exports.py`, which the PR does not touch, still calls `build_appointment_query(session, tenant_id).all()` with only two arguments. **Effect:** the next run of `nightly_export`... raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I did not find evidence of SQL injection in the interpolated `status.value` (it's constrained by the `AppointmentStatus` enum, which FastAPI validates before the handler runs, per `backend/app/schemas.py`), though mixing raw string interpolation with parameter binding in the same query is still worth flagging as a code-quality/consistency issue in the merge-after-fixes list, not a standalone blocker.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Today this is not exploitable for injection because `status` is typed as the closed `AppointmentStatus` enum (`booked`/`cancelled`/`completed` \u2014 confirmed by reading `backend/app/schemas.py`) and FastAPI/pydantic validates it before the function body runs. I'm not raising this as \"SQL injection today\" \u2014 it isn't, given the current type constraint",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

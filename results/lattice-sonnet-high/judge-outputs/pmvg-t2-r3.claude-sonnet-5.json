@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 50924,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.39321759999999994,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 43766,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 43766,
+        "cache_read_input_tokens": 122792,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1024,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1024,
+            "cache_read_input_tokens": 42742,
+            "input_tokens": 2,
+            "output_tokens": 1195,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5906,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is somewhat stronger and more explicit on tracing golden-file changes to intended edits and on re-measuring stale doc figures, but neither report performs or describes a genuine reproducibility check (regenerating more than once and diffing) for expectation (d).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "these tests \"hit the real model endpoint and incur per-call cost\"... If the live suite needs exercising, it should be run explicitly (`pytest -m live`) with real credentials as a separate, unrelated live-model health check \u2014 not folded into \"closing out\" the reweight PR.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Flipping `addopts` (or otherwise making `live` run by default) would make every future default test run silently spend real money and depend on network/credential availability, and it has nothing to do with validating a pure arithmetic reweight in `score.py`. The correct default-run behavior \u2014 2 deselected \u2014 is already correct; it should not be changed as part of this PR.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "determine whether the confidence-rounding change (3\u21922 decimals) was deliberate or accidental scope creep bundled into this commit \u2014 if unintended, it should be reverted so this diff only touches the weight... only after that review, regenerate the golden file and include the old-vs-new value diff plus rationale in the PR so a reviewer can sanity-check it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "read the diff against the old fixture and confirm every changed hunk traces to your intended change. Anything you can't explain is a regression, not a fixture update.\" ... Only after that would I run the regen script and diff the resulting JSON against the previous golden file to confirm every changed value maps 1:1 to a change I understand and expect",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite `docs/testing.md`'s figures verbatim \u2014 they don't match the code. `grep -rn \"pytest.mark.flaky\" tests/` finds exactly **one** flaky-marked test... Since `docs/testing.md` is unchanged from `main`... and is stale relative to observable code, I'd source the real numbers by (a) grepping test markers directly... or pulling actual flaky-rerun data from CI history",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite `docs/testing.md`'s \"2 flaky tests / 9 lint warnings\" verbatim \u2014 project documentation is explicit that baselines \"are a snapshot from whenever someone last measured them, not a permanent constant... re-measure the project documentation yourself before citing it.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "then re-run `test_scores_match_golden` in assert mode (no regen) to confirm it's green and deterministic.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

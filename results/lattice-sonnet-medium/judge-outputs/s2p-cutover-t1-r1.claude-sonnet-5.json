@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14217,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11119269999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12155,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12155,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12155,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12155,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1507,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1507,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable depth; Report 2 additionally flags a role-name collision issue and missing OIDC permissions block, giving it a slight edge in thoroughness, but both fully satisfy the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "AUTH_RELAXED = \"true\" (infra/prod/app.auto.tfvars:3) \u2014 relaxed auth is a staging-only convenience... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" ... must be deleted from prod... SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\" ... Must be removed... LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\" ... should not be recreated in prod",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "AUTH_RELAXED = \"true\" ... shipping relaxed auth to a real multi-tenant clinic-scheduling production system is a serious security hole. Should be \"false\". PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" ... must not exist in production. Should be empty/removed. SHADOW_SCORING_SINK ... This needs a prod-specific sink path (or the sink value cleared) \u2014 not just the enabled flag. LEGACY_BILLING_SECRET_ARN ... Production billing should reference its own distinct secret, not reuse... staging's.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "this URL is baked directly into the static JS bundle \u2014 it is not read at runtime. The same built image digest is then reused for both deploy-staging (line 22-28) and deploy-prod (line 29-35)... So the production frontend, once deployed, will ship pointing at https://staging-api.example.com... the frontend must be rebuilt with a prod-specific mode/env file per environment, not promoted as one shared digest",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Net effect: the production frontend ships with VITE_API_BASE_URL=https://staging-api.example.com compiled into it \u2014 production users' browsers will call the staging API host, because the only build that ever happens is a staging-mode build and it's promoted verbatim to prod.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No database migration step anywhere in the pipeline. docs/prod-runbook.md:6 claims \"Database migrations are applied automatically during deploy,\" but there is no migration-invoking step in deploy.yml ... should not be trusted without confirming a migration-runner invocation exists.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No database migration step, despite docs/prod-runbook.md:6 explicitly claiming \"Database migrations are applied automatically during deploy.\" ... the three migrations in backend/migrations/versions/ ... need to be applied to a real prod database before the app can serve traffic, and nothing here does that.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 sets the identical string, oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\" \u2014 not environment:production... This line must be changed to repo:acme-health/medislot:environment:production before infra/prod is applied.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 still reads oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\" \u2014 copied from staging and never updated... until infra/prod/main.tf:3 is corrected to environment:production.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

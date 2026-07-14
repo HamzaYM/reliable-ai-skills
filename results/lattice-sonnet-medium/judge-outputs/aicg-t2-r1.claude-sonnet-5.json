@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25731,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13676169999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13221,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13221,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13221,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13221,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2721,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2721,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 fully satisfies all four expectations with concrete, correctly-directed fixes, while Report 2 explicitly argues the redis fail-open behavior is \"defensible\" (missing expectation b) and only vaguely suggests auditing metadata rather than allowlisting it (missing expectation c) \u2014 Report 1 is the stronger, more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`BadRequestError` \u2014 a malformed-payload rejection from the primary vendor... `ContentPolicyError` \u2014 the primary vendor rejected the payload's *content*... `AuthError` \u2014 indicates a credentials/config problem... Concrete fix: replace the bare `except Exception` with an explicit denylist function... `except NON_RETRYABLE: raise` ... `except Exception as e: log_fallover(e); return secondary.complete(payload)`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: catch the specific transient classes (`RateLimitError`, `RequestTimeoutError`, `ServerError`) for fallover, re-raise `BadRequestError` unchanged (it's a caller bug, not a vendor problem), and treat `AuthError`/`ContentPolicyError` as hard failures that surface loudly (e.g., raise or route to a dedicated remediation path) rather than being silently absorbed into a generic warning + fallover.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "project documentation Guardrail 3 is explicit: \"A rate limiter ... should fail closed in every environment unless a narrow, explicitly-named override is set for local development. Do not gate fail-open/fail-closed behavior on an 'is this production' check.\"... a rate limiter's backing store being unreachable is exactly the scenario where fail-*closed* matters most... Concrete fix: invert both defaults \u2014 default to fail-closed... and return `False` (not `True`) on `RedisError`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Path C ... Assessment: for a rate limiter this is a defensible choice to keep the pipeline available during a redis outage... Path A ... Assessment: reasonable *if* this is meant only to skip limiting in dev/test... Concrete fix: ... log when either fail-open path (A or C) is taken.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Concrete fix: ALLOWED_METADATA_KEYS = {\"document_type\", \"batch_id\", \"model_version\"}  # example \u2014 define explicitly ... \"input_text_hash\": hashlib.sha256(record.input_text.encode()).hexdigest(), \"metadata\": {k: v for k, v in record.metadata.items() if k in ALLOWED_METADATA_KEYS},",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: log the pseudonymized id ... instead of the raw one, drop `input_text` entirely from the log record (or log only a length/hash/checksum of it for debugging), and audit what `metadata` contains before logging it as-is.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "salt = os.environ[\"PII_SALT\"]  # raises KeyError if unset \u2014 fail hard\\n    if not salt:\\n        raise RuntimeError(\"PII_SALT must not be empty\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: fail loudly (raise, e.g., `RuntimeError(\"PII_SALT is not configured\")`) if `PII_SALT` is unset/empty rather than defaulting to `\"\"`, so a missing salt is a startup-time configuration error rather than a silent security downgrade.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

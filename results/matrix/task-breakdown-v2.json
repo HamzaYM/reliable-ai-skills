@@ -1,0 +1,7470 @@
+{
+  "meta": {
+    "description": "Re-derived per-task/per-model/per-effort/per-run dataset from lattice-*/scores.json, reading hit counts directly rather than trusting matrix/task-breakdown.json (which silently drops single-run cells: fable@medium, fable@xhigh, haiku@none).",
+    "tasks": [
+      "aicg-t2",
+      "arch-contracts-t1",
+      "bama-t1",
+      "consent-t2",
+      "csh-t1",
+      "dora-t2",
+      "env-hazards-t1",
+      "eval-harness-t1",
+      "farch-t1",
+      "git-cc-t2",
+      "mabc-t2",
+      "mmar-t1",
+      "mt-auth-t1",
+      "pmvg-t2",
+      "s2p-cutover-t1",
+      "sysdbg-t2",
+      "tcr-t1"
+    ],
+    "n_tasks": 17,
+    "cells": [
+      "fable@high",
+      "fable@low",
+      "fable@medium",
+      "fable@xhigh",
+      "haiku@none",
+      "opus@high",
+      "opus@low",
+      "opus@max",
+      "opus@medium",
+      "opus@xhigh",
+      "sonnet@high",
+      "sonnet@low",
+      "sonnet@max",
+      "sonnet@medium",
+      "sonnet@xhigh"
+    ],
+    "n_cells": 15,
+    "three_repeat_cells": [
+      "fable@high",
+      "fable@low",
+      "opus@high",
+      "opus@low",
+      "opus@max",
+      "opus@medium",
+      "opus@xhigh",
+      "sonnet@high",
+      "sonnet@low",
+      "sonnet@max",
+      "sonnet@medium",
+      "sonnet@xhigh"
+    ],
+    "single_run_cells": [
+      "fable@medium",
+      "fable@xhigh",
+      "haiku@none"
+    ],
+    "four_runs_investigation": {
+      "verdict": "NO cell in the final dataset has 4 genuine independent repeats. Every cell is either 3 repeats (12 cells) or 1 repeat (3 cells: fable@medium, fable@xhigh, haiku@none). The likely source of the \"4 runs\" recollection: 6 of the 12 three-repeat cells (opus@medium, opus@high, opus@xhigh, sonnet@high, sonnet@xhigh, sonnet@medium) are not native single-session repeats=3 runs -- they were assembled post-hoc from separate multi-machine handoffs, per explicit consolidation_provenance metadata in each cell's run-meta.json.",
+      "mechanism": "5 cells (opus@medium, opus@high, opus@xhigh, sonnet@high, sonnet@xhigh) were spliced from a \"1x\" source (one earlier single-repeat run) + a \"2x\" source (a later 2-repeat run from a second machine): 1x -> r1, 2x's r1/r2 -> r2/r3. sonnet@medium was a straight copy of an already-complete native \"3x\" run handed off from a second machine.",
+      "clearest_case_opus_medium": {
+        "evidence": [
+          "lattice-opus-medium-1x / lattice-opus-medium-batch1-adjudicate: same run (seed 7742485137540372977, started 2026-07-10T23:30:19Z), covering 8/17 tasks",
+          "lattice-opus-medium-part2 (_audit/): seed 9776661827187132542, started 2026-07-10T23:50:41Z, covering 4/17 tasks",
+          "lattice-opus-medium-part3 (_audit/): seed 3045222357324254651, started 2026-07-11T00:04:37Z, covering 5/17 tasks",
+          "-- these three batches sum to 17/17 tasks and are ONE logical repeat (chunked by task-subset across 3 CLI invocations, not 3 independent repeats); this became final r1",
+          "lattice-opus-medium-2x: a separate, later run (created 2026-07-12T22:03:35Z per consolidation_provenance) supplying 2 more repeats, spliced in as r2 and r3"
+        ],
+        "directory_footprint_at_peak": "Around 2026-07-12 22:00-23:00Z, up to 5 separate \"opus-medium\"-named run directories coexisted in results/ at once (lattice-opus-medium [=1x], lattice-opus-medium-batch1-adjudicate, lattice-opus-medium-part2, lattice-opus-medium-part3, lattice-opus-medium-2x) before consolidation. This is almost certainly what produced the \"4 runs\" impression: skimming `ls results/` mid-consolidation would show 4-5 opus-medium-named directories, not 4 statistical repeats of one cell.",
+        "integrity_check": "Verified final lattice-opus-medium/scores.json repeats_detail.per_repeat.r1.tasks['aicg-t2'] == source lattice-opus-medium-batch1-adjudicate/scores.json tasks['aicg-t2'] exactly (cold_hits=3, loaded_hits=4, n_must_hits=4), and r2 != r3 (no duplication artifact from the splice). The final repeats=3 is a correct 1x+2x=3 splice, not an undercount of a true 4."
+      },
+      "search_performed": "grepped all of results/ (including _audit, _superseded, unavailable, concordance, gate-*, smoke-gate-*) for \"repeats\": 4, and for any \"r4\" key in any scores.json/consumer/judge-outputs filename; none found anywhere. Checked git history of results/ (gitignored except one initial-commit snapshot from 2026-07-12T02:53, which predates the 2x handoffs and shows opus-medium mid-history as the 1x/batch1 8-task single run). No genuine 4-repeat cell exists at any point in the recoverable history."
+    },
+    "known_bug_confirmed": "matrix/task-breakdown.json omits fable@medium, fable@xhigh, haiku@none (and the aborted/empty fable@max) entirely from its per-task \"tasks\" data -- they appear only in the \"cells\" list, not populated in any task entry. Confirmed by inspection."
+  },
+  "cells": {
+    "fable@low": {
+      "model": "fable",
+      "effort": "low",
+      "n_repeats": 3,
+      "source_dir": "lattice-fable-low",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 2,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 4,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "fable@high": {
+      "model": "fable",
+      "effort": "high",
+      "n_repeats": 3,
+      "source_dir": "lattice-fable-high",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "sonnet@low": {
+      "model": "sonnet",
+      "effort": "low",
+      "n_repeats": 3,
+      "source_dir": "lattice-sonnet-low",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 2,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 2,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "sonnet@medium": {
+      "model": "sonnet",
+      "effort": "medium",
+      "n_repeats": 3,
+      "source_dir": "lattice-sonnet-medium",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "sonnet@high": {
+      "model": "sonnet",
+      "effort": "high",
+      "n_repeats": 3,
+      "source_dir": "lattice-sonnet-high",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "sonnet@xhigh": {
+      "model": "sonnet",
+      "effort": "xhigh",
+      "n_repeats": 3,
+      "source_dir": "lattice-sonnet-xhigh",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 2,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "sonnet@max": {
+      "model": "sonnet",
+      "effort": "max",
+      "n_repeats": 3,
+      "source_dir": "lattice-sonnet-max",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 4,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "opus@low": {
+      "model": "opus",
+      "effort": "low",
+      "n_repeats": 3,
+      "source_dir": "lattice-opus-low",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 2,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 2,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 2,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 4,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "opus@medium": {
+      "model": "opus",
+      "effort": "medium",
+      "n_repeats": 3,
+      "source_dir": "lattice-opus-medium",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 0,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 3,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "opus@high": {
+      "model": "opus",
+      "effort": "high",
+      "n_repeats": 3,
+      "source_dir": "lattice-opus-high",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "opus@xhigh": {
+      "model": "opus",
+      "effort": "xhigh",
+      "n_repeats": 3,
+      "source_dir": "lattice-opus-xhigh",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 4,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "opus@max": {
+      "model": "opus",
+      "effort": "max",
+      "n_repeats": 3,
+      "source_dir": "lattice-opus-max",
+      "derivation": "repeats_detail.per_repeat (r1/r2/r3)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r2": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        },
+        "r3": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "fable@medium": {
+      "model": "fable",
+      "effort": "medium",
+      "n_repeats": 1,
+      "source_dir": "lattice-fable-medium",
+      "derivation": "tasks (single run; no hit_rates/repeats_detail field exists in this scores.json for a 1-repeat cell -- top-level \"tasks\" IS the raw single-run record, verified equivalent)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "fable@xhigh": {
+      "model": "fable",
+      "effort": "xhigh",
+      "n_repeats": 1,
+      "source_dir": "lattice-fable-xhigh",
+      "derivation": "tasks (single run; no hit_rates/repeats_detail field exists in this scores.json for a 1-repeat cell -- top-level \"tasks\" IS the raw single-run record, verified equivalent)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 5,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          }
+        }
+      }
+    },
+    "haiku@none": {
+      "model": "haiku",
+      "effort": "none",
+      "n_repeats": 1,
+      "source_dir": "lattice-haiku",
+      "derivation": "tasks (single run; no hit_rates/repeats_detail field exists in this scores.json for a 1-repeat cell -- top-level \"tasks\" IS the raw single-run record, verified equivalent)",
+      "runs": {
+        "r1": {
+          "aicg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "arch-contracts-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "bama-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "consent-t2": {
+            "cold_hits": 2,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "csh-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "dora-t2": {
+            "cold_hits": 4,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "env-hazards-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
+          "eval-harness-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "farch-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "git-cc-t2": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 4
+          },
+          "mabc-t2": {
+            "cold_hits": 0,
+            "loaded_hits": 2,
+            "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 1,
+            "loaded_hits": 2,
+            "n_must_hits": 3
+          },
+          "mt-auth-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 5,
+            "n_must_hits": 5
+          },
+          "pmvg-t2": {
+            "cold_hits": 1,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "s2p-cutover-t1": {
+            "cold_hits": 4,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "sysdbg-t2": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 4
+          },
+          "tcr-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 4,
+            "n_must_hits": 5
+          }
+        }
+      }
+    }
+  },
+  "tasks": {
+    "aicg-t2": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "arch-contracts-t1": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "bama-t1": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "consent-t2": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "csh-t1": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "dora-t2": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "env-hazards-t1": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      }
+    },
+    "eval-harness-t1": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "farch-t1": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 0,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "git-cc-t2": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "mabc-t2": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 2,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 0,
+          "loaded_hits": 2,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "mmar-t1": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 2,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 2,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 2,
+          "loaded_hits": 2,
+          "n_must_hits": 3
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 2,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 2,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 2,
+          "loaded_hits": 2,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 2,
+          "loaded_hits": 2,
+          "n_must_hits": 3
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r2": {
+          "cold_hits": 2,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 3
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 1,
+          "loaded_hits": 2,
+          "n_must_hits": 3
+        }
+      }
+    },
+    "mt-auth-t1": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 4,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 5
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 4,
+          "n_must_hits": 5
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 3,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      }
+    },
+    "pmvg-t2": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 3,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 1,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "s2p-cutover-t1": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "sysdbg-t2": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 4
+        }
+      }
+    },
+    "tcr-t1": {
+      "fable@low": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "fable@high": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "sonnet@low": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 4,
+          "n_must_hits": 5
+        }
+      },
+      "sonnet@medium": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "sonnet@high": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "sonnet@xhigh": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "sonnet@max": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 4,
+          "n_must_hits": 5
+        }
+      },
+      "opus@low": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "opus@medium": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "opus@high": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "opus@xhigh": {
+        "r1": {
+          "cold_hits": 4,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 4,
+          "n_must_hits": 5
+        }
+      },
+      "opus@max": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r2": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        },
+        "r3": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "fable@medium": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "fable@xhigh": {
+        "r1": {
+          "cold_hits": 5,
+          "loaded_hits": 5,
+          "n_must_hits": 5
+        }
+      },
+      "haiku@none": {
+        "r1": {
+          "cold_hits": 3,
+          "loaded_hits": 4,
+          "n_must_hits": 5
+        }
+      }
+    }
+  }
+}

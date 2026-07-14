@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32334,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19476300000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7116,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7116,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9357,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7116,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7116,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9357,
+            "output_tokens": 2728,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2728,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both cover a\u2013c equivalently, but Report 1 fully nails the shared results-DB collision risk (d) that Report 2 only mentions as optional, making Report 1 the stronger plan.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`pipeline/registry.py` triple-edit \u2014 F-02, F-05, F-09** are three edits to one tiny file. Independent in intent but they'll textually conflict if handed out separately; one owner does all three.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "and `pipeline/registry.py` by F-02, F-05, F-09 (three). If these are split across engineers they *will* collide. The plan's per-file ownership is specifically to neutralize this.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Wave 1 (all parallel):** Groups A, B, C, D at the same time ... F-11 rides with Group C. **F-12 must ride with Group B's owner** ... one owner does all three.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Wave 1 (parallel, mechanical, no decisions):** A (registry), B (run_batch + its test), C (rubric + its test), D (prompts) all proceed at once. ... **Engineer A \u2014 `pipeline/registry.py`**: F-02 ... F-05 ... F-09 ... **Engineer C \u2014 `pipeline/rubric.py`**: F-01 ... and F-11",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06 \u2014 a behavior/product decision, not a mechanical fix.** \"Tighten the partial-credit thresholds so borderline answers score lower\" changes user-facing scores and re-scores previously-graded outputs ... flag it and get a settled decision on the exact thresholds before anyone edits `PARTIAL_CREDIT_THRESHOLDS`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06 \u2014 it's a policy/judgment change, not a mechanical fix, and it's underspecified.** ... it re-scores historical outputs and will shift any golden/expected results), so it needs a product/owner decision and a plan for re-baselining, not a lone engineer guessing.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Their own `RESULTS_DB`.** `tests/conftest.py` defaults `RESULTS_DB` to the shared `/var/tmp/llm-scoring/results.db`; anyone running the suite in parallel should export a distinct `RESULTS_DB` path so concurrent runs don't collide on one test resource.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

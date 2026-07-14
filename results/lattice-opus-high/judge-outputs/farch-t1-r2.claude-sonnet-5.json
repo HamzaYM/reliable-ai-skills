@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36947,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.17420960000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12085,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12085,
+        "cache_read_input_tokens": 106732,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1364,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1364,
+            "cache_read_input_tokens": 39874,
+            "input_tokens": 2,
+            "output_tokens": 1163,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4349,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger overall: both reports nail the prior-attempt discovery and root cause with commit citations, but only Report 2 explicitly confirms via the current tree/HEAD that the serverless files were deliberately removed and Cargobox remains the intended deployment (expectation c).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Based on what the prior PLAT-31 attempt actually did (`git show 454a21f`)... this is not a hypothetical plan \u2014 it is a description of a migration this repo already implemented and then reverted.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`454a21f` \u2014 \"Add Edgerunner serverless deploy for API (PLAT-31)\" added `edgerunner.toml` and `serverless_handler.py`... `1712565` \u2014 the **revert**: \"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool...\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Edgerunner runs each request in a fresh isolate that does not retain that pool (stated in `git show 597777b`). The prior fix opened a dedicated Postgres connection per request. Under normal dashboard load, `/reports/monthly` opened connections faster than Postgres could recycle them, hit `FATAL: too many connections`, and took the endpoint down in production \u2014 forcing a revert back to Cargobox (`git show 1712565`, commit message and diff).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`1712565` \u2014 the **revert**: \"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31).\" Its body: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit (`FATAL: too many connections`), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The current tree confirms the rollback stuck: HEAD is `e004559` on `main`, and `backend/serverless_handler.py` and `deploy/edgerunner.toml` no longer exist.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Given this is a repeat of a reverted production incident, the decision should not be made by one engineer. Involve: the platform/PLAT owner of ticket PLAT-31 (whoever led the prior attempt and revert), the database/infrastructure owner responsible for Postgres `max_connections`, and the engineering lead/leadership sponsor pushing the cost target \u2014 so the cost saving is weighed against the known reliability risk with full knowledge that it already failed once.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Surface the PLAT-31 history to whoever owns PLAT tickets / the platform decision and to leadership driving the cost-cut, so the prior outage is on the table before money or time is committed.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

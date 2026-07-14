@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17765,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.097868,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9155,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9155,
+        "cache_read_input_tokens": 29150,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9155,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9155,
+            "cache_read_input_tokens": 29150,
+            "input_tokens": 2,
+            "output_tokens": 1967,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1967,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully hit all three expectations with comparable depth and accuracy; Report 2 additionally proposes FORCE ROW LEVEL SECURITY as defense-in-depth alongside the role split, which is extra but not contrary to the expected fix.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "In Postgres, RLS policies are silently skipped for both superusers and table owners (unless FORCE ROW LEVEL SECURITY is set, which this migration does not do). So current_setting('app.current_tenant') is being set correctly, but the policy that would filter on it is never even evaluated for this role \u2014 GET /clients runs as an effectively-unrestricted SELECT and returns rows from every tenant",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In Postgres, table owners (and superusers) bypass row-level security policies by default, unless the table has FORCE ROW LEVEL SECURITY set \u2014 which 0001_init.sql never does. So even though SET app.current_tenant = ... runs correctly and the tenant_isolation policy exists, it's never evaluated for this connection: cedar_owner sails straight through RLS",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Structurally, going forward the app should never have a single ambiguous DATABASE_URL that could point at either role. Two distinct connection strings should exist: - One for schema-owning operations only (cedar_owner), used exclusively by scripts/migrate.sh, scripts/reset-local-db.sh, and db/bootstrap/create_app_role.sql. ... - One for everything the running FastAPI app does (cedar_app), consumed by backend/app/db.py.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Structurally: keep cedar_owner privileged for schema migrations only (DDL), and make cedar_app \u2014 the least-privileged, RLS-bound role \u2014 the only role the running application ever connects with.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "cedar_app is created only by the one-time, hand-run script db/bootstrap/create_app_role.sql ... cedarline/scripts/reset-local-db.sh does: docker compose down -v ... docker compose up -d db ... ./scripts/migrate.sh ... It never re-invokes db/bootstrap/create_app_role.sql. So after a wipe+rebuild, cedar_app simply doesn't exist in the new cluster.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "docker compose down -v wipes cedar_pgdata, so on the next up, Postgres reinitializes from scratch and only recreates the single bootstrap role from POSTGRES_USER (cedar_owner). The cedar_app role was only ever created by the separate, manual, undocumented-in-scripts step ... reset-local-db.sh ... never calls this bootstrap script \u2014 it only calls migrate.sh",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

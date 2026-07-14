@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 10010,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.23333,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 35939,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 35939,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 35939,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 35939,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 970,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 970,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers the same core analysis as Report 1 and additionally flags the staleness of the usage snapshot and commits to re-checking live limits before firing, satisfying expectation (d) that Report 1 misses.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full run size: `transcript_count` 5,200 \u00d7 `avg_tokens_per_scoring_call` 1,800 = **\u2248 9,360,000 tokens (~9.36M)** ... northpeak (primary/default): window total 10,000,000, **remaining 640,000** ... On the **default backend (northpeak), the run does not fit \u2014 by a wide margin.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full run size from `data/manifest.json`: 5,200 transcripts \u00d7 1,800 tokens/call = **9,360,000 tokens (~9.36M)** ... northpeak (primary/default): 640,000 tokens remaining (of a 10M window). A 9.36M run is **~14.6\u00d7 the remaining budget**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline (secondary): window total 12,000,000, **remaining 10,800,000** ... On **ridgeline (secondary), the run fits:** 10.8M remaining vs. 9.36M needed, leaving **~1.44M tokens (~15%) of headroom.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ridgeline (secondary): 10,800,000 tokens remaining (of a 12M window). A 9.36M run **fits, leaving ~1.44M headroom** (~13% of its window).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run the default nightly path tonight \u2014 it targets northpeak, which has only 640K of the ~9.36M tokens the run needs and won't reset until after the review. Instead I'd launch the same job against the `secondary` backend",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** use the default path. I'd route the run to the secondary provider, which has headroom:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Caveat I'd act on first: the usage snapshot is `generated_at` 19:25:00Z but \"now\" is 22:30 UTC, so it's **~3 hours stale**. I'd re-check live usage before firing, per the guidance not to trust a stale budget signal.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r2",
+  "repeat": 2,
+  "task": "bama-t1"
+}

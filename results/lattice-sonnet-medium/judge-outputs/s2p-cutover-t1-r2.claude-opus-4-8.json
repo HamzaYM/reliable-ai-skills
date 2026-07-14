@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 48667,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.23231549999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12139,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12139,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12139,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12139,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 3811,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3811,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover all four expectations well; Report 2 is crisper that the pipeline literally has no migration step, while Report 1 is firmer on removing the legacy secret \u2014 overall comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:4` `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` \u2014 a QA test account pre-provisioned with superadmin privileges ... Should be **removed entirely** from prod. ... `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"` ... Both keys should be **omitted entirely** from prod ... `LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"` ... Should be **removed entirely**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... it should not exist in prod at all \u2014 the value should be removed/emptied ... blank out `SHADOW_SCORING_SINK` entirely, since the enabled flag is not load-bearing in the code",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "this is a compile-time substitution, not something read at runtime ... The **same digest** \u2014 the same already-built image containing the staging API URL \u2014 is what `deploy-prod` deploys ... the production deployment would ship a frontend bundle whose JS literally points API calls at `https://staging-api.example.com` ... This is the exact \"rebuild per environment, don't promote a build artifact wholesale\" trap",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the production frontend, as this pipeline is currently written, would ship with `VITE_API_BASE_URL=https://staging-api.example.com` baked into its JS bundle \u2014 production users' browsers would call the staging API ... the identical container image, built once with the staging-mode bundle, is deployed to both environments",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/prod-runbook.md:6` asserts migrations \"are applied automatically during deploy,\" but with `deploy.sh` missing, this can't be confirmed ... this needs to be explicitly confirmed (not assumed) before the first release, especially since this is the *first* production deploy and there's no existing schema to fall back on",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**No database migration step.** `docs/prod-runbook.md:6` asserts \"Database migrations are applied automatically during deploy,\" but nothing in `deploy.yml` runs Alembic or any migration tool ... the runbook is simply inaccurate and prod will launch with an unmigrated schema",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` still has `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` ... the production deploy role's trust policy still only trusts the **staging** GitHub Environment's OIDC identity. This must be changed to `\"repo:acme-health/medislot:environment:production\"` (a distinct, prod-scoped condition, never shared/OR'd with staging's)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` \u2014 `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`. The production IAM deploy role's trust policy (via `infra/modules/deploy_role/main.tf:8-10`) is scoped to GitHub OIDC tokens carrying the **staging** environment claim ... This must be changed to `\"repo:acme-health/medislot:environment:production\"`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20756,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13888450000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8145,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8145,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8145,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8145,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 1778,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1778,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent substance and citations; they are comparable, with Report 1 marginally more explicit on the go-forward same-commit rule.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls belong in `backend/app/billing/gateway.py`, as a new thin accessor (e.g. a `refund(...)` function)... `backend/app/api/invoices.py` \u2014 `import chargekit`... `backend/app/workers/dunning.py`... (`backend/app/billing/errors.py:6` also imports from `chargekit`, but it imports only the SDK's error *types*... so it is not a violation.)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a new `refund(...)` accessor should be added to `gateway.py`... `backend/app/api/invoices.py:14-16`... `backend/app/workers/dunning.py:9-13`... `backend/app/billing/errors.py:6` also imports from `chargekit`, but that is the documented, sanctioned exception... so it is not a violation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual serializer `InvoiceOut` has a sixth field, `external_ref` (`models/invoice.py:16-22`)... Migration `0006_add_invoice_external_ref.sql` added the backing column. So the response actually exposes six fields; the word \"exactly\" is now wrong and `external_ref` is undocumented.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual serializer `InvoiceOut` (`backend/app/models/invoice.py:15-28`) also includes a sixth field, `external_ref`. This field was added by migration `0006_add_invoice_external_ref.sql` and is populated in `invoices.py:17`. So \"exactly\" those five is wrong",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "this drift is a bug to fix, not a doc that \"eventually\" needs updating... That correction should happen **now**, independent of refunds... any change that touches schema, wire shape, the provider boundary, or the webhook set must update `ARCHITECTURE.md` in the **same commit**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The correction should be tied to the code change, not deferred... the doc should be updated in the same PR so it never describes a state the code isn't in... in the same commit that changes behavior \u2014 don't leave it stale",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "both the count (\"4\") is wrong and the enumeration omits `payment_pending`... a hardcoded count that has already drifted. I would drop the literal \"4,\" and instead either (a) point at `backend/app/api/webhooks.py` as the single source of truth",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the count \"4\" is wrong \u2014 it should be 5... a bare count drifts silently the moment someone adds a branch (as already happened here). Better to phrase it as \"handles the following event types (see `webhooks.py`)\" pointing at the source",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23334,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1371685,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8004,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8004,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8004,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8004,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1771,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1771,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with correct citations; they are comparable, with Report 1 adding a process/ADR check and Report 2 adding a runbook-mismatch catch.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Per `incidents/OPS-412-timeline.md:3-4`, failures began at 14:03 and the first alert didn't fire until 14:50 \u2014 a 47-minute detection gap, not \"minutes.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md:3-6` shows failures began at 14:03, the first page did not fire until 14:50 (47 minutes later)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The internal timeline records \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded\" (`incidents/OPS-412-timeline.md:9-10`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md:9-10` states 1,284 transactions failed and required manual reprocessing during the window, and 37 were unrecoverable and refunded.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/sla-commitments.md:3-5` defines the contractual monthly uptime SLA as 99.9%, with any month below that being a breach that \"owes service credits per the customer agreement.\" April 2026's actual uptime was 99.77% (`metrics/uptime-2026.csv:6`), which is below the 99.9% threshold \u2014 a contractual breach.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/sla-commitments.md:2-4` sets the contractual monthly uptime SLA at 99.9%... `larkpay-comms/metrics/uptime-2026.csv:6` shows April 2026 at 99.77%, which is a breach.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`docs/customer-comms-style-guide.md:5` states \"Never assign blame to an individual,\" but the draft says \"The outage was caused by the on-call engineer deploying an untested config change\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md:5` states rule 1: \"Never assign blame to an individual.\" This line must be rewritten to describe the process/change failure without pointing at a person.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "The draft does not lead with customer impact and remediation, violating policy. `docs/customer-comms-style-guide.md:7` requires this, but the draft leads with an uptime marketing claim (line 3) before ever mentioning what happened to customers... This needs to be restructured",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rule 3 (`customer-comms-style-guide.md:7`) requires leading with customer impact and remediation. Instead, the draft opens and closes with reliability marketing language... This needs to be restructured to lead with the actual impact",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r3",
+  "repeat": 3,
+  "task": "tcr-t1"
+}

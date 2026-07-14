@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22368,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0968227,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7891,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7891,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7891,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7891,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2446,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2446,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 fully satisfies all four expectations, notably recommending the doc drop the hardcoded webhook count entirely, while Report 2 only proposes updating the count to 5 (still hardcoded), missing expectation (d); otherwise the two reports are comparable in depth and citation quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The only documented exception is `medibill/backend/app/billing/errors.py:6`, which imports just `chargekit.errors` for exception types \u2014 that one matches the doc. ... the last two are undocumented violations of the stated boundary rule.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A grep -rn \"chargekit\" across the whole medibill/ tree confirms these are the only two violations; gateway.py and errors.py are the two files that are supposed to touch chargekit and do so correctly.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the actual response model, `InvoiceOut` in `medibill/backend/app/models/invoice.py:16-22`, has six fields: `id, tenant_id, amount_cents, currency, status, external_ref`. The extra `external_ref` field (populated in `invoices.py:17` from the charge result's `reference`, added per migration `medibill/backend/migrations/0006_add_invoice_external_ref.sql`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual InvoiceOut dataclass in medibill/backend/app/models/invoice.py:16-22 has six fields: id, tenant_id, amount_cents, currency, status, external_ref. external_ref is populated by charge_invoice (invoices.py:17) and serialized by InvoiceOut.from_model (invoice.py:24-28), so it is genuinely present in the response, not dead code.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "this doc should be corrected now, as part of the same change that's being reviewed/merged \u2014 not deferred to the refund work. ... Because this is a merge-blocking contract doc, whichever PR fixes the code (or formally exempts it) must update `ARCHITECTURE.md` in that same commit, and call the doc change out explicitly in the commit/PR summary \u2014 not as a follow-up.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It should be corrected before any refund work lands, as part of this same change \u2014 not after. ... Doing this now (rather than deferring) matters because a new refund feature is exactly the kind of change that gets built by copy-pasting an existing call site",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the count \"4\" is wrong (should be 5, or the count should be dropped per project documentation's \"don't cite a number: read the source\" guidance, since this is exactly the kind of number that silently drifts as handlers are added)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change the doc to say \"5 webhook event types\" and add payment_pending to the list, so it accurately reflects the code",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

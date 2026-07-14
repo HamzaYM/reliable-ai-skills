@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25367,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.153464,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9170,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9170,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9170,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9170,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 1936,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1936,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy all three expectations with accurate, well-grounded answers; they are comparable, with Report 1 slightly cleaner in keeping the fix strictly to the role split.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The problem is *who* the app connects as. `cedar_owner` is the role... making `cedar_owner` the **table owner** as well as a superuser. In Postgres, RLS policies are silently skipped for both superusers and table owners (unless `FORCE ROW LEVEL SECURITY` is set, which this migration does not do). So `current_setting('app.current_tenant')` is being set correctly, but the policy that would filter on it is never even evaluated",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedarline/.env` (and `.env.example`) sets:\n```\nDATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar\n```... In Postgres, **table owners (and superusers) bypass row-level security policies by default**, unless the table has `FORCE ROW LEVEL SECURITY` set \u2014 which `0001_init.sql` never does. So even though `SET app.current_tenant = ...` runs correctly and the `tenant_isolation` policy exists, it's never evaluated for this connection",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Point the application's runtime `DATABASE_URL` at the dedicated `cedar_app` role instead of `cedar_owner`... Two distinct connection strings should exist:\n- One for schema-owning operations only (`cedar_owner`), used exclusively by `scripts/migrate.sh`... - One for everything the running FastAPI app does (`cedar_app`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the application's `DATABASE_URL` (in `cedarline/.env` and `.env.example`) at `cedar_app`, not `cedar_owner`... Structurally: keep `cedar_owner` privileged for schema migrations only (DDL), and make `cedar_app` \u2014 the least-privileged, RLS-bound role \u2014 the *only* role the running application ever connects with.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedar_app` is created only by the one-time, hand-run script `db/bootstrap/create_app_role.sql`... `cedarline/scripts/reset-local-db.sh` does:\n```bash\ndocker compose down -v... ./scripts/migrate.sh     # re-runs migrations as cedar_owner\n```\nIt never re-invokes `db/bootstrap/create_app_role.sql`. So after a wipe+rebuild, `cedar_app` simply doesn't exist... the teammate needs to manually re-run the bootstrap once",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `cedar_app` role was only ever created by the separate, manual, undocumented-in-scripts step `psql ... -f db/bootstrap/create_app_role.sql`... `reset-local-db.sh`... never calls this bootstrap script \u2014 it only calls `migrate.sh`... So after a reset, `cedar_app` simply doesn't exist... To make it work again: re-run `psql \"postgresql://cedar_owner:ownerpw@localhost:5432/cedar\" -f db/bootstrap/create_app_role.sql` by hand",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

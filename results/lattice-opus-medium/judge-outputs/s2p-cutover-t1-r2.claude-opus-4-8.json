@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 68922,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2557495,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10191,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10191,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10191,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10191,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 5576,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5576,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable overall, with Report 1 slightly stronger for correctly calling to fully remove the shadow-scoring sink and legacy billing secret and for explicitly demanding manual migration confirmation, where Report 2 softens those into edit/verify recommendations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "File `infra/prod/app.auto.tfvars` is a byte-for-byte copy of `infra/staging/app.auto.tfvars`. ... **Line 6 `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"`** ... **Remove this line entirely** ... **Line 7 `LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"`** ... **Remove** unless prod genuinely still needs it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`infra/prod/app.auto.tfvars:2` `ENABLE_DEBUG_TOOLBAR = \"true\"`** \u2014 the debug toolbar (backend/config.py:8) must not be on in production; change to `\"false\"`. ... **`infra/prod/app.auto.tfvars:4` `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`** \u2014 a preset QA superadmin backdoor account (config.py:10). Remove it entirely for prod (empty value).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The URL is baked in at build time. ... the string `https://staging-api.example.com` is hard-inlined into the JS bundle \u2014 there is no runtime override. ... **`deploy-prod` deploys `${{ needs.build-frontend.outputs.digest }}` \u2014 the exact same already-built digest** ... the production frontend ships pointing at the **staging** API ... the fix is a separate prod build (`--mode production` with a `.env.production` set to the real prod API URL)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "builds the frontend with `npx vite build --mode staging` \u2014 **always staging mode**, for both the staging and prod deploys. ... That value is baked into the JS bundle. ... the **same digest** is shipped to prod ... So the production frontend would call `https://staging-api.example.com`. ... A prod env file (or build arg) plus a per-environment build/bundle is required.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The runbook (`docs/prod-runbook.md`...) claims \"Database migrations are applied automatically during deploy,\" but there is **no migration step** in the workflow ... This must be confirmed/handled manually per the first-apply trap \u2014 don't trust the stale runbook.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**DB migrations aren't in the pipeline.** `docs/prod-runbook.md` claims \"migrations are applied automatically during deploy,\" but `deploy.yml` has no migration step ... The runbook is stale (\"last updated 3 months ago\").",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Production (as written, broken):** `infra/prod/main.tf:3` **still** sets `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 copied verbatim. ... It must be changed to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Production:** `infra/prod/main.tf:3` **also** sets `oidc_sub_condition = \"\u2026:environment:staging\"` (unchanged from the copy). ... It must be changed to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

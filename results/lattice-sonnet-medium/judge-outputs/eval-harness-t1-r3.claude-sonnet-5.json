@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17690,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0994337,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9554,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9554,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9554,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9554,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1879,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1879,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully hit all four expectations with clear code citations and correct reasoning; Report 2 adds extra (unverifiable/speculative) supporting detail like inferring specific CSV outlier rows, but both are comparable in substance against the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "value = axis_scores.get(axis)\nif value is None:\n    value = 0.0\ntotal += weight * value ... a row where accuracy silently failed and scored 0.0 is byte-for-byte indistinguishable in form from a row where the agent's reply actually got a 0/10 on accuracy.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A missing/`None` axis score is coerced to `0.0` and multiplied by that axis's weight, so it contributes `0.0` to the weighted sum rather than being excluded. ... that row has the *identical shape* to a fully-scored row",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Treating \"no score\" as \"score of 0\" conflates two very different situations... any agent whose replies happen to hit more transient failures (e.g. due to being scored during a period of API instability, or just by chance across a large batch) gets an unfairly lower mean composite and thus an unfairly lower rank",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treating a `None` (call failed / never happened) the same as an actual score of `0.0` ... conflates \"no signal\" with \"worst possible signal.\" ... Rankings shift based on how many times an agent's rows happened to hit a transient axis-call failure, which is noise, not signal",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "if accuracy fails and can't be recovered via retry, the row shouldn't be scored/ranked at all (not even partially) \u2014 it should be held out as unscored/pending rather than defaulting into either \"0\" (auto-fail) or \"ignored/reweighted\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If **accuracy** fails: do not write a numeric composite at all. Write the row as degraded/incomplete (e.g. a status column or a separate \"pending/failed\" file), retain whatever relevance/tone scores were obtained as clearly-labeled partial signal, and queue the row for retry",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "For relevance/tone failures, a defensible alternative (if retry fails) is to exclude just that axis and re-normalize the composite over the remaining weights \u2014 but that should still be marked in the output, not silent.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If **relevance or tone** fails, zero-filling still corrupts the number, but since these are embellishments, renormalizing the composite over the two axes that did succeed ... would be a defensible degrade-gracefully outcome... If **accuracy** fails, that's the load-bearing/gate axis... the pipeline should *not* emit a composite that looks comparable to a fully-scored row at all",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

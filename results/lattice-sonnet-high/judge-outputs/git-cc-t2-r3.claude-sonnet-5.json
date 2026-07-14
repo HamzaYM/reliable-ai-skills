@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47146,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.36960960000000004,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 43450,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 43450,
+        "cache_read_input_tokens": 81082,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1634,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1634,
+            "cache_read_input_tokens": 41816,
+            "input_tokens": 2,
+            "output_tokens": 1477,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5265,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reach the same correct conclusions (main as base, dead feat/weighted-scorer base, contaminated three-dot diff naming scorer.py, and a rebase-plus-rediff fix) and hit all four expectations; Report 2 is marginally tighter in explicitly confirming scorer.py's absence post-rebase, but the two are essentially comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. Per project documentation's dead-base rule (\"base every PR on the trunk\"), and confirmed concretely here: the branch `feat/pairwise-metric` was actually created from `feat/weighted-scorer` (see #2), but that branch's entire content has already landed on `main` independently as commit `1971f08`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/weighted-scorer` is not a valid target because it is not an integration branch \u2014 as shown below, its content has already been folded into `main`, so targeting it would create a PR against a branch whose purpose has been superseded.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`git merge-base feat/pairwise-metric feat/weighted-scorer` = `ac9d505` (= `feat/weighted-scorer`'s own tip) \u2014 confirms `feat/pairwise-metric`'s two commits (`X1`, `X2`) are built directly on top of the full `feat/weighted-scorer` branch. ... this means `feat/weighted-scorer`'s work was squash-merged into `main` under a different commit (different hash, message, and presumably a different/renamed PR, `#42`) rather than merged as-is.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/pairwise-metric` (tip `1bfecb6`) was branched from the tip of `feat/weighted-scorer` (`ac9d505`), not from `main`. ... `feat/weighted-scorer` has already been merged into `main`, but via a squash merge, not a fast-forward or merge commit. `git diff ac9d505 1971f08` is empty \u2014 main's commit `1971f08` (\"Refactor scorer for weighted metrics (#42)\"...) is tree-identical to `feat/weighted-scorer`'s tip.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "shows the full stack \u2014 all of `W1`\u2013`W3` (weighted-score aggregation, `overlap()` metric, `WEIGHTS` dict, `scorer.py` rewrite) *and* `X1`\u2013`X2` (the pairwise work). This is because the merge-base is `65204ad`, before either `main`'s squash-merge or `feat/weighted-scorer` existed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "shows 3 files changed, 21 insertions, 3 deletions: `prompts/grader.txt`, `scoring/metrics.py`, and `scoring/scorer.py`. The `scoring/scorer.py` hunk (adding `WEIGHTS`, `total = sum(...)`) and part of `scoring/metrics.py` (the `overlap()` function) are not pairwise-metric work at all \u2014 they are the `feat/weighted-scorer` changes, already merged into `main` under commit `1971f08`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Verify the rebased branch's diff against `main` is now scoped correctly: `git diff origin/main..feat/pairwise-metric` should show *only* the two-file, ~5-line pairwise change, and `git log origin/main..feat/pairwise-metric` should show only `X1`/`X2`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "After rebasing, re-verify with `git diff main feat/pairwise-metric` that the diff is now exactly the 2-file/5-line pairwise change (grader.txt line + `pairwise_preference()`), with no `scorer.py`/duplicate-`overlap()` noise.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

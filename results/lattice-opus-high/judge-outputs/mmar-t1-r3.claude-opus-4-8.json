@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15124,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.12082650000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7517,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7517,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7517,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7517,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 1329,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1329,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with equivalent substance and evidence; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Location: `backend/app/appointments.py`, `search_appointments()` \u2014 the raw `text(...)` SQL. ... The query has **no `tenant_id` predicate**. `search_appointments` receives `tenant_id` ... but never uses it in the WHERE clause",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Location: `backend/app/appointments.py`, `search_appointments`, the `text(...)` SQL block ... The function receives `tenant_id` as a parameter but **never uses it**. ... there is no `WHERE tenant_id = :tenant_id`. Any authenticated caller from tenant A ... receives matching appointments from **every tenant**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`backend/app/db.py:7` changed `build_appointment_query(session, tenant_id)` \u2192 `build_appointment_query(session, tenant_id, filters)` where `filters` is a **required** positional arg (no default). `backend/app/exports.py:9` still calls `build_appointment_query(session, tenant_id).all()` with only 2 args. ... Every `nightly_export()` invocation raises `TypeError`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The PR made `filters` a **required positional argument** and updated `appointments.py`, but did not update `exports.py`. `nightly_export` still calls the two-argument form, so it raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "*SQL injection via `f\"WHERE status = '{status.value}'\"`* \u2014 **refuted as exploitable.** `status` is typed `AppointmentStatus` ... so `status.value` can only ever be one of three hardcoded literals. The user-controlled `q` is safely bound as `:q`. It's poor hygiene ... but not an exploitable defect today",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "As written it is *not* exploitable through the HTTP endpoint, because `get_appointment_search` types `status: AppointmentStatus` and FastAPI validates the query param against the enum, so `status.value` can only ever be `booked`/`cancelled`/`completed` (I confirmed the enum in `schemas.py`). ... It should be a bound parameter like `q` already is. I flag it but do not treat it as the primary blocker",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

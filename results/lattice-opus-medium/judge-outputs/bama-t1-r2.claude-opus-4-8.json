@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19741,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.282392,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 23740,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 23740,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 23740,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 23740,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 1683,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1683,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports nail token math, backend routing, and the recommendation to switch to ridgeline; Report 1 additionally flags the ~3-hour-stale snapshot and the need to re-check live limits, making it the stronger answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 1,800 tokens per scoring call ... = **~9,360,000 tokens** for a full run. ... **northpeak** (the default/primary): `remaining` = **640,000** of a 10,000,000 window ... The default launch would slam into northpeak's nearly-exhausted window and fail well before finishing.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full run = `transcript_count \u00d7 avg_tokens_per_scoring_call = 5,200 \u00d7 1,800 = 9,360,000 tokens` ... **northpeak (default):** only **640,000** tokens remaining of its 10M window. 9.36M needed \u226b 0.64M available ... The default path fails/gets throttled almost immediately.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I'd route the full run to the secondary backend that actually has headroom:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n``` ... ridgeline's 10.8M remaining covers it with room to spare",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Route the run to the secondary backend:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n``` ... Ridgeline currently has 10.8M remaining (fits the 9.36M need) and is the only backend that can finish the full run tonight.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run the default path. I'd route the full run to the secondary backend",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** launch the default (northpeak) path. Route the run to the secondary backend",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the snapshot's `generated_at` is 2026-07-09T19:25:00Z, roughly **3 hours before** the current 22:30 UTC ... before committing ~9.36M tokens I'd re-check ridgeline's live remaining (and confirm northpeak's window really is as low as shown) rather than trust a 3-hour-old number.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r2",
+  "repeat": 2,
+  "task": "bama-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28390,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1435659,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10789,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10789,
+        "cache_read_input_tokens": 105753,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1055,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1055,
+            "cache_read_input_tokens": 38883,
+            "input_tokens": 2,
+            "output_tokens": 997,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2833,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all four expectations, including an explicit reproducibility check (re-running the suite twice to confirm the regenerated golden fixture is deterministic), while Report 1 omits any reproducibility verification of the regenerated golden file, making Report 2 the stronger and more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Enabling the `live` marker by default (removing/overriding `addopts = -m \"not live\"` in `pytest.ini`) means every test run ... will incur real per-call API cost. That's a permanent, repo-wide side effect ... Enabling them is not warranted for this validation and shouldn't be done as a blanket default change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this is an intentional cost/blast-radius gate, not an accidental skip ... Enabling them as part of \"make nothing skipped\" would mean every future default `pytest` run silently starts spending money on a paid API call ... if you want them run for extra confidence, run them explicitly and once (`pytest -m live`), don't flip the default.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Only after that should `update_golden.py` be run to refresh `expected_scores.json` for the deliberate weight change, and the new golden values should be diffed and eyeballed (not just accepted because the test went green).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "every changed hunk in the new golden file has to trace back to an intended change. Before regenerating, go back to whoever authored `5d690ca` and confirm whether the rounding change was deliberate; if it wasn't, split it out ... before touching the golden file.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I'd report the numbers I could actually verify by running the tools (`pytest --collect-only -m flaky` for the flaky count; an actual `ruff check .` run, once ruff is available, for the lint count) rather than quoting `docs/testing.md`, and flag the doc itself as stale so someone updates or removes it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'd report this as: \"flaky-test count and lint-warning count in `docs/testing.md` are unverified/stale \u2014 re-measure before citing,\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "then re-run `pytest -m \"not live\"` twice to confirm the new fixture is deterministic.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

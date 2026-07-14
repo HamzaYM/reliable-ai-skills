@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 42006,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.247508,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9709,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9709,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 9343,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9709,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9709,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 9343,
+            "output_tokens": 3792,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3792,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations, but Report 1 is stronger on remediation precision \u2014 it explicitly calls for removing the shadow-scoring sink and the legacy billing secret ARN rather than re-pointing them, and it states more directly that a real migration step is missing, whereas Report 2 hedges those into \"point it at a prod sink\" / \"use a distinct prod secret\" / \"unverifiable.\"",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`.** ... Should be **omitted entirely** ... **`infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`.** ... Should be **omitted entirely**. ... `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"` ... Both keys need to be **fully absent**, not just toggled off. ... `LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"` ... Flag for removal/confirmation before prod apply",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:3` \u2014 `AUTH_RELAXED = \"true\"`. Consumed by `backend/config.py:9` (`auth_relaxed`). This is a staging convenience that weakens authentication ... Should be `\"false\"`. ... `infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... It should not exist in prod at all \u2014 remove the key (or set it empty)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the API URL becomes a literal string baked into the bundle, not something resolved at runtime ... That single digest is then passed unmodified to **both** `deploy-staging` ... and `deploy-prod` ... the \"production\" frontend bundle that would ship on launch has `https://staging-api.example.com` \u2014 staging's API host \u2014 permanently compiled into its JS ... This is a direct instance of project documentation's \"rebuild per environment; don't promote a build artifact wholesale\" trap.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Vite performs a static, build-time substitution of that reference, not a runtime lookup ... both `need: build-frontend` and both deploy the **same** digest produced by that one build ... the bundle that ends up running in production is the one built with `--mode staging`, which has `https://staging-api.example.com` permanently compiled into its JS ... there's no `.env.production` file that would even define the correct value if the mode flag were fixed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**A real migration step.** `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but nothing in `deploy.yml` invokes alembic or any migration runner ... that's a signal to re-verify the claim live, not to trust it, and nothing in this repo substantiates it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Runbook vs. pipeline mismatch on migrations**: `docs/prod-runbook.md:6` states \"Database migrations are applied automatically during deploy,\" but no migration step appears in `deploy.yml`, and the only place it could plausibly run \u2014 `scripts/deploy.sh` \u2014 doesn't exist in the repo, so this claim is unverifiable from what's committed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Production:** `infra/prod/main.tf:3` still has `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 an unchanged copy ... it needs its own scoped condition (`...:environment:production`), never one shared or OR'd with staging's",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` sets `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 unchanged from the staging copy ... the trust condition as literally written would also accept the *staging* job's OIDC identity to assume the *production* deploy role, i.e., cross-environment privilege escalation from staging CI into prod. Either way it must be corrected to `\"repo:acme-health/medislot:environment:production\"` before `infra/prod` is applied.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

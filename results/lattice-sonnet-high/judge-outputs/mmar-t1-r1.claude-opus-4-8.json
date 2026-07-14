@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12183,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1316535,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9261,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9261,
+        "cache_read_input_tokens": 15579,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9261,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9261,
+            "cache_read_input_tokens": 15579,
+            "input_tokens": 2,
+            "output_tokens": 1102,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1102,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with the same core findings; they are comparable, with Report 1 slightly more thorough in confirmation detail.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`tenant_id` appears only in the function's parameter list and in the SELECT column list \u2014 it is never used as a filter predicate. Any authenticated user of any tenant can call `/appointments/search?q=...&status=booked` and receive matching appointments \u2014 including the `notes` field and `tenant_id` \u2014 for **every tenant in the system**, not just their own.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The function accepts a `tenant_id` parameter but never uses it in the hand-rolled SQL ... has no `WHERE tenant_id = ...` clause at all. Every other read path in this codebase goes through `build_appointment_query()` ... any authenticated clinic (tenant) hitting `GET /appointments/search?q=...&status=booked` gets back matching appointments ... for **every tenant in the database**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "does not touch `backend/app/exports.py`, whose `nightly_export()` still calls `build_appointment_query(session, tenant_id)` with two arguments. On this branch, every invocation of `nightly_export` ... raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "making `filters` a required positional argument with no default. `backend/app/exports.py` (not touched by this PR) still calls it as `build_appointment_query(session, tenant_id).all()` \u2014 two arguments only. ... This means `nightly_export()` will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` the next time it runs",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Currently **not exploitable** \u2014 `status` is typed as `AppointmentStatus(str, Enum)` in `backend/app/schemas.py` with only three fixed values (`booked`/`cancelled`/`completed`), and FastAPI validates the query parameter against that enum before the handler runs, so `status.value` can never contain attacker-controlled characters today.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Today this isn't independently exploitable for injection because `status` is typed as the `AppointmentStatus` str-`Enum` (`schemas.py`) on the FastAPI route, so FastAPI/Pydantic rejects any value that isn't `booked`/`cancelled`/`completed` before the function body runs. ... `q`, which correctly uses `:q`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

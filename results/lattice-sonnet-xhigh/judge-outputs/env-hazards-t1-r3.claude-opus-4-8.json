@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17262,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1486725,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9948,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9948,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9948,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9948,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1410,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1410,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly and thoroughly satisfy all three expectations with near-identical grounded analysis; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "This is the connection string the running app actually uses ... `cedar_owner` is ... the **owner** of the `clients`/`appointments` tables ... and also for table owners unless the table has `FORCE ROW LEVEL SECURITY` set \u2014 which `0001_init.sql` never sets ... Because the connection is `cedar_owner`, Postgres never evaluates the `tenant_isolation` policy at all",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_owner` is the role set as `POSTGRES_USER` ... It's also the role that runs every migration ... so it **owns** the `clients`/`appointments` tables ... by default are not applied to a table's owner either (that requires `ALTER TABLE ... FORCE ROW LEVEL SECURITY`, which `0001_init.sql` never adds ... `cedar_owner` sees straight past the `tenant_isolation` policy",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `cedarline/.env` ... so the **application's** `DATABASE_URL` points at `cedar_app` ... not `cedar_owner` ... Keep `cedar_owner` (or an equivalently privileged schema-owning role) reserved **exclusively** for `scripts/migrate.sh` / schema migrations \u2014 never for serving live app traffic.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_owner` (or a dedicated migration role) should be used **only** by `scripts/migrate.sh` / CI migration jobs ... \u2014 never by the running API.\n  - `cedar_app` should be the **only** role the FastAPI process ever authenticates as",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `cedar_app` role is created only by `cedarline/db/bootstrap/create_app_role.sql`, which is explicitly commented \"Not part of automatic database initialization ... `scripts/reset-local-db.sh` runs `docker compose down -v` ... it destroys the entire Postgres data directory, including every role ... none of those migrations create `cedar_app`; only the bootstrap script does, and `reset-local-db.sh` never invokes it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it only ever gets created by manually running `db/bootstrap/create_app_role.sql` ... `reset-local-db.sh` ... only re-runs `migrate.sh` \u2014 it never re-invokes `create_app_role.sql`, and `docker-compose.yml` has no `/docker-entrypoint-initdb.d` mount that would auto-run it either ... the developer must manually re-run the bootstrap script",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

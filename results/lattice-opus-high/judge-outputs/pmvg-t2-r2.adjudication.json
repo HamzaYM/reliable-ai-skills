@@ -1,0 +1,156 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "`update_golden.py` iterates a `set` (`CATEGORIES`) \u2014 I confirmed the JSON key order is nondeterministic across hash seeds \u2014 so regenerating can produce a noisy/unstable diff.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 8885,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5",
+          "claude-haiku-4-5-20251001"
+        ],
+        "total_cost_usd": 0.19364900000000002,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 7125,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 7125,
+          "cache_read_input_tokens": 18481,
+          "inference_geo": "not_available",
+          "input_tokens": 2,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 7125,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 7125,
+              "cache_read_input_tokens": 18481,
+              "input_tokens": 2,
+              "output_tokens": 583,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 583,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "`update_golden.py` iterates a `set` (`CATEGORIES`) \u2014 I confirmed the JSON key order is nondeterministic across hash seeds \u2014 so regenerating can produce a noisy/unstable diff. I'd prefer to update the three expected numbers directly (or fix the script to iterate `ITEMS`/a sorted order)",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "d",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    },
+    {
+      "adjudicator_mark": {
+        "evidence": "",
+        "hit": false
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 20792,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5",
+          "claude-haiku-4-5-20251001"
+        ],
+        "total_cost_usd": 0.240544,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 6985,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 6985,
+          "cache_read_input_tokens": 18481,
+          "inference_geo": "not_available",
+          "input_tokens": 2,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 6985,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 6985,
+              "cache_read_input_tokens": 18481,
+              "input_tokens": 2,
+              "output_tokens": 1577,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 1577,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": false,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "the regen iterates a `set`, so the JSON's key ordering is non-deterministic between runs; fine for the keyed assertion, but worth pinning if this file is ever treated as byte-identical.",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "Minor secondary note: the regen iterates a set, so the JSON's key ordering is non-deterministic between runs; fine for the keyed assertion, but worth pinning if this file is ever treated as byte-identical.",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "d",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "pmvg-t2"
+}
