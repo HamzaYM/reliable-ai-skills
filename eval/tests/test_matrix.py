@@ -790,6 +790,7 @@ class H4MatchedLowHighTest(unittest.TestCase):
         self.assertFalse(e["high_cell_interior_single_run"])
         self.assertTrue(e["high_cell_replicated"])
         self.assertEqual(e["high_cell_repeats"], 2)
+        self.assertTrue(e["high_is_confirmatory_endpoint"])
         self.assertIn("replicated confirmatory endpoint", e["note"])
 
     def test_sonnet_high_is_interior_single_run(self):
@@ -802,7 +803,44 @@ class H4MatchedLowHighTest(unittest.TestCase):
         self.assertTrue(e["high_cell_interior_single_run"])
         self.assertFalse(e["high_cell_replicated"])
         self.assertEqual(e["high_cell_repeats"], 1)
-        self.assertIn("interior single-run cell (no repeats)", e["note"])
+        self.assertFalse(e["high_is_confirmatory_endpoint"])
+        self.assertIn("not this model's confirmatory endpoint", e["note"])
+        self.assertIn("single-run, no repeats", e["note"])
+
+    def test_sonnet_high_replicated_is_still_not_confirmatory_endpoint(self):
+        # Regression test for a real bug: once Sonnet/Opus's interior cells
+        # started being replicated too, "high is replicated" stopped
+        # implying "high is the confirmatory endpoint" (Sonnet/Opus's
+        # confirmatory endpoint is max, never high). The note used to be
+        # inferred from repeat count alone and silently claimed a
+        # replicated Sonnet/Opus high cell was "this model's replicated
+        # confirmatory endpoint" -- false, since only Fable's endpoint
+        # override makes high a confirmatory endpoint. This rebuilds the
+        # Sonnet high cell as replicated (like real current data) and
+        # checks the note still correctly denies confirmatory-endpoint
+        # status.
+        root = self._tmp.name
+        sonnet_high_replicated = _make_replicated_cell_dir(
+            root, "s-high-r2", "claude-sonnet-5", "high",
+            {1: {"t1": _judgment([True, False, False], [True, True, True], ["a", "b", "c"]),
+                 "t2": _judgment([True, False, False], [True, True, True], ["a", "b", "c"])},
+             2: {"t1": _judgment([True, False, False], [True, True, True], ["a", "b", "c"]),
+                 "t2": _judgment([True, False, False], [True, True, True], ["a", "b", "c"])}},
+            TASKS_META,
+        )
+        cells = [self.fable_low, self.fable_high, self.fable_max,
+                 self.sonnet_low, sonnet_high_replicated, self.sonnet_max]
+        matrix = report.matrix_scores(cells)
+        entries = {e["model"]: e
+                   for e in matrix["h4_matched_low_high"]["entries"]}
+        e = entries["claude-sonnet-5"]
+        self.assertFalse(e["high_cell_interior_single_run"])
+        self.assertTrue(e["high_cell_replicated"])
+        self.assertEqual(e["high_cell_repeats"], 2)
+        self.assertFalse(e["high_is_confirmatory_endpoint"])
+        self.assertIn("not this model's confirmatory endpoint", e["note"])
+        self.assertNotIn("this model's replicated confirmatory endpoint",
+                          e["note"])
 
     def test_uses_high_cell_not_max(self):
         # Both models carry a max cell with cold 0 / delta 0; the matched
@@ -833,10 +871,10 @@ class H4MatchedLowHighTest(unittest.TestCase):
             text)
         self.assertIn(
             "| claude-fable-5 | +50.0 | +33.3 | +16.7 "
-            "| replicated endpoint (R2 mean) |", text)
+            "| replicated confirmatory endpoint (R2 mean) |", text)
         self.assertIn(
             "| claude-sonnet-5 | +100.0 | +66.7 | +33.3 "
-            "| interior single-run (no repeats, descriptive only) |", text)
+            "| interior, single-run (no repeats, descriptive only) |", text)
 
     def test_render_not_applicable_without_high_cell(self):
         text = report.render_matrix(report.matrix_scores([self.sonnet_low]))

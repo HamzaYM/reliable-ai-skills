@@ -39,7 +39,7 @@ per the posted 2026-07-10 endpoint amendment.
 
 Summary: H1 supported for all three models (Fable +3.5, Opus +3.9,
 Sonnet +4.9, all clearing the 3-point bar). H2 not supported for any
-model. Effort and skills read as complements, not substitutes.
+model: the skill delta did not reliably shrink as effort rose.
 
 ## Retention ratio (endpoint delta / low delta, complete-case)
 
@@ -75,6 +75,10 @@ single-run cells are point values. Runs = consumer runs per arm.
 | claude-sonnet-5@xhigh | `results/lattice-sonnet-xhigh` | 87.3% (R3 mean) | 98.5% (R3 mean) | +11.3 (R3 mean) | 17 | 68 | 3 |
 | claude-sonnet-5@max | `results/lattice-sonnet-max` | 89.7% (R3 mean) | 99.5% (R3 mean) | +9.8 (R3 mean) | 17 | 68 | 3 |
 
+claude-fable-5@max is omitted from this table: it holds no scored
+data (it never completed and is permanently excluded from the
+confirmatory matrix), so it has no rate to show.
+
 Complete-case common task set (n=17): aicg-t2, arch-contracts-t1, bama-t1, consent-t2, csh-t1, dora-t2, env-hazards-t1, eval-harness-t1, farch-t1, git-cc-t2, mabc-t2, mmar-t1, mt-auth-t1, pmvg-t2, s2p-cutover-t1, sysdbg-t2, tcr-t1. Complete-case rates, which are
 the only cross-cell-comparable basis, are in MATRIX.md.
 
@@ -82,15 +86,15 @@ the only cross-cell-comparable basis, are in MATRIX.md.
 
 All three effort-bearing models' shrinkage on one common low-to-high
 basis, so the comparison is basis-matched. Exploratory and directional
-only; changes no H1/H2/retention verdict. For Sonnet and Opus the high
-cell is an interior single-run cell (descriptive only); Fable's high is
+only; changes no H1/H2/retention verdict. Sonnet and Opus's high cell
+is now a 3-run replicated mean like their endpoints; Fable's high is
 its replicated confirmatory endpoint.
 
 | Model | D(low) pp | D(high) pp | Shrinkage (pp) | High cell |
 |---|---|---|---|---|
-| claude-fable-5 | +4.9 | +2.4 | +2.5 | replicated endpoint (R3 mean) |
-| claude-opus-4-8 | +8.3 | +9.8 | -1.5 | replicated endpoint (R3 mean) |
-| claude-sonnet-5 | +11.3 | +11.3 | +0.0 | replicated endpoint (R3 mean) |
+| claude-fable-5 | +4.9 | +2.4 | +2.5 | replicated confirmatory endpoint (R3 mean) |
+| claude-opus-4-8 | +8.3 | +9.8 | -1.5 | interior, R3 mean (descriptive only) |
+| claude-sonnet-5 | +11.3 | +11.3 | +0.0 | interior, R3 mean (descriptive only) |
 
 ## Judge panel disagreement and adjudication
 

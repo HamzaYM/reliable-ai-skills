@@ -178,15 +178,16 @@ all three effort-bearing models, so the comparison is basis-
 matched. This fulfills the deferred follow-up disclosed in the
 posted amendment (effort-sweep-amendment-2026-07-10-fable-endpoint.md section (c)). Exploratory and directional only; it is
 additive and changes no H1/H2/retention/H4 number or verdict above.
-For Sonnet and Opus the high cell is an interior single-run cell
-(no repeats, descriptive only); Fable's high is its replicated
-confirmatory endpoint.
+Fable's high is its replicated confirmatory endpoint; for Sonnet
+and Opus, high is an interior cell (not their confirmatory
+endpoint, which is max), descriptive only -- see the table's own
+High cell column for whether each is single-run or replicated.
 
 | Model | D(low) pp | D(high) pp | Shrinkage (pp) | High cell |
 |---|---|---|---|---|
-| claude-fable-5 | +4.9 | +2.4 | +2.5 | replicated endpoint (R3 mean) |
-| claude-opus-4-8 | +8.3 | +9.8 | -1.5 | replicated endpoint (R3 mean) |
-| claude-sonnet-5 | +11.3 | +11.3 | +0.0 | replicated endpoint (R3 mean) |
+| claude-fable-5 | +4.9 | +2.4 | +2.5 | replicated confirmatory endpoint (R3 mean) |
+| claude-opus-4-8 | +8.3 | +9.8 | -1.5 | interior, R3 mean (descriptive only) |
+| claude-sonnet-5 | +11.3 | +11.3 | +0.0 | interior, R3 mean (descriptive only) |
 
 ## Judge panel disagreement and adjudication
 
