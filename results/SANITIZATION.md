@@ -25,15 +25,14 @@ Nine files in the committed results tree contained absolute filesystem paths fro
 - Pre-redaction originals are retained in a local, non-published archive by the author.
 - Verification after redaction: every file still parses as JSON, and a recursive scan of all published result cells finds zero remaining absolute path strings.
 
-## Addendum: 2026-07-13, second pass on the replicated interior cells
+## Addendum (2026-07-14): missed leak in lattice-fable-max/run-meta.json
 
-The three medium/high/xhigh interior levels for Sonnet and Opus were re-run with two additional repeats each (one of them on the same second machine as the original mabc-t2-r2 leak above) and consolidated into the replicated 3-run cells now published. Re-scanning the full published tree after that consolidation found two more instances of the same class of leak, missed by the first pass because the affected files did not exist yet on 2026-07-11:
+The "zero remaining absolute path strings" claim above was wrong. `lattice-fable-max/run-meta.json` contained 19 occurrences (across 13 `reason` fields) of a real local machine temp-file path — `/var/folders/h4/fy5gk_r13dx9lp7b4vl3y0q80000gp/T/cmux-claude-node-options/restore-node-options.XXXXXX.cjs` — embedded in CLI-failure log text (`mktemp: mkstemp failed on ...: File exists`) captured verbatim from the harness's stderr when the model's tool invocation crashed. It is a machine-specific temp path, not personally identifying, and every literal occurrence is identical (the `XXXXXX` is mktemp's own placeholder, not an expanded random suffix). `lattice-fable-max` is excluded from every scored and published number in this repository, but the file itself is published, so the path was still a leak and the completeness claim was still false.
+
+Fixed with the same mechanical, byte-level string replacement used throughout this record: every occurrence of the path was replaced with `<LOCAL-TMP-PATH>`. No other text in the file — task names, arm outcomes, exit codes, or any other content — was touched.
 
 | File | Replacement | Occurrences |
 |---|---|---|
-| lattice-opus-xhigh/consumer/mabc-t2-r2-cold.json | `/Users/<machine-2 user>` -> `<HOME>` | 5 |
-| lattice-opus-xhigh/judge-inputs/mabc-t2-r2.json | `/Users/<machine-2 user>` -> `<HOME>` | 1 |
+| lattice-fable-max/run-meta.json | `/var/folders/h4/fy5gk_r13dx9lp7b4vl3y0q80000gp/T/cmux-claude-node-options/restore-node-options.XXXXXX.cjs` -> `<LOCAL-TMP-PATH>` | 19 |
 
-Same integrity notes apply: post-scoring, path-only, JSON still parses, no mark touched. Separately, the local Codex concordance working directory (`results/concordance/_raw/`, git-ignored, never shipped) recorded the author's own local checkout path (`/Users/hamza/repos/hamza-skills-oss`) as a `workdir:` field in 54 raw session logs; relativized to `<LOCAL-CHECKOUT>` on the local copy for hygiene, though this directory is excluded from the public tree by `.gitignore` regardless.
-
-Verification after this pass: same as above, re-run clean across the full current results tree.
+Verification after this redaction: `run-meta.json` (22,045 bytes before, 20,354 bytes after) still parses as JSON, and a repeat scan of this file finds zero remaining occurrences of the path. The original "recursive scan... finds zero remaining absolute path strings" line above is superseded by this addendum for this file; it was not re-verified against the full results tree beyond this file as part of this fix.
