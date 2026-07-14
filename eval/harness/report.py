@@ -772,8 +772,9 @@ def _h4_matched_low_high(cells, cell_task_scores, cell_repeat_tasks):
     section (c)). All three effort-bearing models' shrinkage on ONE common
     low-to-high basis, so the cross-model comparison is basis-matched. For
     Fable, high is its replicated confirmatory endpoint. For Sonnet and
-    Opus, high is an interior single-run cell (no repeats), labeled as such
-    and descriptive only; it feeds no verdict. Each model's D(low) and
+    Opus, high is an interior cell, not their confirmatory endpoint (which
+    is max), but now a 3-run replicated mean like their endpoints; it's
+    descriptive only and feeds no verdict. Each model's D(low) and
     D(high) use that model's own low+high endpoint complete-case set (see
     _endpoint_complete_case), so no other column's or interior cell's
     exclusions can move it. This adds keys only and changes no existing
@@ -803,6 +804,26 @@ def _h4_matched_low_high(cells, cell_task_scores, cell_repeat_tasks):
         shrink = (round(d_low - d_high, 1)
                   if d_low is not None and d_high is not None else None)
         high_interior = cells[high_id]["repeats"] == 1
+        # Whether "high" is this model's confirmatory endpoint is a property
+        # of CONFIRMATORY_ENDPOINT_EFFORT_OVERRIDE, not of the cell's repeat
+        # count. Those two facts used to coincide (only Fable's high was
+        # ever replicated) but stopped coinciding once Sonnet/Opus's
+        # interior cells were also replicated -- inferring "confirmatory
+        # endpoint" from "replicated" is what caused this note to go wrong.
+        high_is_confirmatory = _confirmatory_endpoint_effort(model) == "high"
+        if high_is_confirmatory:
+            note = "high is this model's replicated confirmatory endpoint"
+        elif high_interior:
+            note = ("high is an interior cell, not this model's "
+                    "confirmatory endpoint (which is "
+                    f"{_confirmatory_endpoint_effort(model)}): "
+                    "single-run, no repeats, descriptive only")
+        else:
+            note = ("high is an interior cell, not this model's "
+                    "confirmatory endpoint (which is "
+                    f"{_confirmatory_endpoint_effort(model)}): "
+                    f"a {cells[high_id]['repeats']}-run replicated mean "
+                    "like its endpoints, descriptive only")
         entries.append({
             "model": model,
             "endpoint_effort": "high",
@@ -813,11 +834,8 @@ def _h4_matched_low_high(cells, cell_task_scores, cell_repeat_tasks):
             "high_cell_repeats": cells[high_id]["repeats"],
             "high_cell_replicated": not high_interior,
             "high_cell_interior_single_run": high_interior,
-            "note": (
-                "high is an interior single-run cell (no repeats), "
-                "descriptive only" if high_interior else
-                "high is this model's replicated confirmatory endpoint"
-            ),
+            "high_is_confirmatory_endpoint": high_is_confirmatory,
+            "note": note,
         })
     return {
         "role": "EXPLORATORY (directional only), ADDITIVE",
@@ -829,10 +847,12 @@ def _h4_matched_low_high(cells, cell_task_scores, cell_repeat_tasks):
             "for all three effort-bearing models; fulfills the deferred "
             "follow-up disclosed in effort-sweep-amendment-2026-07-10-"
             "fable-endpoint.md section (c). Exploratory and directional "
-            "only: for Sonnet and Opus the high cell is an interior "
-            "single-run cell (no repeats), labeled as such and feeding no "
-            "verdict; Fable's high is its replicated confirmatory endpoint. "
-            "This view adds keys only and changes no existing "
+            "only: Fable's high is its replicated confirmatory endpoint; "
+            "for Sonnet and Opus, high is an interior cell (not their "
+            "confirmatory endpoint, which is max), now a replicated mean "
+            "like their endpoints but still descriptive only, feeding no "
+            "verdict -- see each entry's own note for its exact repeat "
+            "count. This view adds keys only and changes no existing "
             "H1/H2/retention/H4 number or verdict"
         ),
         "entries": entries,
@@ -1430,9 +1450,10 @@ def render_matrix(matrix):
         "posted amendment (effort-sweep-amendment-2026-07-10-fable-"
         "endpoint.md section (c)). Exploratory and directional only; it is",
         "additive and changes no H1/H2/retention/H4 number or verdict above.",
-        "For Sonnet and Opus the high cell is an interior single-run cell",
-        "(no repeats, descriptive only); Fable's high is its replicated",
-        "confirmatory endpoint.",
+        "Fable's high is its replicated confirmatory endpoint; for Sonnet",
+        "and Opus, high is an interior cell (not their confirmatory",
+        "endpoint, which is max), descriptive only -- see the table's own",
+        "High cell column for whether each is single-run or replicated.",
         "",
     ]
     if matched_entries:
@@ -1441,11 +1462,12 @@ def render_matrix(matrix):
             "|---|---|---|---|---|",
         ]
         for e in matched_entries:
-            high_label = (
-                "interior single-run (no repeats, descriptive only)"
-                if e["high_cell_interior_single_run"]
-                else f"replicated endpoint (R{e['high_cell_repeats']} mean)"
-            )
+            if e["high_is_confirmatory_endpoint"]:
+                high_label = f"replicated confirmatory endpoint (R{e['high_cell_repeats']} mean)"
+            elif e["high_cell_interior_single_run"]:
+                high_label = "interior, single-run (no repeats, descriptive only)"
+            else:
+                high_label = f"interior, R{e['high_cell_repeats']} mean (descriptive only)"
             lines.append(
                 f"| {e['model']} | {_fmt_delta(e['delta_low_pp'])} "
                 f"| {_fmt_delta(e['delta_high_pp'])} "

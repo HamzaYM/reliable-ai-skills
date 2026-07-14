@@ -198,8 +198,8 @@ def build():
           f"{signed(r['delta_max_pp'])} | {signed(r['shrinkage_pp'])} | >= 3.0 | {r['verdict']} |")
     w("")
     w("Summary: H1 supported for all three models (Fable +3.5, Opus +3.9,")
-    w("Sonnet +4.6, all clearing the 3-point bar). H2 not supported for any")
-    w("model. Effort and skills read as complements, not substitutes.")
+    w("Sonnet +4.9, all clearing the 3-point bar). H2 not supported for any")
+    w("model: the skill delta did not reliably shrink as effort rose.")
     w("")
 
     # ---- Retention ----
@@ -225,6 +225,8 @@ def build():
     w("|---|---|---|---|---|---|---|---|")
     for c in cell_order:
         cell = cells[c]
+        if cell["run_dir"] in UNSHIPPED_DIRS:
+            continue  # fable-max holds no scored data; see the note below the table
         agg = cell["aggregate"]
         replicated = cell.get("replicated")
         if replicated:
@@ -239,6 +241,10 @@ def build():
         w(f"| {c} | `{cell['run_dir']}` | {cold} | {loaded} | {delta} | "
           f"{agg['n_tasks']} | {agg['n_expectations']} | {cell['repeats']} |")
     w("")
+    w("claude-fable-5@max is omitted from this table: it holds no scored")
+    w("data (it never completed and is permanently excluded from the")
+    w("confirmatory matrix), so it has no rate to show.")
+    w("")
     w(f"Complete-case common task set (n={len(mx['complete_case_tasks'])}): "
       f"{', '.join(mx['complete_case_tasks'])}. Complete-case rates, which are")
     w("the only cross-cell-comparable basis, are in MATRIX.md.")
@@ -250,17 +256,19 @@ def build():
     w("")
     w("All three effort-bearing models' shrinkage on one common low-to-high")
     w("basis, so the comparison is basis-matched. Exploratory and directional")
-    w("only; changes no H1/H2/retention verdict. For Sonnet and Opus the high")
-    w("cell is an interior single-run cell (descriptive only); Fable's high is")
+    w("only; changes no H1/H2/retention verdict. Sonnet and Opus's high cell")
+    w("is now a 3-run replicated mean like their endpoints; Fable's high is")
     w("its replicated confirmatory endpoint.")
     w("")
     w("| Model | D(low) pp | D(high) pp | Shrinkage (pp) | High cell |")
     w("|---|---|---|---|---|")
     for e in h4["entries"]:
-        if e["high_cell_interior_single_run"]:
-            hc = "interior single-run (no repeats, descriptive only)"
+        if e["high_is_confirmatory_endpoint"]:
+            hc = f"replicated confirmatory endpoint (R{e['high_cell_repeats']} mean)"
+        elif e["high_cell_interior_single_run"]:
+            hc = "interior, single-run (no repeats, descriptive only)"
         else:
-            hc = f"replicated endpoint (R{e['high_cell_repeats']} mean)"
+            hc = f"interior, R{e['high_cell_repeats']} mean (descriptive only)"
         w(f"| {e['model']} | {signed(e['delta_low_pp'])} | {signed(e['delta_high_pp'])} | "
           f"{signed(e['shrinkage_pp'])} | {hc} |")
     w("")
@@ -282,6 +290,8 @@ def build():
     w("| Cell | Marks disagreed | Disagreement % | Slot marks adjudicated | Adjudication % | Unresolved |")
     w("|---|---|---|---|---|---|")
     for c in cell_order:
+        if cells[c]["run_dir"] in UNSHIPPED_DIRS:
+            continue  # fable-max was never judged; nothing to report here
         jd = cells[c]["judge_disagreement"]
         a = jd["adjudication"]
         w(f"| {c} | {jd['n_disagreed']}/{jd['n_marks']} | {jd['disagreement_rate_pct']}% | "
