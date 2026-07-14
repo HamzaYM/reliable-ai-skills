@@ -1,0 +1,15 @@
+grid:
+  variants: 40
+  cases: 150   # 40 x 150 = 6,000 grader calls per full run
+workers: 32     # parallel workers (concurrency only)
+grader:
+  backend: halcyon          # default
+  model: sentinel-pro
+  alternate_backend: beacon
+  alternate_model: sentinel-lite
+reasoning_effort: high
+# A sentinel-pro call at reasoning_effort: high averages ~1,500 tokens, so a
+# full grid is ~9.0M tokens. Dropping to reasoning_effort: low or switching
+# to the lighter sentinel-lite grader cuts per-call cost to roughly a third
+# (~500 tokens per call). halcyon and beacon bill against separate
+# per-window allowances.

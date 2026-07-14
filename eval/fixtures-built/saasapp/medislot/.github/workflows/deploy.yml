@@ -1,0 +1,35 @@
+name: deploy
+on:
+  push:
+    branches: [main]
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+        working-directory: frontend
+      - run: npx vite build --mode staging
+        working-directory: frontend
+      - name: package bundle into container image and push
+        id: push
+        run: |
+          docker build -t registry.example.com/medislot:latest .
+          docker push registry.example.com/medislot:latest
+          echo "digest=$(docker inspect --format='{{index .RepoDigests 0}}' registry.example.com/medislot:latest)" >> "$GITHUB_OUTPUT"
+  deploy-staging:
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: deploy the built digest to staging
+        run: ./scripts/deploy.sh "${{ needs.build-frontend.outputs.digest }}" staging
+  deploy-prod:
+    needs: [build-frontend, deploy-staging]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: deploy the same already-built digest to prod
+        run: ./scripts/deploy.sh "${{ needs.build-frontend.outputs.digest }}" prod

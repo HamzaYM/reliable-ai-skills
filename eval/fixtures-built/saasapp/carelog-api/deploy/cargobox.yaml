@@ -1,0 +1,10 @@
+# Cargobox container deployment (always-on service)
+service: carelog-api
+image: registry.example.com/carelog-api:latest
+replicas: 2
+resources:
+  cpu: "1"
+  memory: 1Gi
+env:
+  - name: DATABASE_URL
+    secretRef: carelog-db-url
