@@ -1,0 +1,10 @@
+services:
+  vectorstore:
+    image: qdrant/qdrant:v1.7
+    ports:
+      - "6333:6333"
+  objectstore:
+    image: minio/minio:latest
+    command: server /data
+    ports:
+      - "9000:9000"

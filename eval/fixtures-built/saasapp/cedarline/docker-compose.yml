@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: cedar_owner
+      POSTGRES_PASSWORD: ownerpw
+      POSTGRES_DB: cedar
+    ports:
+      - "5432:5432"
+    volumes:
+      - cedar_pgdata:/var/lib/postgresql/data
+
+volumes:
+  cedar_pgdata:
