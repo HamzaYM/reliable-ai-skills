@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16013,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1401605,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9180,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9180,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9180,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9180,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1395,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1395,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions with the same root causes and fixes; they are comparable, with Report 1 and Report 2 essentially equivalent in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The app connects as the table owner. `migrate.sh` creates the tables while connected as `cedar_owner`, so `cedar_owner` owns `clients`/`appointments`. Postgres **does not apply RLS policies to a table's owner unless the table is set to `FORCE ROW LEVEL SECURITY`** \u2014 and the migration only uses `ENABLE`. So the owner bypasses the policy... Because the app's `DATABASE_URL` uses `cedar_owner`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It sets `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`, so the running application connects as **`cedar_owner`**... Table owner. Migrations are applied by `cedar_owner`... A table's owner bypasses RLS by default unless the table is declared `FORCE ROW LEVEL SECURITY` \u2014 and `0001_init.sql` never does that.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Keep a strict split: DDL/migrations run as the privileged `cedar_owner`; the application connects **only** as `cedar_app` (a non-owner, non-superuser role with just the DML grants already present in `create_app_role.sql`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`cedar_owner`** \u2014 schema owner, used **only** to run migrations/DDL. The app must never connect as this role. **`cedar_app`** \u2014 used for **all** application runtime access; least-privilege, no bypass attribute",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `cedar_app` role is created **only** by `db/bootstrap/create_app_role.sql`, which is explicitly a manual, one-time step... `scripts/reset-local-db.sh` runs `docker compose down -v`. The `-v` flag **deletes named volumes**, destroying `cedar_pgdata`... nothing in the reset path re-runs `create_app_role.sql`, so `cedar_app` is never recreated",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it is created **only** by the one-time, manual `db/bootstrap/create_app_role.sql`... The `-v` deletes the named volume `cedar_pgdata`... `create_app_role.sql` is **not** mounted into `/docker-entrypoint-initdb.d/`, so it does not run on init... `scripts/migrate.sh`... only executes `db/migrations/*.sql`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

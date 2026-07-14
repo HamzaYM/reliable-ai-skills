@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22685,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1099507,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9321,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9321,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9321,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9321,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2689,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2689,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable rigor and specificity; Report 1 adds a useful git-history timeline while Report 2 slightly sharpens the \"now, not eventually\" framing for expectation (c), but overall the two are essentially equivalent in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls belong in the gateway module `medibill/backend/app/billing/gateway.py`... backend/app/api/invoices.py:14-17 \u2014 the `/invoices/{id}/charge` route builds `client = chargekit.Client(...)`... backend/app/workers/dunning.py:9-13 \u2014 `run_dunning_pass()` calls `chargekit.Client(...).charge(...)` inline... One more file imports from the SDK but is **not** a violation: `backend/app/billing/errors.py:6` re-exports `chargekit.errors` classes \u2014 this is the boundary exception the doc explicitly allows.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls (a refund) should live in **`backend/app/billing/gateway.py`**... backend/app/api/invoices.py:14-16 \u2014 `charge_invoice` does `client = chargekit.Client(...)` then `client.charge(...)`... backend/app/workers/dunning.py:9-13 \u2014 `run_dunning_pass` does `chargekit.Client(...).charge(...)` inline... The only other non-gateway reference, `backend/app/billing/errors.py:6`... is the *documented, legitimate* exception \u2014 it imports error classes only and makes no provider calls.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`InvoiceOut` carries a sixth field, `external_ref` (`models/invoice.py:22`), populated by `from_model` (`models/invoice.py:24-28`)... This field was added in commit `c23da88` (MEDB-214, 2026-06-18), along with migration `0006_add_invoice_external_ref.sql`; the doc was not updated.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The serializer `InvoiceOut` carries a sixth field, `external_ref` (`backend/app/models/invoice.py:22`), and the charge endpoint sets it and returns the object (`invoices.py:17-18`). Migration `0006_add_invoice_external_ref.sql` added the backing column and MEDB-214 added the model field",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The refund feature is the natural occasion \u2014 it will add a gateway `refund()` accessor and (per Answer 4) needs the `refund_created` webhook to actually do something, so the doc should be corrected in that same PR rather than deferred. ... any PR that changes the provider surface, the invoice response shape, or the webhook set must update `ARCHITECTURE.md` in the same change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the reconciliation should happen **now, before/at the start of the refund work, not \"eventually\"**: land the boundary fix and the doc corrections for the already-shipped drift (external_ref, payment_pending, the two rogue call sites) as their own change, and thereafter update `docs/ARCHITECTURE.md` **in the same commit** as any code that changes what it governs \u2014 including the refund feature itself",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`ARCHITECTURE.md:15-17` claims the integration handles \"4 webhook event types...\" The handler in `backend/app/api/webhooks.py:10-19` actually branches on **five**... So both the count (4 vs. 5) and the enumeration (missing `payment_pending`) are wrong... Stop hard-coding a count. \"4 ... types\" is exactly the phrasing that silently went wrong when a branch was added. Either drop the literal number or point at the source of truth \u2014 the `payment_webhook` handler in `backend/app/api/webhooks.py` \u2014 instead of duplicating the list in prose.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Against `backend/app/api/webhooks.py:10-19`, this is wrong on two counts: the code handles **five** types, not four, and the missing one is **`payment_pending`**... don't lead with a hardcoded count (\"4\"). A cited count like this is guaranteed to drift and here it already has \u2014 it now hands the reader a wrong number. Either drop the count and point at the single source of truth (the branch list in `webhooks.py`) and describe the property, or, if an enumerated list is kept, keep it exhaustive and current",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

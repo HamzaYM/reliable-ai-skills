@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17492,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1238124,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9353,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9353,
+        "cache_read_input_tokens": 23558,
+        "inference_geo": "not_available",
+        "input_tokens": 10134,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9353,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9353,
+            "cache_read_input_tokens": 23558,
+            "input_tokens": 10134,
+            "output_tokens": 2015,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2015,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent evidence and rigor; Report 1 is slightly more decisive on the AI-attribution footer (unhedged \"should be removed\") while Report 2 adds a minor unnecessary hedge, but the substance is comparable overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Patients can now export their full visit history as a PDF.\" \u2014 Not implemented... No PDF code exists anywhere (grep confirms). **Must be removed.** ... \"Two-factor authentication is now enabled for every clinic by default.\" \u2014 Directly contradicted by `app/security/config.py`: `TWO_FACTOR_DEFAULT = False`... **Must be corrected/removed.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Export your visit history \u2026 Patients can now export their full visit history as a PDF.\" \u2014 FALSE. ... The feature does not exist. This whole section (and its image reference) must be removed. ... \"Two-factor authentication is now enabled for every clinic by default.\" \u2014 FALSE. `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`... Must be removed or rewritten",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the \"after\" image `after_scheduling.png` does not show a scheduling calendar \u2014 it shows the **Billing / Invoices** page. I confirmed this two ways: the image itself renders the text \"BILLING / INVOICES,\" and `captures.json` records its capture route as `/billing/invoices`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`captures.json` maps `after_scheduling.png` to `\"route\": \"/billing/invoices\"`, and opening the file confirms it renders **\"BILLING / INVOICES,\"** while `before_scheduling.png` renders **\"SCHEDULING CALENDAR.\"**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` \u2014 **referenced by the document (line 26) but does not exist** in `docs/release/img/`. ... `unused_capture_07.png` \u2014 **exists but is not referenced** by the document",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Referenced but missing:** the doc references `img/after_export.png` (line 26), but no such file exists in `docs/release/img/`. ... **Orphan file:** `unused_capture_07.png` exists in the img folder but is referenced nowhere in the doc",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The footer line **\"Highlights draft assembled with AI assistance.\"** (line 33) is an internal drafting note and should be removed before sending.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (line 33).** This is internal-process/AI-attribution metadata and it labels the piece a \"draft.\" Neither belongs in a finished customer email; strip it",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r1",
+  "repeat": 1,
+  "task": "dora-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22057,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12215590000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12113,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12113,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12113,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12113,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 2249,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2249,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations; Report 1 is slightly stronger on category (c)/(d) of expectation (a), giving unambiguous removal recommendations for shadow_scoring_sink and legacy_billing_secret_arn, whereas Report 2 hedges with conditional/replacement language for those two settings.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "AUTH_RELAXED = \"true\" \u2014 relaxed auth is read at backend/config.py:9. This is the single most dangerous line in the file... Fix: remove SHADOW_SCORING_SINK entirely from prod... Should be removed unless someone can show a live consumer.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "AUTH_RELAXED = \"true\". backend/config.py:9 reads this straight into cfg[\"auth_relaxed\"]... Should be \"false\". ... This must not exist in prod at all \u2014 should be removed/empty, not just changed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the exact same image/digest is deployed to both environments... if this pipeline runs as-is, the production container will serve a frontend bundle whose API calls are hardcoded to https://staging-api.example.com... This is precisely project documentation's \"rebuild per environment; don't promote a build artifact wholesale\" trap",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Net effect: the production launch would ship a frontend bundle whose API base URL is hardcoded to https://staging-api.example.com \u2014 the production UI would talk to the staging backend.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No database migration step anywhere in the workflow. docs/prod-runbook.md:6 asserts \"Database migrations are applied automatically during deploy,\" but nothing in deploy.yml runs Alembic or any migration command... don't assume the pipeline succeeded means the schema is current.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The runbook (docs/prod-runbook.md:6) asserts \"Database migrations are applied automatically during deploy,\" but no migration step is visible in deploy.yml, and the only migration files present... are stubs whose upgrade() bodies are just pass \u2014 there's no actual schema to verify migrations against",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 sets the same condition string, oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"... This must be changed to repo:acme-health/medislot:environment:production before apply",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 has the same unedited condition \u2014 \"repo:acme-health/medislot:environment:staging\" \u2014 even though the deploy-prod job runs under environment: production... This must be changed to \"repo:acme-health/medislot:environment:production\" before applying.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

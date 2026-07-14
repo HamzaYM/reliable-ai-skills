@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22498,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.140522,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8446,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8446,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8446,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8446,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 1720,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1720,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are near-identical and hit all four expectations; Report 2 is marginally more thorough on isolation/verification, but they are effectively comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The root cause is a stale config key in `ticket-scorer/config/scoring_config.yaml`, line 2: `expected_label_field: label`. The gold-label field name in `fixtures/eval_set.jsonl` was renamed from `label` to `gold_label`... `gold = record.get(gold_field)                  # record.get(\"label\") -> always None, since keys are now \"gold_label\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The root cause is a **config/schema mismatch** in `ticket-scorer/config/scoring_config.yaml`... but the evaluation fixture `fixtures/eval_set.jsonl` stores gold labels under the key `gold_label`... `gold = record.get(gold_field)                 # record.get(\"label\") -> None, always`... **The fix is to change `config/scoring_config.yaml`**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "introduced by commit `53551e8` \u2014 `chore(eval): migrate eval set to gold_label schema (SCORE-77)`. This commit renamed the label key in every record of `fixtures/eval_set.jsonl`... `pipeline/metrics/nightly_scores.csv` shows accuracy 0.90 \u2192 0.92 \u2192 0.91 on 2026-06-14/15/16, then drops to exactly `0.00` starting `2026-06-17` \u2014 the same calendar date as the commit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"). This commit renamed the gold-label key in `fixtures/eval_set.jsonl` from `label` to `gold_label`... `pipeline/metrics/nightly_scores.csv` shows accuracy at 0.90\u20130.92 every day through 2026-06-16, then exactly `0.00` on 2026-06-17 and every day since",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`pipeline/score_one.py` \u2014 the script used for the manual spot-check \u2014 never loads `config/scoring_config.yaml` and never compares a prediction to a gold label at all... that script structurally cannot exercise the bug... The right way to reproduce is at the actual failing layer: run `python3 -m pipeline.score_batch`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The investigator re-ran tickets through `pipeline/score_one.py`, which: Never reads `config/scoring_config.yaml`... Never loads or compares against any gold label at all... So `score_one.py` cannot exhibit this bug under any circumstances... run the actual nightly batch entry point (`pipeline/score_batch.py`, i.e. `python3 -m pipeline.score_batch`...) against the real `fixtures/eval_set.jsonl`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "reverting the model does nothing to `expected_label_field: label` vs. the eval set's `gold_label` keys, so accuracy would stay at 0.00 regardless of which model version runs... the root cause is a config/schema key mismatch in the scoring harness, not a change in model behavior",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Even if a different model/version were substituted, it would have no effect on the bug: the accuracy computation would still compare every prediction against `record.get(\"label\")`, which is `None` for every record... so accuracy would remain 0.0 regardless of which model produces the predictions.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15062,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1177465,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7046,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7046,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7046,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7046,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1408,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1408,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent evidence; they are comparable, with Report 1 marginally more precise on image reconciliation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**\"Two-factor authentication is now enabled for every clinic by default.\" \u2014 FALSE.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` with the comment \"Two-factor authentication is opt-in per clinic.\" The opposite of the claim. **Must be corrected or removed.**\n- **\"Patients can now export their full visit history as a PDF.\" \u2014 NOT IMPLEMENTED.** `app/routers/visits.py` has only a `/visits` route returning `[]` and a bare `# TODO: pdf export`. There is no export endpoint and no PDF code. **Must be removed**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**\"Two-factor authentication is now enabled for every clinic by default.\"** \u2014 Directly contradicted by code. `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` with the comment \"Two-factor authentication is opt-in per clinic.\" The claim is false; **remove or correct**.\n- **\"Patients can now export their full visit history as a PDF.\"** \u2014 Not implemented. `app/routers/visits.py` has `# TODO: pdf export`, and `list_visits` returns `[]`. There is no PDF/export code anywhere (grep found only the TODO). The feature does not exist; **remove**.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The \"after\" image is the wrong screen. `after_scheduling.png` is a capture of the **Billing / Invoices** page, not the redesigned calendar:\n- `captures.json` maps `after_scheduling.png` to route `/billing/invoices`.\n- Viewing the file confirms it reads **\"BILLING / INVOICES\"**, while `before_scheduling.png` reads **\"SCHEDULING CALENDAR\"**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`before_scheduling.png` shows \"SCHEDULING CALENDAR\", but `after_scheduling.png` shows **\"BILLING / INVOICES\"** \u2014 a different screen entirely. `captures.json` confirms the cause: `after_scheduling.png` was captured from route `/billing/invoices`, not the calendar.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` \u274c **does not exist.** The file is absent from `docs/release/img/`, and `captures.json` explicitly notes it as \"expected capture; no corresponding file.\" The export section would render a broken image.\n\nAlso, an image file exists that the document does **not** use: `unused_capture_07.png`, whose content is \"PATIENT LIST\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`after_export.png` is referenced but does not exist.** The doc's Export section uses `![after](img/after_export.png)`, but that file is absent from `docs/release/img/`... **`unused_capture_07.png` exists but is referenced nowhere.** It renders \"PATIENT LIST\" \u2014 an orphan capture not tied to any doc section.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The footer **\"Highlights draft assembled with AI assistance.\"** This is an internal drafting note; it also labels the piece a \"draft.\" Both should be removed before customer send.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\"** \u2014 This is internal drafting metadata / an AI-attribution artifact, not customer-facing content... it should be stripped",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r2",
+  "repeat": 2,
+  "task": "dora-t2"
+}

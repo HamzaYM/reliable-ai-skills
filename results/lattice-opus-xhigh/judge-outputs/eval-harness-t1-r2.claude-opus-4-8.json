@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22305,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1486245,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9005,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9005,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9005,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9005,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1800,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1800,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both nail the core bug and consequences, but Report 1 correctly distinguishes gate vs. optional axis handling (renormalize on relevance/tone, hold out on accuracy) while Report 2 explicitly rejects that distinction, so Report 1 answers the task better.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "That `None` is then passed to `composite()` in `grader/aggregate.py:6-13`, which coerces it to `0.0` and continues the full weighted sum without renormalizing the weights ... In form, a failed-axis record is identical to a fully-scored one: same three columns, same float type in the same `composite` column, no status flag",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "For the failed axis, `axis_scores.get(axis)` returns `None`, and lines 9\u201311 coerce it: `if value is None: value = 0.0`. So the failed axis contributes `weight * 0.0 = 0` ... compared to a fully-scored record, a partial record is identical in form \u2014 same three columns, a normal-looking numeric composite.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Substituting `0.0` for a *missing* score conflates two different things: \"this axis genuinely scored 0\" ... and \"we never got a score for this axis\" ... Deflated failed-axis rows drag down the mean of whichever agents happened to hit a failure.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "treats it as \"this axis measured 0\" \u2014 conflating a missing measurement with a genuine zero ... indistinguishable, by form, from a legitimately low score ... The rankings are therefore systematically biased against whichever agents happened to hit more per-axis failures",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Failed accuracy (load-bearing / the gate): do not emit a composite that looks comparable to fully-scored rows. Write the record as degraded/incomplete \u2014 e.g. add an explicit `status` column ... and leave the composite blank/null rather than a number.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "you can't produce a trustworthy composite when any axis is missing, so the record should be excluded/flagged regardless of which one failed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed relevance or tone call is not load-bearing for pass/fail; the surviving axes still support a defensible number, so renormalizing over what succeeded (and flagging it) is a legitimate option.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

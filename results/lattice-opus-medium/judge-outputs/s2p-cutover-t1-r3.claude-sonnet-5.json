@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35234,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1344393,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10545,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10545,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10545,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10545,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3776,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3776,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 hits all four expectations with explicit, actionable recommendations (especially for the staging-baked frontend bundle and the missing-migration-verification points), while Report 2 misses (b) and (c) by only diagnosing symptoms without stating the required fix/conclusion.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`ENABLE_DEBUG_TOOLBAR = \"true\"`** ... this key should be **omitted entirely** from prod... **`AUTH_RELAXED = \"true\"`**... Should be **removed entirely**... **`PRESET_ADMIN_ACCOUNTS`**... must be **removed entirely**... Both keys should be **fully absent** from prod config... **`LEGACY_BILLING_SECRET_ARN`**... Should **not be recreated** in prod; remove it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Line 2 \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`.**... Change to `\"false\"`... **Line 3 \u2014 `AUTH_RELAXED = \"true\"`.**... Change to `\"false\"`... **Line 4 \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`.**... Remove it (set to `\"\"`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the shipped prod bundle would have `https://staging-api.example.com` baked in, and because the pipeline promotes the same digest, there is no runtime fix. This is the \"rebuild per environment / don't promote a baked artifact\" trap exactly. Prod needs its own `.env.production` (e.g. `https://api.example.com`) and a separate `vite build --mode production`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "confirm whether the first prod deploy actually runs migrations or needs a manual first pass \u2014 do not assume \"pipeline succeeded\" = schema current.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the prod role's condition must be changed to `...:environment:production`, and prod should get its **own scoped role** (both envs currently declare the same role name `medislot-deploy`), never an inherited/shared staging condition",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That will **not** match the `staging` condition, so prod deploy authentication will fail. It must be changed to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

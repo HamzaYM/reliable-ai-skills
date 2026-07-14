@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23749,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10006490000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8137,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8137,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8137,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8137,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 2546,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2546,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very similar in depth and largely equivalent on items 1-3, but Report 2 explicitly verifies golden-file reproducibility by re-running the comparison twice and naming the key-ordering instability source, while Report 1 only mentions the instability without a concrete reproducibility check \u2014 giving Report 2 the edge.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "enabling them adds zero validation coverage for this diff. ... Enabling live tests on the default run is actively harmful: every run would (a) require the `SCORELAB_API_KEY` secret ... (b) incur real per-call API cost ... and (c) add network dependence and flakiness ... The `-m \"not live\"` default is deliberate and correct; leave it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Enabling them on the default run (removing `-m \"not live\"`) would make every ordinary `pytest` invocation spend real money per call, require a live secret and network access, and become nondeterministic/failure-prone ... The deselection is intended behavior (an opt-in cost gate), not a defect to \"fix.\" The teammate's framing conflates \"deselected\" with \"skipped/broken\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Only after the code is what you actually mean should you run `scripts/update_golden.py`, then eyeball the resulting `expected_scores.json` diff to confirm every changed number is explained by the weight (and, if kept, precision) change and nothing else.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So before recapturing I trace every changed golden hunk to the intended change. The score hunks pass; the confidence hunks do not. I'd surface that second edit \u2014 either drop it from this PR (revert the rounding line) or justify it explicitly as a separate, intended change \u2014 rather than launder it into the project documentation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would source both from the repo directly, not from `docs/testing.md` \u2014 that doc is stale on both counts. Flaky: it claims \"2 tests in tests/test_sampling.py,\" but only **1** test is actually marked ... Lint: it claims \"9\" warnings, but running the linter ... yields **4** F401 unused-import warnings",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite `docs/testing.md`'s figures; I'd re-measure and report the measured numbers, because both doc figures are already stale/wrong: ... Flaky: doc says \"2 tests...\"; the code has only **1** ... Lint: doc says \"9\"; ... reports **4**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Only after the diff is intentional do I run `scripts/update_golden.py`, then re-run `pytest` in assert mode (no regen) at least twice to confirm the new fixture is stable. Note also `update_golden.py` iterates a `set`, so its JSON key ordering is nondeterministic across runs",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

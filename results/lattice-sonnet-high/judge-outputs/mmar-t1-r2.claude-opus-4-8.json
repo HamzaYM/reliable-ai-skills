@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15409,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1258455,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8008,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8008,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8008,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8008,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 1321,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1321,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answered better: it caught both the cross-tenant leak and the nightly_export breaking-change regression, while Report 1 missed the export caller defect entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`search_appointments(session, tenant_id, q, status)` receives `tenant_id` as an argument but never uses it... There is no `AND tenant_id = :tenant_id` clause anywhere. Every other read path in this codebase... goes through `build_appointment_query`, whose entire purpose... is to filter `Appointment.tenant_id == tenant_id`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`tenant_id` is passed into `search_appointments(session, tenant_id, q, status)` but is **never referenced in the SQL** \u2014 there is no `tenant_id = :tenant_id` predicate anywhere... any authenticated caller from any tenant hitting `GET /appointments/search?q=...&status=...` gets back matching appointments... from **every tenant in the database**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The PR changes `build_appointment_query`'s signature from `(session, tenant_id)` to `(session, tenant_id, filters)`, with `filters` as a **required** positional argument (no default value)... `backend/app/exports.py` \u2014 the nightly per-tenant CSV export job \u2014 is **not touched by this PR** and still calls `build_appointment_query(session, tenant_id).all()` with only two arguments... raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "In this specific case I verified it is **not currently exploitable**: `status` is typed as `AppointmentStatus` (`backend/app/schemas.py`), a `str, Enum` restricted to exactly `booked`, `cancelled`, `completed`... the `q` parameter (the actual free-text user input) is correctly bound via the `:q` placeholder",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`status` is typed as `AppointmentStatus`, a closed `str, Enum` (`backend/app/schemas.py`) with only `booked`/`cancelled`/`completed` as members, and FastAPI validates/rejects any other value before the request reaches this function \u2014 so this specific interpolation is not currently exploitable for injection via the API. I list it only as a bad-practice/defense-in-depth nit, not as a second blocking vulnerability",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

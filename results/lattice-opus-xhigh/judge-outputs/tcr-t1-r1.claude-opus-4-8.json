@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27365,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1569975,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8156,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8156,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8156,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8156,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2495,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2495,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger: it fully nails the SLA-breach point by citing April's 99.77% in uptime-2026.csv against the 99.9% monthly SLA, which Report 1 missed.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Failures began at 14:03 and the first alert fired at 14:50 (`OPS-412-timeline.md:3-4`) \u2014 a **47-minute** detection gap, not \"within minutes.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md`: failures began at 14:03 and the **first alert fired at 14:50** \u2014 a 47-minute detection gap, not \"within minutes.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md:9-10` states: \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` records: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "`docs/sla-commitments.md`: the contractual **monthly** uptime SLA is 99.9%, and \"Any calendar month below 99.9% is a breach and owes service credits.\" `metrics/uptime-2026.csv` shows April 2026 at **99.77%**, which is below 99.9% \u2192 April is a breach.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rule 1 \u2014 \"Never assign blame to an individual.\"** Draft line 12: \"The outage was caused by **the on-call engineer** deploying an untested config change.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" The draft says \"The outage was caused by the on-call engineer deploying an untested config change.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "**Rule 3 \u2014 \"Lead with customer impact and remediation.\"** The draft leads with a reputation boast \u2014 \"LarkPay has maintained 99.99% uptime over the past year\" (line 3) ... The opening should lead with what customers experienced and what LarkPay is doing about it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/customer-comms-style-guide.md` rule 3 (\"Lead with customer impact and remediation\") ... The draft opens with a 99.99% uptime boast ... It must be restructured to lead with impact and remediation",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r1",
+  "repeat": 1,
+  "task": "tcr-t1"
+}

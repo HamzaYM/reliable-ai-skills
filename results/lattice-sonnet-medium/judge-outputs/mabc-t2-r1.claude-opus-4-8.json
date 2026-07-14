@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28662,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.18099949999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10465,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10465,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10465,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10465,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2469,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2469,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable on grouping, ordering, and the F-06 judgment call, but Report 2 answers better overall because it correctly identifies the shared conftest.py results-database collision risk and the need to override RESULTS_DB, which Report 1 misses.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Group A \u2014 `pipeline/registry.py` (F-02, F-05, F-09): three independent constants in one small file (`MODEL_ENDPOINTS`, `DEFAULT_RUBRIC_VERSION`, `DEFAULT_DATASET`). One engineer, one branch, three small commits",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Group B \u2014 Registry constants (F-02, F-05, F-09): all three live in the same 11-line file, `pipeline/registry.py`... Assign all three to **one** engineer \u2014 splitting a 11-line file three ways guarantees a merge conflict for no parallelism benefit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Groups A, B, C, D have no cross-file or cross-finding dependencies on each other, so run them **in parallel as wave 1**. Group E runs **after** (wave 2)... **Group C \u2014 `pipeline/rubric.py`** (F-01) plus test **F-11**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**A, B, C, D all proceed in parallel in a single wave** \u2014 they touch disjoint files... **Group C \u2014 Rubric parsing + test (F-01, F-11)**... Assign all three to **one** engineer [registry]",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 (tightening `PARTIAL_CREDIT_THRESHOLDS` in `pipeline/score.py`) changes what score every future \u2014 and potentially re-run historical \u2014 answer gets... This needs a threshold decision from whoever owns the rubric/scoring policy before any code changes",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 (`PARTIAL_CREDIT_THRESHOLDS` in `pipeline/score.py`) changes what score real graded answers receive... I'd escalate this for someone to specify concrete target thresholds before any engineer touches it, and keep it out of the parallel wave until that's settled.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "`RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\")` \u2014 an absolute path outside the repo, defaulted to the same location for every checkout. If two engineers... run `pytest` at the same time... without overriding `RESULTS_DB`, their test runs write to the same file concurrently... each engineer sets `RESULTS_DB` to a per-worktree path before running tests.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

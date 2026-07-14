@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29174,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1335417,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13292,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13292,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13292,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13292,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2481,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2481,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very similar in structure and quality, but Report 1 additionally surfaces the RESULTS_DB/conftest.py collision risk (expectation d), which Report 2 omits entirely, making Report 1 more complete overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Group B \u2014 `pipeline/registry.py`: F-02, F-05, F-09. Three independent one-line constant edits ... Give all three to one engineer rather than three \u2014 there's no parallelism benefit to splitting a file this small, only merge churn.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer A \u2014 `pipeline/registry.py`: F-02, F-05, F-09. All three edit different constants ... Splitting these across people buys nothing and risks a trivial merge conflict for no reason; one engineer does all three in one pass.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 (fully parallel, 4 engineers, Groups A/B/C/D): these four groups touch four completely disjoint file sets (`prompts/*`, `pipeline/registry.py`, `pipeline/rubric.py`+new test, `pipeline/run_batch.py`+new test), so they can run simultaneously with zero coordination ... This alone clears 11 of the 14 findings (F-01, F-02, F-03, F-04, F-05, F-09, F-10, F-11, F-12, F-13, F-14).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Ordering: A, B, C, D all start simultaneously in wave 1 \u2014 none of them share a file or a data dependency. A fifth cluster, `pipeline/score.py` (F-06, plus closing out F-08), comes in wave 2",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 underspecified product decision. ... This directly changes every graded answer's output score \u2014 exactly the \"user-facing behavior change that isn't already a settled decision\" project documentation says to escalate rather than let an engineer guess at.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06. ... This is a scoring-policy decision, not a bug fix: it changes what grade real saved outputs receive. Handing it to an engineer to invent numbers for is the wrong move; it needs a concrete target ... from whoever owns the rubric before it becomes an engineering ticket.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Shared test resource. `tests/conftest.py` defines `RESULTS_DB` defaulting to a fixed absolute path, `/var/tmp/llm-scoring/results.db` ... if any new test (F-11/F-12 or later work) starts using it, parallel engineers/CI runs writing to the same absolute path will collide unless each overrides `RESULTS_DB`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

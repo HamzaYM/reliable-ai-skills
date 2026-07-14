@@ -24,7 +24,7 @@
     "schema": "eval/schemas/adjudicator.schema.json"
   },
   "auth_mode": "subscription-login",
-  "claude_cli_version": "2.1.206 (Claude Code)",
+  "claude_cli_version": "2.1.207 (Claude Code)",
   "cold_arm_isolation": {
     "ambient_user_skills": [
       "budget-aware-allocation",
@@ -38,11 +38,11 @@
     "skill_tool": "consumers run with --allowedTools Read,Grep,Glob,Bash, which exposes no Skill tool, so user-level and project-level skills cannot be invoked in either arm",
     "workspace": "cold workspaces are staged into a fresh temp directory and asserted to contain no .claude directory before every consumer run"
   },
-  "concurrency": 4,
+  "concurrency": 2,
   "consumer_models_effective": [
     "claude-sonnet-5"
   ],
-  "created_at": "2026-07-11T16:36:36Z",
+  "created_at": "2026-07-13T06:49:46Z",
   "effort": "max",
   "effort_mechanism": {
     "advertised_levels": [
@@ -86,15 +86,7 @@
       "max"
     ]
   },
-  "excluded_tasks": [
-    {
-      "failed_arms": [
-        "loaded"
-      ],
-      "reason": "mmar-t1-r3-loaded: timed out after 600s",
-      "task": "mmar-t1"
-    }
-  ],
+  "excluded_tasks": [],
   "freeze": {
     "frozen_at": "2026-07-10T08:32:03Z",
     "task_file_sha256": "b378c79644280bb93fb8ac71d0cadcfe301fd15b226dfaec852b619a2aa1c890"
@@ -160,22 +152,22 @@
   "seed": 12550176211171039998,
   "skill_hashes_at_run": {
     "adversarial-review/multi-model-adversarial-review": "d30b88b62a3e843ecbed237591da98ce299c80199c4e1916dda2189d72843ef2",
-    "architecture-and-contracts/architecture-contracts-as-law": "60758196cf2fd74dee923f454dbb98aecd16e0d27eb6df3330fac4c8c2a0a63b",
-    "auth-and-tenancy/multi-tenant-auth-reference": "f8e84125144e344c54d4ea76d5ddadac0c3b0d9d5a8efd48fb6cdfac2113082e",
-    "campaign-execution/multi-agent-batch-campaigns": "456b3f0af2085dbcfa77e8ec9bdeecaa034c5a5b9eac57a8715786cfb82dd579",
-    "change-control/git-change-control-for-agents": "bb7dc1b57cb971eb3273b57c618c076c26c24379eebea76f3bc8956923169d22",
-    "cost-and-safety-guardrails/ai-cost-tracking-and-guardrails": "4c5bc9792ab84104c2523d3dacdff4844d17efea3b6466e13bec81e031f712f6",
-    "cost-and-safety-guardrails/budget-aware-model-allocation": "f1c48780271c5142736c172418802804a7749c56c19c95824422fe7bb0bdfa41",
-    "cost-and-safety-guardrails/config-and-secrets-hygiene": "62b33ed5d9ac6ecd67476063fbeb2976875d702c4a49b4c065c5ea6d30a689fd",
-    "debugging-playbooks/failure-archaeology": "ba7df53f64d22e1d630fcf24c9171266f8ff3fc7a4b620372679bc85b0a9ba25",
-    "debugging-playbooks/systematic-debugging-playbook": "8dce519acef3c1d19681b0eb3410c9e9f1799f1735778af735fe5f840c5d4345",
-    "deploy-and-infra/environment-and-build-hazards": "8602408a4d060bf191b15caeed2f7f88f1347c4ed682558a3b292afd4ab98ed5",
-    "deploy-and-infra/staging-to-prod-cutover-campaign": "87d12dfa266d8719fa6b29c8b5835a63483ab6690d6971dec373f700842d809e",
+    "architecture-and-contracts/architecture-contracts-as-law": "c3594d86393d05b56c563adb4bb359b76f4b43fe9b3ec9458aeebf87dd934f04",
+    "auth-and-tenancy/multi-tenant-auth-reference": "d1fcd4d60ffd9ffeeb90ee7531d809b45a5c27ab54316f3a8dc9fe2c0a1b94ef",
+    "campaign-execution/multi-agent-batch-campaigns": "3328c78c12f8cb5a896809d51bd277d59367146b214be526c5ffd079ac415724",
+    "change-control/git-change-control-for-agents": "c239438774f763e402eb6bbd50de00d224f43aa1316fc9f2f8c7cb0782712c31",
+    "cost-and-safety-guardrails/ai-cost-tracking-and-guardrails": "1171e9e287eb2e1eda92c5bd16cdacadf69fddc8caa012767900491ad1ad0d29",
+    "cost-and-safety-guardrails/budget-aware-model-allocation": "ee13d926d9a080b50e0be4717c3cb530ff2c581b9cb34231874e4e338be82dbf",
+    "cost-and-safety-guardrails/config-and-secrets-hygiene": "c613bb07458f30db6c7c8de3212674f997eee25c7a63921942111d13ef42b335",
+    "debugging-playbooks/failure-archaeology": "0e0a9f5fe7cba0a03e366da1c3aa787ccb64b46fbef0897efc39b4dce0373693",
+    "debugging-playbooks/systematic-debugging-playbook": "eabc0427207f5478696b833cd5f64a7ce8a201c3d2d81cb40b7448236e2b5aa0",
+    "deploy-and-infra/environment-and-build-hazards": "5118cb7c7288993d2d218795e8f2410bea388d5fd555e9bb593b09928ee1be01",
+    "deploy-and-infra/staging-to-prod-cutover-campaign": "ed321aa24839733f63c2c69dad99aac9afbd97d8f56c9a2ac43a9f41a4489226",
     "docs-and-compliance/consent-and-regulated-data-reference": "6c8347818e745e60833656f332699914b6d9fe955a913082d06fedc8eef6ced9",
     "docs-and-compliance/docs-of-record-and-arbitration": "80e278138e76a6831689c021cd53083b61bcc6decdfaa70e20f77f542677338d",
-    "evals-and-scoring/llm-eval-harness-and-scoring-pipeline": "eeea03cdc9c62b6920b10e36e6b054c148ab801b80e48bcc18993ef0816b217c",
+    "evals-and-scoring/llm-eval-harness-and-scoring-pipeline": "f97660e56f556ca666b58723d96699ae2eac4e8fa1a0bdaf47ef5da519ab04fc",
     "tiered-review/tiered-consultancy-review": "45b1cdba16ba5c2d9f226a3998162f55f581d6cf0ccb2f8f19d62fec9ba04c51",
-    "validation-gates/pre-merge-validation-gate": "05026a34d165cc72074a77f08d53e6c6713d82bc7748872bc724d2a05c725e0b"
+    "validation-gates/pre-merge-validation-gate": "ddac6980a9d7f1dd140c6b5aa201e73ce92afb0c72550551cb3cd290021c9c60"
   },
   "task_file": "eval/tasks/golden-suite.jsonl",
   "task_file_sha256": "b378c79644280bb93fb8ac71d0cadcfe301fd15b226dfaec852b619a2aa1c890",
@@ -356,7 +348,7 @@
     "cross_model_fallback": "a consumer run answered by a model other than the requested one is invalid: one retry, then the task is excluded-as-invalid",
     "truncated_by_limit": "a consumer run whose output hit the pinned ceiling is invalid: one retry, then the task is excluded-as-invalid"
   },
-  "wall_clock_seconds": 1332.2,
+  "wall_clock_seconds": 1022.2,
   "workspace_mutation_warnings": [
     "aicg-t2-r1-loaded",
     "arch-contracts-t1-r2-loaded",

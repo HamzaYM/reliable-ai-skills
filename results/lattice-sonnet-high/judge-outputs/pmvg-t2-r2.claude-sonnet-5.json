@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47568,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.3781088,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 42944,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 42944,
+        "cache_read_input_tokens": 121026,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1007,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1007,
+            "cache_read_input_tokens": 41937,
+            "input_tokens": 2,
+            "output_tokens": 1089,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5269,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all four expectations, including an explicit reproducibility check (re-running the golden test twice to confirm determinism), while Report 1 misses that reproducibility verification and instead only hand-verifies computed values once.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Enabling `-m \"not live\"`'s exclusion by default (i.e., dropping it or overriding `addopts`) would mean every routine test run now makes real network calls, incurs \"per-call cost\" (per the module's own docstring)... These tests should stay opt-in and are irrelevant to this PR.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pytest.ini`'s `addopts = -m \"not live\"` is a deliberate, documented opt-in gate for a paid/costly suite... The correct action is to leave `addopts` untouched and not run the live suite as part of this validation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Before regenerating the golden file, I'd flag this specific line to the change's author and confirm whether it's intentional; if not, revert just that line. Only after confirming both the new weights *and* the rounding change are deliberate would I regenerate `expected_scores.json`... and review the diff to `expected_scores.json` before committing it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the new fixture should be diffed hunk-by-hunk against the old one to confirm every changed value is now explained, then re-run in assert mode (plain `pytest`, no regen) at least twice to confirm the new golden is stable/deterministic.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Not by quoting `docs/testing.md` verbatim \u2014 I checked, and it's stale/wrong on both counts: It claims \"2 tests\" are known-flaky... but `grep -rn \"mark.flaky\" tests/` finds only **one**... It claims \"9\" lint warnings, but the repo itself only documents 4...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not by copying `docs/testing.md`, which is stale on both counts \u2014 project documentation is explicit that these baselines are \"a snapshot from whenever someone last measured them\" and must be re-measured, not copied from a doc. I re-measured directly...",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "the new fixture should be diffed hunk-by-hunk against the old one to confirm every changed value is now explained, then re-run in assert mode (plain `pytest`, no regen) at least twice to confirm the new golden is stable/deterministic.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

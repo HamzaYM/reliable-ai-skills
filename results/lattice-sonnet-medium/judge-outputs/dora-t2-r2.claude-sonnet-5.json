@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12367,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1126243,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13143,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13143,
+        "cache_read_input_tokens": 23701,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13143,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13143,
+            "cache_read_input_tokens": 23701,
+            "input_tokens": 2,
+            "output_tokens": 1530,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1530,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable evidence and rigor; Report 2 adds a bit more nuance (weak reminders comparison, privacy angle on 'production data') but neither is clearly superior on the graded expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**\"Patients can now export their full visit history as a PDF\" is false.** `app/routers/visits.py:1-11` shows `list_visits()` returning an empty list (`return []`) with a trailing comment `# TODO: pdf export`. There is no PDF generation code anywhere in the repo. ... **\"Two-factor authentication is now enabled for every clinic by default\" is false and contradicted by the code's own comment.** `app/security/config.py:1-4` reads: `# Two-factor authentication is opt-in per clinic.` followed by `TWO_FACTOR_DEFAULT = False`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**\"Two-factor authentication is now enabled for every clinic by default\"** \u2014 false. `app/security/config.py:3-4` reads: `# Two-factor authentication is opt-in per clinic.` / `TWO_FACTOR_DEFAULT = False`. ... **\"Patients can now export their full visit history as a PDF\"** \u2014 not implemented. `app/routers/visits.py` only has a `GET /visits` endpoint returning an empty list, with a trailing `# TODO: pdf export` comment. There is no export route, no PDF generation code anywhere in the repo.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`before_scheduling.png`: {\"route\": \"/schedule\", ...} `after_scheduling.png`: {\"route\": \"/billing/invoices\", ...} I opened both images to confirm: `before_scheduling.png` renders the text \"SCHEDULING CALENDAR\", but `after_scheduling.png` renders \"BILLING / INVOICES\" \u2014 a completely different screen (billing, not scheduling).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per `captures.json`, `after_scheduling.png` was captured from route `/billing/invoices`, not `/schedule` (the \"before\" shot's route). This is confirmed visually: `before_scheduling.png` literally renders the text \"SCHEDULING CALENDAR\" while `after_scheduling.png` renders \"BILLING / INVOICES\" \u2014 an entirely different page.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` is referenced in the document (line 26) but **does not exist** in `docs/release/img/` (confirmed via `ls`). ... `unused_capture_07.png` exists in the img directory (renders \"PATIENT LIST\") but is **not referenced anywhere** in the document",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_export.png` \u2014 referenced in the \"Export your visit history\" section, but this file does **not** exist in `docs/release/img/` ... `unused_capture_07.png` (renders \"PATIENT LIST\") exists in the img folder but is not referenced anywhere in the draft",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**\"Highlights draft assembled with AI assistance.\"** (footer, line 33) is an internal drafting note, not customer-facing content ... It should be stripped before send",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the trailing line `Highlights draft assembled with AI assistance.` at the bottom of the doc (`highlights-v4.md:33`) is an internal drafting note, not customer-facing copy. ... It should be stripped before sending",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r2",
+  "repeat": 2,
+  "task": "dora-t2"
+}

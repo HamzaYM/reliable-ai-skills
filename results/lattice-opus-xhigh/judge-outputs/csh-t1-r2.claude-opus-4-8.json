@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20041,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1332335,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7424,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7424,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7424,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7424,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1867,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1867,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with strong repository grounding; they are comparable, with Report 2 adding a slight edge on stub/idempotency verification but neither materially better on the graded points.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminder messages **will be sent automatically**. The decision is made in `backend/app/feature_flags.py`, function `auto_send_reminders_enabled`, at **line 11**... `if tenant.settings.get(\"auto_send_reminders\") is None:` ... `return True`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will be sent automatically**... returns `None`, and the function returns `True`. The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, lines 11\u201312:\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "anything that sends messages / takes an automated action on a user's behalf should default to **off** when the value is null/missing/malformed... I would change it at `backend/app/feature_flags.py:11\u201313` so an unset value returns `False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the safe and expected default is **opt-in (off)**. I would change `backend/app/feature_flags.py:12` from `return True` to `return False`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`git show 25509a7` (SLOT-190) introduced `compact_calendar_view_enabled` with the `if ... is None: return True` grandfather-on pattern for a UI display preference... added `auto_send_reminders_enabled` as a byte-for-byte structural clone... That was **not a sound basis**. Grandfather-on is appropriate for the calendar view... but the two flags are in different risk categories",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was **copied from the pre-existing calendar-view flag**. `git show 25509a7` (SLOT-190) introduced `compact_calendar_view_enabled`... added `auto_send_reminders_enabled` as a byte-for-byte structural clone... It is **not** a sound basis for the reminder toggle: the semantics are entirely different (a local display preference vs. sending messages to patients).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add an env-level master gate.** The grep confirms there is *no* master switch / kill-switch anywhere \u2014 the job is gated solely by the per-tenant value. A per-tenant outbound flag should be ANDed with an env-level master",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Add a global gate / staged rollout / kill-switch.** There is no env var or global flag anywhere (`grep` found none); the only control is the per-tenant toggle. Add a way to dark-launch and instantly disable the whole job without a code deploy.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23684,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2152715,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14952,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14952,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 14952,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 14952,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1911,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1911,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully hit all four expectations with correct fixes; they are comparable, with Report 1 slightly richer in edge-case detail and Report 2 slightly more precise in fix code.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "All six \u2014 and literally anything else that is an `Exception` \u2014 are handled identically: caught by the bare `except Exception`... then retried once against `secondary.complete(payload)` with the *same* payload. ... **Concrete fix:** Narrow the `except` to the retryable set (`RateLimitError`, `RequestTimeoutError`, `ServerError`) for the automatic-fallback path. Handle `BadRequestError` separately... Handle `ContentPolicyError` separately \u2014 do not auto-forward to a second vendor; quarantine/escalate instead. Handle `AuthError` with a fail-fast",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "All six are handled identically: `except Exception as e`... and unconditionally retries against `secondary.complete(payload)`... replace the blanket `except Exception` with a narrow, explicit denylist of non-retryable exceptions that must never fail over, and let everything else retry:\n\n```python\nfrom pipeline.llm.providers import BadRequestError, ContentPolicyError, AuthError\n\nNON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A \u2014 non-production bypass:** `os.environ.get(\"STAGE\") != \"production\"` returns `True` for any value other than the exact string `\"production\"`... **Path C \u2014 production, `RedisError`:** returns `True` (fail-open)... on `RedisError`, fail closed (return `False`)... make the stage check robust against naming drift (e.g., an explicit environment enum/config flag with a safe default)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A \u2014 `os.environ.get(\"STAGE\") != \"production\"` (line 12) \u2192 `return True`.** ... a fail-open/fail-closed behavior gated on an \"is this production\" string match... Fix: default to enforcing the limit... **Path C \u2014 ... `redis.incr(key)` raises `RedisError`... \u2192 `return True`.** ... the limiter fails **open**... Fix: `except RedisError: return False`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the **full `input_text`** (the entire sensitive intake document content sent to the LLM), and the entire `metadata` object with no allowlisting of its fields. ... Do not log `input_text` at all... Replace the blanket `metadata` dump with an explicit allowlist of non-sensitive fields",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`record.input_text` \u2014 the **entire raw document text logged verbatim**... `record.metadata` \u2014 an **arbitrary, unconstrained dict** with no filtering... \"Keep sensitive data out of logs and audit metadata by allowlist, not denylist\" \u2014 `metadata` is logged with no allowlist at all",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "When it is **not set**, `os.environ.get(\"PII_SALT\", \"\")` silently defaults to the empty string... the \"pseudonym\" degenerates to an unsalted `sha256(applicant_id)`. ... **Concrete fix:** Fail loudly if `PII_SALT` is missing or empty (raise a configuration error at startup rather than defaulting to `\"\"`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` defaults to the **empty string** if `PII_SALT` is unset, so the function silently degrades to `SHA-256(applicant_id)` \u2014 a plain, unsalted hash \u2014 rather than failing... fail hard when the salt is missing instead of defaulting to `\"\"`:\n```python\n    if not salt:\n        raise RuntimeError(\"PII_SALT is not configured",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

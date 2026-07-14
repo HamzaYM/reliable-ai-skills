@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25048,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1004219,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8107,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8107,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8107,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8107,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 2594,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2594,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly diagnose the 0.0-substitution bug and its ranking corruption, but Report 2 goes further to explicitly distinguish gate-axis (accuracy) failures from optional-axis (relevance/tone) failures and prescribes different handling for each, while Report 1 treats all axis failures uniformly \u2014 making Report 2 the stronger answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the failed axis hits `value = axis_scores.get(axis)` \u2192 `None`, and lines 10\u201311 replace it with `0.0`... the record for a failed axis is written to `scores.csv` as an ordinary `agent_id,reply_id,<number>` row, indistinguishable in shape from a fully-scored record.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the failed axis is silently substituted with zero... So the failed axis contributes `weight * 0.0`... The written value is a **plain rounded float in exactly the same three-column form as a fully-scored row**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It conflates two different things: \"this axis scored 0\" (a genuinely bad reply) and \"we failed to measure this axis\" (a transient call failure). Substituting `0.0` treats a missing measurement as a real, worst-possible score... An agent is penalized purely for having hit an intermittent axis-call failure \u2014 nothing to do with reply quality... relative rankings scramble",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a `None` (a missing measurement) is conflated with `0.0` (a real, comparable data point meaning \"scored, and scored terribly\")... Every failed-axis row drags down its agent's mean. Because failures land on whichever agents happened to hit them, agents get penalized for infrastructure flakiness rather than reply quality",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "If the load-bearing accuracy axis fails: do **not** emit a composite that looks comparable to a fully-scored row. Mark the record incomplete, persist whatever partial per-axis signal exists (clearly labeled partial), and queue accuracy for retry rather than writing a gate verdict the pipeline never actually computed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "A correct failure policy has to respect the asymmetry: losing a non-load-bearing embellishment (relevance/tone) is recoverable by renormalizing over what succeeded; losing the load-bearing accuracy axis is not, and must not yield a comparable-looking number.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

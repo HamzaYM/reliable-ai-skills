@@ -1,0 +1,83 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "This writes the **raw, non-pseudonymized** `record.applicant_id` and the **full raw `input_text`** (the applicant's intake document content \u2014 the sensitive personal data itself) plus an opaque `metadata` blob, all serialized to JSON at `INFO` level ... Concrete fix: log the pseudonymized id (`pseudonymize(record.applicant_id)`) instead of the raw one, drop `input_text` entirely from the log record (or log only a length/hash/checksum of it for debugging), and audit what `metadata` contains before logging it as-is.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 40457,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5",
+          "claude-haiku-4-5-20251001"
+        ],
+        "total_cost_usd": 0.422738,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 12005,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 12005,
+          "cache_read_input_tokens": 18479,
+          "inference_geo": "not_available",
+          "input_tokens": 2,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 12005,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 12005,
+              "cache_read_input_tokens": 18479,
+              "input_tokens": 2,
+              "output_tokens": 3139,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 3139,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "it logs the entire input document text verbatim... Concrete fix: log the pseudonymized id... drop `input_text` entirely from the log record... and audit what `metadata` contains before logging it as-is",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "Concrete fix: log the pseudonymized id ... instead of the raw one, drop `input_text` entirely from the log record (or log only a length/hash/checksum of it for debugging), and audit what `metadata` contains before logging it as-is.",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "c",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "aicg-t2"
+}

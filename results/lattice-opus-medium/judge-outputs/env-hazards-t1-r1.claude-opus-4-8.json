@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17907,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.142641,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4802,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4802,
+        "cache_read_input_tokens": 17232,
+        "inference_geo": "not_available",
+        "input_tokens": 9326,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4802,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4802,
+            "cache_read_input_tokens": 17232,
+            "input_tokens": 9326,
+            "output_tokens": 1575,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1575,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly and thoroughly nail all three expectations with equivalent grounding; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as the **wrong role**. `backend/app/db.py` builds the engine solely from `DATABASE_URL`... a **superuser bypasses RLS entirely**, and a **table owner is exempt from RLS by default** unless the table is declared `FORCE ROW LEVEL SECURITY`. `db/migrations/0001_init.sql` only does `ENABLE ROW LEVEL SECURITY`... never `FORCE`. So the `tenant_isolation` policy is present but inert for this connection",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The responsible configuration is `cedarline/.env` (mirrored in `.env.example`): `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`... `ENABLE ROW LEVEL SECURITY` does **not** apply policies to the table's owner \u2014 the owner (and superusers / `BYPASSRLS` roles) skip RLS silently unless the table also has `FORCE ROW LEVEL SECURITY`, which this migration never sets",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Point the application at the dedicated, unprivileged role: change `DATABASE_URL`... to `postgresql://cedar_app:apppw@localhost:5432/cedar`. `cedar_app` (from `db/bootstrap/create_app_role.sql`) is neither a superuser nor the table owner... Going forward, the application should **always** connect as `cedar_app` (owner/superuser roles reserved for migrations and admin only)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "adopt the strict **two-role model**: `cedar_owner` (schema owner) is used **only** to run migrations; the running app connects **only** as the least-privilege `cedar_app`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedar_app` is created only by `db/bootstrap/create_app_role.sql`, which... is a **one-time manual step**, explicitly *not* part of database initialization or migrations... `scripts/reset-local-db.sh`... runs `docker compose down -v`. The `-v` deletes the `cedar_pgdata` volume... roles are cluster-global objects, so `cedar_app` is destroyed with it... the reset script proceeds straight to `migrate.sh`, which recreates tables but **not the role**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The `cedar_app` role lives only in `db/bootstrap/create_app_role.sql`, which is explicitly **not** part of automatic initialization (its header comment says so) and is only a manual one-time step in `docs/local-setup.md`. Crucially, `reset-local-db.sh` re-runs `migrate.sh` but does **not** re-run the role bootstrap. So after a reset, `cedar_app` no longer exists",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

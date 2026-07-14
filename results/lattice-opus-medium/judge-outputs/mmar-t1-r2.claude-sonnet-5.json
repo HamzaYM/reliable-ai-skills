@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26497,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1346562,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9424,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9424,
+        "cache_read_input_tokens": 102954,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1144,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1144,
+            "cache_read_input_tokens": 37431,
+            "input_tokens": 2,
+            "output_tokens": 1100,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2919,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent, correctly identifying the same two blocking defects (cross-tenant leak in search_appointments, broken nightly_export call signature) and correctly declining to flag the SQL string interpolation as an exploitable injection.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`search_appointments` receives `tenant_id` as an argument but **never uses it**. The query is: ... There is no `tenant_id = ...` predicate. Any authenticated tenant calling `/appointments/search` receives matching appointments from **every** clinic in the database",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The function receives `tenant_id` as an argument but **never uses it**. The raw SQL filters only on `status` and a full-text match on `notes` \u2014 there is no `WHERE tenant_id = \u2026`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the PR updated `build_appointment_query` to require a third positional `filters` argument and updated the other caller (`list_appointments`) and the test, but missed `exports.py`. `nightly_export` now calls the function with two args, raising `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`filters` was added as a **required positional parameter with no default**. The PR updated the caller in `appointments.py` but not `exports.py`. `nightly_export()` still calls with two arguments, so it will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it is **not exploitable via the endpoint**: `api.py` types the parameter as `status: AppointmentStatus`, and `AppointmentStatus` (`schemas.py`) is a 3-member `str, Enum` (`booked`/`cancelled`/`completed`). FastAPI rejects anything else with 422, so `status.value` is always one of three constant literals... (The `q` parameter is correctly bound via `:q` and is safe.)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It is **not currently exploitable** because the route types the parameter as `status: AppointmentStatus` (a `str` Enum), so FastAPI rejects anything other than `booked`/`cancelled`/`completed` with a 422 before the function runs \u2014 `status.value` can only ever be a safe literal.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27253,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11193369999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9590,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9590,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9590,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9590,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2700,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2700,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations solidly with commit-grounded evidence; Report 2 goes further with an extra concrete finding (the router never reads request.state.engine, so the stopgap fix was ineffective) and flags the invalid ASGI adapter, giving it slightly more depth, but both are comparable in meeting the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The timeline is `454a21f` (Apr 14) \u2192 `597777b` (Apr 16) \u2192 revert `1712565` (Apr 21).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "commits `454a21f`, `597777b`, `1712565` show PLAT-31 already did this migration and reverted it after a production outage.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The revert body cites `'FATAL: too many connections'`. ... per-request connections \"opened faster than Postgres could recycle them and tripped the connection limit (`'FATAL: too many connections'`), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down\" \u2014 verbatim from the revert commit `1712565`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Based on what the (now-reverted) PLAT-31 commits actually did... as in the reverted `backend/serverless_handler.py`... as in the reverted `deploy/edgerunner.toml`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an Edgerunner deploy manifest (the reverted one, `deploy/edgerunner.toml`, was: `[service] name/entry`, `[scaling] per_request = true`) to replace `deploy/cargobox.yaml`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "restarting a reverted platform migration is not an engineer's call to make silently \u2014 it belongs to whoever owns the system... Bring them the concrete record (commit `1712565` and the `454a21f`\u2192`597777b`\u2192revert arc), not just an opinion.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Who should be involved: the **platform/infra owner of PLAT-31** (the ticket and revert are theirs \u2014 they hold the incident context)... This is a shared infra + data-tier decision, not something to green-light from the app repo alone.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

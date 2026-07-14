@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29407,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1523525,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7906,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7906,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7906,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7906,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2423,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2423,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical on (a)-(c), but Report 1 edges ahead on (d) by recommending dropping the hardcoded webhook count rather than merely updating it to 5.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py:1-18` ... A refund feature should add a `refund(...)` accessor there ... `medibill/backend/app/api/invoices.py:4,14` ... builds its own `chargekit.Client(...)` ... `medibill/backend/app/workers/dunning.py:2,9` \u2014 same pattern ... The only documented exception is `medibill/backend/app/billing/errors.py:6`, which imports just `chargekit.errors`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a new `refund()` call should be added as a function in `gateway.py` ... `medibill/backend/app/api/invoices.py:4,14` ... calls `chargekit.Client(...)` directly ... `medibill/backend/app/workers/dunning.py:2,9` ... does the same ... `app/billing/errors.py` as the sole, explicit exception (importing only error classes)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`InvoiceOut` in `medibill/backend/app/models/invoice.py:16-22`, has six fields: `id, tenant_id, amount_cents, currency, status, external_ref`. The extra `external_ref` field ... added per migration `medibill/backend/migrations/0006_add_invoice_external_ref.sql` ... is absent from the documented response shape",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual `InvoiceOut` dataclass in `medibill/backend/app/models/invoice.py:16-22` has six fields: `id, tenant_id, amount_cents, currency, status, external_ref`. `external_ref` is populated by `charge_invoice` (`invoices.py:17`) and serialized by `InvoiceOut.from_model` ... The doc is missing this field entirely",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "this doc should be corrected now, as part of the same change that's being reviewed/merged \u2014 not deferred to the refund work ... whichever PR fixes the code (or formally exempts it) must update `ARCHITECTURE.md` in that same commit ... not as a follow-up",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It should be corrected before any refund work lands, as part of this same change \u2014 not after ... Doing this now (rather than deferring) matters because a new refund feature is exactly the kind of change that gets built by copy-pasting an existing call site",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the count \"4\" is wrong (should be 5, or the count should be dropped per project documentation's \"don't cite a number: read the source\" guidance, since this is exactly the kind of number that silently drifts as handlers are added)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19219,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11378269999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11727,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11727,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11727,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11727,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1863,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1863,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with strong, well-cited evidence; Report 1 is slightly more decisive on the legacy_billing_secret_arn (calling it a dead fossil to remove) while Report 2 hedges on that one item, but this doesn't affect the graded expectations \u2014 the two are comparable in overall quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` (`infra/prod/app.auto.tfvars:4`) \u2014 an allow-listed test account with superadmin privileges... This is exactly the \"allow-list of internal/test accounts with elevated privileges\" the scrub calls out; it must be removed... This key must be fully absent in prod... `LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"` (`infra/prod/app.auto.tfvars:7`)... should not be recreated in prod without confirming it's actually needed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"` (line 2)... must be `\"false\"` in production. `AUTH_RELAXED = \"true\"` (line 3)... must be `\"false\"` in prod... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` (line 4)... must not exist in prod; it should be removed entirely (empty string)... `SHADOW_SCORING_SINK`... this must either point to a prod-specific sink or be emptied",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production container will ship the frontend bundle hardcoded to call `https://staging-api.example.com`, with no runtime override available once compiled... This is exactly the \"rebuild per environment; don't promote a build artifact wholesale\" trap",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the frontend bundle that ships to production is the exact same artifact deployed to staging, built with `--mode staging`, so the JS served to real clinic users will call `https://staging-api.example.com` as its API base URL... the pipeline needs a `--mode production` step (and a `.env.production`) before prod can serve its own API URL",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "No step in the pipeline runs database migrations. `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but that's not backed up by anything in `deploy.yml`... this launch needs both a first Terraform apply and a confirmed, explicit first migration pass \u2014 neither is provided by this pipeline as it stands.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "nothing in `deploy.yml` runs `terraform apply`... If \"migrations applied automatically during deploy\" per the runbook is taken literally, prod would come up with no actual schema from these three revisions... it's worth flagging before the first-ever apply against a real prod DB.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` sets the *same* `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` (not `environment:production`)... this must be changed to `\"repo:acme-health/medislot:environment:production\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`medislot/infra/prod/main.tf:3` still has `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` \u2014 **unchanged from the staging copy**... its OIDC token's `sub` claim will be `repo:acme-health/medislot:environment:production`, not `...:environment:staging`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

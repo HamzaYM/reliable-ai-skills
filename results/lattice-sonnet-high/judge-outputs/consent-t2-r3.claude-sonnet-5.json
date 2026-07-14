@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19122,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10264600000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9629,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9629,
+        "cache_read_input_tokens": 29150,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9629,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9629,
+            "cache_read_input_tokens": 29150,
+            "input_tokens": 2,
+            "output_tokens": 2060,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2060,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 hits all four expectations, including clearly recommending preservation of consent_receipts on erasure; Report 2 misses expectation (c) by hedging that deleting consent_receipts \"isn't necessarily wrong\" rather than stating it should be preserved, making Report 1 the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`consent_audit` is a table this job must not modify at all \u2014 the sweep should be changed to operate only on `events` and `user_data`... db/schema.sql line 21-22 documents `consent_audit` explicitly: \"Audit/history table: append-only. Rows are never updated or deleted; the table serves as tamper evidence.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The schema documents `consent_audit` as append-only and never-deleted specifically because it exists as tamper evidence. `retention_sweep.py` violates that invariant outright by purging rows older than 730 days. **This table must not be modified by the sweep**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This registers only `jobs/daily_scoring.py`. There is no entry for `jobs/retention_sweep.py` anywhere in `deploy/`... `patient-events/TODO.md` confirms this is a known gap... \"retention sweep: run manually for now / wire into scheduler later.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deployed schedule is `deploy/crontab`, which contains exactly one entry:... `retention_sweep.py` is not referenced anywhere in `deploy/crontab`... This matches `TODO.md`, which states outright: \"retention sweep: run manually for now / wire into scheduler later.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`erase_user.py` should not delete `consent_receipts`.**... deleting it destroys the organization's own evidence that consent was properly captured before the data was collected \u2014 which is the opposite of what's needed if that consent capture is ever challenged or audited.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This isn't necessarily wrong (a user's *right to erasure* may intentionally include their consent receipt), but it means the audit trail for that user relies entirely on `consent_audit` afterward \u2014 worth confirming that's an intentional policy choice rather than an oversight",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Do not use `--test` to bypass validation against the shared staging/production `consent_versions` table under any circumstance... If the publisher's mechanics genuinely need exercising, do so against an isolated, disposable database (e.g., a local/ephemeral Postgres instance project documentation from `db/schema.sql`), never the shared staging store, and preferably without `--skip-validation`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the safe way to exercise `publish()` is to call it directly in a unit test against a mock/fake `conn` object (or an ephemeral local/in-memory DB), not against the deployed staging `DATABASE_URL`... it should be a database that does *not* share `consent_versions` with production... and it should be run **with validation on** (i.e., without `--test`/`--skip-validation`)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "consent-t2-r3",
+  "repeat": 3,
+  "task": "consent-t2"
+}

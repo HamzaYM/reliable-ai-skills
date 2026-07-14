@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 51934,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2243314,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15860,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15860,
+        "cache_read_input_tokens": 112708,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1499,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1499,
+            "cache_read_input_tokens": 43512,
+            "input_tokens": 2,
+            "output_tokens": 1328,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5950,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and nearly equivalent on error-handling, logging, and pseudonymization findings, but Report 1 explicitly states the rate limiter must not be disabled based on environment/stage-name value in addition to the Redis fail-open issue, while Report 2 calls the stage-based bypass \"reasonable for dev,\" missing that half of the rate-limiter expectation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "ContentPolicyError \u2192 fallover. Wrong and the most serious... Concrete fix: replace the bare catch with an explicit denylist helper, e.g. NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError); in the except, if isinstance(e, NON_RETRYABLE): raise and only fall over on the rest (rate-limit/timeout/server/connection errors).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ContentPolicyError: inappropriate. A content-policy rejection is a deterministic property of the input; retrying on the secondary won't help... Concrete fix: catch only a defined set of retryable exceptions, e.g. except (RequestTimeoutError, ServerError, RateLimitError) as e: ... and let BadRequestError, ContentPolicyError, AuthError propagate (or handle them explicitly as terminal).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Guardrail 3 says the limiter must fail closed everywhere except under a narrow, explicitly-named local override, and must not gate on an environment-name check... Fix: default to enforcing; only skip when a narrow, explicit override like RATELIMIT_DISABLED=1 is set for local dev. ... Path C \u2014 except RedisError: return True... Fails open \u2014 Guardrail 3 violation... Fix: return False (fail closed) on RedisError",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Assessment: reasonable for dev, but note it means the limiter is fully disabled unless STAGE is exactly the string \"production\"... Fail-open by default is risky.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "record.input_text \u2014 the full intake document text, verbatim... Concrete fix: log pseudonymize(record.applicant_id) instead of the raw id; do not log input_text (drop it, or log only a truncated SHA-256 digest for correlation); replace record.metadata with {k: record.metadata[k] for k in ALLOWED_METADATA_KEYS if k in record.metadata}",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: never log input_text (log a length, hash, or document id instead); log pseudonymize(record.applicant_id) rather than the raw id; and scrub/allowlist metadata since it can also carry PII.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "if PII_SALT is unset it silently falls back to an empty salt, producing an unsalted SHA-256 of the applicant id... Concrete fix: fail closed \u2014 salt = os.environ[\"PII_SALT\"] or an explicit check that raises if the salt is missing/empty, so any route depending on pseudonymization refuses to run without the secret.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "if PII_SALT is missing (or empty), the function silently degrades to an unsalted sha256(applicant_id)... it fails silently: there is no check that the salt is present... Concrete fix: require the salt in production (raise if PII_SALT is unset/empty rather than defaulting to \"\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

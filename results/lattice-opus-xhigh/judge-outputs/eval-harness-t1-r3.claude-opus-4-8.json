@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26277,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16440649999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9734,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9734,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9734,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9734,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2121,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2121,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully answer questions 1-3; Report 2 edges ahead by explicitly endorsing renormalizing over surviving axes for relevance/tone failures while treating accuracy differently, the gate-vs-optional distinction Report 1 rejects.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "That dict is passed straight to `composite()` in `aggregate.py:6-13`, which converts the missing score to zero:\n\n```python\nvalue = axis_scores.get(axis)\nif value is None:\n    value = 0.0\ntotal += weight * value\n```\n\n`composite()` therefore still returns a finite number ... In form, a partially-failed record is **identical** to a fully-scored one: three columns, a plain numeric composite, no null, no flag, no marker.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`aggregate.py:6-13`** \u2014 `composite` then coerces that `None` to `0.0` and still adds it into the weighted sum ... **How it compares in form to a fully-scored record: identically.** Both are `agent_id,reply_id,<float>` with no status column, no flag, no `None`/blank",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Treating a *missing* score as a *zero* score conflates \"we don't know\" with \"it scored the worst possible\" ... `rankings()` sums every composite and divides by every row count (`leaderboard.py:13-16`) with no filtering. Each zero-filled failure both **lowers the numerator** ... and **still increments the denominator** ... so an agent's mean is dragged down twice over.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this code conflates the two by coercing `None \u2192 0.0` and emitting a number that looks fully comparable ... `rankings()` (leaderboard.py:12-16) ... folds spuriously-low values into the mean **and** counts the failed row as a legitimate data point in the denominator. An agent that happened to hit more per-axis call failures is dragged down in mean composite",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If an axis (any axis \u2014 and non-negotiably `accuracy`, the gate) still has no real score, **do not write a normal composite row.** Either skip/hold the record for re-scoring, or write it with an explicit, non-numeric status",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Accuracy failed (load-bearing gate):** do **not** write a comparable composite. Write the record marked degraded/incomplete ... It must not enter the leaderboard as an ordinary number.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Relevance or tone failed, accuracy succeeded:** renormalize the weighted mean over the surviving axes (divide by the sum of surviving weights so the composite stays on the same 0\u201310 scale) and flag the row `renormalized` \u2014 do not insert a 0.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35162,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2306005,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13494,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13494,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13494,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13494,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 3159,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3159,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations and are closely comparable; Report 2 is marginally stronger by explicitly calling for full removal of all four unsafe settings and a live migration check, while Report 1 adds extra depth (id-token permission, missing Dockerfile/script).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`. ... Should be `\"false\"` (or removed ...). ... `infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`. ... Should be removed entirely. ... `infra/prod/app.auto.tfvars:6` \u2014 `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"`. ... This needs to be either pointed at a prod-specific path ... or blanked out",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` `ENABLE_DEBUG_TOOLBAR = \"true\"` ... Should be **omitted entirely** ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... Should be **omitted entirely**. ... `SHADOW_SCORING_ENABLED = \"false\"` / `SHADOW_SCORING_SINK = ...` ... Both keys should be **fully absent** ... `LEGACY_BILLING_SECRET_ARN` ... should **not be recreated**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production launch, as currently wired, ships a frontend bundle whose `VITE_API_BASE_URL` was inlined at `--mode staging` build time as `https://staging-api.example.com` \u2014 the production frontend would call the staging API**, because there is no separate production build and no `.env.production`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the production frontend, as currently wired, would ship with `https://staging-api.example.com` compiled into its JS bundle \u2014 the production UI would call the staging API. This is project documentation's \"rebuild per environment, don't promote a build artifact wholesale\" trap",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/prod-runbook.md:6` states \"Database migrations are applied automatically during deploy,\" but `deploy.yml` contains no migration step, and `scripts/deploy.sh` \u2014 which might contain it \u2014 doesn't exist in the repo. This claim can't currently be verified against anything checked in.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but `deploy.yml` has no migration step ... this claim needs a live check, not blind trust, before assuming the first prod release will get its schema.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` sets **the identical string**: `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`. ... the `staging` environment's OIDC identity remains valid to assume what is supposed to be the *production* deploy role ... this must be fixed to `\"repo:acme-health/medislot:environment:production\"` before `infra/prod` is applied.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` still sets `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` ... the **staging** job's identity remains trusted to assume the **production** deploy role ... This must be changed to `\"repo:acme-health/medislot:environment:production\"` at `infra/prod/main.tf:3` before applying.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27047,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1186227,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9598,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9598,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9598,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9598,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 3143,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3143,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports tie on (a) and (b), but Report 2 more clearly satisfies (c) by explicitly endorsing a going-forward same-commit doc-update practice, and uniquely satisfies (d) by recommending dropping the hardcoded webhook count in favor of pointing at the source code, making Report 2 the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls (e.g., a `refund(...)` accessor) should live in `medibill/backend/app/billing/gateway.py`... I found two places, beyond the documented `errors.py` exception, that talk to `chargekit` directly instead of going through `gateway.py`: `medibill/backend/app/api/invoices.py`... `medibill/backend/app/workers/dunning.py`... plus the one documented, harmless exception (`errors.py`, which only imports error classes, not a client).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls belong in `medibill/backend/app/billing/gateway.py:1-17`... The code does not follow that pattern everywhere today. I found two places that talk to the provider a different way... `medibill/backend/app/api/invoices.py`... `medibill/backend/app/workers/dunning.py`... `medibill/backend/app/billing/errors.py:6`... is the one documented, legitimate exception, and it correctly imports only the exception classes, not a client.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual `InvoiceOut` dataclass returned by `charge_invoice()` (`medibill/backend/app/models/invoice.py:16-22`...) has six fields: `id, tenant_id, amount_cents, currency, status, external_ref`. The `external_ref` field was added in commit `c23da88`... and added migration `0006_add_invoice_external_ref.sql`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual `InvoiceOut` dataclass in `backend/app/models/invoice.py:16-22` has six fields: `id, tenant_id, amount_cents, currency, status, external_ref`... and added a matching column via migration `medibill/backend/migrations/0006_add_invoice_external_ref.sql`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "This should happen before or as part of the same change that adds refund support, not after \u2014 for two reasons: (a)... (b)...",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "this doc is meant to be treated as merge-blocking law with drift treated as a bug, updated in the same commit as the code that changes what it governs \u2014 not left to go stale... any change to the invoice response or webhook set it introduces must update docs/ARCHITECTURE.md in that same commit, per project documentation's core rule.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "What I'd change: update the sentence to say 5 event types and list `payment_pending` alongside the other four, so the doc matches the shipped handler.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "I'd consider dropping the literal count and instead either (a) enumerating the list without a count (\"the integration handles the following webhook event types: ...\"), or (b) pointing at the source of truth (\"see the `if kind == ...` branches in `app/api/webhooks.py` for the current list\") so the number never has to be kept in sync by hand.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

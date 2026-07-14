@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 34310,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.16172379999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10880,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10880,
+        "cache_read_input_tokens": 104626,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1216,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1216,
+            "cache_read_input_tokens": 38815,
+            "input_tokens": 2,
+            "output_tokens": 1005,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4090,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent substance; Report 2 is marginally more explicit on (d) by directly cautioning against testing on the shared/production nightly job, while Report 1 focuses more on the model-can't-affect-score argument.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The specific file that should be changed to fix it is **`config/scoring_config.yaml`**: change `expected_label_field: label` to `expected_label_field: gold_label`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The file that should be changed is `config/scoring_config.yaml`**: line 2, `expected_label_field: label` should be `expected_label_field: gold_label`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The introducing change is commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**, dated Wed Jun 17 2026 13:00 UTC \u2014 the exact date the metric collapses.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It began on **2026-06-17**, introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (dated 2026-06-17). Evidence: `pipeline/metrics/nightly_scores.csv` shows a clean 0.90\u20130.92 through 2026-06-16 and exactly 0.00 from 2026-06-17 onward",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The prior investigation was misled by using the wrong tool: it re-ran tickets through `pipeline/score_one.py`, which only *predicts and prints a category* \u2014 it never loads the eval set and never compares against a gold label.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The defect is in the **scoring comparison**, not the prediction. `score_one.py` only computes and prints the prediction; it never loads a gold label or compares anything. So spot-checking tickets through `score_one.py` can never reproduce a scoring bug",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The scorer makes no model call at all (`classifier.py`), so changing or rolling back \"the model\" cannot affect the score; the accuracy would remain 0.0 and the team would burn time while the real one-line config mismatch persists.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Separately, the playbook cautions against flipping a model/flag on a shared or production-like nightly job to observe behavior; the right approach is the one-line config fix plus a regression guard, not a live model swap.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

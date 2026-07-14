@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16366,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12349270000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13461,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13461,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13461,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13461,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1728,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1728,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports substantively hit all four expectations with nearly identical findings and fixes; report 2 additionally ties findings to explicit 'project documentation' guardrails while report 1 gives slightly more granular per-path analysis (e.g., missing TTL/expiry bug in limits.py) \u2014 overall comparable quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "catches the bare `Exception`, which catches **all six** ... identically ... `BadRequestError` ... Inappropriate to fall over silently; should be surfaced/raised rather than retried ... `ContentPolicyError` ... This should not be caught by the blanket `except Exception` and forwarded to secondary; it should be handled distinctly (e.g., re-raised / routed to manual review) ... `AuthError` ... It should be logged/alerted more loudly ... Concrete fix: catch a narrower set of retryable exceptions explicitly",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "All six are handled identically \u2014 caught by the blanket `except Exception`, logged, and failed over to the secondary vendor. That is wrong for three of the six: `BadRequestError` ... `ContentPolicyError` ... `AuthError` ... The other three are legitimately retryable/fail-over-able: `RateLimitError`, `RequestTimeoutError`, `ServerError` ... Fix: replace the blanket `except Exception` with an explicit denylist function",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path A \u2014 non-production ... Returns `True` unconditionally, bypassing all rate limiting ... it is a fail-open default ... Path C \u2014 production, redis unavailable (`RedisError`): returns `True`, i.e., fails open ... there is no path in this code that fails *closed*",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Path A is the most serious problem: it gates fail-open/fail-closed behavior on an environment-name string comparison ... Path C fails open on infrastructure failure ... Fix: invert both defaults. Fail closed unless an explicit, narrowly-named override flag is set ... and on `RedisError` return `False` (or raise) rather than `True`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`input_text` is the actual document body ... written verbatim into logs ... must not log `input_text` or unvetted `metadata` verbatim \u2014 log only a non-reversible reference (e.g., a content hash/length, or a document id) and an explicit allowlist of non-sensitive metadata fields",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`input_text` is the raw applicant intake document body \u2014 the sensitive personal information itself \u2014 logged verbatim, unhashed and untruncated ... `metadata` is logged wholesale with no allowlist ... Fix: ... drop `input_text` entirely or replace it with a hash/length ... replace `metadata` with an explicit allowlist of known-safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` defaults to the **empty string** if `PII_SALT` is unset \u2014 it does not raise or warn ... `pseudonymize` silently degrades to plain unsalted `sha256(applicant_id)` ... Concrete fix: fail closed instead of silently degrading ... raises `KeyError` if unset ... raise RuntimeError(\"PII_SALT must be set to a non-empty value\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When `PII_SALT` is not set, `os.environ.get` silently defaults to the empty string, and the function proceeds to hash `applicant_id` **unsalted**. ... Fix: ... salt = os.environ[\"PII_SALT\"]  # raise KeyError/explicit error if unset ... raise RuntimeError(\"PII_SALT must be set to a non-empty value\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

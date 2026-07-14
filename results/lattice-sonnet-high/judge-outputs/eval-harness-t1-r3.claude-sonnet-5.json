@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36356,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1605186,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12710,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12710,
+        "cache_read_input_tokens": 68262,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2748,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2748,
+            "cache_read_input_tokens": 39112,
+            "input_tokens": 2,
+            "output_tokens": 1093,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3890,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit a, b, and c with comparable depth and code citations; Report 1 additionally makes the explicit distinction required by (d) \u2014 that relevance/tone failures can defensibly be handled via renormalization while accuracy failures cannot \u2014 whereas Report 2 treats all three axes uniformly (mark incomplete/hold out) without endorsing renormalization for the optional axes, making Report 1 the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the code explicitly does `if value is None: value = 0.0` \u2014 so the missing axis is treated as a real score of zero and folded into the weighted sum... This is byte-for-byte the same row shape whether all three axis calls succeeded or one of them silently failed and was replaced with 0.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Here, `None` is silently coerced to `0.0` and multiplied by that axis's weight... This is a 3-column row: `agent_id, reply_id, composite`. This is exactly the same schema as a row where all three axis calls succeeded",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Treating a missing/failed axis score as a literal `0.0` conflates \"we don't know\" with \"we know it's the worst possible score\"... `leaderboard.py:9-17` then reads every row unconditionally, sums composites per `agent_id`, and divides by row count to get a mean",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It conflates \"we don't know this axis's score\" with \"this axis scored the worst possible value (0).\"... `grader/leaderboard.py` (`rankings()`) reads every row in `scores.csv` unconditionally, summing `comp` and incrementing `counts[agent_id]` for every row with no filtering",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "no composite that \"looks comparable\" to a fully-scored row should be written. The row should be marked degraded/incomplete \u2014 e.g. a `status` column value like `incomplete` or `accuracy_failed`, with the composite field left blank/null rather than populated",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a failed accuracy call must never be treated as either an automatic pass or an automatic (0-driven) fail \u2014 since the gate decision itself is unknown, that row's gate status is undetermined and it should be held out of ranking entirely",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "For a non-load-bearing axis (relevance or tone), project documentation's guidance is that it may be acceptable to renormalize over what succeeded and keep the result flagged as complete \u2014 a defensible degraded-but-usable outcome... If `relevance` or `tone` fails... it's defensible to renormalize the composite over the two axes that did succeed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

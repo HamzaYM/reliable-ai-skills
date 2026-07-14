@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 11806,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0803027,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7884,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7884,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7884,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7884,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1352,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1352,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid evidence; Report 2 adds slightly more depth (compliance angle on \"production data\", explicit reconciliation table in Q3) but the two are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default\" (line 30) is directly contradicted by `app/security/config.py:3-4`: `TWO_FACTOR_DEFAULT = False`... \"Patients can now export their full visit history as a PDF\" (line 24) is not implemented. `app/routers/visits.py` only has a `list_visits` endpoint returning `[]`, with a literal `# TODO: pdf export` comment and no export code anywhere in the app... Must be removed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default.\" (line 30) \u2014 Directly contradicted by `app/security/config.py:4`: `TWO_FACTOR_DEFAULT = False`... \"Patients can now export their full visit history as a PDF.\" (line 24) \u2014 Directly contradicted by `app/routers/visits.py`: `list_visits` is a stub that returns an empty list, and line 11 is a literal `# TODO: pdf export`. The feature does not exist yet. This must be removed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`captures.json` records that `after_scheduling.png` was captured from route `/billing/invoices`, while `before_scheduling.png` came from `/schedule`. Viewing the images confirms this literally: `before_scheduling.png` reads \"SCHEDULING CALENDAR\" and `after_scheduling.png` reads \"BILLING / INVOICES.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_scheduling.png` was captured from route `/billing/invoices` (state `seed-demo`), and opening the file confirms it: it visually renders \"BILLING / INVOICES\", not a scheduling calendar at all.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the document links `![after](img/after_export.png)` (line 26), but that file does not exist... **Orphan file:** `unused_capture_07.png` exists in the `img/` folder... but is never referenced by the document",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`after_export.png` is referenced in the doc (line 26, \"Export your visit history\" section) but does not exist in `img/`.**... **`unused_capture_07.png` exists in `img/` (renders \"PATIENT LIST\") but is not referenced anywhere in the document.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the closing line **\"Highlights draft assembled with AI assistance.\"** (line 33) is an internal drafting note, not customer-facing copy. It shouldn't be sent to clinics... It should be stripped before sending.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the trailing line **\"Highlights draft assembled with AI assistance.\"** (line 33) is an internal process/authorship note about how the draft was produced. It has no place in a customer-facing release email... It should be removed",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r2",
+  "repeat": 2,
+  "task": "dora-t2"
+}

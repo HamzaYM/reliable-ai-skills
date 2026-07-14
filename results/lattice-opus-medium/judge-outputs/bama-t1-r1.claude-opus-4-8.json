@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19533,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.130938,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3307,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3307,
+        "cache_read_input_tokens": 17236,
+        "inference_geo": "not_available",
+        "input_tokens": 9365,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3307,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3307,
+            "cache_read_input_tokens": 17236,
+            "input_tokens": 9365,
+            "output_tokens": 1697,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1697,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially identical analysis and citations; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full run \u2248 5,200 transcripts \u00d7 1,800 tokens/call = **9,360,000 tokens** (from `data/manifest.json`).\n- **northpeak (default):** 640,000 tokens remaining of a 10,000,000 window (`usage_snapshot.json`). The 9.36M run is ~14.6\u00d7 the remaining headroom \u2014 it would blow through the limit almost immediately",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full run \u2248 **9,360,000 tokens** (5,200 transcripts \u00d7 1,800 tokens/call, both from `data/manifest.json`).\n- **northpeak (default/primary):** only **640,000** tokens remaining (`usage_snapshot.json`). The run needs ~9.36M \u2014 roughly **14.6\u00d7 more than remaining**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**ridgeline (secondary):** 10,800,000 tokens remaining of a 12,000,000 window. The 9.36M run fits with ~1.44M to spare. This backend has the capacity.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**ridgeline (secondary):** **10,800,000** tokens remaining. The ~9.36M run **fits**, with ~1.44M tokens (~13%) of headroom to spare.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run the default path. Instead I'd route the job to the secondary backend that has headroom:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** launch on the default path. I'd route the full run to the secondary backend by passing the flag the config explicitly supports:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the snapshot is `generated_at` 2026-07-09T19:25:00Z, ~3 hours old at the assumed 22:30 launch time. project documentation warns not to trust a stale signal as current. ... I'd re-pull fresh telemetry before launch to confirm ridgeline still clears 9.36M",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the snapshot is ~3 h old (generated 19:25Z vs. assumed 22:30Z), and since it predates both reset times the \"remaining\" figures can only have *dropped* from further usage, not refilled ... I'd re-pull fresh telemetry first",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

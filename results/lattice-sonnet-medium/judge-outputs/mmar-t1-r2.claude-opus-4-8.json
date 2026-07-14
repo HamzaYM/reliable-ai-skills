@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15791,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1202855,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7613,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7613,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7613,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7613,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1270,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1270,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify both blocking defects and correctly treat the raw-SQL string as non-exploitable; they are comparable, with Report 2 marginally more thorough.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`search_appointments(session, tenant_id, q, status)` receives `tenant_id` as an argument but never uses it. The raw SQL it builds ... has no `tenant_id` predicate at all. ... any authenticated user of any tenant can search and read every other tenant's appointment `notes` field",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is no `tenant_id` clause. The `tenant_id` argument is accepted by the function signature (`search_appointments(session, tenant_id, q, status)`) but never referenced in the query body. ... any authenticated user from Tenant A can search and read Tenant B's (and every other tenant's) appointment records",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`backend/app/exports.py::nightly_export` \u2014 which this PR does not touch \u2014 still calls `build_appointment_query(session, tenant_id).all()` with only two arguments. This will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` on every invocation, i.e. **the nightly per-tenant CSV export job breaks for every tenant**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the signature changed to `build_appointment_query(session, tenant_id, filters)`, where `filters` is a **required** third positional parameter with no default ... `backend/app/exports.py` is untouched by this PR ... and still calls `build_appointment_query(session, tenant_id)` with two arguments at line 9, inside `nightly_export`. This will raise `TypeError`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Because the endpoint parameter is typed `status: AppointmentStatus` (a `str` `Enum` with only `booked`/`cancelled`/`completed`), FastAPI/Pydantic validates the value before this function ever sees it, so I don't believe this is currently exploitable for SQL injection.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`AppointmentStatus` is a closed `str, Enum` (`booked`/`cancelled`/`completed`), and FastAPI/Pydantic rejects any request where the `status` query parameter isn't one of those literal values before the handler runs \u2014 so this is not exploitable *today*.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12249,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0878917,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8921,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8921,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8921,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8921,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1407,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1407,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable thoroughness and evidence; Report 1 is slightly more hedged on the AI-assistance footer while Report 2 is more direct in recommending removal, but overall the two are essentially equivalent in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default.\" This is false. `clinic-portal/app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`... **Must be corrected or removed.** ... \"Patients can now export their full visit history as a PDF.\" Not implemented. `clinic-portal/app/routers/visits.py` contains only `list_visits()`... **Must be removed until the feature actually ships.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default\" (line 30) is false. `app/security/config.py` reads: `TWO_FACTOR_DEFAULT = False`... this must be corrected or removed. ... \"Patients can now export their full visit history as a PDF\" (line 24...) describes a feature that does not exist. ... This entire section, including its image, must be removed until the feature ships.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Per `captures.json`, `before_scheduling.png` was captured from route `/schedule` while `after_scheduling.png` was captured from route `/billing/invoices` \u2014 two unrelated screens... `after_scheduling.png` renders \"BILLING / INVOICES.\" The \"after\" image is not a calendar redesign at all \u2014 it's an entirely different, unrelated part of the product (billing) mislabeled as the new scheduling calendar.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`before_scheduling.png` \u2192 route `/schedule` ... `after_scheduling.png` \u2192 route `/billing/invoices` ... `after_scheduling.png` renders **\"BILLING / INVOICES\"**. The \"after\" image is a screenshot of the billing/invoices screen, not the redesigned scheduling calendar.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The doc references `img/after_export.png`... but this file **does not exist** in `clinic-portal/docs/release/img/`... `img/unused_capture_07.png` **exists in the repo but is referenced nowhere in the document**, and isn't even listed in `captures.json`'s manifest.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_export.png` \u2014 **referenced in the document (line 26) but does not exist in the repository.** ... `img/unused_capture_07.png` \u2014 exists in the repo but is **not referenced anywhere in the document.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**\"Highlights draft assembled with AI assistance.\"** \u2014 This is an internal process note about how the document was produced, not customer-relevant content... this is a stray drafting artifact that leaked into the shipped text and should at minimum be reviewed/removed before send.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Line 33: \"Highlights draft assembled with AI assistance.\"** This is internal drafting metadata/process note, not customer-relevant content. It should be stripped before sending",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

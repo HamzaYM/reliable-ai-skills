@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23595,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1585485,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9509,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9509,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9509,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9509,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1977,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1977,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable on expectations a-c; Report 1 edges ahead by explicitly adding a reproducibility/determinism re-run check (d) that Report 2 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they call a real external endpoint (`https://api.scorelab-models.example.com/v1/score`) over `urllib.request`, authenticated with `SCORELAB_API_KEY`, and the module docstring says outright \"These tests hit the real model endpoint and incur per-call cost.\" ... \"Don't 'fix' that deselection just because it looks like a suite is being skipped: that's the intended behavior.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "call a real external HTTP endpoint (`https://api.scorelab-models.example.com/v1/score`) via `urllib.request`, authenticated with `SCORELAB_API_KEY`, and per the module docstring \"incur per-call cost.\" ... if the team wants live-model coverage they can run `pytest -m live` explicitly as an intentional, opt-in, credentialed step \u2014 which is exactly what `pytest.ini` already supports.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "diff it hunk-by-hunk against the previous version to confirm every changed value is explained ... \"Anything you can't explain is a regression, not a fixture update.\" ... Only once every changed value in the fixture traces to a confirmed, intended change would I regenerate it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the `confidence` deltas ... are caused purely by the rounding-precision change, not by the reweight ... Only after that intent is confirmed would I run `scripts/update_golden.py`, and even then I'd run `git diff tests/golden/expected_scores.json` afterward and paste that diff into the PR with an explanation of each changed number",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "project documentation is explicit that baselines drift and must be re-measured, not copied from a doc. I did re-measure, and both documented figures are stale",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not by copying `docs/testing.md` verbatim \u2014 I checked it against the actual repo state and both figures are wrong ... citing stale, unverified figures in a PR description is itself a correctness risk",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "re-run `pytest` (no capture/regen flag) at least twice to confirm the new fixture is deterministic before calling the golden test green",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

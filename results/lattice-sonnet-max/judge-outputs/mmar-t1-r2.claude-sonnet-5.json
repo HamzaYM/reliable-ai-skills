@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24194,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2012307,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 21676,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 21676,
+        "cache_read_input_tokens": 119939,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4714,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4714,
+            "cache_read_input_tokens": 45950,
+            "input_tokens": 2,
+            "output_tokens": 711,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2345,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is stronger: it catches all three expectations, including the nightly_export breakage (b), which Report 1 misses entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the only place tenant_id appears in the SQL is as an output column in the SELECT list (line 14), never in the WHERE clause... any authenticated caller of any tenant can call GET /appointments/search?q=<term>&status=booked and receive matching appointments \u2014 including the notes field and tenant_id \u2014 belonging to every other tenant in the system",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the string tenant_id appears in this function only as a column name in the SELECT list, never in the WHERE clause or the bound-params dict.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "exports.py's nightly_export still calls build_appointment_query(session, tenant_id) with only two arguments \u2014 unchanged, because no commit on this branch touches exports.py... every call to nightly_export will now raise TypeError: build_appointment_query() missing 1 required positional argument: 'filters'.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "status is typed AppointmentStatus in backend/app/schemas.py:5-8, a (str, Enum) with exactly three hardcoded members (booked, cancelled, completed), none containing quotes or SQL metacharacters... this specific line is not currently exploitable.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This isn't currently exploitable \u2014 FastAPI validates status against the AppointmentStatus str-Enum (schemas.py) before the function is ever called, so only \"booked\", \"cancelled\", or \"completed\" can reach it",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

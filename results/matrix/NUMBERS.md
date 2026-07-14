@@ -27,7 +27,7 @@ per the posted 2026-07-10 endpoint amendment.
 |---|---|---|---|---|---|---|
 | claude-fable-5 | high | 94.1% | 97.6% | +3.5 | >= 3.0 | directionally supported under the pre-registered rule |
 | claude-opus-4-8 | max | 87.3% | 91.2% | +3.9 | >= 3.0 | directionally supported under the pre-registered rule |
-| claude-sonnet-5 | max | 85.1% | 89.7% | +4.6 | >= 3.0 | directionally supported under the pre-registered rule |
+| claude-sonnet-5 | max | 84.8% | 89.7% | +4.9 | >= 3.0 | directionally supported under the pre-registered rule |
 
 ### H2 (delta shrinkage, low to endpoint)
 
@@ -35,10 +35,10 @@ per the posted 2026-07-10 endpoint amendment.
 |---|---|---|---|---|---|---|
 | claude-fable-5 | high | +4.9 | +2.4 | +2.5 | >= 3.0 | not supported under the pre-registered rule |
 | claude-opus-4-8 | max | +8.3 | +8.8 | -0.5 | >= 3.0 | not supported under the pre-registered rule |
-| claude-sonnet-5 | max | +11.8 | +9.7 | +2.1 | >= 3.0 | not supported under the pre-registered rule |
+| claude-sonnet-5 | max | +11.3 | +9.8 | +1.5 | >= 3.0 | not supported under the pre-registered rule |
 
 Summary: H1 supported for all three models (Fable +3.5, Opus +3.9,
-Sonnet +4.6, all clearing the 3-point bar). H2 not supported for any
+Sonnet +4.9, all clearing the 3-point bar). H2 not supported for any
 model. Effort and skills read as complements, not substitutes.
 
 ## Retention ratio (endpoint delta / low delta, complete-case)
@@ -47,7 +47,7 @@ model. Effort and skills read as complements, not substitutes.
 |---|---|---|---|---|
 | claude-fable-5 | +4.9 | +2.4 | high | 0.490 |
 | claude-opus-4-8 | +8.3 | +8.8 | max | 1.060 |
-| claude-sonnet-5 | +11.8 | +9.7 | max | 0.822 |
+| claude-sonnet-5 | +11.3 | +9.8 | max | 0.867 |
 
 Small-n, directional only.
 
@@ -65,17 +65,17 @@ single-run cells are point values. Runs = consumer runs per arm.
 | claude-fable-5@xhigh | `results/lattice-fable-xhigh` | 97.1% | 100.0% | +2.9 | 17 | 68 | 1 |
 | claude-haiku-4-5-20251001@none | `results/lattice-haiku` | 64.7% | 91.2% | +26.5 | 17 | 68 | 1 |
 | claude-opus-4-8@low | `results/lattice-opus-low` | 87.3% (R3 mean) | 95.6% (R3 mean) | +8.3 (R3 mean) | 17 | 68 | 3 |
-| claude-opus-4-8@medium | `results/lattice-opus-medium` | 82.4% | 97.1% | +14.7 | 17 | 68 | 1 |
-| claude-opus-4-8@high | `results/lattice-opus-high` | 86.8% | 98.5% | +11.8 | 17 | 68 | 1 |
-| claude-opus-4-8@xhigh | `results/lattice-opus-xhigh` | 89.7% | 98.5% | +8.8 | 17 | 68 | 1 |
+| claude-opus-4-8@medium | `results/lattice-opus-medium` | 85.8% (R3 mean) | 97.6% (R3 mean) | +11.8 (R3 mean) | 17 | 68 | 3 |
+| claude-opus-4-8@high | `results/lattice-opus-high` | 88.2% (R3 mean) | 98.0% (R3 mean) | +9.8 (R3 mean) | 17 | 68 | 3 |
+| claude-opus-4-8@xhigh | `results/lattice-opus-xhigh` | 91.2% (R3 mean) | 99.0% (R3 mean) | +7.8 (R3 mean) | 17 | 68 | 3 |
 | claude-opus-4-8@max | `results/lattice-opus-max` | 91.2% (R3 mean) | 100.0% (R3 mean) | +8.8 (R3 mean) | 17 | 68 | 3 |
 | claude-sonnet-5@low | `results/lattice-sonnet-low` | 84.8% (R3 mean) | 96.1% (R3 mean) | +11.3 (R3 mean) | 17 | 68 | 3 |
-| claude-sonnet-5@medium | `results/lattice-sonnet-medium` | 85.3% | 98.5% | +13.2 | 17 | 68 | 1 |
-| claude-sonnet-5@high | `results/lattice-sonnet-high` | 89.7% | 100.0% | +10.3 | 17 | 68 | 1 |
-| claude-sonnet-5@xhigh | `results/lattice-sonnet-xhigh` | 86.8% | 97.1% | +10.3 | 17 | 68 | 1 |
-| claude-sonnet-5@max | `results/lattice-sonnet-max` | 89.7% (R3 mean) | 99.5% (R3 mean) | +9.7 (R3 mean) | 16 | 65 | 3 |
+| claude-sonnet-5@medium | `results/lattice-sonnet-medium` | 90.7% (R3 mean) | 99.0% (R3 mean) | +8.4 (R3 mean) | 17 | 68 | 3 |
+| claude-sonnet-5@high | `results/lattice-sonnet-high` | 87.8% (R3 mean) | 99.0% (R3 mean) | +11.3 (R3 mean) | 17 | 68 | 3 |
+| claude-sonnet-5@xhigh | `results/lattice-sonnet-xhigh` | 87.3% (R3 mean) | 98.5% (R3 mean) | +11.3 (R3 mean) | 17 | 68 | 3 |
+| claude-sonnet-5@max | `results/lattice-sonnet-max` | 89.7% (R3 mean) | 99.5% (R3 mean) | +9.8 (R3 mean) | 17 | 68 | 3 |
 
-Complete-case common task set (n=16): aicg-t2, arch-contracts-t1, bama-t1, consent-t2, csh-t1, dora-t2, env-hazards-t1, eval-harness-t1, farch-t1, git-cc-t2, mabc-t2, mt-auth-t1, pmvg-t2, s2p-cutover-t1, sysdbg-t2, tcr-t1. Complete-case rates, which are
+Complete-case common task set (n=17): aicg-t2, arch-contracts-t1, bama-t1, consent-t2, csh-t1, dora-t2, env-hazards-t1, eval-harness-t1, farch-t1, git-cc-t2, mabc-t2, mmar-t1, mt-auth-t1, pmvg-t2, s2p-cutover-t1, sysdbg-t2, tcr-t1. Complete-case rates, which are
 the only cross-cell-comparable basis, are in MATRIX.md.
 
 ## Matched low-to-high view (EXPLORATORY, additive)
@@ -89,8 +89,8 @@ its replicated confirmatory endpoint.
 | Model | D(low) pp | D(high) pp | Shrinkage (pp) | High cell |
 |---|---|---|---|---|
 | claude-fable-5 | +4.9 | +2.4 | +2.5 | replicated endpoint (R3 mean) |
-| claude-opus-4-8 | +8.3 | +11.8 | -3.5 | interior single-run (no repeats, descriptive only) |
-| claude-sonnet-5 | +11.3 | +10.3 | +1.0 | interior single-run (no repeats, descriptive only) |
+| claude-opus-4-8 | +8.3 | +9.8 | -1.5 | replicated endpoint (R3 mean) |
+| claude-sonnet-5 | +11.3 | +11.3 | +0.0 | replicated endpoint (R3 mean) |
 
 ## Judge panel disagreement and adjudication
 
@@ -98,7 +98,7 @@ Every comparison was scored by two blinded judges (a Sonnet-class and an
 Opus-class judge); disagreements were decided by a pinned third judge,
 Claude Fable 5. Adjudicated marks stay in every denominator.
 
-- Overall: 85 of 1827 marks disagreed (4.7%); 96 of 3654 report-slot marks adjudicated (2.6%); 0 unresolved.
+- Overall: 122 of 2652 marks disagreed (4.6%); 135 of 5304 report-slot marks adjudicated (2.5%); 0 unresolved.
 
 | Cell | Marks disagreed | Disagreement % | Slot marks adjudicated | Adjudication % | Unresolved |
 |---|---|---|---|---|---|
@@ -108,15 +108,15 @@ Claude Fable 5. Adjudicated marks stay in every denominator.
 | claude-fable-5@xhigh | 3/68 | 4.4% | 3/136 | 2.2% | 0 |
 | claude-haiku-4-5-20251001@none | 9/68 | 13.2% | 10/136 | 7.4% | 0 |
 | claude-opus-4-8@low | 14/204 | 6.9% | 15/408 | 3.7% | 0 |
-| claude-opus-4-8@medium | 2/68 | 2.9% | 3/136 | 2.2% | 0 |
-| claude-opus-4-8@high | 2/68 | 2.9% | 2/136 | 1.5% | 0 |
-| claude-opus-4-8@xhigh | 2/68 | 2.9% | 3/136 | 2.2% | 0 |
+| claude-opus-4-8@medium | 9/204 | 4.4% | 11/408 | 2.7% | 0 |
+| claude-opus-4-8@high | 9/204 | 4.4% | 11/408 | 2.7% | 0 |
+| claude-opus-4-8@xhigh | 6/204 | 2.9% | 7/408 | 1.7% | 0 |
 | claude-opus-4-8@max | 8/204 | 3.9% | 9/408 | 2.2% | 0 |
 | claude-sonnet-5@low | 8/204 | 3.9% | 10/408 | 2.5% | 0 |
-| claude-sonnet-5@medium | 3/68 | 4.4% | 4/136 | 2.9% | 0 |
-| claude-sonnet-5@high | 1/68 | 1.5% | 1/136 | 0.7% | 0 |
-| claude-sonnet-5@xhigh | 2/68 | 2.9% | 2/136 | 1.5% | 0 |
-| claude-sonnet-5@max | 12/195 | 6.2% | 13/390 | 3.3% | 0 |
+| claude-sonnet-5@medium | 9/204 | 4.4% | 9/408 | 2.2% | 0 |
+| claude-sonnet-5@high | 9/204 | 4.4% | 9/408 | 2.2% | 0 |
+| claude-sonnet-5@xhigh | 5/204 | 2.5% | 5/408 | 1.2% | 0 |
+| claude-sonnet-5@max | 14/204 | 6.9% | 15/408 | 3.7% | 0 |
 
 ## Codex cross-vendor concordance (EXPLORATORY)
 
@@ -160,26 +160,26 @@ shipped record.
 | `results/lattice-fable-xhigh` | 51.49 | 5.17 | 0.98 | 57.64 |
 | `results/lattice-haiku` | 7.17 | 6.52 | 3.69 | 17.38 |
 | `results/lattice-opus-low` | 64.35 | 14.44 | 4.77 | 83.56 |
-| `results/lattice-opus-medium` | 23.11 | 5.16 | 1.50 | 29.77 |
-| `results/lattice-opus-high` | 19.16 | 5.03 | 0.66 | 24.85 |
-| `results/lattice-opus-xhigh` | 24.93 | 4.94 | 1.20 | 31.07 |
+| `results/lattice-opus-medium` | 56.14 | 15.75 | 5.37 | 77.26 |
+| `results/lattice-opus-high` | 55.67 | 15.47 | 4.59 | 75.73 |
+| `results/lattice-opus-xhigh` | 75.81 | 15.79 | 3.98 | 95.58 |
 | `results/lattice-opus-max` | 96.52 | 15.70 | 2.96 | 115.18 |
 | `results/lattice-sonnet-low` | 47.23 | 15.28 | 3.92 | 66.43 |
-| `results/lattice-sonnet-medium` | 14.01 | 4.96 | 1.87 | 20.84 |
-| `results/lattice-sonnet-high` | 18.95 | 5.37 | 1.07 | 25.39 |
-| `results/lattice-sonnet-xhigh` | 27.36 | 6.07 | 0.78 | 34.21 |
-| `results/lattice-sonnet-max` | 120.57 | 17.10 | 4.88 | 142.55 |
-| `results/lattice-opus-medium-batch1-adjudicate` (+$13.78 duplicate of lattice-opus-medium, counted there) | 0.00 | 0.00 | 0.00 | 0.00 |
-| **Grand total (deduplicated)** | **791.57** | **138.16** | **35.49** | **965.22** |
+| `results/lattice-sonnet-medium` | 43.02 | 15.69 | 2.57 | 61.28 |
+| `results/lattice-sonnet-high` | 54.00 | 17.61 | 5.77 | 77.38 |
+| `results/lattice-sonnet-xhigh` | 71.43 | 16.95 | 2.65 | 91.03 |
+| `results/lattice-sonnet-max` | 123.47 | 18.59 | 6.30 | 148.36 |
+| `results/lattice-opus-medium-batch1-adjudicate` | 11.03 | 2.34 | 0.41 | 13.78 |
+| **Grand total (deduplicated)** | **1,034.05** | **207.72** | **55.17** | **1,296.94** |
 
-Grand total shipped-record cost: **$965.22** across 16 shipped
+Grand total shipped-record cost: **$1,296.94** across 16 shipped
 cells (results/matrix/matrix.json enumerates 15; the 16th is the opus-medium
 batch1 re-adjudication).
 
 Dedup sanity: gross artifact cost across all 16 cell directories is
-$979.00; $13.78 of that is the batch1 re-adjudication's
+$1,296.94; $0.00 of that is the batch1 re-adjudication's
 byte-identical duplicate of opus-medium artifacts, removed once; the
-deduplicated shipped record is $965.22 (= 979.00 - 13.78).
+deduplicated shipped record is $1,296.94 (= 1,296.94 - 0.00).
 
 ## Provenance and disclosures
 

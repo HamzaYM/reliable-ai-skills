@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27680,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1545065,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8065,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8065,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8065,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8065,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2440,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2440,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent evidence; Report 2 is slightly cleaner on the AI-attribution flag while Report 1 is more thorough overall \u2014 effectively comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Stronger account security \u2014 Two-factor authentication is now enabled for every clinic by default.\" \u2014 **False; directly contradicted by code.** `app/security/config.py:3-4` reads `# Two-factor authentication is opt-in per clinic.` and `TWO_FACTOR_DEFAULT = False`... \"Export your visit history \u2014 Patients can now export their full visit history as a PDF.\" \u2014 **False; feature not implemented.** `app/routers/visits.py` contains only `list_visits(...)` returning `[]` and the comment `# TODO: pdf export`... Remove this entire section.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` with the comment \"Two-factor authentication is opt-in per clinic.\"... **Must be removed or corrected.**... `app/routers/visits.py` has only `list_visits()` returning `[]` and the literal marker `# TODO: pdf export`. There is no PDF export code... **Must be removed.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`captures.json` corroborates this: `before_scheduling.png` \u2192 `\"route\": \"/schedule\"`, but `after_scheduling.png` \u2192 `\"route\": \"/billing/invoices\"`. So the pair the doc presents as \"before vs. redesigned scheduling calendar\" actually shows the scheduling page next to the **billing/invoices** page.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The \"after\" image, `after_scheduling.png`, is not the scheduling calendar at all \u2014 `captures.json` records its route as `/billing/invoices`, and the image itself literally reads **\"BILLING / INVOICES\"**... actually pairs the old calendar against an unrelated **billing/invoices screen**, mislabeled as the new calendar.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**`after_export.png` is referenced but does not exist** (line 26 of the doc... It is absent from the directory... **`unused_capture_07.png` exists but is referenced nowhere.** Opened, it shows **\"PATIENT LIST\"**... It is an orphan capture that should not be shipped.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`after_export.png` \u2014 referenced (line 26, \"Export your visit history\") but the file does not exist.** Broken image link... **`unused_capture_07.png` \u2014 exists in the repo but is referenced nowhere** in the draft. It's an orphan capture reading \"PATIENT LIST\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (line 33).** Two issues for a customer send: it labels the piece a **draft**... and it carries AI-assistance attribution metadata.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Footer: \"Highlights draft assembled with AI assistance.\" (line 33)** \u2014 an internal drafting note; it should not be in a message sent to customers.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

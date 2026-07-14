@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18447,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.210751,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15985,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15985,
+        "cache_read_input_tokens": 17782,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 15985,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 15985,
+            "cache_read_input_tokens": 17782,
+            "input_tokens": 2,
+            "output_tokens": 1680,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1680,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answered the task better: both nailed the cross-tenant leak and both correctly declined to call the raw-SQL string exploitable, but only Report 2 caught the build_appointment_query signature change breaking nightly_export in exports.py, while Report 1 explicitly (and wrongly) concluded there were no other blocking defects.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**File/location:** `backend/app/appointments.py`, function `search_appointments`, lines 10\u201320 ... `tenant_id` is accepted as a parameter but is never referenced in the query \u2014 the only place `tenant_id` appears in the SQL is as an output column in the `SELECT` list (line 14), never in the `WHERE` clause. ... any authenticated caller of any tenant can call `GET /appointments/search?q=<term>&status=booked` and receive matching appointments \u2014 including the `notes` field and `tenant_id` \u2014 belonging to every other tenant in the system",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**File/location:** `backend/app/appointments.py`, function `search_appointments` (lines 10\u201319 on the feature branch) ... It never applies `tenant_id`, even though `tenant_id` is passed into the function as an argument ... Any authenticated user belonging to *any* tenant can call `GET /appointments/search?q=<term>&status=booked` and receive matching appointment rows \u2014 including `notes` (clinical/appointment notes) and `provider` \u2014 belonging to every *other* tenant.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Defect B \u2014 Breaks the existing nightly per-tenant export job.** ... This PR changes `build_appointment_query`'s signature from `(session, tenant_id)` to `(session, tenant_id, filters)`, with `filters` as a required positional parameter (no default value). ... But `exports.py`'s `nightly_export` still calls `build_appointment_query(session, tenant_id)` with only two arguments ... every call to `nightly_export` will now raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`status` is typed `AppointmentStatus` in `backend/app/schemas.py:5-8`, a `(str, Enum)` with exactly three hardcoded members (`booked`, `cancelled`, `completed`), none containing quotes or SQL metacharacters. FastAPI validates the incoming query string against this enum before `get_appointment_search` (in `api.py`) is even invoked, so as written today, `status.value` cannot carry attacker-controlled content \u2014 **this specific line is not currently exploitable.**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This isn't currently exploitable \u2014 FastAPI validates `status` against the `AppointmentStatus` str-Enum (`schemas.py`) before the function is ever called, so only `\"booked\"`, `\"cancelled\"`, or `\"completed\"` can reach it \u2014 but it's a footgun worth fixing in the same patch.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24204,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.101264,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8345,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8345,
+        "cache_read_input_tokens": 29150,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8345,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8345,
+            "cache_read_input_tokens": 29150,
+            "input_tokens": 2,
+            "output_tokens": 2552,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2552,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent, correctly identifying the same root cause, commit, flawed reproduction method, and flawed proposed fix, with report 2 offering slightly more detail on the dual-source-of-truth nature of the defect and git history verification.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "config/scoring_config.yaml sets expected_label_field: label, but every record in fixtures/eval_set.jsonl now stores its gold label under the key gold_label (not label). dict.get(\"label\") on those records therefore always returns None... The fix is a one-line config change: in ticket-scorer/config/scoring_config.yaml, change expected_label_field: label to expected_label_field: gold_label",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "config/scoring_config.yaml still says expected_label_field: label, while every record in fixtures/eval_set.jsonl now uses the key \"gold_label\"... The file to change is ticket-scorer/config/scoring_config.yaml: update expected_label_field: label to expected_label_field: gold_label",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The regression began on 2026-06-17, exactly matching commit 53551e8 \u2014 chore(eval): migrate eval set to gold_label schema (SCORE-77)... pipeline/metrics/nightly_scores.csv shows accuracy at 0.90\u20130.92 through 2026-06-16 and exactly 0.00 starting 2026-06-17, the same date as the commit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "pipeline/metrics/nightly_scores.csv shows accuracy going from 0.91 on 2026-06-16 straight to 0.00 on 2026-06-17 with no partial/transitional values. This lines up exactly with commit 53551e8 \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it re-ran individual tickets through pipeline/score_one.py, but that script (read above) never loads the config and never compares its prediction against any gold label at all \u2014 it just prints the predicted category for a human to eyeball... it was testing a code path that structurally cannot exhibit this bug.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "pipeline/score_one.py (used for the manual spot-check re-runs) only calls predict_category(normalize_simple(text)) \u2014 it never reads scoring_config.yaml, never reads a gold label field, and never performs the prediction == gold comparison that's actually broken. It is structurally incapable of surfacing this bug",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "This plan should not be acted on \u2014 it targets the wrong mechanism and will not fix anything... 'Reverting the model' would touch a field nothing consumes, leave expected_label_field: label unchanged, and the nightly accuracy would remain exactly 0.0 the next night.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This plan should not be acted on \u2014 it targets the wrong layer of the system and would not fix anything... Swapping model_id or 'reverting the model' would leave expected_label_field: label unchanged, fixtures/eval_set.jsonl would still use gold_label, and the batch score would still be 0.0.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

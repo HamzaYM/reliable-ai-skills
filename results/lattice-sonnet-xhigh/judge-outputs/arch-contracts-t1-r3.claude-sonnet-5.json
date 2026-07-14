@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19012,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09711969999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9075,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9075,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9075,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9075,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1936,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1936,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very close and hit a,b,c equally well; Report 1 additionally satisfies (d) by recommending dropping the hardcoded count in favor of pointing at the code, while Report 2 merely proposes updating the count to 5, missing that expectation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "new refund calls belong in medibill/backend/app/billing/gateway.py, as a new accessor function... medibill/backend/app/api/invoices.py:4 and :14 \u2014 imports chargekit directly... medibill/backend/app/workers/dunning.py:2 and :9-13 \u2014 same pattern... The one file that does follow the documented exception correctly is medibill/backend/app/billing/errors.py:6-9, which only imports the SDK's error classes... matching the doc's stated exception exactly.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in medibill/backend/app/billing/gateway.py, as a new function alongside charge()... medibill/backend/app/api/invoices.py:4,14 ... medibill/backend/app/workers/dunning.py:2,9 ... The only other file that imports chargekit is medibill/backend/app/billing/errors.py:6, which imports chargekit.errors for exception classes \u2014 this is the doc's explicitly documented exception... and is not a provider call, so it's consistent with the stated rule.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The actual InvoiceOut dataclass in medibill/backend/app/models/invoice.py:16-22 has 6 fields: id, tenant_id, amount_cents, currency, status, external_ref. external_ref was added by migration medibill/backend/migrations/0006_add_invoice_external_ref.sql and wired into InvoiceOut/charge_invoice in commit c23da88",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual InvoiceOut dataclass (backend/app/models/invoice.py:16-22) has a sixth field, external_ref: str | None, which is populated in invoices.py:17... This field was added in migration 0006_add_invoice_external_ref.sql and commit c23da88",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "This should happen now, as its own commit, before/independent of the refund feature \u2014 not bundled invisibly into the refund PR, and not deferred, because the doc is already wrong today regardless of refunds. Then, when refund support is actually added, the same PR that adds the new gateway.refund() accessor (and any new webhook/field it introduces) must update docs/ARCHITECTURE.md in that same commit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The doc should be corrected now, independent of the refund feature... That's a pre-existing accuracy bug, not something that should wait on new work... Then, as part of the refund feature PR itself, update the doc again... add those to the relevant sections in the same commit that ships the code \u2014 so the doc doesn't drift a third time",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "What I'd change: fix the immediate error (4 \u2192 5, add payment_pending to the list), and more importantly, stop asserting a count at all \u2014 either drop the number and just state the list (letting webhooks.py be the actual source of truth for \"how many\"), or point readers directly at medibill/backend/app/api/webhooks.py rather than restating a number that will go stale again",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change the doc to say \"5 webhook event types\" and list payment_pending alongside the other four... so getting the current count right first avoids compounding the error.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

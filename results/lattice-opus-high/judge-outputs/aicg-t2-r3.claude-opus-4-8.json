@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 52859,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.23273950000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11409,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11409,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11409,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11409,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 4131,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4131,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations with correct root causes and concrete fixes; Report 2 is marginally crisper on prescribing fail-closed for Redis, while Report 1 adds more depth (missing TTL, batch-abort), so they are effectively equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Because the handler is a single bare `except Exception`, **all six are handled identically**: log a warning via `log_fallover` and retry the *same payload* against `secondary`... `BadRequestError` ... **Not appropriate** \u2014 should surface, not fail over... `ContentPolicyError` ... **Not appropriate** \u2014 should surface and stop... `AuthError` ... **Not appropriate** \u2014 should surface. ... fail over only on transient classes and re-raise the rest",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It catches **bare `Exception`**, so *every* error class the primary can raise is handled identically: log a warning and re-send the same payload to the secondary vendor... `BadRequestError` \u2014 definitively non-retryable; failing over is **wrong**... `AuthError` \u2014 non-retryable... **wrong**... `ContentPolicyError` \u2014 the primary vendor *refused the content*; failing over is **the most dangerous case**... **Fix:** replace the bare catch with an explicit non-retryable denylist and only fail over the rest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path A \u2014 non-production bypass: `if os.environ.get(\"STAGE\") != \"production\": return True`... the safe direction (limit on) should not depend on an exact opt-in string. ... Path D \u2014 redis failure: `redis.incr` raises `RedisError` \u2192 `return True` (fail-open). ... during a redis outage all traffic passes unthrottled",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Path A \u2014 `STAGE` != `\"production\"` \u2192 returns `True`... gates on an \"is this production\" name check \u2014 precisely what Guardrail 3 prohibits... **Fix:** fail closed by default... Path D \u2014 `incr` raises `RedisError` \u2192 returns `True` (allow). This **fails open when the backing store is down**... **Fix:** `except RedisError: return False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`input_text` \u2014 the **full raw intake-form body**... This is the sensitive personal data itself, dumped verbatim into logs... `metadata` \u2014 logged verbatim with no schema/whitelist... Concrete fix: never log `input_text` (drop it, or log only a non-reversible digest...); ... restrict `metadata` to an explicit allowlist of non-PII fields",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`record.input_text` \u2014 the **entire intake document verbatim**. This is the sensitive free-text personal data itself, dumped into logs uncontrolled... `record.metadata` \u2014 the **whole dict passed through with no filtering**... **Fix:** ... never log `input_text` verbatim \u2014 drop it or store only a hash/length/truncation, and replace the metadata pass-through with an explicit allowlist of safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "if `PII_SALT` is unset (or empty), the salt silently defaults to `\"\"`, so the output is an **unsalted** `sha256(applicant_id)` with **no error or warning**... Concrete fix: fail fast if the salt is missing/empty (`raise RuntimeError(\"PII_SALT required\")`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "when `PII_SALT` is unset it **silently falls back to an empty string**, producing an **unsalted SHA-256 of the raw applicant id**... a missing required secret (a salt) must make the dependent path fail hard, never silently fall back to an unsalted path. **Fix:** fail closed",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

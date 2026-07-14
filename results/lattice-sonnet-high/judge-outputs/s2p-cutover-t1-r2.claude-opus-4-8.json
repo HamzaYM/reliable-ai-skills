@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 46328,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2359895,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12128,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12128,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12128,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12128,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 3961,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3961,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations and are comparable; Report 1 is marginally more thorough on the migration action and shadow-sink removal, while Report 2 adds extra findings (missing Dockerfile, no id-token permission).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:3` `AUTH_RELAXED = \"true\"` ... Should be **omitted entirely** ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` \u2014 an allow-list of a test account with superadmin privileges ... Must be **removed entirely** from prod. ... Fix: remove `SHADOW_SCORING_SINK` entirely from prod ... `LEGACY_BILLING_SECRET_ARN` ... Should be removed unless someone can show a live consumer.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`AUTH_RELAXED = \"true\"` ... Should be `\"false\"`. ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... This must not exist in prod at all \u2014 should be removed/empty ... the sink must be cleared (empty string) if shadow scoring is genuinely meant to be off in prod",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "that URL is baked into the compiled JS bundle at build time, not read from the runtime environment. ... **the exact same image/digest is deployed to both environments** ... the production container will serve a frontend bundle whose API calls are hardcoded to `https://staging-api.example.com` ... project documentation's \"rebuild per environment; don't promote a build artifact wholesale\" trap",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "VITE_`-prefixed vars are inlined into the bundle at build time ... Both `deploy-staging` ... and `deploy-prod` ... then deploy **the same already-built image digest** ... the production launch would ship a frontend bundle whose API base URL is hardcoded to `https://staging-api.example.com` \u2014 the production UI would talk to the staging backend.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**No database migration step anywhere in the workflow.** `docs/prod-runbook.md:6` asserts \"Database migrations are applied automatically during deploy,\" but nothing in `deploy.yml` runs Alembic or any migration command ... don't assume the pipeline succeeded means the schema is current ... don't trust it without a live check.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The runbook (`docs/prod-runbook.md:6`) asserts \"Database migrations are applied automatically during deploy,\" but no migration step is visible in `deploy.yml`, and the only migration files present ... are stubs whose `upgrade()` bodies are just `pass` \u2014 there's no actual schema to verify migrations against",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` sets the **same** condition string, `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` ... This must be changed to `repo:acme-health/medislot:environment:production` before apply, per project documentation's explicit rule that \"a stricter environment needs its own scoped trust condition, never an inherited or OR'd-together condition shared with a looser environment.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` has the *same unedited* condition \u2014 `\"repo:acme-health/medislot:environment:staging\"` \u2014 even though the `deploy-prod` job runs under `environment: production` ... This must be changed to `\"repo:acme-health/medislot:environment:production\"` before applying.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 40666,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1513107,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11510,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11510,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11510,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11510,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 4466,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4466,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are highly thorough and hit all four expectations with comparable depth; Report 1 is slightly more rigorous on the legacy_billing_secret_arn remediation (explicit removal) while Report 2 suggests replacement, but this didn't affect the overall category-coverage gate for expectation (a).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 2 \u2014 ENABLE_DEBUG_TOOLBAR = \"true\"... Omit the key entirely... Line 3 \u2014 AUTH_RELAXED = \"true\"... Omit the key entirely... Line 4 \u2014 PRESET_ADMIN_ACCOUNTS... Omit the key entirely... Remove this key entirely (removing it is what actually disarms shadow scoring)... Remove the key.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\"... Change to \"false\"... AUTH_RELAXED = \"true\"... Change to \"false\"... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... Remove it (set to empty).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the prod job deploys the staging-built bundle... the frontend must be rebuilt for production (which also requires creating a .env.production and switching the build mode). This is exactly the \"rebuild per environment, don't promote a build artifact wholesale\" trap.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So the API base URL in the shipped production bundle is https://staging-api.example.com \u2014 production would talk to the staging API... Fix: add a frontend/.env.production with the prod API URL and build the prod artifact with --mode production (a separate build, since VITE values are compile-time constants and can't be swapped at deploy time).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "nothing in deploy.yml runs migrations, and the script that would (deploy.sh) is absent, so this can't be confirmed. This is project documentation's first-apply trap: don't assume \"pipeline succeeded\" means the schema is current.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the workflow has no migration step (it would live in the missing deploy.sh), and all three migrations (0001_base, 0002_tenants, 0003_billing) are empty def upgrade(): pass stubs. On a fresh prod DB nothing meaningful gets created.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 passes the same oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"... the deploy-prod job runs in environment: production... Fix: prod must set oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "infra/prod/main.tf:3 was copied unchanged and still sets oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\". But the prod job runs in environment: production... Fix: set prod's oidc_sub_condition to repo:acme-health/medislot:environment:production",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

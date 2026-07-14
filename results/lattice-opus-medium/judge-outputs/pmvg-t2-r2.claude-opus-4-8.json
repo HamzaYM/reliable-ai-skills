@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31607,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1558785,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7805,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7805,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7805,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7805,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2602,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2602,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and cover (a)-(c) equally well; Report 2 edges ahead by explicitly proposing a reproducibility re-run/diff of the non-deterministic golden (d), which Report 1 notes but dismisses as harmless without verifying.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "their docstring states they \"hit the real model endpoint and incur per-call cost.\" ... So the deselection is correct; the teammate's step 1 would break the offline suite for everyone.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "every `pytest` invocation would make paid, per-call API requests (a surprise-bill risk) ... The deselection is intended behavior, not a bug to fix \u2014 leave `-m \"not live\"` in place and only opt in explicitly if someone specifically needs to validate the live endpoint.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "then **review the resulting diff** to confirm every new number is the intended result of the reweight, and only then commit the reviewed golden. Regenerating to silence the test without inspecting the values would defeat the entire purpose of a golden test",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Only then regenerate, and read the fixture diff to confirm every changed hunk maps to an intended change. ... Regenerating the golden as-is would launder that confidence-precision regression into the project documentation",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** copy the figures from `docs/testing.md` \u2014 they don't match the repo. ... I would source both numbers by actually running the tools on this branch ... and report the measured values, noting the doc is stale.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not by copying `docs/testing.md`. That doc claims ... both are stale when I measure them myself. ... So I'd report re-measured numbers with provenance",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "`update_golden.py` iterates a `set`, so the regenerated file's key *order* is non-deterministic across runs \u2014 re-run and diff to confirm the values, not just eyeball it ... re-run in assert mode to confirm the (non-deterministically-ordered) golden is stable",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

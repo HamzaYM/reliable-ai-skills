@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27779,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1190181,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9649,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9649,
+        "cache_read_input_tokens": 29147,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9649,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9649,
+            "cache_read_input_tokens": 29147,
+            "input_tokens": 2,
+            "output_tokens": 3149,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3149,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical on questions 1-3, but Report 1 explicitly distinguishes handling for gate (accuracy) vs. non-gate (relevance/tone) axis failures \u2014 renormalize-and-flag for the latter, exclude entirely for the former \u2014 while Report 2 treats all axis failures uniformly (never emit a composite, retry/mark incomplete) without carving out the renormalization-is-defensible case for optional axes, making Report 1 the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A missing/failed axis is explicitly coerced to `0.0` and still multiplied by its full weight, then summed into the same weighted total as a fully-scored row... The written record ... is **identical in shape** to a fully-scored row: `agent_id, reply_id, <float>`. There is no column, flag, or sentinel anywhere that distinguishes 'all three axes scored' from 'one axis failed and was zero-filled.'",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A missing/`None` axis score is coerced to `0.0` and multiplied by that axis's weight... This happens unconditionally... The resulting CSV row has exactly the same three-column shape (`agent_id, reply_id, composite`) as a row where all three axis calls succeeded... A record degraded by a dropped axis call is therefore byte-for-byte indistinguishable in form from a fully and honestly scored record.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "\"a zero is a real, comparable data point; a missing score is not, and conflating them corrupts every downstream aggregate.\" Here a failed call is silently converted into a real zero and blended into a real weighted average... an agent whose replies happened to hit an axis-call failure has its mean composite pulled down by a fabricated low score indistinguishable from a real one.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Silently mapping \"the call failed\" to \"the reply is a 0/10 on this axis\" conflates two very different situations \u2014 infrastructure failure vs. genuine quality judgment \u2014 and does so invisibly... agents that got unlucky with transient API failures on their accuracy call have their mean composite pulled down by phantom \"0\" accuracy scores that have nothing to do with actual reply quality.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Accuracy (load-bearing) call fails: do not compute or write a composite score at all for that record. `axis_scores[\"accuracy\"] = None` should propagate to an explicit \"degraded/incomplete\" status on the row \u2014 e.g., a `status` column ... with the `composite` field left blank/null rather than a substituted `0.0`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Given accuracy's role as the gate axis, a failed accuracy call in particular should never be treated as either \"gate passed\" or \"gate failed\"... it should be treated as \"gate status unknown,\" which practically means: don't emit a hard-fail-equivalent composite for that record, and retry/re-grade the accuracy axis before finalizing the row.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Relevance or tone (non-load-bearing) call fails: it's defensible to renormalize the composite over the axes that did succeed (e.g., accuracy + whichever of relevance/tone returned) by re-scaling the surviving weights to sum to 1, but the row must still be explicitly flagged... Accuracy (load-bearing) call fails: do not compute or write a composite score at all for that record.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

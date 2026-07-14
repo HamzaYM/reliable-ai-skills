@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 57595,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.22326660000000004,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14116,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14116,
+        "cache_read_input_tokens": 108582,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1471,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1471,
+            "cache_read_input_tokens": 41796,
+            "input_tokens": 2,
+            "output_tokens": 1492,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6772,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly surface the prior PLAT-31 attempt and its documented Postgres connection-exhaustion failure, but Report 1 additionally cites backend/Dockerfile alongside deploy/cargobox.yaml and quotes the revert's 'back to Cargobox container deploy' language, giving it the edge on identifying the current container setup as the deliberate post-revert state.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "454a21f \"Add Edgerunner serverless deploy for API (PLAT-31)\" ... 597777b \"Open a dedicated Postgres connection per request in the serverless handler (PLAT-31)\" ... 1712565 \"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31)\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git log` shows the ticket **PLAT-31** sequence: `454a21f` \"Add Edgerunner serverless deploy,\" `597777b` \"Open a dedicated Postgres connection per request,\" then `1712565` **\"Revert Edgerunner migration.\"**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "\"the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The revert message (`1712565`) states: *\"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production... the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"*",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Decommission the Cargobox deploy (`deploy/cargobox.yaml`, `replicas: 2`) and the container (`backend/Dockerfile`)... `1712565` \"Revert Edgerunner migration ... back to Cargobox container deploy (PLAT-31)\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Who to involve: the owner of `carelog-api` / the PLAT-31 author or platform team (they hold the un-recorded reasoning), whoever owns the Postgres instance and its `max_connections` budget, and the leadership sponsor of the cost-cut \u2014 so the earlier revert is weighed against the savings before any commitment.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Who to involve:** whoever owns PLAT-31 and the platform/on-call team that absorbed the outage \u2014 they have the direct history. Bring in the DBA / database owner (this is fundamentally a Postgres `max_connections` capacity question) and get leadership sign-off with the prior outage on the table",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

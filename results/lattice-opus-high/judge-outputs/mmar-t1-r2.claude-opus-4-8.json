@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 11758,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.10997849999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7192,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7192,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7192,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7192,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 1035,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1035,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with equivalent substance and correct reasoning; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The WHERE clause filters only on `status` and a full-text match on `notes`. There is **no `tenant_id` predicate**. The function receives `tenant_id` (from `current_tenant_id` in `api.py`) but never uses it. So any authenticated caller in clinic/tenant A hitting `GET /appointments/search?q=\u2026&status=\u2026` receives matching appointments from **every tenant**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It contains **no `tenant_id` predicate**. The function is even handed `tenant_id` as a parameter (`search_appointments(session, tenant_id, q, status)`) but never references it in the query or the bind params (only `:q` is bound).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The PR added a required third parameter `filters` with no default, and updated `list_appointments` and the test to pass it \u2014 but `exports.py` was not touched by the PR ... Its call still passes two args, so `nightly_export` raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "does **not** update `backend/app/exports.py`, whose `nightly_export` still calls `build_appointment_query(session, tenant_id)` with only two arguments. ... the nightly per-tenant CSV export raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "SQL-injection-shaped f-string `WHERE status = '{status.value}'`: a real footgun, but **not exploitable through the HTTP endpoint** because FastAPI validates `status` against the 3-member `AppointmentStatus` enum (422 before the handler runs).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Today it is not exploitable because `api.py` types the query param as `status: AppointmentStatus` and FastAPI rejects anything outside the `booked/cancelled/completed` enum (422) before the string is built, so `status.value` is constrained to safe literals.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

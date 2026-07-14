@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20759,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0894367,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7549,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7549,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7549,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7549,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2119,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2119,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable rigor; Report 2 edges ahead with runtime verification of the seed-tenant behavior and an added check on job/message-client realism, while Report 1 adds a note on missing test coverage \u2014 overall comparable quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminder messages **will be sent automatically**. The decision is made in `backend/app/feature_flags.py`, function `auto_send_reminders_enabled`, at **line 11**... if tenant.settings.get(\"auto_send_reminders\") is None: # line 11 ... return True # line 12",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will be sent automatically**... The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, lines 11\u201312:\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change it at `backend/app/feature_flags.py:11\u201313` so an unset value returns **False** \u2014 e.g. `return bool(tenant.settings.get(\"auto_send_reminders\"))` alone (which yields `False` for missing/None/falsey), making enrollment strictly opt-in.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "For a feature that contacts real patients (cost, consent/compliance, and trust implications), the safe and expected default is **opt-in (off)**. I would change `backend/app/feature_flags.py:12` from `return True` to `return False`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`git show 25509a7` (SLOT-190) introduced `compact_calendar_view_enabled` with the `if ... is None: return True` grandfather-on pattern for a UI display preference. `git show aa4cf8d` (SLOT-214) added `auto_send_reminders_enabled` as a byte-for-byte structural clone of that resolver... Grandfather-on is appropriate for the calendar view (a convenience-only UI preference where being wrong is low-cost), but the two flags are in different risk categories, and the null-default must be re-decided per flag rather than inherited.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was **copied from the pre-existing calendar-view flag**. `git show 25509a7` (SLOT-190) introduced `compact_calendar_view_enabled` with the `if ... is None: return True` pattern for a purely cosmetic UI preference... Defaulting to on is defensible for a cosmetic view preference, where being wrong is harmless and reversible. It is **not** a sound basis for the reminder toggle: the semantics are entirely different (a local display preference vs. sending messages to patients).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The grep confirms there is *no* master switch / kill-switch anywhere \u2014 the job is gated solely by the per-tenant value. A per-tenant outbound flag should be ANDed with an env-level master so the whole feature can be turned on/off per deploy and there's a single rollback affordance.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Add a global gate / staged rollout / kill-switch.** There is no env var or global flag anywhere (`grep` found none); the only control is the per-tenant toggle. Add a way to dark-launch and instantly disable the whole job without a code deploy.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

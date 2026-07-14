@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 41979,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1409957,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10246,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10246,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10246,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10246,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 4344,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4344,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports thoroughly identify the prior Edgerunner attempt, its revert, and the connection-exhaustion root cause with commit citations, but Report 2 more explicitly states that serverless_handler.py was \"deleted\" (satisfying the deliberate-removal expectation) and ties its sign-off recommendation more concretely to the specific prior-attempt ticket (PLAT-31) and its owning team, making it marginally stronger overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The repo's own git history (commits 454a21f, 597777b, 1712565) shows exactly what this migration looked like the last time it was attempted here",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "these are essentially the exact steps this repository already took once, in commits 454a21f \u2192 597777b, and the attempt was reverted in production (1712565, ticket PLAT-31) due to a Postgres connection-exhaustion failure",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the repo's own commit messages say it does *not* persist the pool: \"Edgerunner runs each request in a fresh isolate and does not keep the SQLAlchemy connection pool between invocations\" \u2014 597777b... commit 1712565 documents a real production incident: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections')\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this exact pattern already caused /reports/monthly to exhaust Postgres's max_connections in production, per the revert message in 1712565... Edgerunner's per-request isolate model does not preserve that pool between invocations (per the 597777b commit's own description of Edgerunner's behavior)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Re-add an Edgerunner entry point equivalent to the deleted backend/serverless_handler.py, adapting backend/app/main.py's FastAPI app to Edgerunner's per-request invocation model",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "whoever owns the Postgres instance/infrastructure (to size max_connections and evaluate a pooler...), whoever owns/understands Edgerunner's runtime guarantees..., and...whoever owns that budget decision should be told up front that the \"cheap\" path already failed once for a concrete technical reason",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Whoever owns PLAT-31 (the platform/infra team that authored and reverted the original attempt) should be looped in first, along with whoever owns the Postgres instance's max_connections/capacity, since that's the actual constraint that broke the last attempt.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

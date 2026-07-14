@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22481,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1273715,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7659,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7659,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7659,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7659,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1526,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1526,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly identify the config field mismatch, the SCORE-77 commit, the wrong-path reproduction, and the futility of a model swap; they are comparable, with Report 2 slightly more precise on line-level evidence.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The SCORE-77 migration renamed the eval-set field from `label` to `gold_label` ... but `config/scoring_config.yaml` still says `expected_label_field: label`. Since the records no longer contain a `label` key, `record.get(\"label\")` returns `None` for all 11 records ... File to change: `ticket-scorer/config/scoring_config.yaml`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it did **not** update `config/scoring_config.yaml`, which still declares `expected_label_field: label` (line 2). Because records no longer contain a `label` key, `record.get(\"label\")` returns `None` for **every** record ... The file to change is `config/scoring_config.yaml`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (dated Jun 17 2026). Evidence: `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and 0.00 on 2026-06-17 ... the step change lands on the exact commit date",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**, authored `Wed Jun 17 13:00:00 2026 +0000` \u2014 the same date the metric collapses ... `pipeline/metrics/nightly_scores.csv` holds `0.90\u20130.92` ... then drops to `2026-06-17,0.00`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The investigator re-ran tickets through `pipeline/score_one.py`, which returns *only the prediction and never compares it to a gold label*. The bug lives entirely in the gold-label lookup inside `score_batch.py`, so `score_one.py` can never exhibit it ... To reproduce correctly, run the actual failing path \u2014 the batch scorer",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py`'s `score_single()` only calls `predict_category(normalize_simple(text))` and prints the label \u2014 it never loads the eval set and never compares the prediction to any gold field ... structurally **cannot** surface a bug that lives in the batch scorer's gold-field lookup ... Correct reproduction: (a) run the batch scorer itself",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Reverting the model would change nothing; accuracy would stay at 0.00 ... It's also the kind of \"flip a knob in the shared/production runner to see what happens\" move the playbook warns against.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reverting a model therefore cannot change a single prediction or score, and, more importantly, it does not touch the actual cause (the eval-set schema / config field-name mismatch), so accuracy would remain `0.00`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

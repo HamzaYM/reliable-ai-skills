@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 42291,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.20289439999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13325,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13325,
+        "cache_read_input_tokens": 149458,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 794,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 794,
+            "cache_read_input_tokens": 41680,
+            "input_tokens": 2,
+            "output_tokens": 1086,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4879,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answered the task more completely: both reports correctly diagnose the None-to-0.0 substitution bug and its corrupting effect on scores.csv and leaderboard rankings, but only Report 2 explicitly distinguishes handling for the gate axis (accuracy, must not emit a comparable composite) versus the optional axes (relevance/tone, defensible to renormalize over succeeded axes), which Report 1 gestures at but never states.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A row where all three axes succeeded and a row where one axis silently failed and defaulted to 0 are, in the CSV, structurally and semantically indistinguishable.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a degraded record is byte-for-byte indistinguishable in form from a complete one.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Treating a failed API call as a score of `0.0` conflates \"the grader didn't run\" with \"the grader ran and judged the reply as a total failure on that axis.\" These are very different events, but they get the same weighted contribution.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a missing score and a genuine score of 0 are different facts and must not be conflated... A `None`-inflated-to-0 composite drags an agent's mean down exactly as hard as if the model had genuinely graded that reply a near-failure.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`composite()` should refuse to produce a numeric composite when a required axis is missing \u2014 particularly accuracy, given its gating role \u2014 rather than substituting 0.0... `run_batch.py` should not write a same-shaped row to `results/scores.csv` when scoring is incomplete.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not emit a composite score that looks comparable to a complete one... leave the composite column empty/null rather than a comparable float... `leaderboard.py` should skip incomplete rows when computing means.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "If relevance or tone fails to score, that's the \"not load-bearing\" case \u2014 project documentation's guidance is to renormalize over what succeeded and still emit a complete, flagged-complete result... If accuracy fails, that's the load-bearing case, and treating it as `0.0` is doubly wrong here.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12630,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10603560000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8276,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8276,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9562,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8276,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8276,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9562,
+            "output_tokens": 1266,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1266,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent substance and correct fixes; comparable in quality, with Report 2 slightly more thorough on batch-level failure isolation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Definitively non-retryable \u2014 must NOT fail over \u2014 BadRequestError, AuthError, and especially ContentPolicyError... Concrete fix: introduce an explicit non-retryable denylist... and only fail over outside it... except NON_RETRYABLE: raise # do not reroute a rejected/sensitive payload",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "BadRequestError \u2014 deterministic client-side error... Should surface, not fail over. ContentPolicyError \u2014 ... Should not fail over. AuthError \u2014 ... it should be raised/alerted, not swallowed... Concrete fix: fail over only for genuinely transient classes and let the rest propagate, e.g. TRANSIENT = (RateLimitError, RequestTimeoutError, ServerError)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path A \u2014 returns True whenever STAGE is anything other than the exact string \"production\"... This is a fail-open gated on an environment-name check \u2014 exactly what Guardrail 3 forbids... Path C \u2014 on RedisError, returns True. This is the second fail-open... Fix: except RedisError: return False (fail closed)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Path A ... rate limiting is completely disabled outside one exact string... Path D \u2014 production, incr raises RedisError \u2192 True. Fail-open: if Redis is down, all requests are allowed and the limit is entirely removed... Fix: gate on an explicit config flag rather than a fragile STAGE string",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "input_text is the full applicant intake document \u2014 the sensitive personal data itself \u2014 written verbatim into application logs. It should never be logged raw... metadata is dumped wholesale \u2014 a denylist-by-omission anti-pattern... requires an explicit allowlist of safe metadata keys, dropping anything not on it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "do not log input_text at all (at most a length or a non-reversible hash, or a redacted excerpt); and whitelist/scrub metadata so it can't carry PII.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the fix is to fail closed: salt = os.environ[\"PII_SALT\"] # or explicit check \u2192 raise RuntimeError; if not salt: raise RuntimeError(\"PII_SALT is required for pseudonymization\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: fail closed \u2014 require the salt (salt = os.environ[\"PII_SALT\"] and raise if empty) \u2014 and use a keyed HMAC with a secret from a managed secret store",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

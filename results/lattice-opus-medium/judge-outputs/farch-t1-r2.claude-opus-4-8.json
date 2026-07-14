@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29362,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1504355,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7795,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7795,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7795,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7795,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2395,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2395,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with the same core findings; they are comparable, with Report 1 adding a note about the lack of a durable decision record and Report 2 naming additional stakeholders.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "these exact steps were already carried out under ticket PLAT-31 and then reverted (commit `1712565`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git log --oneline` and `git show 1712565`, `597777b`, `454a21f`. They record that this migration was already done under PLAT-31 and reverted in production.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "a Postgres connection per request (`597777b`) \u2014 caused connections to open \"faster than Postgres could recycle them,\" hit `FATAL: too many connections`, and **took `/reports/monthly` down in production** (revert `1712565`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The commit `1712565` message states it plainly: under normal dashboard load, per-request Postgres connections \"opened faster than Postgres could recycle them and tripped the connection limit (`FATAL: too many connections`), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "This is a settled decision: the team already migrated to Edgerunner and rolled back to Cargobox under PLAT-31",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the repository shows it was tried and reverted for causing a production outage, and none of the conditions that caused that outage have changed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "it is **not an individual engineer's call**. It should go back to the owner of PLAT-31 / the platform team, with the revert history and root cause on the table, so they decide whether a properly-pooled reattempt is worth the risk",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Before restarting, involve the owner of PLAT-31 / the platform team who executed and reverted the prior attempt (the institutional memory of the failure), the DBA/whoever controls Postgres `max_connections`, and leadership sponsoring the cost cut",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

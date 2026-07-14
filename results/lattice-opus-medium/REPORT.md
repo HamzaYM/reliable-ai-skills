@@ -1,30 +1,40 @@
-# A/B eval report: lattice-opus-medium
+# A/B eval report: lattice-opus-medium-v2
 
 - Consumer model: claude-opus-4-8
 - Consumer effort: medium
-- Consumer models effective: claude-opus-4-8
+- Consumer models effective: claude-haiku-4-5-20251001, claude-opus-4-8
 - Max output tokens (pinned, both arms): 64000
 - Judge panel: claude-sonnet-5 + claude-opus-4-8 (both pinned at --effort medium)
 - Adjudicator: claude-fable-5 (pinned at --effort medium, invoked once per disputed report-slot mark, two-of-three majority)
-- claude CLI: 2.1.206 (Claude Code)
-- Seed: 7742485137540372977
+- claude CLI: 2.1.207 (Claude Code)
+- Seed: 12435064653901011027
 - Preregistered: yes
 - Freeze: 2026-07-10T08:32:03Z (task file sha256 b378c7964428)
-- Repeats: 1 consumer / 1 judge
-- Wall clock: 1507.0 s
+- Repeats: 3 consumer / 1 judge
+- Wall clock: 127.1 s
 
 ## Aggregate
 
-Cold 56/68 (82.4%) | Loaded 66/68 (97.1%) | Delta +10
+Cold 58/68 (85.3%) | Loaded 67/68 (98.5%) | Delta +9
 
 The denominator is the frozen must-hit count over included tasks,
 computed from the data.
 
-Judge panel disagreement: 2 of 68 must-hit marks (2.9%) carried a disputed report slot.
+Judge panel disagreement: 9 of 204 must-hit marks (4.4%) carried a disputed report slot.
 
-Adjudication: 3 of 136 report-slot marks disputed; 3 adjudicated by claude-fable-5 at --effort medium (2.2% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 1, report_2 2; by arm: cold 2, loaded 1.
+Adjudication: 11 of 408 report-slot marks disputed; 11 adjudicated by claude-fable-5 at --effort medium (2.7% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 4, report_2 7; by arm: cold 8, loaded 3.
 
 Combination rule: per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator.
+
+Repeat-level aggregates (replicated cell; every repeat ran in its own isolated workspace with no shared session state):
+
+| Repeat | Cold | Loaded | Delta (pp) |
+|---|---|---|---|
+| r1 | 56/68 (82.4%) | 66/68 (97.1%) | +14.7 |
+| r2 | 61/68 (89.7%) | 66/68 (97.1%) | +7.4 |
+| r3 | 58/68 (85.3%) | 67/68 (98.5%) | +13.2 |
+
+Endpoint mean over repeats: cold 85.8% | loaded 97.6% | delta +11.8 pp.
 
 ## Per-skill results
 
@@ -32,13 +42,13 @@ Combination rule: per report-slot must-hit mark: both primary judges score every
 |---|---|---|---|---|---|
 | adversarial-review/multi-model-adversarial-review | 1 | 2/3 | 3/3 | +1 | PASS |
 | architecture-and-contracts/architecture-contracts-as-law | 1 | 3/4 | 4/4 | +1 | PASS |
-| auth-and-tenancy/multi-tenant-auth-reference | 1 | 4/5 | 3/5 | -1 | FAIL |
-| campaign-execution/multi-agent-batch-campaigns | 1 | 3/4 | 4/4 | +1 | PASS |
+| auth-and-tenancy/multi-tenant-auth-reference | 1 | 4/5 | 5/5 | +1 | PASS |
+| campaign-execution/multi-agent-batch-campaigns | 1 | 3/4 | 3/4 | +0 | FAIL |
 | change-control/git-change-control-for-agents | 1 | 4/4 | 4/4 | +0 | FAIL |
 | cost-and-safety-guardrails/ai-cost-tracking-and-guardrails | 1 | 3/4 | 4/4 | +1 | PASS |
-| cost-and-safety-guardrails/budget-aware-model-allocation | 1 | 4/4 | 4/4 | +0 | FAIL |
-| cost-and-safety-guardrails/config-and-secrets-hygiene | 1 | 4/4 | 4/4 | +0 | FAIL |
-| debugging-playbooks/failure-archaeology | 1 | 0/4 | 4/4 | +4 | PASS |
+| cost-and-safety-guardrails/budget-aware-model-allocation | 1 | 3/4 | 4/4 | +1 | PASS |
+| cost-and-safety-guardrails/config-and-secrets-hygiene | 1 | 3/4 | 4/4 | +1 | PASS |
+| debugging-playbooks/failure-archaeology | 1 | 4/4 | 4/4 | +0 | FAIL |
 | debugging-playbooks/systematic-debugging-playbook | 1 | 4/4 | 4/4 | +0 | FAIL |
 | deploy-and-infra/environment-and-build-hazards | 1 | 3/3 | 3/3 | +0 | FAIL |
 | deploy-and-infra/staging-to-prod-cutover-campaign | 1 | 3/4 | 4/4 | +1 | PASS |
@@ -80,14 +90,14 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports are s
 
 ### bama-t1 (cost-and-safety-guardrails/budget-aware-model-allocation)
 
-Cold 4/4, loaded 4/4, threshold 3: FAIL
+Cold 3/4, loaded 4/4, threshold 3: PASS
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
 | b | HIT | HIT |
 | c | HIT | HIT |
-| d | HIT | HIT |
+| d | MISS | HIT |
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit all four expectations with essentially identical analysis and citations; they are comparable. | claude-sonnet-5: Both reports are substantively equivalent, hitting all four expectations with nearly identical numbers, reasoning, and recommendations; report 1 adds a bonus note on model-comparability (nimbus-large vs atlas-mini) while report 2 adds a bonus note on read-only constraints, but neither difference affects expectation coverage.
 
@@ -102,18 +112,20 @@ Cold 4/4, loaded 4/4, threshold 3: FAIL
 | c | HIT | HIT |
 | d | HIT | HIT |
 
+Judge panel disagreed (excluded from both arms): c
+
 Judge comparative verdict (no score weight): claude-opus-4-8: Comparable: both reports hit all four expectations with grounded citations; Report 1 is slightly cleaner in naming consent_receipts as the direct Q3 preserve answer, while Report 2 adds useful extra detail but frames consent_audit as its primary preserve answer. | claude-sonnet-5: Both reports hit all four expectations with solid, well-cited answers; Report 1's answer to (c) is slightly more confident/direct than Report 2's hedged "policy call" framing, but overall the two are comparable in substance and rigor.
 
 ### csh-t1 (cost-and-safety-guardrails/config-and-secrets-hygiene)
 
-Cold 4/4, loaded 4/4, threshold 3: FAIL
+Cold 3/4, loaded 4/4, threshold 3: PASS
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
 | b | HIT | HIT |
 | c | HIT | HIT |
-| d | HIT | HIT |
+| d | MISS | HIT |
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit all four expectations with equivalent substance and citations; they are comparable, with Report 2 slightly more thorough on the stub/data caveats and Report 1 on tests. | claude-sonnet-5: Both reports hit all four expectations with nearly equivalent substance; report 2 adds the extra observation that the UI and backend defaults disagree, giving slightly more actionable detail, but overall the two are comparable in quality.
 
@@ -157,14 +169,16 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports are s
 
 ### farch-t1 (debugging-playbooks/failure-archaeology)
 
-Cold 0/4, loaded 4/4, threshold 3: PASS
+Cold 4/4, loaded 4/4, threshold 3: FAIL
 
 | Expectation | Cold | Loaded |
 |---|---|---|
-| a | MISS | HIT |
-| b | MISS | HIT |
-| c | MISS | HIT |
-| d | MISS | HIT |
+| a | HIT | HIT |
+| b | HIT | HIT |
+| c | HIT | HIT |
+| d | HIT | HIT |
+
+Judge panel disagreed (excluded from both arms): c
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Report 1 is decisively better: it discovers the prior PLAT-31 Edgerunner attempt and its revert from git history and grounds every answer in it, while Report 2 gives a solid code-level analysis but never finds the prior attempt, missing all four expectations. | claude-sonnet-5: Report 1 discovered the critical prior-attempt-and-revert history via git log and grounded all four answers in it; Report 2 never consulted git history and treated the migration as never-attempted, missing all four expectations.
 
@@ -183,14 +197,16 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports fully
 
 ### mabc-t2 (campaign-execution/multi-agent-batch-campaigns)
 
-Cold 3/4, loaded 4/4, threshold 3: PASS
+Cold 3/4, loaded 3/4, threshold 3: FAIL
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
-| b | HIT | HIT |
+| b | HIT | MISS |
 | c | HIT | HIT |
 | d | MISS | HIT |
+
+Judge panel disagreed (excluded from both arms): b
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both cover a–c equivalently, but Report 1 fully nails the shared results-DB collision risk (d) that Report 2 only mentions as optional, making Report 1 the stronger plan. | claude-sonnet-5: Report 1 covers all four expectations explicitly (including the RESULTS_DB collision risk and required override), while Report 2 misses expectation (d), downplaying the RESULTS_DB issue as optional and 'not exercised by the current test' rather than flagging it as a concrete collision risk requiring an env override.
 
@@ -208,12 +224,12 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both nail the cros
 
 ### mt-auth-t1 (auth-and-tenancy/multi-tenant-auth-reference)
 
-Cold 4/5, loaded 3/5, threshold 4: FAIL (regression)
+Cold 4/5, loaded 5/5, threshold 4: PASS
 
 | Expectation | Cold | Loaded |
 |---|---|---|
-| a | HIT | MISS |
-| b | HIT | MISS |
+| a | HIT | HIT |
+| b | HIT | HIT |
 | c | HIT | HIT |
 | d | MISS | HIT |
 | e | HIT | HIT |
@@ -243,6 +259,8 @@ Cold 3/4, loaded 4/4, threshold 3: PASS
 | b | HIT | HIT |
 | c | MISS | HIT |
 | d | HIT | HIT |
+
+Judge panel disagreed (excluded from both arms): b, c
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both cover (a), (b), and (d) equally well, but Report 2 answered better overall because it clearly states the pipeline has no migration step and the runbook is wrong, whereas Report 1 only hedges that migrations are "unverifiable" due to the missing deploy script. | claude-sonnet-5: Report 2 is stronger overall: it matches Report 1 on config flags, frontend build/API URL, and OIDC trust, but additionally explicitly identifies the missing migration step and calls for a manual first migration pass, which Report 1 only vaguely gestures at via "unverifiable."
 
@@ -282,17 +300,26 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Comparable: both r
 | aicg-t2 | yes |
 | arch-contracts-t1 | yes |
 | bama-t1 | yes |
+| consent-t2 | yes |
 | csh-t1 | yes |
+| dora-t2 | yes |
+| env-hazards-t1 | yes |
+| eval-harness-t1 | yes |
+| farch-t1 | yes |
 | git-cc-t2 | yes |
 | mabc-t2 | yes |
 | mmar-t1 | yes |
 | mt-auth-t1 | yes |
+| pmvg-t2 | yes |
+| s2p-cutover-t1 | yes |
+| sysdbg-t2 | yes |
+| tcr-t1 | yes |
 
 ## Run notes
 
 - Excluded tasks: none
-- Scrub substitutions: 16
-- Workspace mutation warnings: git-cc-t2-loaded, sysdbg-t2-cold, sysdbg-t2-loaded, pmvg-t2-cold, pmvg-t2-loaded
+- Scrub substitutions: 40
+- Workspace mutation warnings: git-cc-t2-loaded, mabc-t2-r1-cold, mmar-t1-r1-loaded, pmvg-t2-cold, pmvg-t2-loaded, pmvg-t2-r1-cold, pmvg-t2-r1-loaded, pmvg-t2-r2-cold, pmvg-t2-r2-loaded, sysdbg-t2-cold, sysdbg-t2-loaded, sysdbg-t2-r1-cold, sysdbg-t2-r1-loaded, sysdbg-t2-r2-cold, sysdbg-t2-r2-loaded
 
 ## Limitations
 

@@ -1,0 +1,83 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "This exact migration (Cargobox \u2192 Edgerunner for this exact API) was already tried, shipped a stopgap fix, and was reverted after causing a production outage (`FATAL: too many connections` on `/reports/monthly`), per commits `454a21f`, `597777b`, and `1712565` in `carelog-api`. Per the project documentation guidance, that makes this a settled decision, not an open design question",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 15638,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5",
+          "claude-haiku-4-5-20251001"
+        ],
+        "total_cost_usd": 0.595685,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 27289,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 27289,
+          "cache_read_input_tokens": 0,
+          "inference_geo": "not_available",
+          "input_tokens": 2,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 27289,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 27289,
+              "cache_read_input_tokens": 0,
+              "input_tokens": 2,
+              "output_tokens": 906,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 906,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "This repository already contains a complete (later-reverted) attempt at exactly this migration ... Per the project documentation guidance, that makes this a settled decision, not an open design question",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "c",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "farch-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23912,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1549795,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8790,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8790,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8790,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8790,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2141,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2141,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all four questions with matching git evidence; comparable, with Report 1 marginally richer (e.g., merge-tree conflict simulation).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. The dependency this branch was built on \u2014 `feat/weighted-scorer` \u2014 has already landed on `main`... (Do not target `feat/weighted-scorer` \u2014 it's redundant with `main` now.)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Target **`main`** (the trunk)... Stacking the PR on `feat/weighted-scorer` is exactly the dead-base trap.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was branched from `feat/weighted-scorer`... has since been **squash-merged into `main` as PR #42**... `git branch --merged main` lists only `main` (not `feat/weighted-scorer`), and `git cherry -v main feat/weighted-scorer` marks all three W commits with `+`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "created from **`feat/weighted-scorer`**, not from main... `git merge-base feat/weighted-scorer main` = `65204ad`... so W1/W2/W3 are not ancestors of main. **But its content is already fully in main**... the weighted-scorer work was **squash/refactor-merged into main via PR #42**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`git diff main...feat/pairwise-metric` shows **3 files, +21/-3**:... `scoring/scorer.py` (+13/-3): the entire weighted-metrics refactor... They appear in the PR because the PR's merge-base is the original base `65204ad`: `main` obtained that same content through a *squash* commit that is not an ancestor of this branch",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The remainder \u2014 `scoring/scorer.py` +13/-3 and the other +6 in `scoring/metrics.py`... is the **weighted-scorer work (W1\u2013W3)**, which is already in main via #42. It shows up in the PR diff only because GitHub-style diffs are three-dot (computed from the merge-base)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto main ac9d505 feat/pairwise-metric`... **Verify the result:** `git log --oneline main..feat/pairwise-metric` should show only X1,X2; `git diff main...feat/pairwise-metric` should now show only pairwise changes (grader.txt +1 and `pairwise_preference()` in metrics.py \u2014 no `scorer.py`, no `overlap()`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... **Confirm the diff is scoped:** `git diff --stat main..feat/pairwise-metric` should now show only `prompts/grader.txt` +1 and `scoring/metrics.py` +4, and `git log --oneline main..feat/pairwise-metric` only X1, X2",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

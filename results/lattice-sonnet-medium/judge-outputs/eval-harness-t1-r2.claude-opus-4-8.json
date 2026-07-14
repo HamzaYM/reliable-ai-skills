@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32377,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1735995,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8982,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8982,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8982,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8982,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2807,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2807,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations; Report 2 is marginally stronger, grounding the accuracy/embellishment split in concrete scores.csv outlier values and giving a crisper renormalize-vs-hold-out policy.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A missing axis is treated as `value = 0.0` and weighted into the sum exactly like a real, model-assigned score of 0. `run_batch.py` then writes `[agent_id, reply_id, composite(axis_scores)]` to `results/scores.csv` (line 22\u201323) \u2014 the **same three-column shape** as a fully-scored row... A row where all three axes succeeded and a row where one axis silently failed and defaulted to 0 are, in the CSV, structurally and semantically indistinguishable.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A missing axis is silently coerced to `0.0` and folded into the weighted sum at full weight, as if the model had actually scored that axis as a 0... writes `[agent_id, reply_id, composite(axis_scores)]` to `results/scores.csv` \u2014 exactly the same three-column shape... a degraded record is byte-for-byte indistinguishable in form from a complete one.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Treating a failed API call as a score of `0.0` conflates \"the grader didn't run\" with \"the grader ran and judged the reply as a total failure on that axis.\"... For `grader/leaderboard.py`: `rankings()` computes `sums[agent_id] += float(comp)` and divides by `counts[agent_id]`... a simple, unweighted mean over every row for that agent, including any that were silently zero-padded... will have its mean composite pulled down for reasons that have nothing to do with reply quality.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a missing score and a genuine score of 0 are different facts... `leaderboard.py` treats every row in the CSV as equally valid: `sums[agent_id] += float(comp); counts[agent_id] += 1`... then divides to get a mean. A `None`-inflated-to-0 composite drags an agent's mean down exactly as hard as if the model had genuinely graded that reply a near-failure.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`run_batch.py` should not write a same-shaped row to `results/scores.csv` when scoring is incomplete... write the row to a separate `results/failed.csv` (or add an explicit status/error column to `scores.csv`) so incomplete rows are visibly distinguished from complete ones... accuracy failures deserve special, more conservative project documentation (e.g., exclude the reply from scoring entirely)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Accuracy fails (load-bearing / gate axis): Do not emit a composite score that looks comparable to a complete one. Do not write `0.0` for the missing axis, and do not write a \"final\" numeric composite at all for that row. Instead, write the record with a status such as `accuracy_failed`/`incomplete`... `leaderboard.py` should skip incomplete rows when computing means",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "uniform handling (treat every failed axis identically as 0) is wrong precisely because the three axes are *not* weighted or semantically equal \u2014 accuracy failures deserve special, more conservative project documentation (e.g., exclude the reply from scoring entirely) rather than the same default used for a tone-call hiccup.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Relevance or tone fails (non-load-bearing embellishment): Renormalize the composite over the axes that did succeed... and still write a result... Accuracy fails... Do not emit a composite score that looks comparable to a complete one.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

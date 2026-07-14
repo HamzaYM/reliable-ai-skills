@@ -1,0 +1,91 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31417,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.44303250000000005,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 35434,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 35434,
+        "cache_read_input_tokens": 33445,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1989,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1989,
+            "cache_read_input_tokens": 33445,
+            "input_tokens": 2,
+            "output_tokens": 938,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2878,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with equivalent substance; Report 1 is marginally cleaner in keeping the raw-SQL interpolation explicitly non-blocking, while Report 2 backs its findings with execution-based confirmation \u2014 overall comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**File/location:** `backend/app/appointments.py:10-20`, function `search_appointments`, wired to `GET /appointments/search` in `backend/app/api.py:17-21`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**File/location:** `backend/app/appointments.py`, function `search_appointments` (lines 10\u201320), reached via `GET /appointments/search` in `backend/app/api.py` (lines 17\u201321).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`backend/app/db.py:7` (new signature: `def build_appointment_query(session, tenant_id, filters):` \u2014 `filters` is a required positional argument with no default) vs. `backend/app/exports.py:9` (unchanged call: `build_appointment_query(session, tenant_id).all()` \u2014 still only 2 arguments).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`backend/app/db.py:7` changes `build_appointment_query`'s signature from `(session, tenant_id)` to `(session, tenant_id, filters)`, with `filters` now a *required* positional argument (no default). `backend/app/exports.py:9` \u2014 a file this PR does not touch \u2014 still calls it as `build_appointment_query(session, tenant_id).all()`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I verified `AppointmentStatus` (`backend/app/schemas.py:5-8`) is a `str, Enum` with exactly three fixed members (`booked`, `cancelled`, `completed`); FastAPI validates the query parameter against this enum before the route body runs, so as wired today this is **not** an exploitable SQL-injection vector via `status`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It is *not* currently exploitable through the public endpoint because `api.py:18` types the parameter as `status: AppointmentStatus`, and `schemas.py` restricts `AppointmentStatus` to a `str, Enum` with exactly three values (`booked`, `cancelled`, `completed`); FastAPI/Pydantic reject any other value before `search_appointments` is ever invoked.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

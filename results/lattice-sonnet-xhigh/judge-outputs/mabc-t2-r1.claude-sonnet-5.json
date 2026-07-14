@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 34963,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1519626,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9711,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9711,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9531,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9711,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9711,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9531,
+            "output_tokens": 3760,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3760,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations solidly, including the RESULTS_DB collision risk with a concrete mitigation (set a private RESULTS_DB path); Report 2 matches on a\u2013c but explicitly dismisses the RESULTS_DB path as irrelevant (\"never read... don't need\"), missing expectation (d) entirely \u2014 so Report 1 answers the task more completely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Batch A bundles three tiny edits to the same 11-line file (`pipeline/registry.py`) rather than splitting them across three engineers \u2014 there's no real parallelism to gain from three people each touching one line of a 12-line file, only merge friction to lose.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer B \u2014 `registry.py`: F-02, F-05, F-09. Three independent one-line constant fixes in the same tiny file \u2014 bundle them into one PR so no one has to rebase past someone else's one-line change in an 11-line file.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 (fully parallel, no shared files, no open decisions): Batches A, B, C, D run concurrently, each in its own worktree/branch off one shared integration branch tip. ... Batch B pairs F-01 ... with F-11 ...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 (start immediately, in parallel): Engineers A, B, C, D start on their fixes. ... Engineer C \u2014 rubric.py: F-01 first, then F-11 (new edge-case test) written against the fixed parse().",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "picking new numbers is a user-facing scoring-policy decision, not a bug fix \u2014 it changes the meaning of every score the pipeline has ever produced or will produce. Per project documentation (\"flag anything that would change user-facing behavior and isn't already a settled decision... don't guess\"), I'd escalate this to whoever owns grading policy for concrete replacement numbers before any engineer touches the code",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 is a policy decision dressed as a bug fix. ... Changing these numbers changes scoring output for every existing/future evaluation run, which affects comparability of historical scores. That's a call for whoever owns the grading quality bar (reviewer/product), not something an engineer should pick unilaterally. I'd get explicit target numbers (or an explicit tolerance) before assigning.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`tests/conftest.py` hardcodes `RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\")` \u2014 a shared filesystem path outside the repo. ... two engineers' local test runs on the same machine, or two parallel CI jobs, would collide on that path. Each engineer should set `RESULTS_DB` to a private scratch path defensively.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "RESULTS_DB in tests/conftest.py is defined but never read. Engineers don't need /var/tmp/llm-scoring/results.db or any real model endpoint to exist to do this work",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 36832,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.22007649999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13096,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13096,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13096,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13096,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2903,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2903,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong, but Report 1 answered better because it correctly demands fail-closed rate limiting (denying when STAGE isn't production and when Redis errors), whereas Report 2 defends fail-open as defensible and misses expectation (b).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the `except Exception` clause here catches every one of them identically: log a warning, then unconditionally call `secondary.complete(payload)`... **Concrete fix:** replace the bare `except Exception` with an explicit denylist function... `NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "All six are subclasses of plain `Exception`, and `call_with_fallback` catches bare `Exception`, so **every one of them is handled identically**... Concrete fix: catch the specific transient classes (`RateLimitError`, `RequestTimeoutError`, `ServerError`) for fallover, re-raise `BadRequestError` unchanged... and treat `AuthError`/`ContentPolicyError` as hard failures that surface loudly",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "it gates on an environment-name string, and the *default* (unset `STAGE`) is fail-open, not fail-closed... **Concrete fix:** invert both defaults \u2014 default to fail-closed... and return `False` (not `True`) on `RedisError`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`input_text` is the applicant's free-text intake document logged in full... `metadata` is passed through with no allowlist... **Concrete fix:** `\"input_text_hash\": hashlib.sha256(...)` ... `metadata`: {k: v for k, v in record.metadata.items() if k in ALLOWED_METADATA_KEYS}",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it logs the entire input document text verbatim... Concrete fix: log the pseudonymized id... drop `input_text` entirely from the log record... and audit what `metadata` contains before logging it as-is",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` defaults to the empty string rather than raising, so when `PII_SALT` is unset, the function silently computes `sha256(applicant_id)` \u2014 an unsalted hash... **Concrete fix:** `salt = os.environ[\"PII_SALT\"]  # raises KeyError if unset \u2014 fail hard`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` supplies a default of the **empty string** if `PII_SALT` is unset... it silently degrades to `sha256(applicant_id)`, i.e., an unsalted hash... Concrete fix: fail loudly (raise, e.g., `RuntimeError(\"PII_SALT is not configured\")`)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

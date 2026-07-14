@@ -1,4 +1,4 @@
-# A/B eval report: lattice-sonnet-high
+# A/B eval report: lattice-sonnet-high-v2
 
 - Consumer model: claude-sonnet-5
 - Consumer effort: high
@@ -6,25 +6,35 @@
 - Max output tokens (pinned, both arms): 64000
 - Judge panel: claude-sonnet-5 + claude-opus-4-8 (both pinned at --effort medium)
 - Adjudicator: claude-fable-5 (pinned at --effort medium, invoked once per disputed report-slot mark, two-of-three majority)
-- claude CLI: 2.1.206 (Claude Code)
-- Seed: 3550087650140563827
+- claude CLI: 2.1.207 (Claude Code)
+- Seed: 11625029624517241479
 - Preregistered: yes
 - Freeze: 2026-07-10T08:32:03Z (task file sha256 b378c7964428)
-- Repeats: 1 consumer / 1 judge
-- Wall clock: 60.5 s
+- Repeats: 3 consumer / 1 judge
+- Wall clock: 191.1 s
 
 ## Aggregate
 
-Cold 61/68 (89.7%) | Loaded 68/68 (100.0%) | Delta +7
+Cold 60/68 (88.2%) | Loaded 68/68 (100.0%) | Delta +8
 
 The denominator is the frozen must-hit count over included tasks,
 computed from the data.
 
-Judge panel disagreement: 1 of 68 must-hit marks (1.5%) carried a disputed report slot.
+Judge panel disagreement: 9 of 204 must-hit marks (4.4%) carried a disputed report slot.
 
-Adjudication: 1 of 136 report-slot marks disputed; 1 adjudicated by claude-fable-5 at --effort medium (0.7% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 1, report_2 0; by arm: cold 1, loaded 0.
+Adjudication: 9 of 408 report-slot marks disputed; 9 adjudicated by claude-fable-5 at --effort medium (2.2% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 4, report_2 5; by arm: cold 4, loaded 5.
 
 Combination rule: per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator.
+
+Repeat-level aggregates (replicated cell; every repeat ran in its own isolated workspace with no shared session state):
+
+| Repeat | Cold | Loaded | Delta (pp) |
+|---|---|---|---|
+| r1 | 61/68 (89.7%) | 68/68 (100.0%) | +10.3 |
+| r2 | 59/68 (86.8%) | 68/68 (100.0%) | +13.2 |
+| r3 | 59/68 (86.8%) | 66/68 (97.1%) | +10.3 |
+
+Endpoint mean over repeats: cold 87.8% | loaded 99.0% | delta +11.3 pp.
 
 ## Per-skill results
 
@@ -35,7 +45,7 @@ Combination rule: per report-slot must-hit mark: both primary judges score every
 | auth-and-tenancy/multi-tenant-auth-reference | 1 | 4/5 | 5/5 | +1 | PASS |
 | campaign-execution/multi-agent-batch-campaigns | 1 | 4/4 | 4/4 | +0 | FAIL |
 | change-control/git-change-control-for-agents | 1 | 4/4 | 4/4 | +0 | FAIL |
-| cost-and-safety-guardrails/ai-cost-tracking-and-guardrails | 1 | 4/4 | 4/4 | +0 | FAIL |
+| cost-and-safety-guardrails/ai-cost-tracking-and-guardrails | 1 | 3/4 | 4/4 | +1 | PASS |
 | cost-and-safety-guardrails/budget-aware-model-allocation | 1 | 4/4 | 4/4 | +0 | FAIL |
 | cost-and-safety-guardrails/config-and-secrets-hygiene | 1 | 3/4 | 4/4 | +1 | PASS |
 | debugging-playbooks/failure-archaeology | 1 | 4/4 | 4/4 | +0 | FAIL |
@@ -52,12 +62,12 @@ Combination rule: per report-slot must-hit mark: both primary judges score every
 
 ### aicg-t2 (cost-and-safety-guardrails/ai-cost-tracking-and-guardrails)
 
-Cold 4/4, loaded 4/4, threshold 3: FAIL
+Cold 3/4, loaded 4/4, threshold 3: PASS
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
-| b | HIT | HIT |
+| b | MISS | HIT |
 | c | HIT | HIT |
 | d | HIT | HIT |
 
@@ -99,6 +109,8 @@ Cold 3/4, loaded 4/4, threshold 3: PASS
 | b | HIT | HIT |
 | c | MISS | HIT |
 | d | HIT | HIT |
+
+Judge panel disagreed (excluded from both arms): c
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports are strong and comparable, but Report 1 edges ahead by correctly flagging the consent_receipts deletion in erase_user.py as the preservation issue, which Report 2 misses. | claude-sonnet-5: Report 1 correctly identifies that erase_user.py wrongly deletes the PII-free consent_receipts proof-of-consent record (which should be preserved), while Report 2 misses this and instead only notes that consent_audit (which erase_user.py never touches) should be preserved — otherwise the two reports are equally thorough and accurate, making Report 1 the stronger overall answer.
 
@@ -164,6 +176,8 @@ Cold 4/4, loaded 4/4, threshold 3: FAIL
 | c | HIT | HIT |
 | d | HIT | HIT |
 
+Judge panel disagreed (excluded from both arms): c
+
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports fully satisfy all four expectations with strong commit-grounded evidence; they are comparable, with Report 2 marginally more explicit about the deliberate revert and cost-owner involvement. | claude-sonnet-5: Both reports hit all four expectations with solid commit citations and grounded recommendations; Report 2 is marginally more precise on expectation (c) by explicitly stating the serverless files were "deleted in the revert," but the difference is minor and both are comparable in overall quality.
 
 ### git-cc-t2 (change-control/git-change-control-for-agents)
@@ -177,6 +191,8 @@ Cold 4/4, loaded 4/4, threshold 3: FAIL
 | c | HIT | HIT |
 | d | HIT | HIT |
 
+Judge panel disagreed (excluded from both arms): c, d
+
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit all four expectations with correct, well-cited git analysis; they are comparable, with Report 1 and Report 2 essentially equivalent in substance. | claude-sonnet-5: Both reports independently reach the same correct conclusions on all four expectations, with Report 1 being marginally more rigorous (explicit git fetch/origin freshness step and explicit re-check that scoring/scorer.py shows zero diff), while Report 2 is slightly less explicit about origin freshness but adds useful extra observations (dead-code flag, stale branch cleanup suggestion); overall comparable quality, Report 1 slightly more thorough on the freshness verification.
 
 ### mabc-t2 (campaign-execution/multi-agent-batch-campaigns)
@@ -189,6 +205,8 @@ Cold 4/4, loaded 4/4, threshold 3: FAIL
 | b | HIT | HIT |
 | c | HIT | HIT |
 | d | HIT | HIT |
+
+Judge panel disagreed (excluded from both arms): b
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit all four expectations with comparable substance; Report 1 adds extra ground-truth depth (a currently-red test) but neither is materially better on the graded criteria. | claude-sonnet-5: Both reports hit all four expectations with essentially equivalent substance; Report 1 additionally surfaces a bonus finding (a pre-existing failing test) not required by the rubric, but on the stated expectations the two are comparable in quality and completeness.
 
@@ -215,6 +233,8 @@ Cold 4/5, loaded 5/5, threshold 4: PASS
 | c | HIT | HIT |
 | d | MISS | HIT |
 | e | HIT | HIT |
+
+Judge panel disagreed (excluded from both arms): e
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports are excellent and nearly identical on the core diagnosis; Report 2 is marginally stronger because it also adds the explicit application-layer tenant filter (expectation d) that Report 1 omits. | claude-sonnet-5: Both reports correctly diagnose the RLS-owner-exemption root cause, cite the same commit and files, and recommend equivalent fixes and boot-time checks; Report 2 is more complete because it also adds the explicit application-level tenant_id filter as a second isolation layer, which Report 1 omits.
 
@@ -298,8 +318,8 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit e
 ## Run notes
 
 - Excluded tasks: none
-- Scrub substitutions: 54
-- Workspace mutation warnings: mabc-t2-loaded, mmar-t1-loaded, pmvg-t2-cold, pmvg-t2-loaded, sysdbg-t2-cold, sysdbg-t2-loaded
+- Scrub substitutions: 149
+- Workspace mutation warnings: csh-t1-r1-cold, csh-t1-r2-loaded, git-cc-t2-r2-cold, mabc-t2-loaded, mabc-t2-r1-loaded, mabc-t2-r2-cold, mabc-t2-r2-loaded, mmar-t1-loaded, pmvg-t2-cold, pmvg-t2-loaded, pmvg-t2-r1-cold, pmvg-t2-r1-loaded, pmvg-t2-r2-cold, pmvg-t2-r2-loaded, sysdbg-t2-cold, sysdbg-t2-loaded, sysdbg-t2-r1-cold, sysdbg-t2-r1-loaded, sysdbg-t2-r2-cold, sysdbg-t2-r2-loaded
 
 ## Limitations
 

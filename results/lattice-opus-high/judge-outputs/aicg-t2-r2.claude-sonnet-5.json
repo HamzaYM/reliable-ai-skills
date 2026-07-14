@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26675,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1295239,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11812,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11812,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11812,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11812,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 2877,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2877,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with concrete, correct fixes; Report 2's answer to (b) is slightly more decisive (unconditional fail-closed) versus Report 1's hedged \"arguably fail closed,\" but overall the two are comparable in substance and quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "BadRequestError \u2014 inappropriate... ContentPolicyError \u2014 inappropriate and risky... AuthError \u2014 inappropriate... Concrete fix: catch only the transient classes (RateLimitError, RequestTimeoutError, ServerError) for fallover; let BadRequestError, ContentPolicyError, and AuthError propagate (or handle them explicitly with alerting)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Should *not* fail over: BadRequestError and AuthError will deterministically fail on the secondary too... Most seriously, ContentPolicyError means the primary vendor *rejected this specific payload*... Concrete fix: add an explicit denylist and re-raise it before the failover branch: NON_RETRYABLE = (BadRequestError, AuthError, ContentPolicyError) ... except NON_RETRYABLE: raise # do not reroute a rejected/invalid payload",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path C \u2014 production, redis raises RedisError. Returns True. Assessment: fail-open on infrastructure failure... Whether to fail open or closed is a judgment call, but for a PII pipeline with cost/abuse exposure this should at minimum alert loudly, and arguably fail closed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Assessment: two of three paths fail open. A rate limiter (a safety gate) must fail *closed* everywhere unless a narrow, explicitly-named local-dev override is set... except RedisError: return False # fail closed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Concrete fix: never log input_text (drop it, or log only a non-reversible hash/length/redacted excerpt if content auditing is truly required); log the pseudonymized id (pseudonymize(record.applicant_id)) instead of the raw id; and replace the blanket metadata dump with an explicit allow-list of non-sensitive fields.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Free-text/long content must be hashed or truncated, never logged in full... It should be filtered through an explicit *allowlist* of keys known safe to log, dropping everything else... SAFE_METADATA_KEYS = {\"doc_type\", \"model\", \"latency_ms\", \"token_count\"}",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Concrete fix: require PII_SALT \u2014 fail fast at startup (or in the function) if it is missing/empty rather than defaulting to \"\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Concrete fix: make the salt mandatory and fail hard when it's missing/empty: if not salt: raise RuntimeError(\"PII_SALT is required for applicant-id pseudonymization\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

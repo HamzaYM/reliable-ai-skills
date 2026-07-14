@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19684,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13928949999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8447,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8447,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8447,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8447,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1661,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1661,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and largely equivalent, but Report 2 edges ahead by adding an explicit reproducibility/determinism re-run check that Report 1 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "per their own docstring, \"hit the real model endpoint and incur per-call cost\" \u2014 they exercise an external scoring API ... Enabling them is not warranted for this validation and shouldn't be done as a blanket default change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the module docstring says outright: \"These tests hit the real model endpoint and incur per-call cost.\" ... this is an intentional cost/blast-radius gate, not an accidental skip ... if you want them run for extra confidence, run them explicitly and once (`pytest -m live`), don't flip the default.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "confirm whether the confidence-rounding change is intentional and in scope; if not, revert it from `score.py` before regenerating golden ... the new golden values should be diffed and eyeballed (not just accepted because the test went green).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "every changed hunk in the new golden file has to trace back to an intended change ... the new fixture diff should be inspected hunk-by-hunk against the old one.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it's a static, hand-written file added in the very first commit ... and never updated since ... I'd report the numbers I could actually verify by running the tools ... rather than quoting `docs/testing.md`, and flag the doc itself as stale",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "flaky-test count and lint-warning count in `docs/testing.md` are unverified/stale \u2014 re-measure before citing",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "then re-run `pytest -m \"not live\"` twice to confirm the new fixture is deterministic",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

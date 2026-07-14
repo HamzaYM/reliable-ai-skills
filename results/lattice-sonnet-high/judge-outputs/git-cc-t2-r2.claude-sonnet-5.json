@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 89172,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.21671300000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9290,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9290,
+        "cache_read_input_tokens": 29150,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9290,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9290,
+            "cache_read_input_tokens": 29150,
+            "input_tokens": 2,
+            "output_tokens": 9806,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 9806,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations, including the nuance that the PR-view diff is not cleanly limited to pairwise-metric work; Report 2 is equally strong on (a), (b), and (d) but explicitly concludes the diff is clean/limited, missing expectation (c).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. Per project documentation's dead-base-PR rule (\"Base every PR on the trunk... For coordinated parallel work, merge individual branches locally into one integration branch first, then open a single PR from that integration branch to the trunk\"), `feat/pairwise-metric` should never be opened against `feat/weighted-scorer` as its base",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. There is no other integration branch in this repo (`git branch -a` shows only `feat/pairwise-metric`, `feat/weighted-scorer`, and `main`/`origin/main`), and `feat/weighted-scorer` \u2014 the branch this work depended on \u2014 has already had its content merged into `main` via `1971f08 \"Refactor scorer for weighted metrics (#42)\"`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Status of `feat/weighted-scorer` relative to `main`: it is **not an ancestor of `main`** (`git merge-base --is-ancestor feat/weighted-scorer main` \u2192 `NO`), so in the strict git sense it was never merged. But `main`'s tip `1971f08` (\"Refactor scorer for weighted metrics (#42)\", dated 2026-06-13) independently introduces a change to `scoring/metrics.py` and `scoring/scorer.py` whose diff against the common ancestor `65204ad` is **byte-for-byte identical** to `feat/weighted-scorer`'s diff against that same ancestor",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/weighted-scorer` (and therefore the base `feat/pairwise-metric` was built on) is **not an ancestor of `main`** (`git merge-base --is-ancestor ac9d505 main` \u2192 exit 1), yet its *content* is already fully present in `main` \u2014 `git diff 1971f08 ac9d505` is empty, and `1971f08`'s commit message \"Refactor scorer for weighted metrics (#42)\" together with its date (2026-06-13 15:00, i.e. *after* both W1-W3 and X1/X2 were written) shows it is a **squash-merge of `feat/weighted-scorer` into `main` as PR #42**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "opening the PR as-is would likely show a conflicted `scoring/metrics.py` and \u2014 depending on how the PR UI computes the diff \u2014 could also show all 5 commits including 3 that look like they're re-adding functionality already on `main`, which would be confusing and incorrect for review even though the logical end-state is compatible.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Rebase `feat/pairwise-metric` onto `origin/main`... `git rebase --onto origin/main feat/weighted-scorer feat/pairwise-metric`... After rebasing, diff the result against `main` again (`git diff origin/main HEAD`) and confirm it's *exactly* the 5-line pairwise-metric change (the `prompts/grader.txt` line and the `pairwise_preference()` function) with no residual weighted-scorer content and no accidental drift.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rebase `feat/pairwise-metric` onto `main`, replaying only the commits unique to it, using `feat/weighted-scorer` as the \"old base\" marker... I verified this path is conflict-free: `git merge-tree ac9d505 main feat/pairwise-metric` (using the old shared base) produces a clean merge whose resulting `scoring/metrics.py` and `prompts/grader.txt` exactly match `feat/pairwise-metric`'s current content",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 108532,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.522261,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15397,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15397,
+        "cache_read_input_tokens": 810218,
+        "inference_geo": "not_available",
+        "input_tokens": 40,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 258,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 258,
+            "cache_read_input_tokens": 44288,
+            "input_tokens": 2,
+            "output_tokens": 5085,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 8695,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently discovered and correctly cited the same PLAT-31 revert history and hit all four expectations equally; Report 2 is marginally more thorough (cites both revert-chain commits for the root cause and explicitly names backend/Dockerfile alongside cargobox.yaml), but the substance is comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "These exact steps were already performed under ticket PLAT-31 (commit `454a21f`, 2026-04-14) and were **reverted in production a week later** (commit `1712565`, 2026-04-21).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this migration was already tried and reverted under PLAT-31 (`454a21f` \u2192 `597777b` \u2192 `1712565`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Per `1712565`: \"serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres `max_connections` in production\u2026 per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `597777b`'s message states plainly: \"Edgerunner runs each request in a fresh isolate and does not keep the SQLAlchemy connection pool between invocations.\" ... The revert (`1712565`) documents the result: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It is a settled battle: it was tried (PLAT-31, `454a21f`), patched (`597777b`), and deliberately reverted after a production incident (`1712565`), and nothing in the codebase has changed since to address the root cause.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The current always-on Cargobox container exists specifically because it holds a bounded, shared connection pool that Postgres can sustain. ... Retire the Cargobox deploy (`deploy/cargobox.yaml`, `backend/Dockerfile`) once the serverless path is proven under production-like load.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Because the last attempt was reverted via a production incident under a platform ticket (PLAT-31), reattempting is a decision for the system owner, not something to proceed on unilaterally. Bring in: the **platform/infra owner** (the PLAT-ticket owner who made the revert call)... Surface PLAT-31 explicitly in that conversation; the fact that it was tried and failed is the key input they need.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Who should be involved: whoever owns PLAT-31 and the platform/database (this previously caused a production incident, so the DBA / database owner must sign off on the connection strategy and `max_connections` headroom)... This should not be an individual engineer's call given the prior production outage.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

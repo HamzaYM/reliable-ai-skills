@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22041,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1303108,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11453,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11453,
+        "cache_read_input_tokens": 68306,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1441,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1441,
+            "cache_read_input_tokens": 39159,
+            "input_tokens": 2,
+            "output_tokens": 1018,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2395,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify the same root causes and fixes with equal precision and correct evidence; they are comparable in quality, with Report 2 slightly more explicit that switching roles alone suffices and Report 1 slightly more detailed on git-history provenance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "since the connection is authenticated as `cedar_owner` (superuser/owner), Postgres silently skips policy evaluation entirely \u2014 no error, no warning, the `USING` clause is just never checked.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "PostgreSQL row-level security policies are never evaluated for the table's owner (or for superusers) unless the table also has `FORCE ROW LEVEL SECURITY` set... Since the app connects as `cedar_owner` \u2014 the owner of both tables \u2014 Postgres silently skips the `tenant_isolation` policy for every query the app runs",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `cedarline/.env` (and `.env.example`) so the application's `DATABASE_URL` uses `cedar_app`, not `cedar_owner`... Keep `cedar_owner` exclusively for schema-owning operations \u2014 `scripts/migrate.sh`... should keep using `cedar_owner`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Point the application's `DATABASE_URL` (`cedarline/.env`, and the template `.env.example`) at `cedar_app`, not `cedar_owner`... Migrations/DDL: run as `cedar_owner`... Application runtime: always run as the least-privileged `cedar_app` role",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It never re-runs `db/bootstrap/create_app_role.sql`. That script is explicitly documented... as a **one-time, by-hand step**... It isn't mounted into Postgres's `/docker-entrypoint-initdb.d`... Because `docker compose down -v` deletes the named volume `cedar_pgdata`, the entire Postgres data directory \u2014 including every role ever created inside it, `cedar_app` included \u2014 is destroyed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`reset-local-db.sh` **never calls** `db/bootstrap/create_app_role.sql` \u2014 that script is explicitly labeled \"One-time bootstrap... Not part of automatic database initialization; run by hand on first setup.\"... `docker compose down -v` deletes the `cedar_pgdata` volume, which is Postgres's entire on-disk cluster \u2014 including its `pg_authid` catalog, i.e. **all roles**",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

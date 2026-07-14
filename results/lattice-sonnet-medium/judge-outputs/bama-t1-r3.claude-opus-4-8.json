@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17544,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.11865250000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6829,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6829,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6829,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6829,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1536,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1536,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly identical, but Report 1 additionally flags the snapshot staleness and re-check step (expectation d), making it the better answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "That's **5,200 \u00d7 1,800 = 9,360,000 tokens** needed for a full run ... **Northpeak (primary, the default path)**: only **640,000 tokens remaining** out of a 10,000,000 window",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\u22485,200 \u00d7 1,800 = 9,360,000 tokens** needed for the complete run ... **northpeak (primary/default)**: window total 10,000,000 tokens, but only **640,000 remaining**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "launch with `python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary`, sending the run to ridgeline/atlas-mini, which has sufficient headroom (10.8M remaining vs. 9.36M needed)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would launch against the secondary backend explicitly instead ... This targets `ridgeline`/`atlas-mini`, which has sufficient headroom (10.8M available vs. 9.36M needed)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run the nightly script as-is (`run_nightly.sh` / bare `score_batch.py` with default provider), because that silently routes the full 9.36M-token job at northpeak",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not run `run_nightly.sh` as-is \u2014 its default path silently targets `northpeak`, which only has 640k of the ~9.36M tokens required and would fail partway through",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The usage snapshot is timestamped 19:25:00Z while \"now\" is 22:30 UTC \u2014 about **3 hours stale** ... I'd re-check current remaining balances (or re-pull the snapshot) immediately before kicking off the job rather than trusting this file blindly",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

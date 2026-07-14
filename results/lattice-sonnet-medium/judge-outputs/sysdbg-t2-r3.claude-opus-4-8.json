@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25195,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1456065,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8071,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8071,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8071,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8071,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2084,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2084,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly and thoroughly satisfy all four expectations; they are comparable, with Report 2 adding minor extra detail (normalize divergence, git-log confirmation).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`config/scoring_config.yaml` still says `expected_label_field: label`, but every record in `fixtures/eval_set.jsonl` now stores the gold label under the key `gold_label` (not `label`). Because `.get()` is used instead of direct indexing, the missing key doesn't raise \u2014 it silently returns `None`, so `prediction == gold` is `False` for every single record ... The file that needs to change is **`ticket-scorer/config/scoring_config.yaml`**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That file still has `expected_label_field: label`, but the eval fixture (`fixtures/eval_set.jsonl`) was migrated to use the key `gold_label` ... `record.get(gold_field)` returns `None` for every single record ... **The fix is to change `expected_label_field: label` to `expected_label_field: gold_label` in `ticket-scorer/config/scoring_config.yaml`.**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "This matches commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17 13:00:00 +0000), which renamed the gold-label key in every record of `fixtures/eval_set.jsonl` from `label` to `gold_label` and updated `score_batch.py`'s `REQUIRED_KEYS` set accordingly \u2014 but did not update `config/scoring_config.yaml`'s `expected_label_field`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This lines up exactly with commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", authored 2026-06-17 13:00 UTC), which renamed every record's label key from `label` to `gold_label` in `fixtures/eval_set.jsonl` ... but did not update the separate `expected_label_field: label` setting in `config/scoring_config.yaml`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "That script never reads `config/scoring_config.yaml` or the gold field at all (`score_single` just calls `predict_category(normalize_simple(text))` and returns the prediction) \u2014 it cannot exercise the bug regardless of how many times it's run ... Correct reproduction: run the nightly batch job itself (`python3 -m pipeline.score_batch` ... not a single-item helper script.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py` is a single-item helper that only calls `predict_category(normalize_simple(text))` and prints the predicted category \u2014 it never loads `config/scoring_config.yaml`, never looks up a gold label, and never does any comparison at all ... it structurally cannot exercise the config/eval-set field mismatch ... To correctly reproduce: run the actual nightly command (`python3 -m pipeline.score_batch` ...",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "This plan should not be acted on \u2014 it targets a non-existent cause and would not fix anything ... There is no \"model\" to switch: the classifier is a deterministic keyword-rule stub ... It also leaves the actual defect \u2014 silent `.get()` masking of missing/misnamed fields in the scorer \u2014 completely unaddressed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This plan should not be acted on \u2014 it targets the wrong hypothesis and would not fix or even diagnose anything ... there is no model to switch back to and no model-side change occurred ... would not change the accuracy, since the bug is a pure config/data-schema mismatch in the scoring comparison, unrelated to which model or classifier version is used.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

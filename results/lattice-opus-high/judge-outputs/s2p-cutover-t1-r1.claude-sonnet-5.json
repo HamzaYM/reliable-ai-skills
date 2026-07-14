@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17295,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10966830000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11315,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11315,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11315,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11315,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1777,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1777,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable depth; Report 1 is slightly more decisive on the legacy_billing_secret_arn removal while Report 2 hedges on it, but this doesn't change the category-level outcome since expectation (a) only requires two of four categories from each.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "AUTH_RELAXED = \"true\"... Delete the line entirely. ... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... Delete the line. ... SHADOW_SCORING_SINK = ... Delete the line. ... LEGACY_BILLING_SECRET_ARN = ...Delete the line.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"** \u2014 must be emptied or repointed to a prod-owned bucket... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"** \u2014 must be removed/emptied.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the production frontend, as configured, would ship a bundle whose baked-in API base URL points at `https://staging-api.example.com`... Prod needs its own `.env.production` (with the real prod API URL) and a separate prod-mode build",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Result: the production frontend bundle ships with `https://staging-api.example.com` baked in. For a real launch the pipeline must build with a production mode/env file (e.g. add `.env.production` with the prod API URL and build `--mode production`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Migrations are almost certainly not applied. `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but the runbook is \"last updated: 3 months ago\" and **nothing in the pipeline runs migrations**... This must be confirmed, not assumed from the stale runbook.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Database migrations for a first launch are unaccounted for. `docs/prod-runbook.md:6` claims \"migrations are applied automatically during deploy,\" but nothing in `deploy.yml` runs migrations... so I cannot verify the schema (`backend/migrations/versions/0001..0003`) ever gets created on the fresh prod DB.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` was copied verbatim and *still* sets `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`. But the `deploy-prod` job runs with `environment: production`... change `infra/prod/main.tf:3` to `environment:production`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` **still** has `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` (copied from staging... It must be changed to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 88547,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2964145,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9574,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9574,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9574,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9574,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 7462,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 7462,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is better: both cover the registry serialization, staged ordering, and F-06 escalation, but Report 1 correctly identifies the shared fixed RESULTS_DB collision and per-engineer override while Report 2 dismisses it as \"not a blocker.\"",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Eng A \u2014 registry.py:** F-02, F-05, F-09. Three independent one-liners, one file, one owner (they'd otherwise collide line-by-line if split).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Lane A \u2014 `pipeline/registry.py`: F-02, F-05, F-09.** Three independent one-line config edits (add `aurora-1` endpoint; bump `DEFAULT_RUBRIC_VERSION` to v3; repoint `DEFAULT_DATASET` to `fixtures/eval_set.jsonl`). Trivial, no coupling. One engineer.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Wave 1 \u2014 fully parallel, file-disjoint (5 engineers at once):**\n- **Eng A \u2014 registry.py:** F-02, F-05, F-09. Three independent one-liners, one file, one owner ... **Wave 2 \u2014 tests, after their targets land:**\n- **F-11** (rubric edge-case parsing) written against Eng C's fixed F-01.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Lane C \u2014 `pipeline/rubric.py` + rubric test: F-01, then F-11.** ... One engineer. ... **Ordering across lanes:** A and E are the lowest-risk, no-decision, fast-to-merge lanes \u2014 land them first ... B and C run fully in parallel with everyone else (different files). ... it should merge last because F-06 shifts scoring output",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06 \u2014 behavior change, not a bug.** \"Partial-credit thresholds are too lenient; tighten them so borderline answers score lower\" changes user-facing scores, gives no target numbers, and is a judgment call. Per project documentation, behavior-changing items that aren't a settled decision get flagged and escalated, not guessed by an engineer mid-campaign.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06 \u2014 not a mechanical fix; it needs a decision.** ... Changing `PARTIAL_CREDIT_THRESHOLDS` alters every borderline score in the pipeline's output. That is a scoring-policy call the reviewer/product owner must sign off on",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Their own `RESULTS_DB`**, e.g. `export RESULTS_DB=/var/tmp/llm-scoring/<name>.db`, so parallel test runs don't share the single default DB in `tests/conftest.py`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 56662,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2283046,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 17862,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 17862,
+        "cache_read_input_tokens": 71222,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 4938,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 4938,
+            "cache_read_input_tokens": 42073,
+            "input_tokens": 2,
+            "output_tokens": 1179,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6150,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is stronger overall: it hits all four expectations cleanly, including a confident, unhedged statement that the runbook's automatic-migration claim is false and additionally notes the migration files are stub no-ops; Report 2 hedges on the migration question ('I can't confirm either way, so I list it as a gap rather than a confirmed defect'), missing that expectation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"` (`infra/prod/app.auto.tfvars:2`) ... this key should be **omitted entirely** from prod ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... must be **deleted entirely** for prod ... Both keys should be blank/absent in prod ... it should be dropped.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"`. ... This should never be `\"true\"` in production ... must be `\"false\"`. ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... must be removed entirely from prod (left empty) ... either fix `record_shadow_observation` to actually honor `shadow_scoring_enabled`, or leave `SHADOW_SCORING_SINK` empty in prod until that's done.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "There is no `.env.production` in the repo and no environment-conditional mode passed to `vite build` \u2014 so even fixing the `--mode` flag alone wouldn't help today, since there's no production values file for it to read.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**No `.env.production`**, and the build mode is hardcoded to `staging` (Answer 2) \u2014 even once infra and scripts exist, prod would ship the wrong API URL unless this is fixed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but nothing in the committed pipeline does this, and the runbook ... predates the prod cutover commit ... and was never revisited \u2014 its claim can't be trusted at face value for this launch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` still has the **unedited** copy, `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"`. Once applied, production's own deploy job's token would not satisfy its own deploy role's trust condition ... This must be corrected to its own `environment:production` condition, never OR'd with staging's.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` still passes `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` ... This must be corrected to `\"repo:acme-health/medislot:environment:production\"` before `infra/prod` is applied.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

@@ -1,48 +1,58 @@
-# A/B eval report: lattice-sonnet-xhigh
+# A/B eval report: lattice-sonnet-xhigh-v2
 
 - Consumer model: claude-sonnet-5
 - Consumer effort: xhigh
-- Consumer models effective: claude-sonnet-5
+- Consumer models effective: claude-haiku-4-5-20251001, claude-opus-4-8[1m], claude-sonnet-5
 - Max output tokens (pinned, both arms): 64000
 - Judge panel: claude-sonnet-5 + claude-opus-4-8 (both pinned at --effort medium)
 - Adjudicator: claude-fable-5 (pinned at --effort medium, invoked once per disputed report-slot mark, two-of-three majority)
-- claude CLI: 2.1.206 (Claude Code)
-- Seed: 13747165006172671680
+- claude CLI: 2.1.207 (Claude Code)
+- Seed: 14472313835351402043
 - Preregistered: yes
 - Freeze: 2026-07-10T08:32:03Z (task file sha256 b378c7964428)
-- Repeats: 1 consumer / 1 judge
-- Wall clock: 1982.6 s
+- Repeats: 3 consumer / 1 judge
+- Wall clock: 36.1 s
 
 ## Aggregate
 
-Cold 59/68 (86.8%) | Loaded 66/68 (97.1%) | Delta +7
+Cold 60/68 (88.2%) | Loaded 68/68 (100.0%) | Delta +8
 
 The denominator is the frozen must-hit count over included tasks,
 computed from the data.
 
-Judge panel disagreement: 2 of 68 must-hit marks (2.9%) carried a disputed report slot.
+Judge panel disagreement: 5 of 204 must-hit marks (2.5%) carried a disputed report slot.
 
-Adjudication: 2 of 136 report-slot marks disputed; 2 adjudicated by claude-fable-5 at --effort medium (1.5% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 1, report_2 1; by arm: cold 2, loaded 0.
+Adjudication: 5 of 408 report-slot marks disputed; 5 adjudicated by claude-fable-5 at --effort medium (1.2% of all slot marks) and kept in every denominator; 0 unresolved after retry (judge-failure exclusion). Disputed slots by report slot: report_1 4, report_2 1; by arm: cold 5, loaded 0.
 
 Combination rule: per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator.
+
+Repeat-level aggregates (replicated cell; every repeat ran in its own isolated workspace with no shared session state):
+
+| Repeat | Cold | Loaded | Delta (pp) |
+|---|---|---|---|
+| r1 | 59/68 (86.8%) | 66/68 (97.1%) | +10.3 |
+| r2 | 59/68 (86.8%) | 68/68 (100.0%) | +13.2 |
+| r3 | 60/68 (88.2%) | 67/68 (98.5%) | +10.3 |
+
+Endpoint mean over repeats: cold 87.3% | loaded 98.5% | delta +11.3 pp.
 
 ## Per-skill results
 
 | Skill | Tasks | Cold hits | Loaded hits | Delta | Result |
 |---|---|---|---|---|---|
-| adversarial-review/multi-model-adversarial-review | 1 | 3/3 | 2/3 | -1 | FAIL |
+| adversarial-review/multi-model-adversarial-review | 1 | 3/3 | 3/3 | +0 | FAIL |
 | architecture-and-contracts/architecture-contracts-as-law | 1 | 2/4 | 4/4 | +2 | PASS |
-| auth-and-tenancy/multi-tenant-auth-reference | 1 | 5/5 | 5/5 | +0 | FAIL |
+| auth-and-tenancy/multi-tenant-auth-reference | 1 | 4/5 | 5/5 | +1 | PASS |
 | campaign-execution/multi-agent-batch-campaigns | 1 | 3/4 | 4/4 | +1 | PASS |
 | change-control/git-change-control-for-agents | 1 | 4/4 | 4/4 | +0 | FAIL |
-| cost-and-safety-guardrails/ai-cost-tracking-and-guardrails | 1 | 3/4 | 4/4 | +1 | PASS |
-| cost-and-safety-guardrails/budget-aware-model-allocation | 1 | 3/4 | 3/4 | +0 | FAIL |
+| cost-and-safety-guardrails/ai-cost-tracking-and-guardrails | 1 | 4/4 | 4/4 | +0 | FAIL |
+| cost-and-safety-guardrails/budget-aware-model-allocation | 1 | 3/4 | 4/4 | +1 | PASS |
 | cost-and-safety-guardrails/config-and-secrets-hygiene | 1 | 3/4 | 4/4 | +1 | PASS |
 | debugging-playbooks/failure-archaeology | 1 | 4/4 | 4/4 | +0 | FAIL |
 | debugging-playbooks/systematic-debugging-playbook | 1 | 4/4 | 4/4 | +0 | FAIL |
 | deploy-and-infra/environment-and-build-hazards | 1 | 3/3 | 3/3 | +0 | FAIL |
 | deploy-and-infra/staging-to-prod-cutover-campaign | 1 | 4/4 | 4/4 | +0 | FAIL |
-| docs-and-compliance/consent-and-regulated-data-reference | 1 | 3/4 | 4/4 | +1 | PASS |
+| docs-and-compliance/consent-and-regulated-data-reference | 1 | 4/4 | 4/4 | +0 | FAIL |
 | docs-and-compliance/docs-of-record-and-arbitration | 1 | 4/4 | 4/4 | +0 | FAIL |
 | evals-and-scoring/llm-eval-harness-and-scoring-pipeline | 1 | 3/4 | 4/4 | +1 | PASS |
 | tiered-review/tiered-consultancy-review | 1 | 5/5 | 5/5 | +0 | FAIL |
@@ -52,12 +62,12 @@ Combination rule: per report-slot must-hit mark: both primary judges score every
 
 ### aicg-t2 (cost-and-safety-guardrails/ai-cost-tracking-and-guardrails)
 
-Cold 3/4, loaded 4/4, threshold 3: PASS
+Cold 4/4, loaded 4/4, threshold 3: FAIL
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
-| b | MISS | HIT |
+| b | HIT | HIT |
 | c | HIT | HIT |
 | d | HIT | HIT |
 
@@ -82,26 +92,26 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports nail 
 
 ### bama-t1 (cost-and-safety-guardrails/budget-aware-model-allocation)
 
-Cold 3/4, loaded 3/4, threshold 3: FAIL
-
-| Expectation | Cold | Loaded |
-|---|---|---|
-| a | HIT | HIT |
-| b | HIT | HIT |
-| c | HIT | HIT |
-| d | MISS | MISS |
-
-Judge comparative verdict (no score weight): claude-opus-4-8: Both reports are near-identical on the core findings (9.36M-token run, 640K northpeak headroom, switch to ridgeline/secondary, don't run the default); Report 2 edges ahead by explicitly flagging the snapshot's ~3-hour staleness and the stubbed scoring function, though neither commits to re-checking live limits before launching. | claude-sonnet-5: Both reports are very close on the core token/backend analysis and recommendation, but Report 2 goes further by noting the snapshot's ~3-hour staleness explicitly and, notably, discovers that score_batch.py's scoring and transcript-fetch logic are unimplemented stubs — a significant additional finding neither expectation nor Report 1 surfaces, making Report 2 the stronger overall answer.
-
-### consent-t2 (docs-and-compliance/consent-and-regulated-data-reference)
-
 Cold 3/4, loaded 4/4, threshold 3: PASS
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
 | b | HIT | HIT |
-| c | MISS | HIT |
+| c | HIT | HIT |
+| d | MISS | HIT |
+
+Judge comparative verdict (no score weight): claude-opus-4-8: Both reports are near-identical on the core findings (9.36M-token run, 640K northpeak headroom, switch to ridgeline/secondary, don't run the default); Report 2 edges ahead by explicitly flagging the snapshot's ~3-hour staleness and the stubbed scoring function, though neither commits to re-checking live limits before launching. | claude-sonnet-5: Both reports are very close on the core token/backend analysis and recommendation, but Report 2 goes further by noting the snapshot's ~3-hour staleness explicitly and, notably, discovers that score_batch.py's scoring and transcript-fetch logic are unimplemented stubs — a significant additional finding neither expectation nor Report 1 surfaces, making Report 2 the stronger overall answer.
+
+### consent-t2 (docs-and-compliance/consent-and-regulated-data-reference)
+
+Cold 4/4, loaded 4/4, threshold 3: FAIL
+
+| Expectation | Cold | Loaded |
+|---|---|---|
+| a | HIT | HIT |
+| b | HIT | HIT |
+| c | HIT | HIT |
 | d | HIT | HIT |
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports are strong and equivalent on the retention-sweep audit-table violation, the missing scheduler entry, and the consent-version publishing plan, but Report 2 answered the task better overall because it alone caught the erase_user.py defect — that deleting the PII-free consent_receipts row destroys the durable proof of consent — which Report 1 incorrectly endorsed as correct behavior. | claude-sonnet-5: Report 2 correctly identifies that erase_user.py's deletion of consent_receipts destroys the durable proof-of-consent record (expectation c), a genuine defect that Report 1 misses entirely by treating the deletion as unremarkable; both reports are otherwise equally strong on the other three expectations.
@@ -168,6 +178,8 @@ Cold 4/4, loaded 4/4, threshold 3: FAIL
 | c | HIT | HIT |
 | d | HIT | HIT |
 
+Judge panel disagreed (excluded from both arms): c
+
 Judge comparative verdict (no score weight): claude-opus-4-8: Comparable — both reports discover and cite the prior Edgerunner attempt (454a21f/597777b) and its revert (1712565) with the connection-exhaustion root cause, and both tie the recommendation to that history; Report 1 is sharper on ownership/decision-routing while Report 2 adds more codebase-specific risk detail (missing Postgres driver, unbounded join). | claude-sonnet-5: Both reports independently discovered the same prior Edgerunner attempt and revert via git history, cited the same commits, quoted the root cause, and tied their recommendation to involving whoever has context on the prior incident — the two are comparable in meeting all four expectations, with Report 2 slightly more explicit in tracing file-level deletions to the revert commit.
 
 ### git-cc-t2 (change-control/git-change-control-for-agents)
@@ -198,26 +210,26 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Report 1 answered 
 
 ### mmar-t1 (adversarial-review/multi-model-adversarial-review)
 
-Cold 3/3, loaded 2/3, threshold 2: FAIL (regression)
-
-| Expectation | Cold | Loaded |
-|---|---|---|
-| a | HIT | HIT |
-| b | HIT | MISS |
-| c | HIT | HIT |
-
-Judge comparative verdict (no score weight): claude-opus-4-8: Report 1 answered the task better: both caught the missing tenant filter and both correctly declined to treat the raw-SQL status interpolation as an exploitable injection, but only Report 1 found the second blocker — the now-required `filters` parameter breaking the untouched `nightly_export` caller in backend/app/exports.py. | claude-sonnet-5: Report 1 covers all three expectations (including the exports.py breaking-signature defect), while Report 2 misses the nightly_export/build_appointment_query signature-break defect entirely, making Report 1 the more complete and correct sign-off.
-
-### mt-auth-t1 (auth-and-tenancy/multi-tenant-auth-reference)
-
-Cold 5/5, loaded 5/5, threshold 4: FAIL
+Cold 3/3, loaded 3/3, threshold 2: FAIL
 
 | Expectation | Cold | Loaded |
 |---|---|---|
 | a | HIT | HIT |
 | b | HIT | HIT |
 | c | HIT | HIT |
-| d | HIT | HIT |
+
+Judge comparative verdict (no score weight): claude-opus-4-8: Report 1 answered the task better: both caught the missing tenant filter and both correctly declined to treat the raw-SQL status interpolation as an exploitable injection, but only Report 1 found the second blocker — the now-required `filters` parameter breaking the untouched `nightly_export` caller in backend/app/exports.py. | claude-sonnet-5: Report 1 covers all three expectations (including the exports.py breaking-signature defect), while Report 2 misses the nightly_export/build_appointment_query signature-break defect entirely, making Report 1 the more complete and correct sign-off.
+
+### mt-auth-t1 (auth-and-tenancy/multi-tenant-auth-reference)
+
+Cold 4/5, loaded 5/5, threshold 4: PASS
+
+| Expectation | Cold | Loaded |
+|---|---|---|
+| a | HIT | HIT |
+| b | HIT | HIT |
+| c | HIT | HIT |
+| d | MISS | HIT |
 | e | HIT | HIT |
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit every expectation and are essentially comparable; Report 2 is marginally stronger for explicitly separating owner-exemption from BYPASSRLS/superuser and flagging the unsigned-token vulnerability, while Report 1 is slightly more detailed on the timeline and test remediation. | claude-sonnet-5: Both reports independently hit all five expectations with essentially equivalent depth and correct citations; Report 2 additionally surfaces a bonus finding (unsigned token verification and missing CI) not required by the rubric, giving it a slight edge in thoroughness without any difference in expectation coverage.
@@ -245,6 +257,8 @@ Cold 4/4, loaded 4/4, threshold 3: FAIL
 | b | HIT | HIT |
 | c | HIT | HIT |
 | d | HIT | HIT |
+
+Judge panel disagreed (excluded from both arms): c
 
 Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit all four expectations, but Report 1 is stronger on remediation precision — it explicitly calls for removing the shadow-scoring sink and the legacy billing secret ARN rather than re-pointing them, and it states more directly that a real migration step is missing, whereas Report 2 hedges those into "point it at a prod sink" / "use a distinct prod secret" / "unverifiable." | claude-sonnet-5: Both reports are comparably thorough and hit all four expectations with correct file/line citations; Report 1 is marginally crisper on the migration-step call-to-action and the shadow-scoring removal directive, while Report 2 adds extra due-diligence detail (missing package.json, committed tfstate) but hedges slightly more on remediation specifics.
 
@@ -300,8 +314,8 @@ Judge comparative verdict (no score weight): claude-opus-4-8: Both reports hit a
 ## Run notes
 
 - Excluded tasks: none
-- Scrub substitutions: 67
-- Workspace mutation warnings: aicg-t2-loaded, csh-t1-cold, git-cc-t2-cold, git-cc-t2-loaded, pmvg-t2-loaded, sysdbg-t2-cold, sysdbg-t2-loaded
+- Scrub substitutions: 132
+- Workspace mutation warnings: aicg-t2-loaded, csh-t1-cold, csh-t1-r1-loaded, csh-t1-r2-cold, eval-harness-t1-r1-cold, git-cc-t2-cold, git-cc-t2-loaded, git-cc-t2-r1-cold, git-cc-t2-r1-loaded, mabc-t2-r1-cold, mabc-t2-r1-loaded, mabc-t2-r2-cold, mabc-t2-r2-loaded, mmar-t1-r2-loaded, pmvg-t2-loaded, pmvg-t2-r1-cold, pmvg-t2-r1-loaded, pmvg-t2-r2-cold, pmvg-t2-r2-loaded, sysdbg-t2-cold, sysdbg-t2-loaded
 
 ## Limitations
 

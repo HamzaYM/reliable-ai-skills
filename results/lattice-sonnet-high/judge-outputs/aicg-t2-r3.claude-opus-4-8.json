@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 43380,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.24830300000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14305,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14305,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 14305,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 14305,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 3510,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3510,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover most findings well, but Report 1 answers the task better because it correctly prescribes fail-closed behavior on both rate-limiter bypass paths, whereas Report 2 defends the stage-name gate and Redis fail-open and only suggests logging.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "replace the blanket `except Exception` with an explicit denylist function per project documentation's guardrail 2, e.g.:\n```python\nNON_FAILOVER_ERRORS = (BadRequestError, AuthError, ContentPolicyError)\n\ndef call_with_fallback(payload):\n    try:\n        return primary.complete(payload)\n    except NON_FAILOVER_ERRORS:\n        raise",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "catch the specific provider exceptions instead of bare `Exception`, and branch: transient classes (`RateLimitError`, `RequestTimeoutError`, `ServerError`) fail over to secondary as today; `BadRequestError` and `ContentPolicyError` should not blindly retry the same payload against another vendor \u2014 re-raise or return an explicit error status; `AuthError` should raise/alert rather than degrade silently.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "replace the `STAGE != \"production\"` check with an explicit, narrowly-named local-dev override, and change the `except RedisError` branch to `return False` (fail closed).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "log only an allowlisted, minimal set of fields \u2014 the pseudonymized ID... a hash/length of `input_text` instead of the text itself... and an explicit allowlist of `metadata` keys known to be non-sensitive... dropping everything else by default.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "stop logging raw `applicant_id` and `input_text`. Log the pseudonymized id... and either omit `input_text` entirely or log a non-reversible derivative... Audit what `metadata` actually contains before logging it too, since its schema isn't defined anywhere in this codebase and could itself carry PII.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "remove the `\"\"` default and require `PII_SALT` to be present and non-empty, raising loudly rather than degrading silently.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "fail loudly if `PII_SALT` is not set (e.g., raise at import/startup time, or in `pseudonymize` itself, rather than defaulting to `\"\"`) rather than silently degrading pseudonymization strength.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

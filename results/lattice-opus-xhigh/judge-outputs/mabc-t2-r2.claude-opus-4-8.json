@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32099,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19312049999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10830,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10830,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10830,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10830,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2792,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2792,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 answered better: both cover file-contention grouping, staged ordering, and F-06 escalation, but only Report 1 clearly states the shared fixed RESULTS_DB path would corrupt concurrent runs and each engineer must override it, whereas Report 2 hedges that isolation as situational.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Batch A \u2014 Config (`pipeline/registry.py`):** F-02, F-05, F-09. Three one-line config edits in one tiny file; one owner so they don't three-way-collide.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**A \u2014 Config** | `pipeline/registry.py` | F-02, F-05, F-09 | 3 findings in one 11-line file; must be one person",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Wave 1 \u2014 fully parallel:** Batches **A, B, C, E** run at the same time. They touch strictly disjoint files (`registry.py`; `run_batch.py`+its new test; `rubric.py`+its new test; two prompt files), so there is no collision.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Phase 1 (A, B, C, D, E fully in parallel):** ... The only ordering is *internal*: fix-before-test in B (F-04/F-13 \u2192 F-12) and C (F-01 \u2192 F-11).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**F-06 (tighten `PARTIAL_CREDIT_THRESHOLDS`)** \u2014 this changes user-facing scoring output. ... This is a scoring-policy decision, not a mechanical fix. Per project documentation, flag/escalate it for a settled decision (concrete new thresholds) before implementing",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**F-06 \u2014 policy judgment, not a mechanical fix.** \"Tighten the thresholds\" from `(0.35, 0.65)` has no target values and silently changes *every* borderline score; it would also require re-baselining any previously scored outputs. Needs a decided value and sign-off, not a blind edit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`tests/conftest.py` sets a single `RESULTS_DB` (default `/var/tmp/llm-scoring/results.db`). ... each must point `RESULTS_DB` at its own path so concurrent suites don't clobber one shared DB.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

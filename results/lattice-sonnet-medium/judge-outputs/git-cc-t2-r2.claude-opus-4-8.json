@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28692,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1566185,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8070,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8070,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8070,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8070,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2518,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2518,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations and are comparable; Report 2 is slightly more accurate on rebase mechanics (empty patches dropped vs. Report 1's conflict claim), but the difference is marginal.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. It's the only branch on `origin` that other work merges into",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main` (specifically the current `origin/main`, tip `1971f08`). There is no reason to target `feat/weighted-scorer`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric` forked from `feat/weighted-scorer` at commit `ac9d505`... `feat/weighted-scorer`'s work has already landed on `main` \u2014 but as a **squashed, rewritten commit** (`1971f08`, single parent `65204ad`... not as a fast-forward or recorded merge.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was branched from `feat/weighted-scorer` at commit `ac9d505`... `feat/weighted-scorer` has since been **squash-merged into `main`** as `1971f08`... and by `merge-base --is-ancestor origin/main feat/pairwise-metric` returning `NO`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`: rewrites the docstring and `score()`... **entirely weighted-scorer work**, not pairwise... carried along only because `feat/pairwise-metric` was branched from `feat/weighted-scorer` rather than from `main`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The extra `scoring/scorer.py` changes and the W1\u2013W3 commits are **not** pairwise-metric work \u2014 they're the already-merged weighted-scorer work, resurfacing only because the branch's ancestry never passed through main's squash-merge commit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "After rebasing, verify the resulting diff against `main` contains only the pairwise-metric content \u2014 i.e., re-run `git diff main...feat/pairwise-metric` and confirm it shows just `pairwise_preference()` in `metrics.py` and the one-line addition to `grader.txt`, with `scorer.py` and `overlap()` no longer appearing",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Rebase `feat/pairwise-metric` onto `origin/main`... After rebase, re-verify: `git log origin/main..feat/pairwise-metric` should show exactly 2 commits (X1, X2), and `git diff origin/main...feat/pairwise-metric --stat` should match the clean 2-file/5-line diff.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26569,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.16121950000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9318,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9318,
+        "cache_read_input_tokens": 17371,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9318,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9318,
+            "cache_read_input_tokens": 17371,
+            "input_tokens": 2,
+            "output_tokens": 2171,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2171,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy all four expectations with strong commit-grounded evidence; they are comparable, with Report 2 marginally more explicit about the deliberate revert and cost-owner involvement.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "This is not a generic serverless caveat \u2014 **it already happened in this exact repository and was reverted**, per `git log`:\n\n- `454a21f` \"Add Edgerunner serverless deploy for API (PLAT-31)\" \u2014 first migration attempt.\n- `597777b` ... `1712565` \"Revert Edgerunner migration...",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The exact migration was already built (`454a21f`), patched once (`597777b`), and reverted after a production incident (`1712565`) \u2014 all under the same ticket, `PLAT-31`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "its commit message states directly: \"Edgerunner runs each request in a fresh isolate and does not keep the SQLAlchemy connection pool between invocations.\" ... the revert commit message states: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It states verbatim: *\"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31).\"*",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the prior attempt's own artifacts (`454a21f`, `597777b`, now deleted) ... `1712565` \"Revert Edgerunner migration: ... back to Cargobox container deploy (PLAT-31)\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "an Edgerunner deploy manifest (`deploy/edgerunner.toml`, also deleted in the revert) ... it was tried, it caused a production outage, and it was deliberately reverted under ticket `PLAT-31`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Loop in whoever owns ticket PLAT-31 / has institutional memory of the April incident, since they will know if anything changed since the revert.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this needs to go back to whoever owns `PLAT-31` (the ticket prefix used for both the original build and the revert) before any code is written, since they already have context this repo doesn't fully capture",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

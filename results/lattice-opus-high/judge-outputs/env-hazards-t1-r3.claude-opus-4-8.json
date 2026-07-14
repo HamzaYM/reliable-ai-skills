@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19374,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13766649999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8192,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8192,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8192,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8192,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 1718,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1718,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions with equivalent grounding; comparable overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as **`cedar_owner`**, the role that owns the tables and is the cluster superuser \u2014 and Postgres does not enforce Row-Level Security against such a role... `db/migrations/0001_init.sql` only does `ALTER TABLE clients ENABLE ROW LEVEL SECURITY` \u2014 **not `FORCE ROW LEVEL SECURITY`**... `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The application connects to Postgres as **`cedar_owner`**, and `backend/app/db.py` builds its one engine straight from this `DATABASE_URL`... even a non-superuser table owner is exempt from RLS on its own tables unless `FORCE ROW LEVEL SECURITY` is set. `db/migrations/0001_init.sql` only does `ALTER TABLE clients ENABLE ROW LEVEL SECURITY` (no `FORCE`). So although the `tenant_isolation` policy... is correctly written... the policy is **never evaluated** for this connection",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Make the application run as the dedicated, unprivileged `cedar_app` role instead of the owner: change the runtime `DATABASE_URL`... to `postgresql://cedar_app:apppw@localhost:5432/cedar`... Keep ownership/DDL on `cedar_owner` and grant `cedar_app` only DML... a clear split between a migration/owner role and a runtime app role.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Change `DATABASE_URL`... to `postgresql://cedar_app:apppw@localhost:5432/cedar`... it does not own the tables \u2014 so RLS policies *are* enforced for it... Keep the two-role separation permanently: use a schema-owning role (`cedar_owner`) **only** to run migrations... and the app role (`cedar_app`) for everything the app does at runtime.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The `cedar_app` role is a **cluster-global object** created only by the one-time bootstrap script `db/bootstrap/create_app_role.sql`, which is explicitly *not* part of migrations... The reset script `scripts/reset-local-db.sh` runs `docker compose down -v`, whose `-v` deletes the `cedar_pgdata` volume... The reset script then only re-runs `./scripts/migrate.sh`... and never re-runs the bootstrap... the bootstrap must be re-run after every volume wipe",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`scripts/reset-local-db.sh` runs `docker compose down -v`, and the `-v` flag **deletes that volume**, destroying all roles including `cedar_app`... nothing re-creates `cedar_app`. Creating it is a separate one-time bootstrap (`db/bootstrap/create_app_role.sql`)... that `reset-local-db.sh` never invokes... the one-time bootstrap must be re-run against the fresh cluster",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 38642,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.16269460000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11712,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11712,
+        "cache_read_input_tokens": 66712,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3298,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3298,
+            "cache_read_input_tokens": 37563,
+            "input_tokens": 2,
+            "output_tokens": 1292,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4538,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all five expectations (including the SLA-breach point requiring citations to both metrics/uptime-2026.csv and docs/sla-commitments.md, and the reordering recommendation for rule 3), while Report 1 omits any citation of metrics/uptime-2026.csv and does not explicitly recommend restructuring the draft to lead with impact/remediation, making Report 2 the stronger, more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Per `incidents/OPS-412-timeline.md`, failures began at 14:03 and the **first alert fired at 14:50 \u2014 47 minutes later**, with on-call only acknowledging at 15:05 (~62 minutes after impact began).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` shows failures began at 14:03, the FIRST ALERT fired at 14:50 (\u224847 minutes later), and the on-call acknowledged at 15:05 (>1 hour after impact began).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`incidents/OPS-412-timeline.md` states \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\" Transactions were both affected (1,284) and lost (37 unrecoverable).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`incidents/OPS-412-timeline.md` states: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "`docs/sla-commitments.md`: the contractual monthly uptime SLA is 99.9%, and \"Any calendar month below 99.9% is a breach and owes service credits per the customer agreement (credits scale with the depth of the breach).\" `metrics/uptime-2026.csv` shows April 2026 at 99.77% \u2014 below 99.9%, and the only month in the file that breaches.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "\"The outage was caused by the on-call engineer deploying an untested config change\" assigns blame to a person/role. `docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"The outage was caused by the on-call engineer deploying an untested config change\" assigns blame to an individual. `docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "The draft opens with \"LarkPay has maintained 99.99% uptime\u2026 does not change our commitment to reliability\" and later adds \"Our engineering culture treats reliability as the first feature of the product.\" `docs/customer-comms-style-guide.md` rule 3 requires leading with customer impact and remediation. This marketing framing should be cut",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The draft opens with a reliability boast (\"LarkPay has maintained 99.99% uptime \u2026\"). `docs/customer-comms-style-guide.md` rule 3: \"Lead with customer impact and remediation.\" It must be reordered to open with what happened to customers and what is being done, not a self-congratulatory uptime claim.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r3",
+  "repeat": 3,
+  "task": "tcr-t1"
+}

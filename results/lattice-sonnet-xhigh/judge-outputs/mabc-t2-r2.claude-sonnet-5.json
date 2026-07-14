@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 54673,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2343056,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 16936,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 16936,
+        "cache_read_input_tokens": 114732,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1400,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1400,
+            "cache_read_input_tokens": 44685,
+            "input_tokens": 2,
+            "output_tokens": 1198,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6093,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 hits all four expectations (including the RESULTS_DB/conftest.py collision, which Report 2 never mentions), making it the stronger of the two overall despite both reports otherwise covering the registry.py, staged-ordering, and F-06 sign-off points comparably well.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "pipeline/registry.py is a smaller but real collision point. F-02, F-05, and F-09 all edit this 11-line config file (MODEL_ENDPOINTS, DEFAULT_RUBRIC_VERSION, DEFAULT_DATASET). They're logically independent constants, but three engineers submitting three concurrent branches against one tiny file still means unnecessary merge/rebase overhead \u2014 one owner avoids it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Group A \u2014 Config/registry cleanup (pipeline/registry.py, 11 lines total): F-02 (add aurora-1 endpoint), F-05 (bump DEFAULT_RUBRIC_VERSION to rubric-v3), F-09 (fix DEFAULT_DATASET path). One engineer, one small PR.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 (start immediately, in parallel): Workstream B (batch runner...), Workstream A (rubric parsing, self-contained), Workstream C for F-05/F-09 (self-contained; F-02 can start once the endpoint-URL convention is confirmed, see Q3), and F-10 in Workstream E (self-contained instruction addition).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Run Groups A, B, and C in parallel immediately \u2014 they touch disjoint files, have no ambiguity, and are quick wins that shrink the backlog fast. Run Group D in parallel too, but as a single dedicated engineer (not split further) given its file is touched by 4 of the 14 findings.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 (score.py thresholds) and F-03 (refusal.txt), because both need an external decision before any code is written, and both change actual grading output... a product/rubric-owner decision, not a mechanical fix. I'd escalate for a concrete target before assigning.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this is a product/quality-bar judgment call, not a fully-specified bug... since these thresholds affect every score the pipeline produces, an arbitrary change is a real quality-bar risk, not just a code-review nit. This needs a rubric-owner/product decision on target thresholds (or labeled borderline examples) before it's implementable.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "tests/conftest.py defines RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\") \u2014 a single absolute filesystem path, not scoped per engineer/worktree... any engineer whose test touches it should override RESULTS_DB to a private path rather than rely on the shared default, or a second parallel test run could stomp on the same file.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

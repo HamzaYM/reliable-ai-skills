@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20797,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1132116,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7285,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7285,
+        "cache_read_input_tokens": 29012,
+        "inference_geo": "not_available",
+        "input_tokens": 9531,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7285,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7285,
+            "cache_read_input_tokens": 29012,
+            "input_tokens": 9531,
+            "output_tokens": 2147,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2147,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with substantively equivalent analysis; Report 2 is marginally more rigorous (explicit --is-ancestor check, explicit origin/main freshness confirmation) but the difference does not change coverage of the expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. The repository has only three branches... `feat/weighted-scorer`'s work is not a valid target because it has already been merged into `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. project documentation's rule is explicit: \"Base every PR on the trunk.\" ... `feat/weighted-scorer` \u2014 the branch `feat/pairwise-metric` was actually built on \u2014 is exactly the kind of non-trunk base project documentation warns against stacking on",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "the branch was forked from the tip of `feat/weighted-scorer` (commit `ac9d505`...), not from `main` directly... `feat/weighted-scorer` has since been merged into `main`, but via a squash/rewrite... `main`'s commit `1971f08` (\"Refactor scorer for weighted metrics (#42)\"... contains the exact same net change as `feat/weighted-scorer`'s three commits... Git therefore does not consider `d6fdbc3`/`2d3029b`/`ac9d505` ancestors of `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/pairwise-metric` was branched from the tip of `feat/weighted-scorer` (commit `ac9d505`)... `git merge-base --is-ancestor feat/weighted-scorer main` returns NO... Conclusion: `feat/weighted-scorer`'s work has already landed on `main`, squashed into a single commit with a different SHA and no shared history",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Not all of the three-dot diff is pairwise-metric work... The rest \u2014 `scoring/scorer.py`'s entire diff... belongs to `feat/weighted-scorer` (commits W1\u2013W3)... This content is present in the three-dot diff purely as an artifact of the squash-merge: because `feat/pairwise-metric` branched off `feat/weighted-scorer` before it was squashed into `main`... every change since that root \u2014 including work `main` already has under a different commit \u2014 looks \"new\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "So: no, not all of the 3-dot diff is pairwise-metric work... The extra content (the `scoring/scorer.py` changes and part of `scoring/metrics.py`) is present only because `feat/pairwise-metric`'s merge-base against `main` is the stale root `65204ad`, not the squash-merge commit `1971f08`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Rebase `feat/pairwise-metric` onto `main`, replaying only its own commits, e.g.: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... Re-verify after rebasing: re-run the diff against `main` and confirm it now shows only the 2-file, pairwise-only change",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Confirm `main` is current: already done \u2014 local `main` (`1971f08`) matches `origin/main` (`1971f08`) exactly... `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... After rebasing, re-diff `main` vs. the rebased branch and confirm it now shows only the intended 2 files / 5 lines... with `scoring/scorer.py` no longer appearing",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

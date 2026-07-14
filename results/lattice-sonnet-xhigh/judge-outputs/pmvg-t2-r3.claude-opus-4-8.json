@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28748,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.17504250000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10237,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10237,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10237,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10237,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2321,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2321,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and cover the live-test cost, golden-diff tracing, and stale-baseline issues; Report 2 edges ahead by also specifying a concrete reproducibility check (re-run twice / set-ordering instability) that Report 1 only alludes to.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they call a real external endpoint (`https://api.scorelab-models.example.com/v1/score`) over the network using a bearer token from `SCORELAB_API_KEY`, and the module docstring says outright: \"these tests hit the real model endpoint and incur per-call cost.\" ... Enabling `live` is a distraction from actually validating the diff.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the deselection is intentional, not a bug to \"fix.\" ... If live coverage is ever needed, it should stay opt-in and be run deliberately with a real key, not folded into \"make nothing skip.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Only after the diff matches the stated intent should `update_golden.py` be run \u2014 and even then, the resulting diff to `expected_scores.json` should be reviewed line-by-line by a human before merging, not trusted automatically.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "diff the regenerated `expected_scores.json` against the current committed version hunk-by-hunk, confirming every changed number traces either to the reweighting (expected) or to the now-explained rounding change \u2014 nothing left unaccounted for. ... anything you can't explain is a regression, not a fixture update",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "What I'd report instead: run the current linter and a fresh count of `@pytest.mark.flaky` at PR time and cite *that* output directly ... rather than substituting an unverified figure from a stale doc.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Per project documentation's \"Baselines drift: measure, don't assume\" guidance, I would not cite `docs/testing.md`'s numbers in the PR at all. ... should either be corrected or regenerated from a real lint/test run",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Re-run `python3 -m pytest -v` (no regen) at least twice to confirm the suite is green and the new fixture is stable/deterministic ... two regen runs against identical `score()` output could still produce a byte-different JSON file (different key order), which is worth a quick sanity check before treating the new fixture as stable.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

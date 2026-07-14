@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21304,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1287449,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9887,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9887,
+        "cache_read_input_tokens": 104393,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 936,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 936,
+            "cache_read_input_tokens": 38100,
+            "input_tokens": 2,
+            "output_tokens": 694,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2274,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is better: it catches both blocking defects (cross-tenant leak and the exports.py signature-break) while Report 1 misses the second defect entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The function accepts a `tenant_id` parameter but never uses it in the raw SQL it builds... There is no `WHERE tenant_id = :tenant_id` clause.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The function receives `tenant_id` as a parameter but never uses it in the SQL... **Effect:** any authenticated user of any tenant hitting `GET /appointments/search?q=...&status=...` gets appointment rows... belonging to every tenant in the system, not just their own.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "`filters` was made a required positional parameter with no default... `backend/app/exports.py` (not touched by this PR) still calls it as `build_appointment_query(session, tenant_id)` \u2014 two arguments. This throws `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` on every invocation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I'm flagging this as a maintainability/defense-in-depth concern... rather than a currently-exploitable vulnerability.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Through the current single call site this isn't exploitable today \u2014 `status` is typed `AppointmentStatus` (an enum of `booked`/`cancelled`/`completed` per `backend/app/schemas.py`), and FastAPI rejects any query-string value that doesn't match one of those three members before the enum is ever constructed.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

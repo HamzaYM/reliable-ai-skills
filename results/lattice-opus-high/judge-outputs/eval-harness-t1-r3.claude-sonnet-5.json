@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 37199,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.17149119999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11992,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11992,
+        "cache_read_input_tokens": 106814,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1197,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1197,
+            "cache_read_input_tokens": 39948,
+            "input_tokens": 2,
+            "output_tokens": 1163,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4206,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports match closely on questions 1-3, but Report 1 explicitly proposes renormalizing over succeeded axes for relevance/tone failures while excluding/holding accuracy failures, whereas Report 2 treats any missing axis uniformly as grounds to withhold or mark the whole record incomplete, missing the gate-vs-optional-axis handling distinction in its recommended fix.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "So the failed axis contributes `weight \u00b7 0` \u2014 it is treated as if the model scored that axis a genuine **0**... byte-for-byte indistinguishable in form from a fully-scored row.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That dict is passed straight to `composite()`, which converts the missing axis to `0.0` and still weights it in... in form the failed-axis record is indistinguishable from a fully-scored one",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "specifically conflating a missing score with a real zero (\"a zero is a real, comparable data point; a missing score is not, and conflating them corrupts every downstream aggregate\")... Each failure-contaminated row drags an agent's mean composite down exactly as if that agent had written a genuinely bad reply.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treating a *missing* score as a *zero* score conflates \"we don't know this axis\" with \"this axis scored the worst possible value.\"... `rankings()` treats every row as a legitimate data point... then ranks by `sums/counts`. A deflated composite therefore drags the agent's mean *down*",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the failed axis is accuracy (load-bearing/gate): do not write a composite that looks comparable to a fully-scored row. Mark the record as degraded/incomplete (e.g. a status column...), leave the composite empty/`null` rather than a number, and queue that record's accuracy call for retry. It must be excludable by the leaderboard.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Treat a failed accuracy call as strictly non-passing-unknown, never as a zero/fail: such a record must be marked incomplete and re-run or excluded, never allowed to contribute a fabricated composite.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If the failed axis is relevance or tone (embellishment): renormalize the composite over the axes that actually returned (divide by the sum of the succeeded weights) and flag it complete \u2014 do not let the missing axis count as 0.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

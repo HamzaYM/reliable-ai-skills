@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 44103,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1991265,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9229,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9229,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9229,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9229,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 3719,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3719,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 1 edges ahead because it correctly identifies that the three-dot PR diff re-includes the already-merged scoring/scorer.py changes, whereas Report 2 frames the file diff as clean and only catches the redundant commits in the commit list.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. ... Critically, the branch this work depended on, `feat/weighted-scorer`, has already been integrated into `main` ... so `main` is now the correct, up-to-date integration point \u2014 not `feat/weighted-scorer`, which is stale and no longer the place new work should land on top of.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. ... in this specific case the branch this PR was actually stacked on (`feat/weighted-scorer`) is no longer a live target at all",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric` was checked out from `feat/weighted-scorer` ... its work has already landed on `main`, but via a squash-style merge ... Yet `git merge-base --is-ancestor ac9d505 main` reports \"not an ancestor\" ... 1971f08, \"Refactor scorer for weighted metrics (#42)\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/pairwise-metric` was branched from `feat/weighted-scorer`, not from `main`. ... `feat/weighted-scorer` (`ac9d505`) is not an ancestor of `origin/main` ... `main`'s tip commit `1971f08` \u2014 \"Refactor scorer for weighted metrics (#42)\" ... `feat/weighted-scorer` itself was never fast-forwarded or deleted \u2014 it just sits there looking alive while being functionally dead",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`git diff --stat main...feat/pairwise-metric` (triple-dot / merge-base diff \u2014 the calculation GitHub uses for a PR ... `scoring/scorer.py` (10 insertions, 3 deletions ...) comes entirely from W1 (`d6fdbc3`) and W2 (`2d3029b`) \u2014 pure weighted-scorer work. ... git's merge-base for `feat/pairwise-metric` vs. `main` is still the pre-feature commit `65204ad`, and any merge-base-based diff (including what GitHub would show for a PR) walks back through and re-includes W1\u2013W3's changes",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "run `git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... Re-verify the diff: after rebasing, re-run `git diff main...feat/pairwise-metric` and confirm it now matches the clean 5-line, 2-file diff",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto origin/main feat/weighted-scorer feat/pairwise-metric` ... Confirm the result: `git diff origin/main feat/pairwise-metric` should still show exactly the same 5-line, 2-file delta, and `git log origin/main..feat/pairwise-metric` should now show only `X1` and `X2`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

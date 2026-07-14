@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29932,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1676045,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9281,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9281,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9281,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9281,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2439,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2439,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent grounding in the commit history; they are comparable, with Report 2 adding minor extra code-level nuance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "this exact sequence was already implemented, deployed to production, and reverted a week later. The timeline is `454a21f` (Apr 14) \u2192 `597777b` (Apr 16) \u2192 revert `1712565` (Apr 21).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "commits `454a21f`, `597777b`, `1712565` show PLAT-31 already did this migration and reverted it after a production outage. `git show 1712565` gives the post-mortem in the commit body.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Revert `1712565` records: under normal dashboard load, per-request connections \"opened faster than Postgres could recycle them and tripped the connection limit (`'FATAL: too many connections'`), taking the endpoint down.\" ... Edgerunner runs each request in a fresh isolate that does not persist that pool (stated verbatim in commit `597777b`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Edgerunner gives each request a fresh isolate that doesn't keep that pool (`597777b`). When PLAT-31 tried the migration and then tried opening a dedicated connection per request, \"per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down\" \u2014 verbatim from the revert commit `1712565`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "as in the reverted `backend/serverless_handler.py` ... as in the reverted `deploy/edgerunner.toml` ... restarting a reverted platform migration",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the reverted `serverless_handler.py` called the ASGI app incorrectly ... the workload is a single always-on 2-replica service today, and the code assumes a long-lived process",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "restarting a reverted platform migration is not an engineer's call to make silently \u2014 it belongs to whoever owns the system. The people who should be in that decision: The PLAT-31 / platform owner ... they lived the original failure ... they need to know it was already tried and why it failed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the platform/infra owner of PLAT-31 (the ticket and revert are theirs \u2014 they hold the incident context), the DBA / owner of the `carelog-db` Postgres instance ... This is a shared infra + data-tier decision, not something to green-light from the app repo alone.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 39599,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1257727,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8493,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8493,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8493,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8493,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 4111,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4111,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently reconstruct the same prior-attempt evidence (commits and revert reason) and tie their sign-off recommendation to it, but Report 2 is slightly stronger on citing specific files (Dockerfile, line numbers) to establish that the container deployment is deliberate and the serverless config was removed on purpose.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "This is precisely what commits `454a21f` \u2192 `597777b` \u2192 `1712565` already did, and then undid, under ticket PLAT-31.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Based on the repo's own prior attempt (commits `454a21f`/`597777b`/`1712565`), the mechanical steps are:",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The revert commit `1712565` states directly: \"serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres `max_connections` in production.\" The intermediate fix attempt (`597777b`) tried opening a dedicated, unpooled Postgres connection per request as a stopgap, and that stopgap is what caused the outage (\"the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections')\").",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565`'s message states plainly: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production.\" This is a direct, documented prior incident, not a hypothetical.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Remove/retire `deploy/cargobox.yaml` and the container-specific `Dockerfile` CMD (`uvicorn ...`) once Edgerunner is proven, or keep both during a parallel-run cutover... the repo already has a template for this in the reverted `backend/serverless_handler.py`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If leadership still wants to pursue Edgerunner for cost reasons, this needs to be raised explicitly with whoever owns PLAT-31 / the on-call or backend team that authored the original revert, since they already spent real incident time discovering this failure mode \u2014 re-litigating it silently would repeat that cost.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Whoever files `PLAT-N` tickets for this project should be looped in given the `PLAT-31` history, so the team doesn't unknowingly repeat a known-failed change; check for any follow-up ticket/postmortem referenced by `PLAT-31`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

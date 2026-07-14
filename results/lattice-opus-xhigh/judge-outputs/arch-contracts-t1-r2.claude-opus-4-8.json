@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23062,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1511705,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9056,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9056,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9056,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9056,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1879,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1879,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with accurate, well-cited findings; they are comparable, with Report 1 marginally richer via its commit timeline.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls belong in the gateway module `medibill/backend/app/billing/gateway.py`... Two other places construct their own `chargekit.Client`... `backend/app/api/invoices.py:14-17`... `backend/app/workers/dunning.py:9-13`... `backend/app/billing/errors.py:6` re-exports `chargekit.errors` classes \u2014 this is the boundary exception the doc explicitly allows.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New provider calls (a refund) should live in **`backend/app/billing/gateway.py`**... **`backend/app/api/invoices.py:14-16`**... **`backend/app/workers/dunning.py:9-13`**... The only other non-gateway reference, `backend/app/billing/errors.py:6`... is the *documented, legitimate* exception",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`InvoiceOut` carries a sixth field, `external_ref` (`models/invoice.py:22`)... This field was added in commit `c23da88` (MEDB-214, 2026-06-18), along with migration `0006_add_invoice_external_ref.sql`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The serializer `InvoiceOut` carries a sixth field, `external_ref` (`backend/app/models/invoice.py:22`)... Migration `0006_add_invoice_external_ref.sql` added the backing column",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the doc should be corrected in that same PR rather than deferred... the durable fix is docs-with-code: any PR that changes the provider surface, the invoice response shape, or the webhook set must update `ARCHITECTURE.md` in the same change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the reconciliation should happen **now, before/at the start of the refund work, not \"eventually\"**... and thereafter update `docs/ARCHITECTURE.md` **in the same commit** as any code that changes what it governs",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "both the count (4 vs. 5) and the enumeration (missing `payment_pending`) are wrong... **Stop hard-coding a count.** \"4 ... types\" is exactly the phrasing that silently went wrong... Either drop the literal number or point at the source of truth",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the code handles **five** types, not four... don't lead with a hardcoded count (\"4\"). A cited count like this is guaranteed to drift... drop the count and point at the single source of truth (the branch list in `webhooks.py`)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r2",
+  "repeat": 2,
+  "task": "arch-contracts-t1"
+}

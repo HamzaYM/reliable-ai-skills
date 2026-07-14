@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22520,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.29273299999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 24045,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 24045,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 24045,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 24045,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 1961,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1961,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both nail token math and the ridgeline reroute, but Report 2 additionally commits to re-verifying the stale snapshot before launch, making it the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Per `data/manifest.json`: `transcript_count: 5200`, `avg_tokens_per_scoring_call: 1800` \u2192 full run needs **5,200 \u00d7 1,800 = 9,360,000 tokens**.... **northpeak** (the default backend): window total 10,000,000 tokens, but only **640,000 remaining**.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 transcripts \u00d7 1,800 avg tokens/call = **9,360,000 tokens** needed for the full run.... **northpeak (primary, default path):** window total 10,000,000 tokens, but only **640,000 remaining**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Ridgeline currently has more than enough headroom (10.8M remaining vs 9.36M needed) to run the entire dataset in one pass tonight.... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**ridgeline (secondary):** window total 12,000,000 tokens, with **10,800,000 remaining**. That comfortably covers the 9,360,000 tokens needed... I'd launch with the secondary backend explicitly:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run `run_nightly.sh`/`score_batch.py` as-is with its implicit default. I'd explicitly pass `--provider secondary`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run the default command as-is. I'd launch with the secondary backend explicitly",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Before actually kicking it off I'd also re-verify the usage snapshot rather than trust it blindly \u2014 it's about 3 hours old (generated 19:25 UTC vs. \"now\" 22:30 UTC) and isn't flagged as fresh, so ridgeline's true remaining balance at launch time could be somewhat different from 10.8M",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r2",
+  "repeat": 2,
+  "task": "bama-t1"
+}

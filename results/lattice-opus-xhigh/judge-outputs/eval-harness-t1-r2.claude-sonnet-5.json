@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 50368,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.19524839999999996,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13496,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13496,
+        "cache_read_input_tokens": 106088,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3985,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3985,
+            "cache_read_input_tokens": 38660,
+            "input_tokens": 2,
+            "output_tokens": 1347,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5170,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly diagnose the None-to-0.0 substitution bug and its corrupting effect on leaderboard rankings, but only Report 1 draws the distinction the task requires between the accuracy gate (must be withheld/flagged, not renormalized) and the optional relevance/tone axes (safe to renormalize); Report 2 explicitly argues against branching the fix per-axis, missing that required distinction.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "That `None` is then passed to `composite()` in `grader/aggregate.py:6-13`, which coerces it to `0.0` and continues the full weighted sum without renormalizing the weights ... The value written is therefore a **normal-looking float**, not an error or blank.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the handler sets `axis_scores[axis] = None` (line 21)... For the failed axis, `axis_scores.get(axis)` returns `None`, and lines 9\u201311 coerce it: `if value is None: value = 0.0`... a partial record is **identical in form** \u2014 same three columns, a normal-looking numeric composite.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Substituting `0.0` for a *missing* score conflates two different things: \"this axis genuinely scored 0\" (a real, comparable data point) and \"we never got a score for this axis\" (not a data point at all)... For `grader/leaderboard.py`: `rankings()` reads every row as `float(comp)` and averages per agent (`sums[agent]/counts[agent]`). Deflated failed-axis rows drag down the mean of whichever agents happened to hit a failure.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the code treats it as \"this axis measured 0\" \u2014 conflating a missing measurement with a genuine zero... In `grader/leaderboard.py`: it reads every row unconditionally \u2014 `sums[agent_id] += float(comp)` and `counts[agent_id] += 1` (lines 13\u201315)... dragging the agent's mean down.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Failed accuracy (load-bearing / the gate):** do not emit a composite that looks comparable to fully-scored rows. Write the record as **degraded/incomplete** \u2014 e.g. add an explicit `status` column (`complete` vs `incomplete`/`degraded`) and leave the composite blank/null rather than a number.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not write a normal numeric composite for a partial record. Either (a) skip the row entirely (don't append it to `scores.csv`), or (b) write it with an explicit incomplete marker \u2014 an empty/null composite and/or a dedicated `status`/`failed_axes` column \u2014 so a partial record is distinguishable in form from a fully-scored one.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A **failed accuracy** call means you *cannot determine pass/fail at all*... This case must be treated as an incomplete/degraded record and retried. A **failed relevance or tone** call is not load-bearing for pass/fail; the surviving axes still support a defensible number, so renormalizing over what succeeded (and flagging it) is a legitimate option.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

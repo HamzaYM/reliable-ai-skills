@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28713,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10743930000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8158,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8158,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8158,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8158,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3038,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3038,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 correctly distinguishes the three-dot (PR-view) diff from the two-dot diff and shows scorer.py/overlap() re-appearing due to a stale merge-base, matching expectation (c); Report 2 only computes the two-dot diff and concludes it's already clean, missing that key finding, making Report 1 the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**`main`.** The branch was originally cut from the in-progress `feat/weighted-scorer`, so the naive base would be that branch. But the weighted-scorer work has already landed on `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main` (the trunk). ... The apparent alternative \u2014 stacking on `feat/weighted-scorer` (the dependency this branch was built on) \u2014 is exactly the dead-base trap: that work has already landed in `main` via PR #42",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was branched off **`feat/weighted-scorer` at commit `ac9d505` (W3, \"token-overlap helper in metrics\")**, which is that branch's tip... the dependency has effectively landed on `main`, but as a *rewritten* single commit (`1971f08`, #42), not by merging the original W1\u2013W3 commits.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was cut from `feat/weighted-scorer`. ... its *content* has landed in `main` independently: PR #42's single commit `1971f08` produced identical results ... So the weighted work was re-landed as a squashed/refactored commit with a *different SHA* than the W1\u2013W3 commits the branch still carries.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The diff a GitHub PR would display is the merge-base (three-dot) diff `git diff main...feat/pairwise-metric`: **3 files, 21 insertions**... `scoring/scorer.py` (+13): the entire flat\u2192weighted rewrite... The rest \u2014 `overlap()` in `metrics.py` and the whole `scorer.py` weighted rewrite \u2014 is the **`feat/weighted-scorer` dependency (W1\u2013W3)**. It shows up in the three-dot diff because the branch was cut from `feat/weighted-scorer` *before* that work reached `main`, and the merge-base is the old `65204ad` base rather than current `main`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase pairwise-metric onto `main`, dropping the dependency commits:** `git rebase --onto main ac9d505 feat/pairwise-metric` ... **Verify the result:** `git log --oneline main..feat/pairwise-metric` should show only `X1`/`X2`, and `git diff main...feat/pairwise-metric` should now equal the clean 5-line pairwise-only change (matching the earlier two-dot diff).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Rebase off the dead dependency onto current `main`, dropping the redundant W commits.** The precise, surgical form: `git rebase --onto origin/main feat/weighted-scorer feat/pairwise-metric`... **Confirm the diff is scoped** (project documentation's rule): `git log origin/main..HEAD` should show only X1/X2, and `git diff origin/main..HEAD` should show only the two pairwise changes.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

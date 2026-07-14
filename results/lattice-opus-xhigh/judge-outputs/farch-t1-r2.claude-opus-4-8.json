@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29320,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1631365,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8765,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8765,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8765,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8765,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2482,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2482,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy every expectation with cited commit evidence; comparable overall, with Report 2 marginally more explicit about the container being the deliberate current state.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "these steps were already performed under ticket PLAT-31 (commit `454a21f`, 2026-04-14) and were **reverted in production a week later** (commit `1712565`, 2026-04-21).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git log --oneline --all` shows this migration was already tried and reverted under PLAT-31 (`454a21f` \u2192 `597777b` \u2192 `1712565`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Per `1712565`: \"serverless isolates cannot hold the Postgres pool; `/reports/monthly` exhausted Postgres `max_connections` in production\u2026 per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The revert (`1712565`) documents the result: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "it was tried (PLAT-31, `454a21f`), patched (`597777b`), and deliberately reverted after a production incident (`1712565`), and nothing in the codebase has changed since to address the root cause.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The current always-on Cargobox container exists specifically because it holds a bounded, shared connection pool that Postgres can sustain.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "reattempting is a decision for the system owner, not something to proceed on unilaterally... Surface PLAT-31 explicitly in that conversation; the fact that it was tried and failed is the key input they need.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This should not be an individual engineer's call given the prior production outage. ...whoever owns PLAT-31 and the platform/database (this previously caused a production incident, so the DBA / database owner must sign off",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

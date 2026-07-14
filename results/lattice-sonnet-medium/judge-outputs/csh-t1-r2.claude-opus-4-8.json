@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22935,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1361665,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8227,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8227,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8227,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8227,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1642,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1642,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 1 additionally identifies the missing env/deploy-level global gate (expectation d), making it slightly more complete.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminder messages **will be sent automatically**. The decision is made in `auto_send_reminders_enabled` at `slotwise/backend/app/feature_flags.py:10-13`... when `tenant.settings.get(\"auto_send_reminders\")` is `None` (key never set...), the function returns `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminder messages **will be sent automatically**. The decision is made in `backend/app/feature_flags.py:10-13`... if the key is absent from `tenant.settings` ... `tenant.settings.get(...)` returns `None`, the function returns `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change `slotwise/backend/app/feature_flags.py:11-12` so a `None`/missing value returns `False` instead of `True`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I'd change the default at `backend/app/feature_flags.py:11-12`, inverting it to default to `False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`25509a7` (\"SLOT-190 tenant settings and calendar view preference\") first introduced `compact_calendar_view_enabled` with the `is None: return True` pattern, for a UI display preference ... the two flags have different blast radii and should not share a default.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a copy-paste of the \"default missing setting to `True`\" pattern that `compact_calendar_view_enabled` established ... `compact_calendar_view_enabled` gates a harmless cosmetic UI preference ... the two settings have completely different risk profiles.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add a rollback/kill-switch**: there is currently no env-level master switch for this feature anywhere in the repo (confirmed via grep) \u2014 only the per-tenant DB value gates it ... a rollout like this should combine the tenant value with an env-level master switch (ANDed together)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

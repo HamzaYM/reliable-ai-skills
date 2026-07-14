@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23571,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1588975,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9824,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9824,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9824,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9824,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1869,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1869,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions; they are comparable, with Report 2 slightly more explicit on initdb.d and superuser bypass.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the running application authenticates as `cedar_owner` \u2014 and `cedar_owner` is also the role that ran `scripts/migrate.sh` ... it is the **owner of the `clients` and `appointments` tables**. ... by default **PostgreSQL row-level security is never enforced against the table's owner** ... that exemption only stops applying if the table is altered with `FORCE ROW LEVEL SECURITY`, which this migration never does.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It is also literally the **owner** of every table ... In PostgreSQL, both superusers and table owners bypass row-level security unconditionally \u2014 superusers always, and owners unless the table has `FORCE ROW LEVEL SECURITY` (which `0001_init.sql` does not set ... So every `/clients` request executes its `SELECT ... FROM clients` with RLS silently skipped",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Structure DB access with a clear split going forward: an **owner/migration role** (`cedar_owner`) used only by `scripts/migrate.sh` / schema-change tooling / DDL, and a **least-privilege runtime role** (`cedar_app`) used exclusively by the application (`backend/app/db.py`) for all request-time queries.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Keep two roles permanently separated by *purpose* ... a schema-owning/migration role (`cedar_owner`, used only by `scripts/migrate.sh` / `reset-local-db.sh`) and the least-privilege `cedar_app` role used by absolutely everything the running FastAPI process does (`backend/app/db.py`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The only place `cedar_app` is ever created is `db/bootstrap/create_app_role.sql`, and that script is explicitly documented ... as a manual, one-time step. `reset-local-db.sh` ... never calls it. So after any reset, `cedar_app` no longer exists, and the isolation suite ... fails immediately with Postgres's `role \"cedar_app\" does not exist` error",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "there is no bind-mount into Postgres's `/docker-entrypoint-initdb.d` ... So `cedar_app` is never created automatically ... `down -v` removes the named volume, which wipes the entire Postgres data directory ... So after a reset, the fresh cluster has `cedar_owner` (from `POSTGRES_USER`) but no `cedar_app` at all ... fails at authentication time with `role \"cedar_app\" does not exist`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

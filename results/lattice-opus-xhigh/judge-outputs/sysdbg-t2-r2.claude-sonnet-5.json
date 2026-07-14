@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23988,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09863770000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7885,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7885,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7885,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7885,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2571,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2571,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly diagnose the root cause, timeline, flakiness misdiagnosis, and the rollback plan's futility, hitting all four expectations equally; Report 2 provides slightly more thorough corroborating evidence for the timeline (git log on the config file itself) but the substance is comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "config/scoring_config.yaml, which still says expected_label_field: label ... File to change: config/scoring_config.yaml \u2014 set expected_label_field: gold_label.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "File to change to fix it: config/scoring_config.yaml \u2014 change expected_label_field: label to expected_label_field: gold_label.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It began on 2026-06-17, introduced by commit 53551e8 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\" (dated 2026-06-17 13:00 UTC). Evidence: pipeline/metrics/nightly_scores.csv shows 0.91 on 2026-06-16 and 0.00 from 2026-06-17 through 2026-07-06 with no recovery",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "pipeline/metrics/nightly_scores.csv shows a clean step: 0.91/0.90/0.92 daily from 2026-05-20 through 2026-06-16, then 0.00 starting 2026-06-17 and every day after. git show 53551e8 shows the commit renamed label\u2192gold_label in all 11 eval records and updated REQUIRED_KEYS in score_batch.py, but its diff does not include config/scoring_config.yaml.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "score_one.py/score_single() calls only predict_category(normalize_simple(text)) and returns the predicted category \u2014 it never loads the eval set, never reads the config's expected_label_field, and never compares against a gold label.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "score_one.py only runs predict_category(...) and prints the label \u2014 it never loads the eval set, never reads expected_label_field, and never performs the prediction == gold comparison.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "There is no model in the loop to roll back: grep shows model_id is read nowhere in the code, and classification is a deterministic keyword stub. Reverting the \"model\" changes nothing about the gold-field comparison, so accuracy would remain 0.00 ... The correct next step is the config fix in Q1 plus a regression test; the proposed plan should be dropped.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Do not do it \u2014 it rests on the same misdiagnosis and will not help. There is no model in this pipeline: the classifier is a deterministic keyword stub, and model_id: ticket-classifier-v3 in the config is dead config read by no code ... \"Rolling back the model\" is therefore a no-op that cannot move the score; accuracy would stay at 0.00 because the failure is in the eval harness's gold-field lookup, not in the predictions or any model.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

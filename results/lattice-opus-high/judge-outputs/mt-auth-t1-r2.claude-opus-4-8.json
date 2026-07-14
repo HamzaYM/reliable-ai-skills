@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26932,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1583885,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8361,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8361,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8361,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8361,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 2476,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2476,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answered the task better: it covers the same correct root cause, commit, and remediation as Report 1 while also adding the in-app tenant filter and a blocking boot-time RLS assertion that Report 1 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the application connects to Postgres as **`juniper_owner`**, the role that **owns** the `appointments` table (`db.py:6` reads `DATABASE_URL`, which is `postgresql://juniper_owner:...` in `docker-compose.yml:5`, `.env.example:1`, and `infra/main.tf:2`). In Postgres, a table's owner is **exempt from RLS policies** unless the table is declared with `FORCE ROW LEVEL SECURITY`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The application's runtime process connects to Postgres as **`juniper_owner`, the role that owns the `appointments` table**, and in Postgres a table's owner is **exempt from that table's row-level security policies by default**. RLS `USING` clauses simply do not apply to the owner unless the table is additionally marked `FORCE ROW LEVEL SECURITY`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit **`b2a23d2`** \u2014 \"ROTA-214 run migrations from the api container on boot\"... The diff changes `DATABASE_URL` from `juniper_app:apppw` to `juniper_owner:ownerpw` in all three places: `.env.example`, `docker-compose.yml`, and `infra/main.tf`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit **`b2a23d2` \u2014 \"ROTA-214 run migrations from the api container on boot\"**... The diff changes `DATABASE_URL` from `juniper_app:apppw` to `juniper_owner:ownerpw` in three places: `.env.example`, `docker-compose.yml`, and `infra/main.tf`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Primary \u2014 stop running the app as the table owner.** Point the runtime `DATABASE_URL` back to the non-owner `juniper_app` role... Add `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` (a new migration alongside `0003_rls.sql`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Primary fix \u2014 **stop running the app as the table owner.** Revert the runtime `DATABASE_URL` back to the least-privilege `juniper_app` role... add a migration `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Defense in depth in code \u2014 add an explicit tenant predicate to the query in `backend/app/routes/appointments.py` (`WHERE tenant_id = :tid`, using the verified `claims[\"tenant_id\"]`), so isolation never depends on exactly one mechanism",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Boot-time assertion** (the reference's core recommendation): on startup, verify the connected role is *not* the owner of `appointments` and lacks `BYPASSRLS`; treat a failure as stop-the-line, not a log line.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r2",
+  "repeat": 2,
+  "task": "mt-auth-t1"
+}

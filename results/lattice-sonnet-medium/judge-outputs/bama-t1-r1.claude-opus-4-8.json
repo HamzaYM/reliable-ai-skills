@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23615,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.29800899999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 24322,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 24322,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 24322,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 24322,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 2059,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2059,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations equally; they are comparable, with Report 1 adding an extra correctness observation about the stubbed scoring script.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Full run size: `5,200 transcripts \u00d7 1,800 tokens/call = 9,360,000 tokens` (from `data/manifest.json`).\n- **northpeak (primary/default)**: only **640,000** tokens remaining of a 10,000,000 window (`.cache/usage_snapshot.json`). The job needs **~14.6\u00d7** the tokens currently available \u2014 it would exhaust the remaining budget almost immediately",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full-run size: `5,200 transcripts \u00d7 1,800 avg tokens/call = 9,360,000 tokens`... **northpeak (default/primary)**: only `640,000` tokens remaining in the current window (`.cache/usage_snapshot.json`) against a run that needs 9,360,000 \u2014 a shortfall of **8,720,000 tokens (~93% short)**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**ridgeline (secondary)**: **10,800,000** tokens remaining of a 12,000,000 window. The 9,360,000-token job fits... Explicitly pass `--provider secondary` so the run targets ridgeline instead of the northpeak default",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**ridgeline (secondary)**: `10,800,000` tokens remaining, comfortably above the 9,360,000 needed... force it onto ridgeline:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "running the documented default command as-is would burn out northpeak's budget for the rest of its window and still leave the job unfinished.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run `./scripts/run_nightly.sh` as-is. Instead I'd invoke the underlying script directly and force it onto ridgeline",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "it was generated at 19:25 UTC and \"now\" is 22:30 UTC \u2014 about 3 hours stale. Per project documentation's rule not to trust a stale signal as current, I would not launch a near-full-budget job purely off this snapshot without re-checking current remaining balance immediately beforehand",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is ~3 hours stale relative to the treated \"now\" (generated 19:25 UTC, now 22:30 UTC) \u2014 before actually kicking off a 9M-token job I'd want a fresher read of remaining ridgeline capacity if the tooling supports it",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

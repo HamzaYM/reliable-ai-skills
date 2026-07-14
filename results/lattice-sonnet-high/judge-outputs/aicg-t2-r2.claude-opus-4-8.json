@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 42902,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.236815,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13735,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13735,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13735,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13735,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 3298,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3298,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and cover a, c, and d equivalently; Report 1 edges ahead because it explicitly prescribes failing closed (deny) on both fail-open rate-limiter paths, whereas Report 2 treats the Redis fail-open as possibly acceptable and only recommends logging.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`BadRequestError`: non-retryable \u2014 the payload itself is malformed/rejected; resending it to a different vendor won't fix a bad request... `ContentPolicyError`: non-retryable and the most serious... `AuthError`: also classified as non-retryable... Concrete fix: replace the blanket `except Exception` with an explicit denylist... NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError) ... except NON_RETRYABLE: raise",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Only failover for the genuinely transient/availability classes (`RateLimitError`, `RequestTimeoutError`, `ServerError`); for `BadRequestError` and `ContentPolicyError`, fail the record without re-sending payload to a second vendor (log and return a distinct status such as `\"rejected\"`); for `AuthError`, log at `ERROR`/`CRITICAL` (or raise/alert)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "gate the bypass on an explicit, narrowly-named local-dev override (e.g. `RATE_LIMIT_DISABLED=1`) rather than `STAGE != \"production\"`, and return `False` (not `True`) in the `except RedisError` branch",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`input_text` should not appear in the log at all, or at most as a length/hash if a content reference is genuinely required. ... build an explicit allowlisted dict for audit purposes instead of forwarding raw fields",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "should never log `input_text` at all \u2014 replace it with a non-reversible reference if needed (e.g., a length or a hash of the text for correlation), and restrict `metadata` to an explicit allow-list of known-safe fields",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` supplies `\"\"` as a silent default if the env var is missing... it just proceeds to compute `sha256(\"\" + applicant_id)`, an **unsalted** hash. ... Concrete fix: fail hard on a missing/empty salt rather than defaulting to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "silently defaults to the empty string... The function then silently degrades to an **unsalted** `SHA256(applicant_id)`. ... Concrete fix: fail closed rather than silently defaulting \u2014 e.g., raise a configuration error (`RuntimeError`) if `PII_SALT` is unset or empty",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21842,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1153761,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10431,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10431,
+        "cache_read_input_tokens": 29147,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10431,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10431,
+            "cache_read_input_tokens": 29147,
+            "input_tokens": 2,
+            "output_tokens": 2558,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2558,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly diagnose the RLS-owner-exemption root cause, cite the same commit and files, and recommend equivalent fixes and boot-time checks; Report 2 is more complete because it also adds the explicit application-level tenant_id filter as a second isolation layer, which Report 1 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the owner of a table is exempt from that table's RLS policies by default \u2014 RLS only applies to non-owner roles unless the table is additionally marked FORCE ROW LEVEL SECURITY... the app's actual runtime DATABASE_URL \u2014 in juniper/.env.example:1, juniper/docker-compose.yml:5, and juniper/infra/main.tf:2 \u2014 is: postgresql://juniper_owner:ownerpw@db:5432/juniper",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the table owner is exempt from a table's row-security policies by default \u2014 this exemption is independent of the BYPASSRLS/superuser attribute the migration comment reassures about \u2014 and this repo never applies ALTER TABLE appointments FORCE ROW LEVEL SECURITY... .env.example:1, docker-compose.yml:5, and infra/main.tf:2, which all set: DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit b2a23d2 \u2014 \"ROTA-214 run migrations from the api container on boot\"... changed the runtime DATABASE_URL role from juniper_app to juniper_owner in three places simultaneously: .env.example... docker-compose.yml... infra/main.tf",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit b2a23d2 \u2014 \"ROTA-214 run migrations from the api container on boot\" (2026-06-17) \u2014 introduced it... The diff changes exactly three files, each swapping juniper_app:apppw \u2192 juniper_owner:ownerpw in the same DATABASE_URL: .env.example:1 ... docker-compose.yml:5 ... infra/main.tf:2",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Revert juniper/.env.example, juniper/docker-compose.yml, and juniper/infra/main.tf so the long-lived API DATABASE_URL uses juniper_app (no DDL rights) again... Defense in depth \u2014 add FORCE ROW LEVEL SECURITY.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "revert DATABASE_URL to the juniper_app (least-privilege) role for the application runtime... In db/migrations/0003_rls.sql, add ALTER TABLE appointments FORCE ROW LEVEL SECURITY;",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "In backend/app/routes/appointments.py:16-19, add an explicit WHERE tenant_id = :tid filter (bound from claims[\"tenant_id\"]) as defense-in-depth, so isolation does not depend on exactly one mechanism (RLS) working",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Add a CI/migration-time assertion (or a lightweight startup check in db.py/deps.py) that fails fast if current_user (or SELECT rolname FROM pg_roles WHERE oid = pg_class.relowner for RLS-protected tables) has DDL/owner privileges on the app's own tables \u2014 i.e. assert the runtime connection is not the schema owner, or that FORCE ROW LEVEL SECURITY is set if it is.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add a boot-time assertion (e.g., in the app's startup hook, near where engine is constructed in backend/app/db.py) that queries pg_roles/has_table_privilege or checks rolbypassrls and table ownership for the connected role, and refuses to start (or pages) if the runtime role owns appointments or otherwise bypasses RLS.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r1",
+  "repeat": 1,
+  "task": "mt-auth-t1"
+}

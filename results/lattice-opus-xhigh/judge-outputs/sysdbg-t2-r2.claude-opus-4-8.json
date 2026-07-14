@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19107,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1335385,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7900,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7900,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7900,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7900,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1673,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1673,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations with essentially identical, correct conclusions; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "which still says `expected_label_field: label`... **File to change:** `config/scoring_config.yaml` \u2014 set `expected_label_field: gold_label`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In `config/scoring_config.yaml` it still says `expected_label_field: label`... `record.get(\"label\")` returns **`None`** for every record... **File to change to fix it:** `config/scoring_config.yaml`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** (dated 2026-06-17 13:00 UTC). Evidence: `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and 0.00 from 2026-06-17",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit **`53551e8` \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**... `pipeline/metrics/nightly_scores.csv` shows a clean step: 0.91/0.90/0.92 daily from 2026-05-20 through **2026-06-16**, then **0.00 starting 2026-06-17**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`score_one.py`/`score_single()` calls only `predict_category(normalize_simple(text))` and returns the predicted category \u2014 it never loads the eval set, never reads the config's `expected_label_field`, and never compares against a gold label... Correct reproduction: run the batch path itself \u2014 `python -m pipeline.score_batch`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`score_one.py` only runs `predict_category(...)` and prints the label \u2014 it never loads the eval set, never reads `expected_label_field`, and never performs the `prediction == gold` comparison... Run the batch path, not the single path: `python3 -m pipeline.score_batch`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Reverting the \"model\" changes nothing about the gold-field comparison, so accuracy would remain 0.00... It also violates the playbook's \"never flip the model/flag on a shared environment to see what happens\" guidance",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Rolling back the model\" is therefore a no-op that cannot move the score; accuracy would stay at 0.00 because the failure is in the eval harness's gold-field lookup, not in the predictions or any model... If a real model swap were involved, this plan would also risk degrading genuinely-good predictions",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

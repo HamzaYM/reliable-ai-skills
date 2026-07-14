@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12415,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0806747,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7963,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7963,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7963,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7963,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1352,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1352,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with substantively equivalent, well-grounded findings; Report 2 adds slightly more corroboration (checked for compensating tenant-isolation mechanisms, ast-based arity check) but this is not required by the expectations, so the two are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The raw SQL is `SELECT id, tenant_id, provider, starts_at, status, notes FROM appointments WHERE status = '{status.value}' AND to_tsvector('simple', notes) @@ plainto_tsquery('simple', :q) ORDER BY starts_at`. It has **no `tenant_id` predicate**. The function receives `tenant_id` (passed from the authenticated caller at `api.py:21`) but never uses it. So any authenticated tenant calling `/appointments/search` gets matching appointments belonging to **every tenant in the database**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is **no `tenant_id` predicate**. `tenant_id` is accepted as a parameter and passed in from `Depends(current_tenant_id)`, but it never appears in the WHERE clause or the bound-params dict (`{\"q\": q}`) \u2014 it is dead on arrival. So any authenticated user of any tenant calling `GET /appointments/search?q=<term>&status=booked` receives matching appointment rows ... for **every tenant in the database**, not just their own.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The PR made `filters` a required positional parameter but did not update `exports.py`, which still calls the function with two arguments. `nightly_export()` will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` for every tenant, breaking the nightly per-tenant CSV export job.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The PR changed `build_appointment_query(session, tenant_id)` \u2192 `build_appointment_query(session, tenant_id, filters)` and updated `list_appointments` to pass `filters or {}`, but did not update `exports.py`, which was not part of the diff. Calling `nightly_export` now raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` before any DB work happens. The nightly per-tenant CSV export is fully broken for every tenant.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "As currently wired it is **not** exploitable: `status` is typed `AppointmentStatus(str, Enum)` (`schemas.py`) with only `booked`/`cancelled`/`completed`, and FastAPI rejects any query value outside the enum with a 422 before the handler runs, so `status.value` can only ever be one of those three literals.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the `f\"WHERE status = '{status.value}'\"` f-string is a bad pattern but **not** currently exploitable, because FastAPI validates `status` against the `AppointmentStatus` enum so `status.value` can only be `booked`/`cancelled`/`completed` (both the security and correctness reviewers agreed it is non-exploitable today); it should still be bound as a parameter. The `q` parameter is correctly bound (`:q`) and safe.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

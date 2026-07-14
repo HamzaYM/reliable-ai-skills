@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 41887,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.19857990000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12993,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12993,
+        "cache_read_input_tokens": 148863,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 751,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 751,
+            "cache_read_input_tokens": 41391,
+            "input_tokens": 2,
+            "output_tokens": 947,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4741,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit a, b, and c with equally strong, well-sourced answers; Report 1 additionally verifies golden-file reproducibility by re-running the regeneration to confirm determinism (expectation d), which Report 2 does not do, making Report 1 the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The deselection is intentional cost-gating, not an accident to be \"fixed.\" So the teammate's step \"enable the live-test marker so nothing is skipped\" is wrong \u2014 I would leave `-m \"not live\"` exactly as is.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That is exactly why `pytest.ini` deselects them with `-m \"not live\"`. Keep them opt-in.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "My computed \"weight-only\" column showed confidence would stay `0.812/0.444/0.633` if only the weight had changed \u2014 so the confidence drop is a separate, unmentioned change... I flag the rounding change and confirm it's intended (or drop it) before touching the fixture.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Correct sequence: (a) get a decision on the confidence-rounding change \u2014 if it's unintended (it's unrelated to \"reweighting\"), revert that line so only the score column moves; (b) hand-verify the new numbers; (c) then regenerate the golden and re-run to green.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not cite docs/testing.md's figures \u2014 I re-measured them and both are stale",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would source both from the repo on this branch, not from docs/testing.md, because the tools contradict the doc",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Regenerate the golden deliberately (aware of the set-order/formatting quirks), read the resulting diff hunk-by-hunk, re-run twice to confirm determinism and green.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

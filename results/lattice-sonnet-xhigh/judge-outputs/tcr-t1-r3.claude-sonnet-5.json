@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21111,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0999027,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8517,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8517,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8517,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8517,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2369,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2369,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with proper citations; Report 2 is somewhat more precise on (e) by explicitly noting remediation is deferred to a single future-looking sentence, and also adds extra findings (internal contradiction on rule 3/hedging, remediation-description mismatch) with more granular line citations, making it marginally stronger overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "failures began at 14:03, but the first page/alert didn't fire until **14:50** (47 minutes later)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "failures began at 14:03, the first page/alert did not fire until 14:50 (47 minutes later)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "\"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "larkpay-comms/docs/sla-commitments.md states the contractual monthly uptime SLA is 99.9%, and \"any calendar month below 99.9% is a breach and owes service credits per the customer agreement...\" metrics/uptime-2026.csv shows April 2026 uptime at 99.77%, which is below that threshold \u2014 a contractual breach.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "larkpay-comms/docs/sla-commitments.md:3-4 sets a contractual monthly uptime SLA of 99.9%... larkpay-comms/metrics/uptime-2026.csv:6 shows April 2026 (the incident month) at 99.77% uptime \u2014 below the 99.9% threshold, i.e., a contractual breach.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "directly violates `larkpay-comms/docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" This must be rewritten to describe the process gap",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md:5` (\"Never assign blame to an individual\") is violated by draft lines 12-13: \"The outage was caused by the on-call engineer deploying an untested config change.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Style guide rule 3 requires customer communications to \"Lead with customer impact and remediation.\" Instead, the draft opens with a reliability/marketing claim... The document needs to be restructured to lead with what actually happened to customers and what's being done about it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it opens with a reputational/marketing claim about historical uptime (lines 3-4) before ever describing what happened to customers... The only remediation mentioned is a future one (...line 21) \u2014 nothing about what was done for customers already affected. The draft should be restructured to lead with what happened to customers and what has already been done for them.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r3",
+  "repeat": 3,
+  "task": "tcr-t1"
+}

@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 42751,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.19290419999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13611,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13611,
+        "cache_read_input_tokens": 109164,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1472,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1472,
+            "cache_read_input_tokens": 41289,
+            "input_tokens": 2,
+            "output_tokens": 1257,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4904,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently and correctly identify all three root causes with equivalent depth and specific file citations; they are comparable in quality, with Report 2 adding a bit more git-history detail and Report 1 adding a slightly more concrete remediation snippet.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "row-level security policies are never applied to superusers, and are skipped for a table's owner unless the table has `FORCE ROW LEVEL SECURITY` set \u2014 and grep confirms `FORCE ROW LEVEL SECURITY` is used nowhere in this repo. `cedar_owner` is both the superuser and the table owner, so it bypasses RLS unconditionally and silently",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Postgres row-level security is bypassed for the table owner (and for superusers) by default, unless the table is also altered with `FORCE ROW LEVEL SECURITY`. I confirmed via `grep -rn \"FORCE\"` that this clause is never used anywhere in the migration or bootstrap SQL. Since the app connects as `cedar_owner` (the table owner), every query it runs... silently ignores the `tenant_isolation` policy entirely",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `cedarline/.env` (and `.env.example`) so the application's `DATABASE_URL` points at `cedar_app`, not `cedar_owner`... Keep `cedar_owner` reserved strictly for schema-owning work: running `scripts/migrate.sh`... and one-time bootstrap. Introduce a separate variable (e.g. `MIGRATION_DATABASE_URL`) for that purpose so it's structurally impossible to accidentally point the running app at the owner role again",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Structurally, the two roles should be kept cleanly separated going forward: `cedar_owner`... should be used **only** for schema changes/migrations (DDL), never wired into the running application. `cedar_app` \u2014 a non-owner, RLS-bound, least-privilege role \u2014 should be the **only** role the FastAPI app... ever connects as at runtime.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`down -v` removes the named volume `cedar_pgdata`, which is where Postgres's entire cluster state lives \u2014 including the role catalog (`pg_authid`)... On the fresh container, Postgres re-runs its own initdb entrypoint, which only creates the role named by `POSTGRES_USER` (`cedar_owner`)... The `cedar_app` role was created out-of-band by manually running `db/bootstrap/create_app_role.sql`... and `reset-local-db.sh` never calls that script.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "per its own comment and per `cedarline/README.md` / `cedarline/docs/local-setup.md`, this is explicitly a **manual, one-time step**... it is not part of `db/migrations/` and is not invoked by any script automatically... `docker compose down -v` removes the named volume `cedar_pgdata`... Once that volume is deleted... Postgres reinitializes with only the default role from `POSTGRES_USER: cedar_owner`... `./scripts/migrate.sh` then only replays `db/migrations/*.sql`... it never re-runs `db/bootstrap/create_app_role.sql`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

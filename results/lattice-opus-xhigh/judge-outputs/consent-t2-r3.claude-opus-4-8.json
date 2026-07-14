@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25386,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.15942650000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9175,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9175,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9175,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9175,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2163,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2163,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is better: it correctly identifies consent_receipts as the proof-of-consent record wrongly deleted by erase_user, which Report 1 misses; both cover the other three expectations equally.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`consent_audit` \u2014 `retention_sweep.py:14-15`, `DELETE FROM consent_audit WHERE recorded_at < now() - interval '730 days'` ... **Yes \u2014 there is a table it must NOT modify: `consent_audit`.** `db/schema.sql:21-22` documents it explicitly: *\"Audit/history table: append-only. Rows are never updated or deleted; the table serves as tamper evidence.\"*",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**It must NOT modify `consent_audit`.** `db/schema.sql:21-28` declares it explicitly: \"Audit/history table: append-only. Rows are never updated or deleted; the table serves as tamper evidence.\" Deleting from it (line 15) destroys the tamper-evidence property \u2014 an append-only audit trail must never be purged by a retention sweep.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`deploy/crontab` contains exactly one scheduled entry \u2014 `deploy/crontab:2`, `0 4 * * * python3 jobs/daily_scoring.py`. There is **no entry for `jobs/retention_sweep.py`**. ... `TODO.md` states the intent directly: \"retention sweep: run manually for now / wire into scheduler later.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It contains a single entry \u2014 `0 4 * * * python3 jobs/daily_scoring.py` (`crontab:2`) \u2014 and nothing for `retention_sweep.py`. ... `TODO.md:1` states the intent plainly: \"retention sweep: run manually for now / wire into scheduler later.\" ... the scheduling mechanism must be live, and here it is not.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Something that should be preserved: `consent_receipts` (currently wrongly deleted at lines 7\u20138).** `db/schema.sql:13-19` documents it as a \"Hashed, PII-free record that consent was obtained\" ... deleting it destroys your own evidence that consent was validly obtained. ... raw user data (`events`, `user_data`) should cascade-delete, but the proof-of-consent receipt should survive.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`deploy/config.py:4-5` explicitly notes: \"staging and production DATABASE_URLs point at databases that share the `consent_versions` table.\" ... Use a genuinely separate, throwaway database whose `consent_versions` table is not shared with production. ... Never bypass the length check for a real publish",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`deploy/config.py:4-5` states staging and production \"point at databases that share the `consent_versions` table.\" ... do it against an isolated, disposable copy of the database (its own throwaway store that shares nothing with staging/production), with validation left ON. ... do not use `--test`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "consent-t2-r3",
+  "repeat": 3,
+  "task": "consent-t2"
+}

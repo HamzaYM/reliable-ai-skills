@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26868,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13569949999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6983,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6983,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 6983,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 6983,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2152,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2152,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both cover a/b/c equivalently, but Report 1 also recommends a global/env-level gate combined with the per-tenant value (expectation d), which Report 2 omits, making Report 1 more complete.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will be sent automatically**. When the setting was never touched, the `auto_send_reminders` key is absent from `tenant.settings`, so `tenant.settings.get(\"auto_send_reminders\")` returns `None`. The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, line 11\u201312:\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will** be sent automatically. For any clinic that never opened the setting, `auto_send_reminders` is absent from `tenant.settings`, so `.get(\"auto_send_reminders\")` returns `None`. The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py:11-12`: `if tenant.settings.get(\"auto_send_reminders\") is None: return True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "missing/null/malformed must mean **off**... I would change it so the default is off. Fix the resolver in `backend/app/feature_flags.py:11-13`:\n```python\ndef auto_send_reminders_enabled(tenant):\n    return bool(tenant.settings.get(\"auto_send_reminders\"))  # missing/None/malformed -> False",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A safe rollout for an action with external, hard-to-reverse side effects should be **opt-in** (default OFF)... I would change the missing-value branch in `backend/app/feature_flags.py:11-12` to return `False` when unset (i.e. `if ... is None: return False`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It was **copy-pasted** from the pre-existing `compact_calendar_view_enabled` resolver... the calendar-view flag is a low-risk UI preference where grandfather-on is appropriate, whereas the reminder flag triggers outbound messaging.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was arrived at by copying the existing `compact_calendar_view_enabled` helper... The pattern was written for a cosmetic, side-effect-free UI display preference (compact calendar), where defaulting ON is harmless. Reusing that default for a feature that sends real messages to patients carries the benign choice over to a context with materially different risk",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add an env-level master gate and AND it with the per-tenant value.** Currently there is no master switch anywhere (grep found only the per-tenant flag), so `reminders.py` has no kill-switch and no staged-rollout control. Combining a master env flag with the tenant setting gives both a rollout gate and a rollback affordance.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

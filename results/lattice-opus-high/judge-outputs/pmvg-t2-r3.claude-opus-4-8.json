@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28076,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1498395,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8012,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8012,
+        "cache_read_input_tokens": 17377,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8012,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8012,
+            "cache_read_input_tokens": 17377,
+            "input_tokens": 2,
+            "output_tokens": 2269,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2269,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and largely equivalent, but Report 2 edges ahead by explicitly re-running the comparison at least twice to confirm the regenerated golden is reproducible, which Report 1 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they POST to a remote endpoint (`https://api.scorelab-models.example.com/v1/score`) and assert on *that service's* response ... incur real per-call API cost (stated in the module docstring) ... The `-m \"not live\"` default is deliberate and correct; leave it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "each makes a real HTTP call to `https://api.scorelab-models.example.com/v1/score` using a `SCORELAB_API_KEY` ... would make every ordinary `pytest` invocation spend real money per call ... The deselection is intended behavior (an opt-in cost gate), not a defect to \"fix.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "then eyeball the resulting `expected_scores.json` diff to confirm every changed number is explained by the weight (and, if kept, precision) change and nothing else.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "before recapturing I trace every changed golden hunk to the intended change. The score hunks pass; the confidence hunks do not. I'd surface that second edit \u2014 either drop it from this PR ... rather than launder it into the project documentation.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would source both from the repo directly, not from `docs/testing.md` \u2014 that doc is stale on both counts.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite `docs/testing.md`'s figures; I'd re-measure and report the measured numbers, because both doc figures are already stale/wrong",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Only after the diff is intentional do I run `scripts/update_golden.py`, then re-run `pytest` in assert mode (no regen) at least twice to confirm the new fixture is stable. Note also `update_golden.py` iterates a `set`, so its JSON key ordering is nondeterministic across runs",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

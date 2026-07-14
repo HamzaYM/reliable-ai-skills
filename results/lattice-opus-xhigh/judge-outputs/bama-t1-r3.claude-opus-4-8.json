@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22076,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.284417,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 23666,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 23666,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 23666,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 23666,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 1791,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1791,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both are strong and nearly identical on the core analysis, but Report 1 additionally flags the snapshot's ~3-hour staleness and says it would re-check live limits, making it the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 1,800 tokens/call = **9,360,000 tokens** for a full run ... **northpeak (the default backend): 640,000 tokens remaining.** The run needs **~14.6\u00d7 that** ... Only ~355 of the 5,200 transcripts (640,000 / 1,800) would score before the window is exhausted.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5200 transcripts \u00d7 1800 tokens/call = 9,360,000 tokens (~9.36M) ... **northpeak (the default):** `remaining: 640,000`. That is **~8.72M short** of the 9.36M needed \u2014 it covers only ~355 of 5,200 transcripts",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**ridgeline (secondary): 10,800,000 tokens remaining.** The run needs 9,360,000 ... I would therefore route the heavy work to the provider with headroom:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**ridgeline (secondary):** `remaining: 10,800,000`. That **exceeds** the 9.36M need with ~1.44M headroom ... I'd run the batch script directly and point it at the secondary backend:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** launch on the default path. As configured, `run_nightly.sh` sends 9.36M tokens at northpeak, which has only 640k left ... I would therefore route the heavy work to the provider with headroom",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** run the default `scripts/run_nightly.sh`, because its default path targets northpeak ... Splitting the job \u2014 ~355 transcripts on northpeak and the rest on ridgeline via `--limit` \u2014 is possible but adds complexity for no benefit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is `generated_at` 2026-07-09T19:25:00Z and I'm treating now as 22:30Z, so it's **~3 hours old**. I'd re-pull current usage before committing 9.36M tokens rather than trusting a stale number",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

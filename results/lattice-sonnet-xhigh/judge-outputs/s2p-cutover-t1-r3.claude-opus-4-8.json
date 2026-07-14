@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 50307,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2491555,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12659,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12659,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12659,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12659,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 4254,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4254,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and cover the config, frontend, and OIDC issues equally; Report 1 edges ahead by firmly asserting the missing migration step and that the runbook claim is untrustworthy, whereas Report 2 hedges it as unverifiable/possibly out-of-band.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`ENABLE_DEBUG_TOOLBAR = \"true\"` (`infra/prod/app.auto.tfvars:2`) ... this key should be **omitted entirely** from prod ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` (`infra/prod/app.auto.tfvars:4`) ... must be **deleted entirely** for prod ... Both keys should be blank/absent in prod ... `LEGACY_BILLING_SECRET_ARN` ... it should be dropped.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"` ... must be `\"false\"` ... `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"` ... must be removed entirely from prod (left empty) ... either fix `record_shadow_observation` ..., or leave `SHADOW_SCORING_SINK` empty in prod",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "So the staging API URL is compiled statically into the JS bundle, not read at runtime ... Both `deploy-staging` ... and `deploy-prod` ... redeploy that **same** digest ... the bundle shipped to production is byte-identical to staging's, with `https://staging-api.example.com` permanently baked in. There is no `.env.production` in the repo",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "that literal staging URL gets compiled into the static JS bundle ... The one and only built image \u2014 with the staging API URL permanently baked into its frontend bundle \u2014 is then reused for both deploys ... the production frontend, once deployed, will ship JavaScript that calls `https://staging-api.example.com`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "deploy.yml` never invokes any migration step. `docs/prod-runbook.md:6` claims \"Database migrations are applied automatically during deploy,\" but nothing in the committed pipeline does this ... its claim can't be trusted at face value for this launch.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`infra/prod/main.tf:3` still has the **unedited** copy, `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` ... This must be corrected to its own `environment:production` condition, never OR'd with staging's",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` still passes `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` ... This must be corrected to `\"repo:acme-health/medislot:environment:production\"` before `infra/prod` is applied.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

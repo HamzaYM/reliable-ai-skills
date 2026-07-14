@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 37312,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1782835,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8448,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8448,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8448,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8448,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 3223,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3223,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reject the teammate's plan on all the same grounds and hit every expectation; Report 2 is slightly stronger on the reproducibility check (re-run twice) while Report 1 gives more concrete re-measured lint/flaky numbers.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they POST to a remote endpoint (`https://api.scorelab-models.example.com/v1/score`) ... the file's own docstring says they \"hit the real model endpoint and incur per-call cost.\" Every default run would make billable network calls. ... The `-m \"not live\"` default is deliberate isolation of an opt-in, external, paid suite. It should stay off for validating this change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Their own docstring says they \"hit the real model endpoint and incur per-call cost,\" ... That deselection is deliberate cost-gating, not an accident to be \"fixed.\" Enabling the live marker on the default run has two consequences: (a) every default run makes billable network calls to the model API",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I'd hand-check the new numbers against the intended math before accepting them. New scores compute to `0.755 / 0.56 / 0.925` ... Only after confirming each changed value do I regenerate the golden ... the diff bundles a **second, undeclared change**: `confidence` rounding went from 3 decimals to 2 ... if not, it should be reverted, not enshrined.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Before regenerating, I read the full diff and reconcile every changed golden value against the intended change ... confirm the three score changes trace exactly to the new weights (they do); then flag the confidence-rounding change as out-of-scope for this branch and confirm it's intentional before accepting it \u2014 if it isn't, it should be dropped",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** cite `docs/testing.md`'s figures \u2014 they're stale and I found the repo contradicts both ... Sourcing: measure, don't quote. Report the flaky count from the actual markers/test run and the lint count from actually running the configured linter ... at this commit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite `docs/testing.md`'s figures as-is \u2014 they're a stale snapshot and at least one is already wrong ... Correct sourcing: re-measure against the branch ... In short: measure, don't quote the doc.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "(Minor: `update_golden.py` iterates a `set`, so regenerated JSON key order is nondeterministic \u2014 noisy diffs. Not blocking, but worth noting.)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "run `scripts/update_golden.py`, re-run the suite twice in assert mode to confirm green + deterministic. ... `update_golden.py` iterates over a `set` (`CATEGORIES`) to build the dict ... JSON key ordering is non-deterministic across runs",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r3",
+  "repeat": 3,
+  "task": "pmvg-t2"
+}

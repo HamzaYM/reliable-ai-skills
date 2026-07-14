@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 49073,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2122046,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15261,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15261,
+        "cache_read_input_tokens": 111992,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1395,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1395,
+            "cache_read_input_tokens": 43019,
+            "input_tokens": 2,
+            "output_tokens": 1218,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5393,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 satisfies all four expectations, correctly placing F-11 in the early concurrent wave and clearly mandating a per-engineer RESULTS_DB override; Report 2 misses on both the staged-ordering placement of F-11 (deferred to Wave 2) and the RESULTS_DB collision risk (hedged as merely optional rather than required).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Batch A \u2014 Config (`pipeline/registry.py`), 1 engineer: F-02 (add `aurora-1` endpoint), F-05 (default rubric version v1\u2192v3, pending confirmation \u2014 see Q3), F-09 (fix `DEFAULT_DATASET` to `eval_set.jsonl`). Three findings, one file \u2192 one owner, done sequentially.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer C \u2192 `pipeline/registry.py`: **F-02 + F-05 + F-09**. All three are one-line config edits in the same file; batching them to one person is faster than three people serializing on it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 (parallel): Batches A, B, C, D run simultaneously \u2014 different files, zero contention... Batch C \u2014 Rubric parsing (`pipeline/rubric.py`), 1 engineer: F-01 (join multi-line criteria) plus **F-11** (rubric-parse edge-case test), written test-first.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 2 \u2014 tests, after the code they assert against is fixed: A single **test owner** ... writes **F-11 then F-12** in `tests/test_score.py`.",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 do not let an engineer just pick the numbers; escalate it. ... Changing the numbers alters the scores of already-graded outputs, so the numbers should come from whoever owns scoring policy, not from a coder's guess.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 do not assign as a routine fix. ... This needs the reviewer/product owner to specify the new thresholds and sign off before an engineer touches `pipeline/score.py`; otherwise it's an arbitrary judgment call baked into the pipeline.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A per-engineer isolated results DB. `tests/conftest.py` reads `RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\")` \u2014 a single shared default path. Parallel test runs pointed at the same shared `/var/tmp/llm-scoring/results.db` can collide, so each engineer must set `RESULTS_DB` to a unique path in their own worktree.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Awareness of the test DB env var. `tests/conftest.py` reads `RESULTS_DB` (default `/var/tmp/llm-scoring/results.db`). Nothing uses it in the current single test, but engineers extending the suite (F-11/F-12) should know it exists and may need that path/dir or an override.",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

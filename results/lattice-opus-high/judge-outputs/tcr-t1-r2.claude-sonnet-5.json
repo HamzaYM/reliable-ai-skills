@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 35416,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1881694,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12652,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12652,
+        "cache_read_input_tokens": 182558,
+        "inference_geo": "not_available",
+        "input_tokens": 10,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1406,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1406,
+            "cache_read_input_tokens": 40399,
+            "input_tokens": 2,
+            "output_tokens": 1343,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3572,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all five expectations with essentially equivalent substance and citations; Report 2 additionally flags an ADR review-gate omission and is marginally more precise on file paths, but for the scored expectations the two are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Per `incidents/OPS-412-timeline.md`, failures began 14:03 and the FIRST ALERT fired at 14:50 \u2014 a 47-minute detection gap, not \"minutes.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`OPS-412-timeline.md`: failures began 14:03, the FIRST ALERT fired at 14:50 (a 47-minute detection gap)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`incidents/OPS-412-timeline.md` states \"1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\" Customers lost transactions.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/incidents/OPS-412-timeline.md` states: \"During the window 1,284 transactions failed and required manual reprocessing; 37 were unrecoverable and refunded.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`metrics/uptime-2026.csv` shows `2026-04,99.77`. `docs/sla-commitments.md` states the contractual monthly SLA is 99.9% and \"Any calendar month below 99.9% is a breach and owes service credits per the customer agreement (credits scale with the depth of the breach).\" April at 99.77% is a breach, so affected customers are contractually owed service credits.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/metrics/uptime-2026.csv` shows April 2026 uptime of `99.77`. `larkpay-comms/docs/sla-commitments.md`: \"The contractual MONTHLY uptime SLA is 99.9%. Any calendar month below 99.9% is a breach and owes service credits per the customer agreement (credits scale with the depth of the breach).\" April (99.77%) is below 99.9%, so this incident put the month into contractual breach and affected customers are owed service credits.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Draft line 12\u201313: \"The outage was caused by the on-call engineer deploying an untested config change.\" `docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual.\" Reframe to a process/systemic cause.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md` rule 1: \"Never assign blame to an individual\" \u2014 this sentence pins the outage on a named role/person.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "It opens (lines 1\u20138) with \"99.99% uptime\u2026 does not change our commitment\" and self-praise ... Rule 3 requires leading with customer impact and remediation. The structure must be reordered to open with what happened to customers and what LarkPay is doing about it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`larkpay-comms/docs/customer-comms-style-guide.md` rule 3: \"Lead with customer impact and remediation.\" The draft leads with \"99.99% uptime \u2026 our commitment to reliability\" and only vaguely mentions failures. It must be reordered to lead with what happened to customers and what LarkPay is doing about it.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "tcr-t1-r2",
+  "repeat": 2,
+  "task": "tcr-t1"
+}

@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 13511,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.11438150000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7222,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7222,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7222,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7222,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1202,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1202,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 answered better: it caught all three expectations including the exports.py runtime breakage that Report 2 entirely missed.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Cross-tenant data leak in `search_appointments` (BLOCKER).** `backend/app/appointments.py`, `search_appointments(session, tenant_id, q, status)`. The function receives `tenant_id` but **never uses it**. ... There is no `tenant_id` predicate ... any authenticated caller from tenant A hitting `GET /appointments/search` receives matching appointments ... belonging to **every other clinic/tenant** in the database.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Cross-tenant data exposure \u2014 missing tenant scoping in `search_appointments`.** ... **Location:** `backend/app/appointments.py`, the raw SQL in `search_appointments` ... There is no `WHERE tenant_id = :tenant_id`. ... any authenticated user from **any** tenant can search across **every** clinic's appointments and read back `id`, `tenant_id`, `provider`, `starts_at`, `status`, and `notes`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`nightly_export` broken by the changed `build_appointment_query` signature (BLOCKER, regression).** `backend/app/db.py` changed the signature to `build_appointment_query(session, tenant_id, filters)` with **no default** for `filters`. The diff updated `appointments.py` ... but did **not** touch `backend/app/exports.py`, which still calls `build_appointment_query(session, tenant_id)` (2 args) inside `nightly_export`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Right now this is **not exploitable**: `status: AppointmentStatus` is a validated str-Enum with fixed values (`booked`/`cancelled`/`completed`), so FastAPI returns 422 for anything else and `.value` can only be a safe literal.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "as written it is **not** exploitable through the API, because `status` is typed as the `AppointmentStatus` enum (`schemas.py`: `booked`/`cancelled`/`completed`) and FastAPI validates the query param against that enum before the handler runs, so `status.value` can only be one of three fixed literals. ... The `q` value is safely bound via `:q`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 39348,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.189948,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15081,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15081,
+        "cache_read_input_tokens": 69980,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3407,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3407,
+            "cache_read_input_tokens": 40827,
+            "input_tokens": 2,
+            "output_tokens": 1401,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4785,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent across items 1, 3, and 4, but Report 2 is more decisive on item 2 \u2014 it explicitly commits to fail-closed behavior for both the stage bypass and the Redis-failure path, while Report 1 hedges the Redis-failure case as a 'policy call' rather than stating it should deny.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "BadRequestError \u2014 the request itself is malformed/invalid (4xx)... Not appropriate \u2014 should surface, not fail over. ContentPolicyError \u2014 the primary flagged the content... Not appropriate \u2014 should surface and stop. AuthError \u2014 a credential/configuration failure on the primary... Not appropriate \u2014 should surface. ... Concrete fix \u2014 fail over only on transient classes and re-raise the rest: TRANSIENT = (RateLimitError, RequestTimeoutError, ServerError)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "BadRequestError \u2014 definitively non-retryable; failing over is wrong... AuthError \u2014 non-retryable config problem; failover is wrong... ContentPolicyError \u2014 the primary vendor refused the content; failing over is the most dangerous case... Fix: replace the bare catch with an explicit non-retryable denylist and only fail over the rest: NON_RETRYABLE = (BadRequestError, AuthError, ContentPolicyError)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Assessment: during a redis outage all traffic passes unthrottled, removing vendor protection exactly when things may already be degraded. Whether fail-open is acceptable is a policy call, but here it's silent (no log/metric), so an outage would be invisible.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Path D \u2014 incr raises RedisError \u2192 returns True (allow). This fails open when the backing store is down \u2014 the limiter silently stops enforcing and unbounded, uncapped calls flow to the vendors. Guardrail 3 requires fail-closed. Fix: except RedisError: return False. ... Path A ... fails open in every non-production environment and gates on an \"is this production\" name check \u2014 precisely what Guardrail 3 prohibits. ... Fix: fail closed by default; enable limiting everywhere and disable only via a narrow explicit override",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Concrete fix: never log input_text (drop it, or log only a non-reversible digest and/or a length/token count); log the pseudonymized id ... restrict metadata to an explicit allowlist of non-PII fields",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fix: log the pseudonymized id (pseudonymize(record.applicant_id)), never log input_text verbatim \u2014 drop it or store only a hash/length/truncation, and replace the metadata pass-through with an explicit allowlist of safe keys, dropping anything not on it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "if PII_SALT is unset (or empty), the salt silently defaults to \"\", so the output is an unsalted sha256(applicant_id) with no error or warning. ... Concrete fix: fail fast if the salt is missing/empty (raise RuntimeError(\"PII_SALT required\"))",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "when PII_SALT is unset it silently falls back to an empty string, producing an unsalted SHA-256 of the raw applicant id... Fix: fail closed \u2014 salt = os.environ[\"PII_SALT\"] ... if not salt: raise RuntimeError(\"PII_SALT is required for pseudonymization\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

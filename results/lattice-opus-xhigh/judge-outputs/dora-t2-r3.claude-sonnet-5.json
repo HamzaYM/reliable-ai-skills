@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 34214,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1845254,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11999,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11999,
+        "cache_read_input_tokens": 145208,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1097,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1097,
+            "cache_read_input_tokens": 40051,
+            "input_tokens": 2,
+            "output_tokens": 967,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4320,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are equally thorough and hit all four expectations with solid grounding; Report 1 adds slightly more caveats (SMS testing, attribution policy nuance) but substantively the two are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "app/security/config.py:3-4 reads # Two-factor authentication is opt-in per clinic. and TWO_FACTOR_DEFAULT = False ... app/routers/visits.py contains only list_visits(...) returning [] and the comment # TODO: pdf export (line 11). There is no PDF export.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "app/security/config.py sets TWO_FACTOR_DEFAULT = False with the comment Two-factor authentication is opt-in per clinic. ... app/routers/visits.py has only list_visits() returning [] and the literal marker # TODO: pdf export.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "after_scheduling.png, opened, renders BILLING / INVOICES. ... captures.json corroborates this: before_scheduling.png -> route: /schedule, but after_scheduling.png -> route: /billing/invoices.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the after image, after_scheduling.png, is not the scheduling calendar at all - captures.json records its route as /billing/invoices, and the image itself literally reads BILLING / INVOICES",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "after_export.png is referenced but does not exist (line 26 of the doc, ![after](img/after_export.png)). ... unused_capture_07.png exists but is referenced nowhere.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "after_export.png - referenced (line 26, Export your visit history) but the file does not exist. ... unused_capture_07.png - exists in the repo but is referenced nowhere in the draft.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The footer Highlights draft assembled with AI assistance. (line 33).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Footer: Highlights draft assembled with AI assistance. (line 33) - an internal drafting note; it should not be in a message sent to customers.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

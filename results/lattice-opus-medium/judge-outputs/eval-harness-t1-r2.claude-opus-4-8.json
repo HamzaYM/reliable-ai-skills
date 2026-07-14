@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25814,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1430525,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7987,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7987,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7987,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7987,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2018,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2018,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and nearly equivalent, but Report 1 edges ahead by explicitly proposing renormalization over surviving axes for relevance/tone versus holding out accuracy, satisfying expectation (d) that Report 2 misses.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`composite()` in `grader/aggregate.py` converts that `None` into a **0.0** and includes it in the weighted sum (lines 9\u201312) ... **In form it is completely indistinguishable from a fully-scored record**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the missing axis is silently coerced to zero ... **The value written is a fully-formed, lower composite number that is completely indistinguishable in form from a genuinely-scored record** \u2014 same three columns, same float type, no null, no error flag, no marker.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A zero is a real, comparable value; a missing score is not, and conflating them corrupts every mean the leaderboard computes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Coercing a *missing measurement* to `0.0` conflates \"we could not measure this axis\" with \"this axis scored zero.\" ... One dropped axis call drags an agent's mean composite down",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If the load-bearing axis (accuracy) failed:** do not emit a comparable composite at all. Write the record as **degraded/incomplete** \u2014 either omit it from the CSV that the leaderboard consumes, or write it with an explicit status column",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "For the gate axis specifically, a failed **accuracy** call should never be scored as a hard fail; it should be flagged for retry/re-scoring, since it is a measurement gap, not a failing reply.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If only an embellishment axis (relevance or tone) failed** but accuracy succeeded: the guide's \"renormalize over what succeeded\" applies \u2014 recompute the composite over just the surviving weights (rescale so they sum to 1) ... rather than treating the missing axis as a 0.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

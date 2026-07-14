@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 38627,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.18398149999999996,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9260,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9260,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9260,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9260,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 3107,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3107,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy all four expectations; they are comparable, with Report 2 slightly more explicit about the deliberate revert and grounding stakeholder sign-off in the prior attempt.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Commit `1712565` shows a prior Edgerunner migration (PLAT-31) was shipped and reverted because \"serverless isolates cannot hold the Postgres pool\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This has literally been done once before in this repo (commits `454a21f` and `597777b`, ticket PLAT-31)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565` shows a prior Edgerunner migration (PLAT-31) was shipped and reverted because \"serverless isolates cannot hold the Postgres pool\" \u2014 `/reports/monthly` exhausted Postgres `max_connections` in production (\"`FATAL: too many connections`\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565`'s message states: \"Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Retire the Cargobox path: remove/replace `deploy/cargobox.yaml` and the container-oriented `Dockerfile`/`uvicorn --host 0.0.0.0 --port 8080` entrypoint once Edgerunner is proven stable ... Re-introduce an Edgerunner entry shim analogous to the one added in commit `454a21f` (`backend/serverless_handler.py`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The revert put this back deliberately; re-migrating without first fixing the pooling story ... reintroduces the identical bug",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Given the prior real production incident, this should not be re-attempted as a quiet code change \u2014 it warrants explicit sign-off from whoever owns production reliability for this service.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "this is a decision for whoever owns the system, made with the prior incident in hand \u2014 not a silent re-attempt. I'd involve: Whoever owns `PLAT-31` / the team that authored the original revert",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

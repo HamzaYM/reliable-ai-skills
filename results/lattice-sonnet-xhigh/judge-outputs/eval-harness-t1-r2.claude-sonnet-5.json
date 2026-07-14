@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 41858,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1950135,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14125,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14125,
+        "cache_read_input_tokens": 110435,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1415,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1415,
+            "cache_read_input_tokens": 41859,
+            "input_tokens": 2,
+            "output_tokens": 1217,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4752,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit (a), (b), and (c) equally well, but only Report 1 satisfies (d) by explicitly proposing different handling \u2014 renormalize over succeeded axes for relevance/tone failures vs. withhold the composite entirely for accuracy failures \u2014 making it the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A missing axis is silently coerced to `0.0` and folded into the weighted sum exactly as if the model had genuinely scored that axis \"0/10.\"... A degraded record is byte-for-byte indistinguishable in shape from a fully-scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`composite()` treats a missing/`None` axis score as exactly **0.0** and folds it into the weighted sum like any other real score... a row where one axis call failed is byte-for-byte the same *shape* as a row where all three calls succeeded.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Two things are conflated here that shouldn't be:\n- A model that actually rates a reply 0/10 on an axis (a real, terrible, comparable score).\n- A missing/unknown score because the call to grade that axis never completed... an agent's rank can currently drop purely because of transient grading-infrastructure flakiness (a dropped API call), with no relation to the actual quality of that agent's reply.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Scoring the failed axis as `0.0` doesn't mean \"no data,\" it means \"worst possible score on that axis,\" and that gets baked permanently into the composite with no marker that anything went wrong... The three agents with a suspicious low row (`agent-02`, `agent-03`, `agent-05`) are pushed to the bottom of the leaderboard, below `agent-01`, purely because `counts[agent_id]` in `leaderboard.py:15` treats that zeroed-out row as a fully legitimate observation",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If `accuracy` fails (the load-bearing gate axis): do not compute or write a composite number at all for that record. Write a row (or record) explicitly marked as degraded/incomplete \u2014 e.g., an added status/reason column, or the composite field left empty/null rather than populated with a plausible-looking float",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "a missing accuracy value in particular should not be silently averaged \u2014 the row shouldn't get a composite score at all until it's actually been scored, since fabricating one materially misrepresents the reply as having failed the gate.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "A failed relevance or tone call, being genuinely non-critical per the README's own framing, could reasonably be renormalized over the axes that did succeed (keeping the result flagged as complete, per project documentation)... If relevance or tone fails (non-load-bearing \"embellishments,\" per the README): renormalize the composite over the weights of the axes that did succeed (e.g., if tone fails, composite = (relevance\u00b70.3 + accuracy\u00b70.5) / 0.8) rather than defaulting the missing axis to 0.0, and the record can be flagged as complete",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

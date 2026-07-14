@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18400,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.13194850000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8016,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8016,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8016,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8016,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1559,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1559,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations; Report 1 is slightly stronger for explicitly analyzing and correctly retracting the SQL-injection concern, but they are comparable on the graded criteria.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Cross-tenant patient data leak \u2014 `rosterly/backend/app/appointments.py`, `search_appointments()` ... `tenant_id` is accepted as a parameter but never appears in the SQL text or the bound-params dict. Every other read path in this codebase ... filters explicitly by `Appointment.tenant_id == tenant_id`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Cross-tenant data exposure \u2014 `search_appointments` never filters by tenant. File: `backend/app/appointments.py`, the `search_appointments` function ... `tenant_id` is accepted as a function argument but is never referenced in the WHERE clause.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Breaking change to the nightly export job \u2014 `rosterly/backend/app/db.py:7`, `build_appointment_query()` ... breaks the untouched caller in `rosterly/backend/app/exports.py:9`. The signature changed from `build_appointment_query(session, tenant_id)` to `build_appointment_query(session, tenant_id, filters)` with **no default value** for `filters`. `exports.py`'s `nightly_export()` \u2014 not touched by this PR \u2014 still calls `build_appointment_query(session, tenant_id)`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Breaking, unguarded signature change to `build_appointment_query` crashes the nightly export job. File: `backend/app/db.py` line 7 ... `filters` has no default. `backend/app/exports.py` (completely untouched by this PR ...) still calls `build_appointment_query(session, tenant_id)` with only two positional arguments at line 9 of `nightly_export()`. This will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`status` is typed `AppointmentStatus` in `api.py`, a closed `str, Enum` (`schemas.py`) with only `booked`/`cancelled`/`completed` as members ... so there is no live SQL-injection path through the real endpoint today ... on the evidence I could gather it is not, by itself, a merge-blocking vulnerability.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

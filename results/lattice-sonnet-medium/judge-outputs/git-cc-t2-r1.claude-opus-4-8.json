@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29356,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1593335,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8879,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8879,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8879,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8879,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2278,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2278,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent depth and correct git reasoning; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`main`. The weighted-scorer work that `feat/pairwise-metric` was built on top of has already landed on `main`... there's no reason to target `feat/weighted-scorer` since that branch's work is already upstream",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`main`. Per project documentation's dead-base rule, every PR should target the trunk, not another feature branch... There is no reason to stack this PR on `feat/weighted-scorer`; its content is already on `main`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "branched from the tip of `feat/weighted-scorer`... `main` advanced independently to `1971f08` \"Refactor scorer for weighted metrics (#42)\"... it was squash-merged into `main` as PR #42, so `main` now has the same *code* but under a brand-new commit hash with no ancestry link back to `d6fdbc3`/`2d3029b`/`ac9d505`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git merge-base --is-ancestor feat/weighted-scorer main` returns false: `feat/weighted-scorer`'s commits are **not** ancestors of `main`... it landed as an independent, presumably squashed/rewritten commit (PR #42) rather than by merging `feat/weighted-scorer` itself",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the merge-base diff... 21 lines across three files, additionally including the full `scorer.py` rewrite... That extra 16 lines is **not** pairwise-metric work; it's the already-shipped weighted-scorer refactor being redundantly replayed because `feat/pairwise-metric`'s branch history still forks from the pre-refactor base (`65204ad`) rather than from `main`'s current tip",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Three-dot... 3 files, 21 insertions, including the entire `feat/weighted-scorer` payload (the `overlap()` function, the `WEIGHTS` dict, and the rewritten `scorer.py`... carried along because `feat/pairwise-metric` was branched on top of it before it merged into `main` on its own path",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` (replay only `7b2e100` and `1bfecb6` on top of `main`... After rebasing, re-verify the diff is exactly the 5-line pairwise change: `git diff main feat/pairwise-metric --stat` should match `git diff main...feat/pairwise-metric --stat`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` to explicitly drop the now-redundant W1\u2013W3 commits... re-verify... `git diff main...feat/pairwise-metric` should drop back to the 2-file/5-line diff... and `git log main..feat/pairwise-metric` should show only the X1/X2-equivalent commit(s) with `main`'s `1971f08` in its ancestry",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

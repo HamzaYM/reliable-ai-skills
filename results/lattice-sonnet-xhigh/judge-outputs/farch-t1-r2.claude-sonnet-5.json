@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33623,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1297977,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10193,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10193,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10193,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10193,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 3629,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3629,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid commit citations and quoted revert reasoning; Report 2 is marginally stronger on expectation (c) with a direct quote (\"back to Cargobox container deploy\") and slightly more explicit dates/timeline tying the revert to current state, but the difference is minor.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "git log --oneline in carelog-api/ shows commits 454a21f (\"Add Edgerunner serverless deploy for API (PLAT-31)\"), 597777b (\"Open a dedicated Postgres connection per request...\"), and 1712565 (\"Revert Edgerunner migration...\"), all under ticket PLAT-31.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "git log --oneline in carelog-api shows this migration was already attempted (454a21f \"Add Edgerunner serverless deploy for API (PLAT-31)\", 597777b \"Open a dedicated Postgres connection per request...\"), and then reverted (1712565, dated 2026-04-21)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The revert commit message (git show 1712565) states the concrete failure: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production in production... Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "then reverted (1712565, dated 2026-04-21) with the commit message: \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the codebase already contains a documented production incident (PLAT-31) showing that shape of the change fails. Per the project documentation guidance, the fact that this was tried and reverted before is itself information the decision-owner needs",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "with the commit message: \"...back to Cargobox container deploy.\" ... The repo's own history shows the identical migration was already built, shipped, and reverted after a production outage",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Whoever owns PLAT-31 (the platform/infra team that filed and worked that ticket) \u2014 they have the actual production incident context (error rates, connection-limit thresholds observed) that isn't captured in this repo beyond the revert commit's summary.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "whoever authored or is closest to ticket PLAT-31 (all three migration-related commits reference it explicitly), since they have first-hand context on what was tried and why it failed. Leadership pushing for the cost cut should see the revert commit message directly before signing off on a timeline",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

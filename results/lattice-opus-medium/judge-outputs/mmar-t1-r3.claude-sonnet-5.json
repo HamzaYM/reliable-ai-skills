@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15507,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10085270000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8467,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8467,
+        "cache_read_input_tokens": 65649,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1120,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1120,
+            "cache_read_input_tokens": 36498,
+            "input_tokens": 2,
+            "output_tokens": 728,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1795,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 is better: it catches all three expectations, including the exports.py/nightly_export breakage from the required filters parameter, which Report 2 misses entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The function receives `tenant_id` but **never uses it**. Its raw SQL filters only on `status` and a full-text match on `notes`... There is no `tenant_id` predicate",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "There is no `WHERE tenant_id = :tenant_id`. The endpoint receives the caller's `tenant_id` (via `Depends(current_tenant_id)`) and passes it into `search_appointments(session, tenant_id, q, status)`, but the function never uses it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`backend/app/db.py` changed the signature to `build_appointment_query(session, tenant_id, filters)` with **no default** for `filters`... did **not** touch `backend/app/exports.py`, which still calls `build_appointment_query(session, tenant_id)` (2 args) inside `nightly_export`... this is a hard `TypeError` at runtime",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Right now this is **not exploitable**: `status: AppointmentStatus` is a validated str-Enum with fixed values (`booked`/`cancelled`/`completed`), so FastAPI returns 422 for anything else and `.value` can only be a safe literal.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "as written it is **not** exploitable through the API, because `status` is typed as the `AppointmentStatus` enum (`schemas.py`: `booked`/`cancelled`/`completed`) and FastAPI validates the query param against that enum before the handler runs",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r3",
+  "repeat": 3,
+  "task": "mmar-t1"
+}

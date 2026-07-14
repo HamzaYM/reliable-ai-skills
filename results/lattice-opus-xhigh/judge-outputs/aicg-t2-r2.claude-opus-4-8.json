@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22299,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.19064750000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12913,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12913,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12913,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12913,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1803,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1803,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations with correct findings and concrete fixes; differences are stylistic rather than substantive.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`except Exception` catches **every** exception class the primary can raise ... it does not distinguish retryable from non-retryable failures ... `BadRequestError` \u2014 **Inappropriate.** ... `ContentPolicyError` \u2014 **Inappropriate and risky.** ... `AuthError` \u2014 **Inappropriate.** ... **Concrete fix:** catch only the transient classes and fall over on those; re-raise the rest",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Because the handler catches bare `Exception`, **all six are treated identically** ... **Inappropriate to fail over (definitively non-retryable \u2014 should be a denylist that re-raises):** `BadRequestError` ... `AuthError` ... `ContentPolicyError` ... **Concrete fix:** classify errors with an explicit denylist ... and re-raise the non-retryable ones instead of failing over",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A \u2014 non-production bypass** \u2192 returns `True` when `os.environ.get(\"STAGE\") != \"production\"` ... **Path D \u2014 Redis error** \u2192 `RedisError` \u2192 returns `True`. **Assessment:** fail-open when the backend is unavailable ... invert the environment default so unknown/unset `STAGE` is treated as production ... for a cost/abuse control, prefer fail-closed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A \u2014 `STAGE != \"production\"` \u2192 `return True`** ... **fails open by default and gates that on an environment-name check** ... **Path C \u2014 ... `redis.incr` raises `RedisError` \u2192 `return True`** ... **fails open** ... invert the default to fail-closed and don't key it on the environment name; on backend error, deny ... `return False # fail closed`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`record.input_text` \u2014 the **entire intake document verbatim** ... the full body of sensitive personal data is dumped into logs ... **Concrete fix:** ... drop `input_text` entirely ... and whitelist non-PII metadata fields rather than dumping the whole dict",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`input_text` is logged verbatim.** ... a direct PII leak ... Fix: drop it, or log only `sha256(input_text)` plus a length, not the text ... **`metadata` is dumped wholesale.** ... keep PII out of logs by **allowlist, not denylist**. Fix: log only an explicit set of known-safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "it **defaults to the empty string** when unset ... if `PII_SALT` is missing or empty, the function silently computes an **unsalted** `sha256(applicant_id)` ... **Concrete fix:** require the secret and fail loudly instead of defaulting",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the `get(..., \"\")` default makes `salt == \"\"`, so the function silently computes `sha256(applicant_id)` \u2014 an **unsalted hash** ... it **fails silently open** rather than failing closed ... **Concrete fix:** require the salt and fail closed if it's missing",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

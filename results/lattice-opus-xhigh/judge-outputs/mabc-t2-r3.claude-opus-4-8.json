@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 46028,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.22146949999999996,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10557,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10557,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10557,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10557,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 4042,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4042,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover grouping, ordering, and the F-06 escalation equally well, but Report 2 additionally nails the shared RESULTS_DB collision risk and mitigation (expectation d) that Report 1 only mentions in passing, making Report 2 the stronger plan overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Same-file contention on `pipeline/registry.py`. F-02, F-05, F-09 all edit constants in this file \u2014 trivial individually, but three parallel patches to a 3-line file conflict; give it to one owner.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Batch A \u2014 Config (`registry.py`): F-02, F-05, F-09.** All three edit the same file (`MODEL_ENDPOINTS`, `DEFAULT_RUBRIC_VERSION`, `DEFAULT_DATASET`); one owner does them in series.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Because owners hold disjoint files, the four fix-streams (A/B/C/D) run fully in parallel ... B does F-02/F-05/F-09 ... C writes F-11 only after F-01.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 \u2014 four fully-parallel batches, one owner each (files are disjoint, so no collisions): ... Batch A \u2014 Config (`registry.py`): F-02, F-05, F-09.** All three edit the same file ... one owner does them in series. ... Batch C \u2014 Rubric (`rubric.py`): F-01, paired with F-11.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 a scoring-policy change, not a mechanical fix. \"Tighten `PARTIAL_CREDIT_THRESHOLDS`...\" gives no target values. Whatever numbers an engineer picks will shift every borderline score in production, so it needs an owner/product decision on the target thresholds (and a test pinning them) before it's coded.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 do not hand out as a blind fix; escalate for a decision.** \"Tighten the thresholds so borderline answers score lower\" is a **user-facing scoring-behavior/quality-policy change**, not a mechanical bug, and it specifies **no target values**. ... This needs an owner of eval quality to pick new thresholds and validate them",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Shared test-resource collision.** `tests/conftest.py:4` defaults `RESULTS_DB` to a single path `/var/tmp/llm-scoring/results.db`. Multiple engineers running `pytest` on the same machine hit the *same* DB, cross-contaminating parallel runs. Mitigation ... each worktree exports its own `RESULTS_DB`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

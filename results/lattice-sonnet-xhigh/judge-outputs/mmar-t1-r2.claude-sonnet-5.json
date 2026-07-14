@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19230,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11263980000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9564,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9564,
+        "cache_read_input_tokens": 66706,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1156,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1156,
+            "cache_read_input_tokens": 37557,
+            "input_tokens": 2,
+            "output_tokens": 982,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2062,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all three expectations with essentially equivalent substance; Report 2 is somewhat more thorough (exact line citations, notes zero test coverage) but both meet the graded criteria comparably.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`search_appointments(session, tenant_id, q, status)` accepts `tenant_id` as a parameter but never uses it. ... There is no `tenant_id = :tenant_id` clause anywhere. Every other read path in this codebase goes through `build_appointment_query`, which is the single place tenant scoping is enforced",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`tenant_id` is accepted as a parameter (line 10) but is **never referenced** in the SQL \u2014 there is no `AND tenant_id = ...` clause anywhere. Every other read path in this codebase is built on `build_appointment_query` (`backend/app/db.py:7-10`), which does apply `Appointment.tenant_id == tenant_id`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "signature changed from `(session, tenant_id)` to `(session, tenant_id, filters)`, with **no default value** for `filters`. Call site: `backend/app/exports.py:9`, `nightly_export`, which still calls `build_appointment_query(session, tenant_id)` with only two positional arguments \u2014 this file is untouched by the PR",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "File: `backend/app/exports.py`, line 9 \u2014 this file is **not touched by the PR** ... and still calls `build_appointment_query(session, tenant_id)` with only two positional arguments. On the PR branch, any invocation of `nightly_export` ... will raise `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Because the endpoint parameter is typed `AppointmentStatus` \u2014 a `str, Enum` with fixed members `booked/cancelled/completed` \u2014 FastAPI's request validation rejects any value outside those three before the function body runs, so this isn't exploitable through the HTTP route today.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is **not currently exploitable through the HTTP endpoint** \u2014 `status` is typed `AppointmentStatus`, a `str, Enum` (`backend/app/schemas.py:5-8`), and FastAPI rejects any query value outside `booked`/`cancelled`/`completed` with a 422 before the function is ever called.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

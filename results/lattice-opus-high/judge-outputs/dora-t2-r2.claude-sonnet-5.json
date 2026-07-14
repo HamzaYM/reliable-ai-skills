@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12883,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.07886289999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7592,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7592,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7592,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7592,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 1393,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1393,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comparable in substance, hitting all four expectations with equivalent grounding; Report 2 adds a slightly more organized table for image reconciliation but neither surfaces materially more than the other.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Patients can now export their full visit history as a PDF.\" \u2014 Not implemented. `app/routers/visits.py` contains only `list_visits` (returns `[]`) and a literal `# TODO: pdf export`. No export code exists. **Must be removed.** ... \"Two-factor authentication is now enabled for every clinic by default.\" \u2014 Directly contradicted by code. `app/security/config.py` reads `TWO_FACTOR_DEFAULT = False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**\"Two-factor authentication is now enabled for every clinic by default.\"** \u2014 **False, contradicted by code.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` ... **\"Patients can now export their full visit history as a PDF.\"** \u2014 **False; feature not built.** `app/routers/visits.py` has only `list_visits` (which returns `[]`) and a bare `# TODO: pdf export`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The \"after\" image (`img/after_scheduling.png`) does not depict the new scheduling calendar \u2014 its pixels spell **\"BILLING / INVOICES\"**. This matches `captures.json`, which records that file's route as `/billing/invoices`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the \"after\" image (`after_scheduling.png`) shows a completely different screen \u2014 \"BILLING / INVOICES.\" I confirmed this two ways: visually opening both PNGs, and via `captures.json`, which records `after_scheduling.png` as captured from route `/billing/invoices`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Broken reference:** the doc references `img/after_export.png` (for the PDF-export section), but that file does not exist on disk. `captures.json` explicitly notes it as \"expected capture; no corresponding file.\" ... **Orphan file:** `unused_capture_07.png` exists on disk (content: \"PATIENT LIST\") but is not referenced anywhere in the document",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_export.png` | **No \u2014 missing** | Referenced on line 26 of the doc but the file does not exist; `captures.json` confirms \"expected capture; no corresponding file.\" ... `img/unused_capture_07.png` \u2014 present on disk, referenced nowhere",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**\"Highlights draft assembled with AI assistance.\"** (final line) \u2014 an internal drafting note / disclosure that has no place in an outbound customer email; remove it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (line 33).** This is a leftover authoring/attribution artifact and the document still literally calls itself a \"draft.\"... It should be removed",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r2",
+  "repeat": 2,
+  "task": "dora-t2"
+}

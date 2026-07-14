@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 10737,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0761969,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8133,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8133,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8133,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8133,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 974,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 974,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 is more complete: it independently identifies the exports.py breaking-change regression (expectation b), which Report 1 misses entirely despite mentioning exports.py only as a comparison point for tenant scoping.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`search_appointments(session, tenant_id, q, status)` receives `tenant_id` as an argument but never uses it. ... There is no `AND tenant_id = :tenant_id` clause anywhere.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`tenant_id` is passed into `search_appointments(session, tenant_id, q, status)` but is **never referenced in the SQL** \u2014 there is no `tenant_id = :tenant_id` predicate anywhere.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "The PR changes `build_appointment_query`'s signature from `(session, tenant_id)` to `(session, tenant_id, filters)`, with `filters` as a **required** positional argument (no default value). ... `backend/app/exports.py` \u2014 the nightly per-tenant CSV export job \u2014 is **not touched by this PR** and still calls `build_appointment_query(session, tenant_id).all()` with only two arguments. ... once merged, every invocation of `nightly_export`... raises `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I verified it is **not currently exploitable**: `status` is typed as `AppointmentStatus` (`backend/app/schemas.py`), a `str, Enum` restricted to exactly `booked`, `cancelled`, `completed`. ... I'm listing this as a defect to raise, but not as an independent blocker, since today it cannot actually be exploited",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`status` is typed as `AppointmentStatus`, a closed `str, Enum` (`backend/app/schemas.py`) with only `booked`/`cancelled`/`completed` as members, and FastAPI validates/rejects any other value before the request reaches this function \u2014 so this specific interpolation is not currently exploitable for injection via the API.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r2",
+  "repeat": 2,
+  "task": "mmar-t1"
+}

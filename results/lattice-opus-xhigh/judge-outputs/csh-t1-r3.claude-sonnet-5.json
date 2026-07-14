@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20587,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09757570000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8255,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8255,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8255,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8255,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2344,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2344,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent grounding; Report 2 is marginally more thorough (flags malformed-value handling and proposes AND-ing a master switch with per-tenant value) but the difference doesn't affect expectation coverage \u2014 the two are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will be sent** automatically. The decision is made in `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, line 11\u201312... if tenant.settings.get(\"auto_send_reminders\") is None:  # line 11\\n return True   # line 12 \u2014 decides the unset case",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Yes \u2014 reminders **will be sent automatically**. The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`... if tenant.settings.get(\"auto_send_reminders\") is None:   # line 11\\n return True    # line 12",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Where I'd change it: `backend/app/feature_flags.py`, line 12 \u2014 return `False` instead of `True` for the unset case (or collapse the body to `return bool(tenant.settings.get(\"auto_send_reminders\"))`, which yields `False` when absent).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change it. Invert the `None` branch in `backend/app/feature_flags.py:11\u201312` so an unset value returns `False` (e.g. `if not tenant.settings.get(\"auto_send_reminders\"): return False`...",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Git history shows the `is None \u2192 return True` pattern was introduced in commit `25509a7` (SLOT-190) for `compact_calendar_view_enabled` \u2014 a calendar *display layout* preference, where defaulting on is harmless. ... The precedent it copied was justified for a harmless UI preference (worst case: a slightly different calendar view). Applying the same \"absent means on\" default to an action that dispatches real SMS/email to patients changes the stakes entirely",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `25509a7` (SLOT-190) introduced `compact_calendar_view_enabled` \u2014 a calendar *view* UI preference \u2014 using the `if ... is None: return True` pattern... The two flags are in different blast-radius categories: the calendar-view flag is a harmless UI preference where grandfather-on is fine, whereas the reminders flag triggers automated outbound SMS/email.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Add a global gate / safety valve.** The batch `run()` in `reminders.py` has no global kill-switch, no environment guard, no dry-run, and no idempotency... `infra/main.tf` defines an `environment` variable (`\"staging\"`) but nothing wires it to the job, so there's no guard against blasting real messages from a non-prod run. I'd add a global enable flag and a dry-run/preview path before go-live.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Add an env-level master switch and AND it with the per-tenant value.** Currently the per-clinic flag is the only gate (`reminders.py:25`). A master gate (off by default, ideally read as a strict literal like `== \"true\"`) gives one lever to keep the whole feature dark during rollout and one clear rollback affordance to flip it back off.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

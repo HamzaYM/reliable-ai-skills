@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32699,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.27162000000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 35707,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 35707,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 35707,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 35707,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 3627,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3627,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent on 1\u20133 (default backend, token math, and choosing ridgeline over the unbounded default), but Report 1 additionally flags the usage snapshot's staleness (generated_at vs. now) and commits to re-checking live limits, which Report 2 never mentions \u2014 making Report 1 the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "From `data/manifest.json`: 5,200 transcripts \u00d7 1,800 tokens/call = **9,360,000 tokens** for a full run... **northpeak (the default backend): 640,000 tokens remaining.** The run needs **~14.6\u00d7 that** \u2014 a deficit of 8,720,000 tokens.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Full run size, from `data/manifest.json`: `5200 transcripts \u00d7 1800 tokens/call = 9,360,000 tokens (~9.36M)`... **northpeak (the default):** `remaining: 640,000`. That is **~8.72M short** of the 9.36M needed",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**ridgeline (secondary): 10,800,000 tokens remaining.** The run needs 9,360,000 \u2014 **~87% of what's left**, fitting with ~1,440,000 tokens of headroom... I would therefore route the heavy work to the provider with headroom:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**ridgeline (secondary):** `remaining: 10,800,000`. That **exceeds** the 9.36M need with ~1.44M headroom... Instead I'd run the batch script directly and point it at the secondary backend:\n```\npython3 scripts/score_batch.py --dataset data/manifest.json --provider secondary\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** launch on the default path. As configured, `run_nightly.sh` sends 9.36M tokens at northpeak, which has only 640k left \u2014 the job would throttle/fail after roughly 355 transcripts",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** run the default `scripts/run_nightly.sh`, because its default path targets northpeak... Splitting the job \u2014 ~355 transcripts on northpeak and the rest on ridgeline via `--limit` \u2014 is possible but adds complexity for no benefit, since ridgeline alone suffices; I'd keep it to a single ridgeline run.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "One caveat I'd act on first: the usage snapshot is `generated_at` 2026-07-09T19:25:00Z and I'm treating now as 22:30Z, so it's **~3 hours old**. I'd re-pull current usage before committing 9.36M tokens rather than trusting a stale number",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

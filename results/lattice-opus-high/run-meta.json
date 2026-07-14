@@ -18,32 +18,33 @@
     "input": "minimal by construction: the disputed expectation text, the two blinded report slots exactly as the primary judges saw them, and the judging frame; invoked once per disputed report-slot mark",
     "model": "claude-fable-5",
     "models_effective": [
-      "claude-fable-5"
+      "claude-fable-5",
+      "claude-haiku-4-5-20251001"
     ],
     "rule": "per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator",
     "schema": "eval/schemas/adjudicator.schema.json"
   },
   "auth_mode": "subscription-login",
-  "claude_cli_version": "2.1.206 (Claude Code)",
+  "claude_cli_version": "2.1.207 (Claude Code)",
   "cold_arm_isolation": {
-    "ambient_user_skills": [
-      "budget-aware-allocation",
-      "codex-adversarial-review",
-      "codex-advisory-opinion",
-      "consulting-company-framework",
-      "framer",
-      "framer-code-components",
-      "tiered-review"
-    ],
+    "ambient_user_skills": [],
     "skill_tool": "consumers run with --allowedTools Read,Grep,Glob,Bash, which exposes no Skill tool, so user-level and project-level skills cannot be invoked in either arm",
     "workspace": "cold workspaces are staged into a fresh temp directory and asserted to contain no .claude directory before every consumer run"
   },
   "concurrency": 4,
+  "consolidation_provenance": {
+    "method": "deterministic file-level splice of two independent raw handoffs into one repeats=3 run directory, via eval/harness/scoring.py's own pair_id repeat-numbering scheme (task_id -> -r1, source 2x's -r1/-r2 -> -r2/-r3). No scores were computed or altered by this script -- scores.json for this directory is regenerated centrally via `python3 eval/run.py --report`.",
+    "not_a_live_run": true,
+    "source_1x_created_at": "2026-07-11T16:55:53Z",
+    "source_1x_run_id": "lattice-opus-high",
+    "source_2x_created_at": "2026-07-12T23:22:56Z",
+    "source_2x_run_id": "lattice-opus-high-2x"
+  },
   "consumer_models_effective": [
     "claude-haiku-4-5-20251001",
     "claude-opus-4-8"
   ],
-  "created_at": "2026-07-11T16:55:53Z",
+  "created_at": "2026-07-12T23:22:56Z",
   "effort": "high",
   "effort_mechanism": {
     "advertised_levels": [
@@ -149,10 +150,10 @@
   },
   "model": "claude-opus-4-8",
   "preregistered": true,
-  "repeats": 1,
+  "repeats": 3,
   "resumed": true,
-  "run_id": "lattice-opus-high",
-  "seed": 12510775035205085811,
+  "run_id": "lattice-opus-high-v2",
+  "seed": 18338661954751828545,
   "skill_hashes_at_run": {
     "adversarial-review/multi-model-adversarial-review": "d30b88b62a3e843ecbed237591da98ce299c80199c4e1916dda2189d72843ef2",
     "architecture-and-contracts/architecture-contracts-as-law": "60758196cf2fd74dee923f454dbb98aecd16e0d27eb6df3330fac4c8c2a0a63b",
@@ -351,14 +352,25 @@
     "cross_model_fallback": "a consumer run answered by a model other than the requested one is invalid: one retry, then the task is excluded-as-invalid",
     "truncated_by_limit": "a consumer run whose output hit the pinned ceiling is invalid: one retry, then the task is excluded-as-invalid"
   },
-  "wall_clock_seconds": 47.8,
+  "wall_clock_seconds": 89.5,
   "workspace_mutation_warnings": [
     "csh-t1-cold",
+    "eval-harness-t1-r1-cold",
     "mabc-t2-cold",
+    "mabc-t2-r1-cold",
     "mmar-t1-loaded",
+    "mmar-t1-r1-loaded",
     "pmvg-t2-cold",
     "pmvg-t2-loaded",
+    "pmvg-t2-r1-cold",
+    "pmvg-t2-r1-loaded",
+    "pmvg-t2-r2-cold",
+    "pmvg-t2-r2-loaded",
     "sysdbg-t2-cold",
-    "sysdbg-t2-loaded"
+    "sysdbg-t2-loaded",
+    "sysdbg-t2-r1-cold",
+    "sysdbg-t2-r1-loaded",
+    "sysdbg-t2-r2-cold",
+    "sysdbg-t2-r2-loaded"
   ]
 }

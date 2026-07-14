@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 18163,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08831129999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7389,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7389,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7389,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7389,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2112,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2112,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent evidence and rigor; Report 2 adds slightly more nuance (e.g., noting the images are placeholder graphics, questioning draft-approval status) but the two are comparable in quality and completeness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default.\" \u2014 **False.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` with the comment \"Two-factor authentication is opt-in per clinic.\" ... Remove or correct. ... **\"Patients can now export their full visit history as a PDF.\"** \u2014 **Not shipped.** `app/routers/visits.py` has only a stub `/visits` route returning `[]` and a literal `# TODO: pdf export`. The feature does not exist. ... Remove.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**\"Two-factor authentication is now enabled for every clinic by default.\"** False. `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` with the comment `# Two-factor authentication is opt-in per clinic.` ... Must be removed or corrected to \"opt-in.\" **\"Patients can now export their full visit history as a PDF.\"** Not implemented. `app/routers/visits.py` has only a `/visits` endpoint that `return []`, followed by `# TODO: pdf export`. ... Must be removed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The \"before\" image (`before_scheduling.png`) shows \"SCHEDULING CALENDAR,\" but the \"after\" image (`after_scheduling.png`) shows **\"BILLING / INVOICES.\"** This is confirmed independently by `captures.json`, which records `after_scheduling.png` as captured from route `/billing/invoices`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`before_scheduling.png` reads \"SCHEDULING CALENDAR\", but `after_scheduling.png` reads \"BILLING / INVOICES\". `captures.json` corroborates this \u2014 it maps `after_scheduling.png` to `\"route\": \"/billing/invoices\"`, not the scheduling route.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` \u2014 **referenced in the document (line 26) but does not exist** in `img/`. ... `unused_capture_07.png` \u2014 **exists on disk but is not referenced** by the document; it depicts \"PATIENT LIST.\" Orphaned asset, not part of v4 highlights.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Referenced but missing:** `after_export.png` \u2014 used in the doc (`![after](img/after_export.png)`) but there is no such file in `img/`. ... **On disk but unreferenced:** `unused_capture_07.png` exists (it reads \"PATIENT LIST\") but is referenced nowhere in the doc \u2014 a stray/orphaned asset.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Line 33: \"Highlights draft assembled with AI assistance.\"** \u2014 an internal drafting note; it should not appear in a message sent to customers. Remove.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Yes \u2014 the footer `Highlights draft assembled with AI assistance.` It is an internal drafting note / attribution artifact, not customer-facing copy... this line should be stripped before sending",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r3",
+  "repeat": 3,
+  "task": "dora-t2"
+}

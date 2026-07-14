@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32022,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.15115800000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12021,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12021,
+        "cache_read_input_tokens": 67600,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2719,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2719,
+            "cache_read_input_tokens": 38451,
+            "input_tokens": 2,
+            "output_tokens": 914,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3582,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 1 covers all four expectations, including a concrete reproducibility check for the regenerated golden file, while Report 2 misses that reproducibility verification entirely, making Report 1 the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "a live, cost-incurring third-party API call, not a local check... this deselection is intentional and should not be treated as something broken to \"fix.\" Flipping addopts (or otherwise making the marker run by default) would make every future default pytest invocation silently fire billed API calls \u2014 a surprise-bill risk",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "will incur real per-call cost against a live endpoint every run... Enabling this marker globally is not warranted by this change; it's a scope/cost decision that should be made independently (and CI would need a secret provisioned), not something to bolt on to \"make nothing be deselected.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "every changed hunk in a regenerated golden file must trace to the intended change; anything that doesn't is a regression, not a fixture update... Only after that's confirmed intentional should update_golden.py be run, and even then I'd read the resulting diff of expected_scores.json hunk-by-hunk",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Only after both are confirmed intentional should update_golden.py be run, and the regenerated diff should be reviewed by hand (not just \"golden test now green\") to make sure only the expected fields moved.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Not the docs/testing.md figures verbatim \u2014 they're stale, and project documentation explicitly warns against copying project documentation numbers from an old doc.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Not the docs/testing.md figures verbatim \u2014 they're stale. I verified directly: ... I would report the lint figure only after actually running ruff check . (or the CI's exact lint invocation) myself, and flag docs/testing.md's \"9\" as unverified/likely stale rather than citing it as fact.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "re-run pytest in normal (assert) mode at least twice to confirm the regenerated fixture is deterministic \u2014 not just accept a single green run.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

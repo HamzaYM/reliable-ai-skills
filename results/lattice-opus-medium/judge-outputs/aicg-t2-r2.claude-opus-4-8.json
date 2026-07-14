@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17754,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1651325,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11026,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11026,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11026,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11026,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1591,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1591,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully hit all four expectations with correct file/function citations and concrete fixes; they are comparable, with Report 1 adding slightly more per-path rate-limiter detail and Report 2 tying findings tightly to documented guardrails.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "It catches **`Exception`** \u2014 the single broadest catchable base \u2014 so *every* vendor error class ... is handled identically by retrying on the secondary vendor ... `BadRequestError` (malformed request) \u2014 falls over. **Inappropriate.** ... `AuthError` ... falls over. **Inappropriate.** ... `ContentPolicyError` \u2014 falls over. **Inappropriate and risky.** ... Concrete fix: catch only the transient/retryable classes and let the rest propagate ... RETRYABLE = (RateLimitError, RequestTimeoutError, ServerError)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It catches `Exception` \u2014 the broadest possible class \u2014 so it treats *every* error the primary can raise identically ... `BadRequestError`, `AuthError` \u2014 **inappropriate.** These are definitively non-retryable ... `ContentPolicyError` \u2014 **inappropriate and the most serious.** ... Concrete fix: replace the bare `except Exception` with an explicit, tested denylist of non-retryable classes. Fail over only on the transient set; re-raise the rest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A \u2014 not production:** ... Returns `True` whenever `STAGE` is unset or anything other than exactly `\"production\"` ... **Assessment: fail-open and fragile.** ... **Path D \u2014 redis error:** `except RedisError: return True` ... **Assessment: fail-open, inappropriate for a limiter.** ... A limiter should generally fail *closed* ... make the production gate fail closed (default to limiting unless explicitly told the stage is non-prod)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Path A **fails open outside production**, and gates that behavior on an environment-name string ... rate limiting must fail *closed* in every environment except a narrow, explicitly-named local-dev override, and must **not** be gated on an \"is this production\" check ... Path C **fails open on redis errors** ... A rate limiter should fail closed here ... Return `False` on `RedisError`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It logs ... `record.applicant_id`, **`record.input_text`**, and `record.metadata`. **Assessment: this is a serious data-handling defect.** The `input_text` is the raw applicant intake document ... Concrete fix: do not log `input_text` at all (log a content hash or length if needed for audit); ... and allow-list `metadata` fields rather than dumping the whole dict.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`record.input_text` \u2014 the **full verbatim text of the intake document** ... `record.metadata` \u2014 dumped **wholesale** with no filtering ... Do not log `input_text` verbatim \u2014 log a length and a salted hash (or a short truncation) ... Replace the raw `metadata` dump with an explicit **allowlist** of known-safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`salt = os.environ.get(\"PII_SALT\", \"\")`. Its only dependency is the **`PII_SALT` environment variable**, and it **silently defaults to the empty string** when unset ... With no salt, the function computes a plain unsalted `sha256(applicant_id)` ... yet it raises no error ... Concrete fix: require `PII_SALT` explicitly \u2014 raise if it is missing or empty rather than defaulting to `\"\"`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`os.environ.get(\"PII_SALT\", \"\")` **defaults to the empty string** when the variable is unset. The function then silently computes an **unsalted** `sha256(applicant_id)` ... and returns it with no error or warning ... Concrete fix: require the salt and fail hard if absent",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

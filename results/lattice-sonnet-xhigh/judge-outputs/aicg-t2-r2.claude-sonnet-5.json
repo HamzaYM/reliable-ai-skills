@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12161,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12881269999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15217,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15217,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 15217,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 15217,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1298,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1298,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with substantively equivalent findings and fixes; Report 2 additionally ties findings to explicit project-doc guardrails, but both are comparable in coverage of the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "catches every primary-vendor exception with a broad except ... BadRequestError ... this indicates the request itself was malformed... It should not be silently retried... ContentPolicyError \u2014 this is the most concerning case... This should not be auto-retried at all; it should be surfaced/escalated... AuthError \u2014 this indicates a credentials/configuration failure on primary, which is not transient... Narrow the except to the retryable set (RateLimitError, RequestTimeoutError, ServerError) for the automatic-fallback path. Handle BadRequestError separately... Handle ContentPolicyError separately \u2014 do not auto-forward to a second vendor; quarantine/escalate instead. Handle AuthError with a fail-fast/circuit-breaker",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "replace the blanket except Exception with a narrow, explicit denylist of non-retryable exceptions that must never fail over, and let everything else retry: ... NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError) ... except NON_RETRYABLE: raise",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path A \u2014 non-production bypass: ... returns True for any value other than the exact string \"production\", including an unset STAGE... Path C \u2014 production, RedisError: returns True (fail-open)... on RedisError, fail closed (return False)... make the stage check robust against naming drift",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Triggers whenever STAGE is unset (None), or set to anything other than the exact string \"production\"... the limiter is fully bypassed. Inappropriate... On any Redis-layer failure... the limiter fails open, allowing unlimited calls until Redis recovers. Inappropriate... Fix: except RedisError: return False.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Do not log input_text at all \u2014 if a debugging signal is needed, log a length or a non-reversible fingerprint, not content. Replace the blanket metadata dump with an explicit allowlist of non-sensitive fields",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "input_text is logged verbatim and in full... metadata is logged with no allowlist at all... Concrete fix: ... \"input_text_sha256\": hashlib.sha256(record.input_text.encode()).hexdigest(), \"input_text_len\": len(record.input_text), \"metadata\": {k: v for k, v in record.metadata.items() if k in _SAFE_METADATA_KEYS}",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Fail loudly if PII_SALT is missing or empty (raise a configuration error at startup rather than defaulting to \"\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "fail hard when the salt is missing instead of defaulting to \"\": ... if not salt: raise RuntimeError(\"PII_SALT is not configured; refusing to pseudonymize applicant id\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

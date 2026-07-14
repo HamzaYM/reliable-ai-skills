@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19045,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0910473,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8205,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8205,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8205,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8205,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1921,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1921,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable rigor; report 2 adds a patch-id proof and a conflict-handling note, but both are substantively equivalent in satisfying the stated expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "It should **not** target `feat/weighted-scorer` (that branch's work is already in `main`; targeting it would chain the PR onto an obsolete, already-merged branch).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the only other candidate base \u2014 `feat/weighted-scorer`, the dependency this branch was built on \u2014 is a **dead base**... So: target `main`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was branched from **`feat/weighted-scorer` at its tip `ac9d505` (W3)**... That starting point (`feat/weighted-scorer`) has since been **squash-merged into `main` as PR #42**... the original W1/W2/W3 commits are *not* ancestors of `main` (`git merge-base --is-ancestor ac9d505 main` \u2192 NO)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was created from **`feat/weighted-scorer`**... the weighted-scorer work has been squash-merged into `main` (as `#42`, commit `1971f08`), but the original W1/W2/W3 commits are not ancestors of `main`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Three-dot `git diff main...feat/pairwise-metric`... = **21 insertions / 3 deletions across 3 files**: `prompts/grader.txt`, `scoring/metrics.py`, **and `scoring/scorer.py`**. The extra content in `metrics.py` and all of `scorer.py` is **not** pairwise work \u2014 it is the W1\u2013W3 weighted-scorer changes.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The PR diff (three-dot...) is **21 insertions / 3 deletions across three files**: `scoring/scorer.py` +13 / \u22123... **No \u2014 most of it is not pairwise work.**... `scoring/scorer.py` (all +13/\u22123) comes from **W1 `d6fdbc3` and W2 `2d3029b`** \u2014 weighted-scorer work.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Rebase the branch onto `main` while explicitly dropping the already-merged W-commits, using the old fork point as the upstream: `git rebase --onto main ac9d505 feat/pairwise-metric`... Verify the result: `git log --oneline main..feat/pairwise-metric` should show exactly the two X commits, and `git diff --stat main...feat/pairwise-metric` (three-dot) should now match the clean 2-file / 5-insertion diff.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto origin/main feat/weighted-scorer feat/pairwise-metric`... `git diff origin/main..HEAD --stat` \u2192 should show **only** `scoring/metrics.py` and `prompts/grader.txt` (5 insertions), no `scorer.py`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14890,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0834927,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7998,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7998,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7998,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7998,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1523,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1523,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are very similar and equally strong on (a)-(c); Report 1 additionally identifies the missing global/deploy-level kill-switch and recommends adding one (expectation d), which Report 2 omits, making Report 1 the more complete answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Line 11-12 is the deciding logic: if the key is absent from the tenant's JSONB `settings` (which is the case for every seeded tenant in `seeds/tenants.json` \u2014 e.g. tenant-b has `settings: {}`), the function returns `True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Line 11-12 is the deciding logic: when the key is absent (`.get()` returns `None`), the function returns `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change `backend/app/feature_flags.py:11-12` so that `None` (and any falsy/missing value) resolves to `False`, e.g. `return bool(tenant.settings.get(\"auto_send_reminders\"))` alone ... i.e., simply delete the `is None: return True` special case for this specific function.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change the default in `slotwise/backend/app/feature_flags.py:11-12` so a missing/`None` value returns `False` (or, to be extra safe, treat only an explicit `True` as enabling sends), matching what the UI already displays.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Commit `25509a7` (\"SLOT-190 tenant settings and calendar view preference\") introduced `compact_calendar_view_enabled`, a genuinely low-risk, convenience-only UI preference, with the \"default to `True` on missing\" pattern \u2014 that default is reasonable for that flag ... Commit `aa4cf8d` (\"Add automatic appointment reminders (SLOT-214)\") then added `auto_send_reminders_enabled` directly below it with the identical shape ... the two flags are in different risk categories and warranted different defaults.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git show aa4cf8d` (SLOT-214, 2026-07-01) shows `auto_send_reminders_enabled` was added immediately after `compact_calendar_view_enabled` and reuses its exact `if ... is None: return True` structure line-for-line. ... the two toggles have very different risk profiles (UI cosmetics vs. automated outbound patient communication), and the default-on pattern that's harmless for one is risky for the other.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Confirm there's no env-level master switch \u2014 there currently isn't one (grep found none), meaning the per-tenant flag is the *only* gate. ... consider whether a global kill-switch/master flag should AND with the per-tenant value, so the whole reminders job can be paused instantly without touching every tenant's settings.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

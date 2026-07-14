@@ -1,0 +1,83 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "Preferred: **do not write a composite at all for an incompletely-scored record** \u2014 skip the row (and log/emit it to a failures channel), or write it with an explicit status/error marker that the leaderboard excludes.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 8754,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5",
+          "claude-haiku-4-5-20251001"
+        ],
+        "total_cost_usd": 0.5397959999999999,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 25821,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 25821,
+          "cache_read_input_tokens": 0,
+          "inference_geo": "not_available",
+          "input_tokens": 2,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 25821,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 25821,
+              "cache_read_input_tokens": 0,
+              "input_tokens": 2,
+              "output_tokens": 396,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 396,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "do not write a composite at all for an incompletely-scored record \u2014 skip the row ... For the gate axis specifically: a failed accuracy call must be treated as \"unknown / needs re-grade,\" explicitly **not** as a hard fail",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "c",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "eval-harness-t1"
+}

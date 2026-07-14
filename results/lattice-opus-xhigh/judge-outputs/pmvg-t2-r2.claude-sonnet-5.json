@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19954,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1180177,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10050,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10050,
+        "cache_read_input_tokens": 66869,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1479,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1479,
+            "cache_read_input_tokens": 37720,
+            "input_tokens": 2,
+            "output_tokens": 767,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2203,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit a/b/c equally well, but only Report 2 explicitly verifies golden-file reproducibility across multiple regeneration/assert runs and names the set-iteration ordering instability, making it the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they POST to a real external model endpoint ... incur per-call cost.\" ... The live marker being opt-in is a deliberate design choice, and it's the correct one. Validation should keep -m \"not live\" and leave these off.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "pytest.ini deselects them on purpose via addopts = -m \"not live\" ... Removing that opt-in gate is exactly the failure the guidance warns about. Validating this change should leave the live marker deselected.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Only then update the golden's score values, and do it by reviewing the resulting diff line-by-line so you're consciously blessing exactly the score deltas and nothing else.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "First I trace every changed value back to an intended change ... Only after the diff contains only explainable hunks do I regenerate the golden.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Source them from the repository by measurement, not by quoting docs/testing.md \u2014 that doc is stale on both figures",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not cite the docs/testing.md figures (\"2 flaky\", \"9 lint warnings\") \u2014 those are a stale snapshot, and I re-measured instead",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "I'd regenerate, then re-run in assert mode twice to confirm determinism (and ideally fix the script to iterate the ordered ITEMS) before committing... (I reproduced three different orderings)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "task": "pmvg-t2"
+}

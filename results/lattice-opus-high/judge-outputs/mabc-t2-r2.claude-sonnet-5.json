@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 63906,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1706689,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9996,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9996,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9996,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9996,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 6420,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6420,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers the RESULTS_DB collision risk explicitly (expectation d) and states F-06's output-visibility impact more explicitly (c), while both reports miss the exact staged early/late ordering required by (b); Report 2 is overall stronger.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer A \u2192 `pipeline/registry.py`: F-02, F-05, F-09. Three isolated constant edits in one file. One owner so they don't conflict on the same file.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Batch A \u2014 pipeline/registry.py: F-02, F-05, F-09. All three are one-line config edits to the same file, so they must be one owner (three people here would just conflict).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 subjective, needs a spec, not a \"fix.\" ... It needs an owner/product decision on the actual cutoffs (and, because of the F-01 coupling and the red project documentation, a working test to tune against) before it becomes a mechanical change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 do not assign as a mechanical fix; escalate for a decision. ... It changes the scores this offline pipeline emits and would shift results on any previously scored outputs, so it needs an owner/product sign-off on the new numbers before anyone codes it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`conftest.py` references `RESULTS_DB` (default `/var/tmp/llm-scoring/results.db`, which doesn't exist), but no current test uses it \u2014 worth knowing only for whoever adds tests in F-11/F-12.",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "Shared test database. tests/conftest.py defaults RESULTS_DB to a single path /var/tmp/llm-scoring/results.db. Two engineers running the suite at once share one DB and can corrupt each other's runs unless each overrides RESULTS_DB.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

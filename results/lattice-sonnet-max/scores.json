@@ -1,10 +1,10 @@
 {
   "aggregate": {
-    "cold_hits": 57,
-    "cold_pct": 87.7,
-    "loaded_hits": 65,
+    "cold_hits": 60,
+    "cold_pct": 88.2,
+    "loaded_hits": 68,
     "loaded_pct": 100.0,
-    "n_expectations": 65
+    "n_expectations": 68
   },
   "comparative_verdicts": {
     "aicg-t2": [
@@ -62,6 +62,11 @@
       "claude-opus-4-8: Both reports hit (a), (b), and (c) strongly, but Report 2 additionally identifies the shared RESULTS_DB collision risk (d) that Report 1 dismisses as dead code, making Report 2 the more complete answer. | claude-sonnet-5: Report 2 is stronger: it correctly identifies the shared RESULTS_DB fixed-path collision risk and prescribes per-engineer overrides, while Report 1 dismisses that same conftest.py detail as likely-dead code and misses the collision entirely; both reports are otherwise comparable on registry.py grouping and the F-06 policy-decision flag.",
       "claude-opus-4-8: Comparable \u2014 both reports hit all four expectations; Report 2 ties the RESULTS_DB collision to the new F-11/F-12 tests more concretely, while Report 1 is slightly more thorough on setup, but neither is clearly stronger overall. | claude-sonnet-5: Report 2 is more thorough and precise overall (explicit reasoning for single-owner registry.py, clearer F-06/F-08 treatment, more concrete RESULTS_DB collision framing), but both reports hit all four expectations at a comparable substantive level."
     ],
+    "mmar-t1": [
+      "claude-opus-4-8: Both reports hit all three expectations with equivalent substance; Report 1 is marginally cleaner in keeping the raw-SQL interpolation explicitly non-blocking, while Report 2 backs its findings with execution-based confirmation \u2014 overall comparable. | claude-sonnet-5: Both reports correctly and thoroughly identify the tenant-scoping defect (a) and the exports.py breaking-signature regression (b); Report 1 passes expectation (c) by explicitly concluding the status interpolation is not exploitable, while Report 2 fails it by listing the SQL string interpolation as its own numbered defect (\"c) Secondary but real\") that should be fixed before sign-off, contrary to the expectation that such a defect not be reported as blocking.",
+      "claude-opus-4-8: Report 2 answered the task better: both nailed the cross-tenant leak and both correctly declined to call the raw-SQL string exploitable, but only Report 2 caught the build_appointment_query signature change breaking nightly_export in exports.py, while Report 1 explicitly (and wrongly) concluded there were no other blocking defects. | claude-sonnet-5: Report 2 is stronger: it catches all three expectations, including the nightly_export breakage (b), which Report 1 misses entirely.",
+      "claude-opus-4-8: Both reports nail the cross-tenant leak and the broken exports.py caller, but Report 1 correctly demotes the raw-SQL status interpolation to a non-blocking latent issue while Report 2 insists on listing it as a third blocking defect (\"Why I still list it as blocking\") despite conceding it is not exploitable \u2014 so Report 1 answered the task better. | claude-sonnet-5: Both reports are substantively equivalent, hitting all three expectations with near-identical evidence and reasoning; Report 1 is slightly more internally consistent by explicitly excluding the SQL-interpolation issue from its \"currently exploitable\" defects, while Report 2 lists it as blocking despite also conceding no current exploitability, a minor inconsistency."
+    ],
     "mt-auth-t1": [
       "claude-opus-4-8: Both reports fully and correctly diagnose the owner-exempt-from-RLS root cause, the ROTA-214 commit, and all four remediation/prevention expectations; they are comparable, with Report 2 slightly crisper on the blocking boot-time check. | claude-sonnet-5: Both reports are thorough and hit nearly identical marks on root cause, commit identification, and remediation, but Report 2 explicitly specifies a blocking boot-time startup check that refuses to start the app on misconfiguration, while Report 1 only proposes a periodic/pre-deploy check, making Report 2 marginally more complete against expectation (e).",
       "claude-opus-4-8: Both nail the core root cause and commit; Report 1 is slightly more complete on the expectations (adds the app-level tenant filter that Report 2 omits), while Report 2 adds a valuable out-of-scope auth-bypass finding. | claude-sonnet-5: Report 1 hits all five expectations (including the explicit tenant_id filter and a blocking boot-time check), while Report 2 misses the application-level tenant filter and does not clearly state the boot-time check should block startup \u2014 Report 1 more fully satisfies the expectations despite Report 2's extra findings (unsigned tokens, missing commit/rollback) being valuable but out of scope for these specific expectations.",
@@ -88,9 +93,7 @@
       "claude-opus-4-8: Comparable \u2014 both reports hit all five expectations, though Report 2 states the ordering/remediation-deferral restructuring point more completely. | claude-sonnet-5: Report 2 covers all five expectations clearly, including the ordering/mis-structure point (e) that Report 1 raises but then explicitly undercuts (\"not merely placed second\"), leaving it short of the required restructuring recommendation."
     ]
   },
-  "excluded_tasks": [
-    "mmar-t1"
-  ],
+  "excluded_tasks": [],
   "hit_rates": {
     "aicg-t2": {
       "a": {
@@ -286,6 +289,20 @@
         "loaded": 1.0
       }
     },
+    "mmar-t1": {
+      "a": {
+        "cold": 1.0,
+        "loaded": 1.0
+      },
+      "b": {
+        "cold": 0.6666666666666666,
+        "loaded": 1.0
+      },
+      "c": {
+        "cold": 1.0,
+        "loaded": 1.0
+      }
+    },
     "mt-auth-t1": {
       "a": {
         "cold": 1.0,
@@ -387,32 +404,32 @@
   },
   "judge_disagreement": {
     "adjudication": {
-      "adjudication_rate_pct": 3.3,
+      "adjudication_rate_pct": 3.7,
       "effort": "medium",
       "model": "claude-fable-5",
-      "n_adjudicated": 13,
-      "n_disputed_slot_marks": 13,
-      "n_slot_marks": 390,
+      "n_adjudicated": 15,
+      "n_disputed_slot_marks": 15,
+      "n_slot_marks": 408,
       "n_unresolved": 0,
       "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator"
     },
     "by_arm": {
-      "cold": 7,
-      "loaded": 6
+      "cold": 8,
+      "loaded": 7
     },
     "by_slot": {
       "report_1": 7,
-      "report_2": 6
+      "report_2": 8
     },
-    "disagreement_rate_pct": 6.2,
+    "disagreement_rate_pct": 6.9,
     "failure_floor": {
       "failure_excluded_must_hits": {},
       "floor_excluded_comparisons": [],
       "rule": "a must-hit whose disputed mark has no adjudicator result (adjudicator failure after the pre-registered retry) is excluded from both arms of that comparison as a judge-failure exclusion, never as a disagreement; when more than one third of a comparison's must-hit marks are excluded this way, the entire paired comparison is excluded and reported; adjudicated disagreements never trigger this floor",
       "tasks_excluded_no_scorable_marks": []
     },
-    "n_disagreed": 12,
-    "n_marks": 195,
+    "n_disagreed": 14,
+    "n_marks": 204,
     "per_task": {
       "aicg-t2": {
         "disagreed_must_hits": [],
@@ -506,6 +523,16 @@
         "n_disputed_slot_marks": 0,
         "n_marks": 12
       },
+      "mmar-t1": {
+        "disagreed_must_hits": [
+          "c"
+        ],
+        "failure_excluded_must_hits": [],
+        "n_adjudicated": 2,
+        "n_disagreed": 2,
+        "n_disputed_slot_marks": 2,
+        "n_marks": 9
+      },
       "mt-auth-t1": {
         "disagreed_must_hits": [
           "e"
@@ -564,18 +591,18 @@
   "repeats_detail": {
     "mean_over_repeats": {
       "cold_rate_pct": 89.7,
-      "delta_pp": 9.7,
+      "delta_pp": 9.8,
       "loaded_rate_pct": 99.5
     },
     "note": "replicated cell: endpoint verdicts use the mean rates over repeats; repeat-level values are retained above, and every repeat ran in its own isolated workspace with no shared session state",
     "per_repeat": {
       "r1": {
-        "cold_hits": 58,
-        "cold_rate_pct": 89.2,
-        "delta_pp": 10.8,
-        "loaded_hits": 65,
+        "cold_hits": 61,
+        "cold_rate_pct": 89.7,
+        "delta_pp": 10.3,
+        "loaded_hits": 68,
         "loaded_rate_pct": 100.0,
-        "n_expectations": 65,
+        "n_expectations": 68,
         "tasks": {
           "aicg-t2": {
             "cold_hits": 4,
@@ -631,6 +658,11 @@
             "cold_hits": 3,
             "loaded_hits": 4,
             "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
           },
           "mt-auth-t1": {
             "cold_hits": 4,
@@ -660,12 +692,12 @@
         }
       },
       "r2": {
-        "cold_hits": 59,
-        "cold_rate_pct": 90.8,
-        "delta_pp": 9.2,
-        "loaded_hits": 65,
+        "cold_hits": 61,
+        "cold_rate_pct": 89.7,
+        "delta_pp": 10.3,
+        "loaded_hits": 68,
         "loaded_rate_pct": 100.0,
-        "n_expectations": 65,
+        "n_expectations": 68,
         "tasks": {
           "aicg-t2": {
             "cold_hits": 3,
@@ -722,6 +754,11 @@
             "loaded_hits": 4,
             "n_must_hits": 4
           },
+          "mmar-t1": {
+            "cold_hits": 2,
+            "loaded_hits": 3,
+            "n_must_hits": 3
+          },
           "mt-auth-t1": {
             "cold_hits": 4,
             "loaded_hits": 5,
@@ -750,12 +787,12 @@
         }
       },
       "r3": {
-        "cold_hits": 58,
-        "cold_rate_pct": 89.2,
-        "delta_pp": 9.2,
-        "loaded_hits": 64,
+        "cold_hits": 61,
+        "cold_rate_pct": 89.7,
+        "delta_pp": 8.8,
+        "loaded_hits": 67,
         "loaded_rate_pct": 98.5,
-        "n_expectations": 65,
+        "n_expectations": 68,
         "tasks": {
           "aicg-t2": {
             "cold_hits": 4,
@@ -811,6 +848,11 @@
             "cold_hits": 4,
             "loaded_hits": 4,
             "n_must_hits": 4
+          },
+          "mmar-t1": {
+            "cold_hits": 3,
+            "loaded_hits": 3,
+            "n_must_hits": 3
           },
           "mt-auth-t1": {
             "cold_hits": 3,
@@ -842,6 +884,15 @@
     }
   },
   "skills": {
+    "adversarial-review/multi-model-adversarial-review": {
+      "cold_hits": 3,
+      "loaded_hits": 3,
+      "n_must_hits": 3,
+      "pass": false,
+      "regressions": 0,
+      "tasks": 1,
+      "wins": 0
+    },
     "architecture-and-contracts/architecture-contracts-as-law": {
       "cold_hits": 2,
       "loaded_hits": 4,
@@ -1295,6 +1346,32 @@
       "regression": false,
       "skill": "campaign-execution/multi-agent-batch-campaigns",
       "threshold": 3
+    },
+    "mmar-t1": {
+      "cold_hits": 3,
+      "disagreed_must_hits": [
+        "c"
+      ],
+      "loaded_hits": 3,
+      "n_must_hits": 3,
+      "pass": false,
+      "per_expectation": {
+        "a": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "b": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        },
+        "c": {
+          "cold": "HIT",
+          "loaded": "HIT"
+        }
+      },
+      "regression": false,
+      "skill": "adversarial-review/multi-model-adversarial-review",
+      "threshold": 2
     },
     "mt-auth-t1": {
       "cold_hits": 3,

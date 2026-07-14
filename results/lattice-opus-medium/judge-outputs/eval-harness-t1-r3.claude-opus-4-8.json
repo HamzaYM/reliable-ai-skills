@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20937,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1429155,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8417,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8417,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8417,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8417,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1828,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1828,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct code citations and reasoning; they are comparable, with Report 1 slightly more elaborate on remediation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "which for each axis does `value = axis_scores.get(axis)` and, when `value is None`, sets `value = 0.0`, then adds `weight * value` to the total. So the failed axis contributes **zero** to the weighted sum... In form, a partial-failure record is **indistinguishable** from a fully-scored one: same three columns, same numeric type, no flag, no status, no null marker.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In `grader/aggregate.py:6-13`, `composite()` treats a missing/`None` axis as `0.0`... value = axis_scores.get(axis)\n  if value is None:\n      value = 0.0 ... **In form, a partially-scored record is identical to a fully-scored one:** the same three columns (`agent_id, reply_id, composite`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "In `grader/leaderboard.py`, `rankings()` sums every composite and divides by row count, treating the fabricated-low `0.0`-padded composite as a genuine low grade. Every such row drags that agent's mean composite down.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`rankings()` (`leaderboard.py:12-17`) sums every composite and divides by the row count per agent, treating each deflated composite as a legitimate low score. Every failed axis call therefore drags down the mean of whichever agent owns that reply.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "But `accuracy` is load-bearing: if the accuracy call fails you don't have the input that decides pass/fail, so you cannot emit a composite that looks comparable at all. It must be marked degraded/incomplete and the accuracy call retried.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the `accuracy` gate axis should never be imputed; a missing accuracy reading should force the record to \"incomplete,\" not \"score 0.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "for a *non-load-bearing* axis (relevance or tone), the sensible degradation is to renormalize the composite over the axes that succeeded and keep the record marked complete... But `accuracy` is load-bearing: if the accuracy call fails you... cannot emit a composite that looks comparable at all.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If a defensible partial score is ever desired for relevance/tone gaps, it should be an explicit **renormalization over the present axes** (dividing by the present weights), never a 0-fill \u2014 but the `accuracy` gate axis should never be imputed",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

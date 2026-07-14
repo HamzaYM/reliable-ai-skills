@@ -1,0 +1,102 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28515,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.224008,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10684,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10684,
+        "cache_read_input_tokens": 17806,
+        "inference_geo": "not_available",
+        "input_tokens": 9343,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10684,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10684,
+            "cache_read_input_tokens": 17806,
+            "input_tokens": 9343,
+            "output_tokens": 2462,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2462,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover the router, audit, and salt issues equally well, but Report 2 answers the task better because it unambiguously prescribes failing closed on both rate-limiter bypass paths, whereas Report 1 hedges on the Redis fail-open (calling it a possibly intentional tradeoff and recommending logging over denial).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**Fix:** Catch a narrow tuple of genuinely transient classes (`RateLimitError`, `RequestTimeoutError`, `ServerError`) for fallback; let `BadRequestError` and `ContentPolicyError` propagate/mark the document as failed without vendor retry; treat `AuthError` as a hard, alertable failure (log at `error`/raise, don't silently degrade to secondary)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Concrete fix:** replace the blanket catch with an explicit non-retryable denylist, as project documentation prescribes, e.g.:\n```python\nNON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)\n\ndef call_with_fallback(payload):\n    try:\n        return primary.complete(payload)\n    except NON_RETRYABLE:\n        raise",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "**Concrete fix:** invert both fail conditions to fail closed \u2014 treat any `STAGE` value other than an explicit, narrowly-named local-dev override (e.g. `RATE_LIMIT_BYPASS=1` checked in addition to a local-only marker) as production-like, and return `False` (or raise) on `RedisError` rather than `True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Fix:** Log the pseudonymized key (already computed in `batch_score.py`) instead of `record.applicant_id`, drop `record.input_text` from the log entirely (an audit trail needs \"call happened, for whom, to which vendor, with what outcome,\" not the document contents), and validate/allowlist what goes into `metadata` rather than logging it opaquely.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Concrete fix:** log only the pseudonymized `key` (never the raw ID), drop `input_text` entirely or replace it with a hash/length/truncated preview, and replace the blanket `record.metadata` with an explicit allowlist, e.g. `{k: record.metadata[k] for k in ALLOWED_METADATA_KEYS if k in record.metadata}`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "When `PII_SALT` is not set, `os.environ.get(\"PII_SALT\", \"\")` **silently defaults to an empty string** rather than raising or refusing to run. ... **Fix:** Fail loudly if `PII_SALT` is unset (`raise RuntimeError` or refuse to start the batch job) rather than defaulting to `\"\"`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "When that dependency is *not* satisfied (unset), `os.environ.get(\"PII_SALT\", \"\")` silently substitutes an empty string, and the function proceeds normally \u2014 no exception, no warning, no log line ... **Concrete fix:** fail hard instead of defaulting:\n```python\n    if not salt:\n        raise RuntimeError(\"PII_SALT is not configured; refusing to pseudonymize without a salt\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

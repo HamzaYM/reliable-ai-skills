@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16820,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1263785,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7870,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7870,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7870,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7870,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1400,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1400,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 answered better: it caught both critical defects (cross-tenant leak and the exports.py signature-break), while Report 1 missed the nightly_export breakage entirely.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "There is no `WHERE tenant_id = :tenant_id` clause. Every other read path in this codebase goes through `build_appointment_query` ... `search_appointments` bypasses that function entirely and issues hand-written SQL against the `appointments` table with no tenant predicate.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The function receives `tenant_id` as a parameter but never uses it in the SQL ... `search_appointments` bypasses that convention entirely by hand-writing raw SQL with no `tenant_id` predicate. **Effect:** any authenticated user of any tenant hitting `GET /appointments/search?q=...&status=...` gets appointment rows ... belonging to every tenant in the system",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "`backend/app/exports.py` (not touched by this PR) still calls it as `build_appointment_query(session, tenant_id)` \u2014 two arguments. This throws `TypeError: build_appointment_query() missing 1 required positional argument: 'filters'` on every invocation. **Effect:** the nightly per-tenant CSV export (`nightly_export`) breaks completely for all tenants the next time it runs",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "String-interpolating `status.value` directly into raw SQL ... is a SQL-injection anti-pattern even though it's not currently exploitable \u2014 `status` is typed as `AppointmentStatus` (a `str, Enum` with only `booked`/`cancelled`/`completed` as members, per `backend/app/schemas.py`) ... I'm flagging this as a maintainability/defense-in-depth concern ... rather than a currently-exploitable vulnerability.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Through the current single call site this isn't exploitable today \u2014 `status` is typed `AppointmentStatus` (an enum of `booked`/`cancelled`/`completed` per `backend/app/schemas.py`), and FastAPI rejects any query-string value that doesn't match one of those three members before the enum is ever constructed. But it's a real defense-in-depth gap",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "task": "mmar-t1"
+}

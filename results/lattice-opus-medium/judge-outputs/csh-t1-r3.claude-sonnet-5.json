@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24883,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.13785219999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9494,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9494,
+        "cache_read_input_tokens": 102794,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1261,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1261,
+            "cache_read_input_tokens": 37384,
+            "input_tokens": 2,
+            "output_tokens": 1104,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3111,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports equally satisfy expectations a, b, and c with near-identical citations and reasoning; Report 1 uniquely satisfies expectation d by explicitly recommending a global/master environment-level gate ANDed with the per-tenant flag, while Report 2 instead raises a UI/backend mismatch and messaging-stub caveat but never proposes a deploy-level switch, making Report 1 the stronger overall answer.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Reminders **will be sent automatically**. ... The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, line 11\u201312:\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminders **will** be sent automatically. ... The deciding code is `auto_send_reminders_enabled` in `backend/app/feature_flags.py:11-12`: `if tenant.settings.get(\"auto_send_reminders\") is None: return True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change it so the default is off. Fix the resolver in `backend/app/feature_flags.py:11-13`:\n```python\ndef auto_send_reminders_enabled(tenant):\n    return bool(tenant.settings.get(\"auto_send_reminders\"))  # missing/None/malformed -> False\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change the missing-value branch in `backend/app/feature_flags.py:11-12` to return `False` when unset (i.e. `if ... is None: return False`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It was **copy-pasted** from the pre-existing `compact_calendar_view_enabled` resolver. ... That was **not a sound basis**: the calendar-view flag is a low-risk UI preference where grandfather-on is appropriate, whereas the reminder flag triggers outbound messaging.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It was arrived at by copying the existing `compact_calendar_view_enabled` helper. ... The pattern was written for a cosmetic, side-effect-free UI display preference (compact calendar), where defaulting ON is harmless. Reusing that default for a feature that sends real messages to patients carries the benign choice over to a context with materially different risk (cost, consent, deliverability).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an env-level master gate and AND it with the per-tenant value.** Currently there is no master switch anywhere (grep found only the per-tenant flag), so `reminders.py` has no kill-switch and no staged-rollout control. Combining a master env flag with the tenant setting gives both a rollout gate and a rollback affordance.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 12737,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0790829,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7682,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7682,
+        "cache_read_input_tokens": 29153,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7682,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7682,
+            "cache_read_input_tokens": 29153,
+            "input_tokens": 2,
+            "output_tokens": 1367,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1367,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid grounding; Report 2 additionally catches the unsupported \"production data\" caption issue (bonus not required by expectations), giving it a slight edge in thoroughness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default.\" `clinic-portal/app/security/config.py` sets `TWO_FACTOR_DEFAULT = False` ... \"Patients can now export their full visit history as a PDF.\" `clinic-portal/app/routers/visits.py` implements only `GET /visits` returning an empty list `[]`, with a trailing comment `# TODO: pdf export`. There is no PDF generation code anywhere in the repo... the claim must be removed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Patients can now export their full visit history as a PDF.\" \u2014 False as of this commit. `app/routers/visits.py` (Action 11) only returns an empty list from `/visits` and contains a bare `# TODO: pdf export` comment... \"Two-factor authentication is now enabled for every clinic by default.\" \u2014 False. `app/security/config.py` (Action 12) sets `TWO_FACTOR_DEFAULT = False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`captures.json` records that `after_scheduling.png` was actually captured from route `/billing/invoices`, not `/schedule`... `before_scheduling.png` renders the text \"SCHEDULING CALENDAR\", while `after_scheduling.png` renders \"BILLING / INVOICES\" \u2014 a completely unrelated screen.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`before_scheduling.png` shows a screen reading \"SCHEDULING CALENDAR,\" but `after_scheduling.png` shows a screen reading \"BILLING / INVOICES\"... `after_scheduling.png` was captured from route `/billing/invoices`, while `before_scheduling.png` was captured from route `/schedule`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the document embeds `![after](img/after_export.png)`, but no such file exists in `clinic-portal/docs/release/img/`... `unused_capture_07.png` exists in the `img/` directory (I opened it \u2014 it renders \"PATIENT LIST\") but is not referenced anywhere in `highlights-v4.md`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`after_export.png` is missing** \u2014 it would render as a broken image in the email... There is also one file on disk, `unused_capture_07.png` (shows \"PATIENT LIST,\" Action 6), that the document never references",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Yes: the trailing line **\"Highlights draft assembled with AI assistance.\"** This is clearly an internal drafting note, not customer-facing copy... It should be stripped before send",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The trailing line \"Highlights draft assembled with AI assistance.\"** This is internal drafting metadata, not customer-facing content... It should be stripped before sending regardless of other fixes.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r1",
+  "repeat": 1,
+  "task": "dora-t2"
+}

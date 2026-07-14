@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26058,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.170653,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9563,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9563,
+        "cache_read_input_tokens": 17374,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9563,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9563,
+            "cache_read_input_tokens": 17374,
+            "input_tokens": 2,
+            "output_tokens": 2449,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2449,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both nail the core diagnosis; Report 2 is slightly better because it also recommends the independent app-level tenant filter (expectation d) that Report 1 omits.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Postgres row-level security has a documented exception: **RLS policies are never applied to the table owner**, no matter how the policy is written, unless the table is additionally altered with `FORCE ROW LEVEL SECURITY`... Postgres silently skips the policy check entirely because the querying role (`juniper_owner`) owns the table.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In Postgres, `ENABLE ROW LEVEL SECURITY` does **not** apply RLS to the table's owner (or to superusers) \u2014 only to other roles \u2014 unless `FORCE ROW LEVEL SECURITY` is also set. Since `juniper_owner` is the role that created `appointments`... any connection authenticated as `juniper_owner` is exempt from the `tenant_isolation` policy entirely, silently",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The vulnerability was introduced in commit `b2a23d2` (\"ROTA-214 run migrations from the api container on boot\", 2026-06-17), which changed all three `DATABASE_URL` config sources from the low-privilege runtime role to the owner role",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It became exploitable at commit `b2a23d2` \u2014 \"ROTA-214 run migrations from the api container on boot\"... The diff changed all three deployment surfaces in one commit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Revert `DATABASE_URL` in `juniper/docker-compose.yml:5`, `juniper/infra/main.tf:2`, and `juniper/.env.example:1` back to the `juniper_app` role... add `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` in a new migration",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Revert `DATABASE_URL` in `juniper/.env.example:1`, `juniper/docker-compose.yml:5`, and `juniper/infra/main.tf:2` back to `juniper_app`... Add `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;` immediately after the `ENABLE ROW LEVEL SECURITY` line.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "also add an application-level tenant filter (`WHERE tenant_id = :tid`) to the query in `juniper/backend/app/routes/appointments.py:16-19` as a second, independent layer, so isolation doesn't depend solely on the DB policy firing correctly.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "a startup assertion in `db.py`/`deps.py` that queries `current_user`/`SELECT rolname FROM pg_roles WHERE oid = pg_table_owner(...)` and refuses to boot if the runtime role equals the table owner.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add a boot-time assertion in the backend (e.g., in `db.py` or an app startup hook) that queries `rolsuper`/`rolbypassrls` for `current_user` and refuses to start... treat any warning from it as a deploy blocker.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r3",
+  "repeat": 3,
+  "task": "mt-auth-t1"
+}

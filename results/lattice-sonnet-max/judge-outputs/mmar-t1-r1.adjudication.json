@@ -1,0 +1,82 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "It is *not* currently exploitable through the public endpoint because `api.py:18` types the parameter as `status: AppointmentStatus`, and `schemas.py` restricts `AppointmentStatus` to a `str, Enum` with exactly three values (`booked`, `cancelled`, `completed`); FastAPI/Pydantic reject any other value before `search_appointments` is ever invoked.",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 13954,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5"
+        ],
+        "total_cost_usd": 0.69959,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 33396,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 33396,
+          "cache_read_input_tokens": 0,
+          "inference_geo": "not_available",
+          "input_tokens": 2,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 33396,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 33396,
+              "cache_read_input_tokens": 0,
+              "input_tokens": 2,
+              "output_tokens": 633,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 633,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "It is *not* currently exploitable through the public endpoint because `api.py:18` types the parameter as `status: AppointmentStatus`, and `schemas.py` restricts `AppointmentStatus` to a `str, Enum` with exactly three values (`booked`, `cancelled`, `completed`); FastAPI/Pydantic reject any other value before `search_appointments` is ever invoked.",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "c) Secondary but real \u2014 unsafe SQL string interpolation for `status`, not currently exploitable but a bad pattern for this domain... any future direct caller that bypasses the FastAPI/Pydantic layer... reopens full SQL injection against the database",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "c",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_2"
+    }
+  ],
+  "pair": "mmar-t1-r1",
+  "repeat": 1,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "mmar-t1"
+}
