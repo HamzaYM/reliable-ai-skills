@@ -22,3 +22,5 @@ Work normally. Don't pre-emptively ration based on a hypothetical future shortag
 - **Don't trust a stale signal as current.** If a budget snapshot is flagged as possibly out of date, re-check it or proceed conservatively rather than trusting a number that might be minutes or hours old.
 - **This is judgment, not a hard gate.** Never hard-block work because a budget looks low; degrade gracefully instead (smaller scope, lower effort, defer to the other provider).
 - **If every available provider is constrained, proceed with the smallest scoped action and say so.** Don't stall waiting for headroom that may not come.
+
+*Evidence: net-new for this library, not part of the original July 2 A/B; tested only in the July 2026 effort lattice, on a single task with 4 must-hits (results/matrix/MATRIX.md; evidence note updated 2026-07-12). Cold already matched loaded in 7 of 15 model/effort cells; the other 8 showed loaded gain from 3/4 to 4/4 must-hits. Single-task scope: directional only, not pre-registered as confirmatory for this skill.*
