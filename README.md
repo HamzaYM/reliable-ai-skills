@@ -12,7 +12,7 @@ This is a library of 17 Claude Code skills for building and operating AI systems
 
 ```
 /plugin marketplace add HamzaYM/reliable-ai-skills
-/plugin install reliable-ai-skills@reliable-ai-skills
+/plugin install reliable-ai-skills@hamz-ai
 ```
 
 Manual and single-skill install paths are under [Install](#install) below.
@@ -46,7 +46,7 @@ A new pre-registered study of the rewritten skills, on a sanitized public task s
 
 ```
 /plugin marketplace add HamzaYM/reliable-ai-skills
-/plugin install reliable-ai-skills@reliable-ai-skills
+/plugin install reliable-ai-skills@hamz-ai
 ```
 
 **Manual, one skill in a project:**
