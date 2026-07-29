@@ -75,9 +75,11 @@ single-run cells are point values. Runs = consumer runs per arm.
 | claude-sonnet-5@xhigh | `results/lattice-sonnet-xhigh` | 87.3% (R3 mean) | 98.5% (R3 mean) | +11.3 (R3 mean) | 17 | 68 | 3 |
 | claude-sonnet-5@max | `results/lattice-sonnet-max` | 89.7% (R3 mean) | 99.5% (R3 mean) | +9.8 (R3 mean) | 17 | 68 | 3 |
 
-claude-fable-5@max is omitted from this table: it holds no scored
-data (it never completed and is permanently excluded from the
-confirmatory matrix), so it has no rate to show.
+claude-fable-5@max is omitted from this table: it sits outside the
+confirmatory matrix and no confirmatory number in this study uses it.
+Its completed re-run ships as an addendum in `results/lattice-fable-max`:
+without-skills 97.4%, with-skills 100.0%, delta +2.6 pp, each
+the mean over 3 repeats on 16 of the 17 tasks (mmar-t1 excluded).
 
 Complete-case common task set (n=17): aicg-t2, arch-contracts-t1, bama-t1, consent-t2, csh-t1, dora-t2, env-hazards-t1, eval-harness-t1, farch-t1, git-cc-t2, mabc-t2, mmar-t1, mt-auth-t1, pmvg-t2, s2p-cutover-t1, sysdbg-t2, tcr-t1. Complete-case rates, which are
 the only cross-cell-comparable basis, are in MATRIX.md.
@@ -152,9 +154,18 @@ batch1 re-adjudication ships byte-identical copies of a subset of
 `lattice-opus-medium`) are deduplicated by content hash and attributed
 to their canonical cell, so the columns sum exactly to the grand total.
 
-Operational overhead (gates, aborted passes, the never-completed
-Fable-max open cell) lives in the private ledger and is not part of this
-shipped record.
+A cell counts only the artifacts for tasks that entered its scores. Where
+a task was excluded from a cell, whatever partial runs it produced ship as
+evidence of what ran and carry no cost against that cell, the same way
+they carry no score. All 16 shipped cells scored all 17 tasks, so this
+rule moves nothing in the table below; the one cell it applies to is the
+Fable max-effort addendum, which dropped mmar-t1.
+
+Operational overhead (gates, aborted passes) lives in the private ledger
+and is not part of this shipped record. The Fable max-effort addendum
+cell ships its artifacts in `results/lattice-fable-max` and carries $219.62 of
+artifact cost, summed the same way; it sits outside the confirmatory
+matrix, so it is not a row here and not in the grand total.
 
 | Shipped cell | Consumer $ | Judge $ | Adjudication $ | Cell total $ |
 |---|---:|---:|---:|---:|

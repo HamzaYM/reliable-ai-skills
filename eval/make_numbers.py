@@ -33,10 +33,12 @@ MATRIX_JSON = os.path.join(REPO, "results/matrix/matrix.json")
 CONCORDANCE_JSON = os.path.join(REPO, "results/concordance/codex-concordance.json")
 OUT = os.path.join(REPO, "results/matrix/NUMBERS.md")
 
-# The Fable max-effort cell is a pre-registered open cell that never completed
-# (see the posted amendment); it holds no scored data and is not part of the
-# shipped record.
-UNSHIPPED_DIRS = {"results/lattice-fable-max"}
+# The Fable max-effort cell sits outside the confirmatory matrix (see the posted
+# amendment). Its completed re-run ships as an addendum, so its artifacts are in
+# the repository; the name below means "not in the confirmatory tables and not in
+# the shipped-record cost total", not "absent from the repo".
+ADDENDUM_DIR = "results/lattice-fable-max"
+UNSHIPPED_DIRS = {ADDENDUM_DIR}
 
 
 def load(path):
@@ -54,7 +56,20 @@ def rel(path):
 # batch1 re-adjudication ships a byte-identical copy of a subset of
 # lattice-opus-medium) are deduplicated by content hash so nothing is counted
 # twice, regardless of which cell or machine produced it.
+#
+# A cell's cost counts only the artifacts for tasks that entered that cell's
+# scores. When a task is excluded from a cell (scores.json `excluded_tasks`),
+# whatever partial runs it produced still ship as evidence of what ran, and they
+# carry no cost against the cell, the same way the task carries no score. This
+# rule is applied to every cell. It is a no-op on all 16 shipped cells, whose
+# excluded_tasks are empty; the one cell it moves is the Fable max-effort
+# addendum, which dropped mmar-t1.
 # --------------------------------------------------------------------------
+
+def excluded_tasks(run_dir):
+    """Tasks that did not enter this cell's scores, from its own scores.json."""
+    return set(load(os.path.join(REPO, run_dir, "scores.json")).get("excluded_tasks") or [])
+
 
 def artifact_cost(path):
     """Return (category, cost_usd) for one artifact file, or None if it carries
@@ -103,8 +118,11 @@ def shipped_cost(cell_order, cell_run_dir):
     for d in ordered:
         cats = {"consumer": 0.0, "judge": 0.0, "adjudication": 0.0}
         dupe = 0.0
+        ex = excluded_tasks(d)
         for sub in ("consumer", "judge-outputs"):
             for f in sorted(glob.glob(os.path.join(REPO, d, sub, "*.json"))):
+                if ex and load(f).get("task") in ex:
+                    continue  # task did not enter this cell's scores
                 res = artifact_cost(f)
                 if res is None:
                     continue
@@ -127,6 +145,24 @@ def shipped_cost(cell_order, cell_run_dir):
     # construction, so the printed sanity identity always adds up
     gross = grand + dupe_total
     return rows, grand, dupe_total, gross
+
+
+def addendum_cost():
+    """Artifact cost of the off-matrix addendum cell, summed the same way as a
+    shipped cell: only the artifacts for tasks that entered its scores, so the
+    partial mmar-t1 runs ship as evidence and cost nothing here. Its artifacts
+    share no content hash with any shipped cell, so there is nothing to
+    deduplicate against them."""
+    ex = excluded_tasks(ADDENDUM_DIR)
+    total = 0.0
+    for sub in ("consumer", "judge-outputs"):
+        for f in sorted(glob.glob(os.path.join(REPO, ADDENDUM_DIR, sub, "*.json"))):
+            if ex and load(f).get("task") in ex:
+                continue
+            res = artifact_cost(f)
+            if res is not None:
+                total += res[1]
+    return cents(total)
 
 
 # --------------------------------------------------------------------------
@@ -226,7 +262,7 @@ def build():
     for c in cell_order:
         cell = cells[c]
         if cell["run_dir"] in UNSHIPPED_DIRS:
-            continue  # fable-max holds no scored data; see the note below the table
+            continue  # fable-max is off-matrix; see the note below the table
         agg = cell["aggregate"]
         replicated = cell.get("replicated")
         if replicated:
@@ -241,9 +277,15 @@ def build():
         w(f"| {c} | `{cell['run_dir']}` | {cold} | {loaded} | {delta} | "
           f"{agg['n_tasks']} | {agg['n_expectations']} | {cell['repeats']} |")
     w("")
-    w("claude-fable-5@max is omitted from this table: it holds no scored")
-    w("data (it never completed and is permanently excluded from the")
-    w("confirmatory matrix), so it has no rate to show.")
+    add = load(os.path.join(REPO, ADDENDUM_DIR, "scores.json"))
+    addm = add["repeats_detail"]["mean_over_repeats"]
+    w("claude-fable-5@max is omitted from this table: it sits outside the")
+    w("confirmatory matrix and no confirmatory number in this study uses it.")
+    w(f"Its completed re-run ships as an addendum in `{ADDENDUM_DIR}`:")
+    w(f"without-skills {addm['cold_rate_pct']:.1f}%, with-skills "
+      f"{addm['loaded_rate_pct']:.1f}%, delta {addm['delta_pp']:+.1f} pp, each")
+    w(f"the mean over {add['repeats']} repeats on {len(add['tasks'])} of the 17 "
+      f"tasks ({', '.join(add['excluded_tasks'])} excluded).")
     w("")
     w(f"Complete-case common task set (n={len(mx['complete_case_tasks'])}): "
       f"{', '.join(mx['complete_case_tasks'])}. Complete-case rates, which are")
@@ -291,7 +333,7 @@ def build():
     w("|---|---|---|---|---|---|")
     for c in cell_order:
         if cells[c]["run_dir"] in UNSHIPPED_DIRS:
-            continue  # fable-max was never judged; nothing to report here
+            continue  # fable-max is off-matrix; its judging is in its own REPORT.md
         jd = cells[c]["judge_disagreement"]
         a = jd["adjudication"]
         w(f"| {c} | {jd['n_disagreed']}/{jd['n_marks']} | {jd['disagreement_rate_pct']}% | "
@@ -336,9 +378,19 @@ def build():
     w("`lattice-opus-medium`) are deduplicated by content hash and attributed")
     w("to their canonical cell, so the columns sum exactly to the grand total.")
     w("")
-    w("Operational overhead (gates, aborted passes, the never-completed")
-    w("Fable-max open cell) lives in the private ledger and is not part of this")
-    w("shipped record.")
+    w("A cell counts only the artifacts for tasks that entered its scores. Where")
+    w("a task was excluded from a cell, whatever partial runs it produced ship as")
+    w("evidence of what ran and carry no cost against that cell, the same way")
+    w("they carry no score. All 16 shipped cells scored all 17 tasks, so this")
+    w("rule moves nothing in the table below; the one cell it applies to is the")
+    w("Fable max-effort addendum, which dropped mmar-t1.")
+    w("")
+    w("Operational overhead (gates, aborted passes) lives in the private ledger")
+    w("and is not part of this shipped record. The Fable max-effort addendum")
+    w(f"cell ships its artifacts in `{ADDENDUM_DIR}` and carries "
+      f"${addendum_cost():,.2f} of")
+    w("artifact cost, summed the same way; it sits outside the confirmatory")
+    w("matrix, so it is not a row here and not in the grand total.")
     w("")
     w("| Shipped cell | Consumer $ | Judge $ | Adjudication $ | Cell total $ |")
     w("|---|---:|---:|---:|---:|")
