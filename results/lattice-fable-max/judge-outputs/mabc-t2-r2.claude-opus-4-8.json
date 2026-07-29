@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27969,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.20292849999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12418,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12418,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12418,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12418,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2506,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2506,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with well-grounded detail; they are comparable, with Report 1 slightly deeper on setup nuances but Report 2 cleaner in structure.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Engineer C \u2014 registry config: F-02, F-05, F-09, owning `pipeline/registry.py`. Three one-line edits to an 11-line file should be one small PR, not three conflicting ones.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/registry.py` (12 lines) is hit by F-02 ... F-05 ... and F-09 ... \u2014 splitting three one-liners across engineers buys no speed and guarantees conflicts, so they bundle.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Engineer B \u2014 scoring and rubric: F-01 plus its test F-11 ... Engineer C \u2014 registry config: F-02, F-05, F-09, owning `pipeline/registry.py`. Three one-line edits to an 11-line file should be one small PR ... after triage, all streams start simultaneously",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 runs batches A\u2013D fully in parallel ... A \u2014 rubric parsing | F-01 + F-11 (its test) ... C \u2014 registry config | F-02 + F-05 + F-09 | `pipeline/registry.py` | 3",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 a policy decision disguised as a fix. ... Any new numbers change production scores and should come from whoever owns scoring policy ... Assign it only once concrete values and sign-off exist.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 escalate, don't assign. ... any change to `PARTIAL_CREDIT_THRESHOLDS = (0.35, 0.65)` ... changes produced scores for real borderline answers \u2014 that's a scoring-policy decision, not a bug ... It needs the reviewer/owner to supply concrete values",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`tests/conftest.py:4` defaults `RESULTS_DB` to the machine-global path `/var/tmp/llm-scoring/results.db`; engineers running suites concurrently on a shared box could collide unless each overrides the env var. ... Export `RESULTS_DB` to a per-engineer path",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`tests/conftest.py:4` defaults the suite's results database to a machine-global path: `RESULTS_DB = os.environ.get(\"RESULTS_DB\", \"/var/tmp/llm-scoring/results.db\")`. Engineers (or agents on one machine) running tests concurrently without overriding `RESULTS_DB` collide on that file ... export `RESULTS_DB=<per-engineer path>`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r2",
+  "repeat": 2,
+  "task": "mabc-t2"
+}

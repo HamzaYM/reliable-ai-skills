@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 51842,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2948769,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 24361,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 24361,
+        "cache_read_input_tokens": 158823,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1170,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1170,
+            "cache_read_input_tokens": 46892,
+            "input_tokens": 2,
+            "output_tokens": 1408,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 6189,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently verify and cite the same files/lines and reach identical conclusions on all four expectations; Report 1 is marginally more decisive on the legacy_billing_secret_arn trap (calls for outright deletion) while Report 2 hedges toward confirmation, but this does not affect any graded expectation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`... **Delete the line entirely**... `infra/prod/app.auto.tfvars:3` \u2014 `AUTH_RELAXED = \"true\"`... **Delete the line entirely**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars` line 2 \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`... Change to \"false\" or remove the key.\n- **`infra/prod/app.auto.tfvars` line 3 \u2014 `AUTH_RELAXED = \"true\"`**... Change to \"false\" or remove.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The pipeline's single build job runs `npx vite build --mode staging`... That staging URL is therefore inlined into the bundle... `deploy-prod` then deploys **the exact same digest** to prod... Production needs its own env file (or CI-injected variable), its own build",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the API base URL in the bundle production users receive is `https://staging-api.example.com`, baked in from `frontend/.env.staging`... the fix is either runtime injection of the API base URL... or a separate production build using `--mode production` with a new `.env.production`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Nothing runs database migrations... the runbook's claim that \"Database migrations are applied automatically during deploy\" (`docs/prod-runbook.md:6`) is unverifiable-at-best... The first production release must apply the full chain `0001_base` \u2192 `0002_tenants` \u2192 `0003_billing`... as things stand nothing will.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Migrations for an empty prod database are unverifiable. The runbook claims migrations run automatically during deploy, presumably inside the missing `deploy.sh`; the three migrations... would all need to run against a brand-new prod database, and nothing in the repo provisions that database",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the production Terraform passes the **staging** condition into the prod deploy role: `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` (`infra/prod/main.tf:3`, unchanged from the staging copy... A stricter environment must have its own scoped trust condition, never one shared with staging.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` \u2014 copied unedited from staging \u2014 trusts `repo:acme-health/medislot:environment:staging`... any job running in the staging GitHub environment could assume the production deploy role \u2014 a staging-to-production privilege-escalation path. The fix is changing `infra/prod/main.tf:3` to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

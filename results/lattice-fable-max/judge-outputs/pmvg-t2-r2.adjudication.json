@@ -1,0 +1,83 @@
+{
+  "adjudicator_effort": "medium",
+  "adjudicator_model": "claude-fable-5",
+  "disputes": [
+    {
+      "adjudicator_mark": {
+        "evidence": "Two practical gotchas with the regen script, both observed: a bare `python3 scripts/update_golden.py` fails with `ModuleNotFoundError: No module named 'score'` because the repo root isn't on `sys.path` (verified via import from the `scripts/` directory; it needs `PYTHONPATH=. python3 scripts/update_golden.py` or `python3 -m scripts.update_golden` from the root), and it iterates the `set` `CATEGORIES` \u2014 its own comment says \"set ordering is arbitrary\" \u2014 so output key order is nondeterministic across runs, producing noisy golden diffs",
+        "hit": true
+      },
+      "cli_meta": {
+        "attempts": 1,
+        "duration_ms": 17278,
+        "effort_effective": "medium",
+        "effort_requested": "medium",
+        "model_effective": "claude-fable-5",
+        "model_requested": "claude-fable-5",
+        "models_effective": [
+          "claude-fable-5",
+          "claude-haiku-4-5-20251001"
+        ],
+        "total_cost_usd": 0.24925799999999998,
+        "usage": {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 8517,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 8517,
+          "cache_read_input_tokens": 18479,
+          "inference_geo": "not_available",
+          "input_tokens": 2,
+          "iterations": [
+            {
+              "cache_creation": {
+                "ephemeral_1h_input_tokens": 8517,
+                "ephemeral_5m_input_tokens": 0
+              },
+              "cache_creation_input_tokens": 8517,
+              "cache_read_input_tokens": 18479,
+              "input_tokens": 2,
+              "output_tokens": 1118,
+              "type": "message"
+            }
+          ],
+          "output_tokens": 1118,
+          "server_tool_use": {
+            "web_fetch_requests": 0,
+            "web_search_requests": 0
+          },
+          "service_tier": "standard",
+          "speed": "standard"
+        }
+      },
+      "final_mark": true,
+      "judge_marks": {
+        "claude-opus-4-8": {
+          "hit": true,
+          "votes": [
+            {
+              "evidence": "it iterates the `set` `CATEGORIES` \u2014 its own comment says \"set ordering is arbitrary\" \u2014 so output key order is nondeterministic across runs, producing noisy golden diffs (the test does per-key lookups, so ordering affects reviewability, not correctness).",
+              "hit": true
+            }
+          ]
+        },
+        "claude-sonnet-5": {
+          "hit": false,
+          "votes": [
+            {
+              "evidence": "",
+              "hit": false
+            }
+          ]
+        }
+      },
+      "must_hit": "d",
+      "rule": "two-of-three majority: the two primary judges' marks plus the adjudicator's mark; because the primaries split one-to-one on a disputed mark, the majority equals the adjudicator's mark, and the mark stays in every denominator",
+      "slot": "report_1"
+    }
+  ],
+  "pair": "pmvg-t2-r2",
+  "repeat": 2,
+  "schema": "eval/schemas/adjudicator.schema.json",
+  "task": "pmvg-t2"
+}

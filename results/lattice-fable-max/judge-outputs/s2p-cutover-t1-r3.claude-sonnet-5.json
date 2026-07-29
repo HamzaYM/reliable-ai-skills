@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 49144,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.17344330000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13029,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13029,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13029,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13029,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 5262,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5262,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct file/line citations; Report 2 is marginally stronger on expectation (a) because it unambiguously calls for deleting/removing the shadow-scoring sink and legacy billing secret rather than offering a replace-with-new-value alternative as Report 1 does.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\"... AUTH_RELAXED = \"true\"... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... This seeds a QA superadmin backdoor account into the production system... The sink must be changed: set SHADOW_SCORING_SINK = \"\" if shadow scoring is not wanted in prod... LEGACY_BILLING_SECRET_ARN = \"arn:synthetic:secrets:legacy-billing-key\"... Production needs its own production-scoped secret ARN",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\"... Delete the key entirely... AUTH_RELAXED = \"true\"... Delete the key entirely... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"... Delete the key entirely... Delete both keys entirely \u2014 an empty/absent sink is the only state that actually disables the write path... LEGACY_BILLING_SECRET_ARN... Do not recreate the legacy secret wiring in the new environment; delete the key.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "VITE_-prefixed variables are inlined into the built bundle at build time... deploy-prod \u2014 explicitly named \"deploy the same already-built digest to prod\" (lines 34\u201335) \u2014 deploys the identical image to production... production users' browsers would call https://staging-api.example.com... The build-once-promote-by-digest design is otherwise good practice, but it is incompatible with baking environment-specific URLs in at build time; one of the two has to change.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Net effect: the production frontend ships with the staging API URL https://staging-api.example.com baked into its bundle, with no runtime way to fix it. Production traffic from real clinics would hit the staging API. Production needs its own build (--mode production with a .env.production carrying the prod API URL, or a runtime-injected config), not a promotion of the staging-built digest",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Database setup and migrations are unaccounted for. docs/prod-runbook.md:6 promises \"Database migrations are applied automatically during deploy,\" which can only live in the missing deploy.sh; the fresh production database needs migrations 0001_base \u2192 0003_billing applied on first release, and no visible pipeline step does this.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No database migration step... docs/prod-runbook.md:6 claims \"Database migrations are applied automatically during deploy,\" but the runbook flags itself \"last updated: 3 months ago\" ... and the committed pipeline contradicts it... For a first production release against a brand-new, empty database, an explicit migration run is required; \"the pipeline succeeded\" would not mean the schema exists.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "infra/prod/main.tf:3 \u2014 oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\". The production deploy role is configured to trust GitHub OIDC tokens from the staging environment. It must be \"repo:acme-health/medislot:environment:production\".",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the prod role's trust condition at infra/prod/main.tf:3 was copied unchanged and still reads repo:acme-health/medislot:environment:staging... The condition must be changed to repo:acme-health/medislot:environment:production so production has its own scoped trust, not one shared with staging.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r3",
+  "repeat": 3,
+  "task": "s2p-cutover-t1"
+}

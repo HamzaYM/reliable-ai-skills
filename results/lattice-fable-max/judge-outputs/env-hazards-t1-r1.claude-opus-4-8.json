@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16199,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.14457850000000003,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9506,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9506,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9506,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9506,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1436,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1436,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and correctly answer all three questions with equivalent depth and specificity; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as `cedar_owner`, and `cedar_owner` is exempt from the row-level-security policies that are supposed to provide tenant isolation... migrations run as `cedar_owner`... so `cedar_owner` **owns** the `clients` table, and table owners are exempt from RLS unless the table is set to `FORCE ROW LEVEL SECURITY` \u2014 the migration only uses `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`... never `FORCE`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The break is in `cedarline/.env`... `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`... `cedar_owner` also **owns every table**... and table owners bypass RLS unless the table has `FORCE ROW LEVEL SECURITY` \u2014 which `0001_init.sql` never sets",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `DATABASE_URL` in `cedarline/.env`... to the dedicated application role... `cedar_owner` (schema owner/superuser): used **only** by `scripts/migrate.sh` to run migrations... The application must never connect as it. - `cedar_app` (least privilege): used for **everything** the running app does.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "change `DATABASE_URL` in `cedarline/.env` and `.env.example` to `postgresql://cedar_app:apppw@localhost:5432/cedar`... **`cedar_owner`** (superuser/table owner): used only by `scripts/migrate.sh` and admin/bootstrap tasks \u2014 never by the running application. - **`cedar_app`** (least-privilege, RLS-subject): the only role in the application's `DATABASE_URL`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`cedarline/scripts/reset-local-db.sh:3` runs `docker compose down -v`, which deletes the `cedar_pgdata` volume... The role lives in `db/bootstrap/create_app_role.sql`, which (a) is outside the `db/migrations/*.sql` glob... (b) is not mounted into the container's `/docker-entrypoint-initdb.d/`... fails immediately with Postgres's `FATAL: role \"cedar_app\" does not exist`... the bootstrap must be re-run",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_app` is created only by `cedarline/db/bootstrap/create_app_role.sql`, which is explicitly manual... `docker compose down -v` \u2014 deleting the `cedar_pgdata` named volume... then `./scripts/migrate.sh`, which applies only `db/migrations/*.sql`... with no `CREATE ROLE` anywhere... the teammate must re-run the bootstrap against the fresh cluster",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

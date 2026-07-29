@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16964,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09798269999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9592,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9592,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9592,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9592,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1782,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1782,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are substantively equivalent and correct on all three expectations; Report 1 adds slightly more mechanism detail (e.g., POSTGRES_USER superuser behavior) while Report 2 adds git-history provenance (CED-1/CED-7) \u2014 neither materially outperforms the other.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as `cedar_owner`, a role that is exempt from row-level security, so the isolation policies exist but are never applied. The responsible configuration is `cedarline/.env` (mirrored by `.env.example`), which sets `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`... table owners are exempt from RLS unless the table has `FORCE ROW LEVEL SECURITY` \u2014 which `0001_init.sql` never sets (it only uses `ENABLE`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The responsible configuration is `cedarline/.env`, which sets `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`... in Postgres, RLS policies do not apply to superusers, and they also do not apply to the table's owner unless the table has `FORCE ROW LEVEL SECURITY` (the migration only uses `ENABLE`, never `FORCE`).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**`cedar_owner` is for migrations only.**... **`cedar_app` is for all runtime traffic** \u2014 the FastAPI app and any tooling that acts on behalf of tenants. Keep it least-privilege exactly as `db/bootstrap/create_app_role.sql` defines it",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "database access should be split by privilege: the owner/superuser role (`cedar_owner`) should be used only for schema migrations (`scripts/migrate.sh`) and administration, while all application runtime traffic goes through the least-privileged `cedar_app` role so RLS applies to every app query.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It is created in exactly one place: `cedarline/db/bootstrap/create_app_role.sql`, which is explicitly a manual, one-time step... `cedarline/scripts/reset-local-db.sh` runs `docker compose down -v`, which deletes the `cedar_pgdata` volume... The script then runs `./scripts/migrate.sh`, whose loop covers only `db/migrations/*.sql`. The bootstrap file lives in `db/bootstrap/`, outside that glob, so it is never replayed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the `cedar_app` role is created only by a manual, one-time bootstrap that is not part of the rebuild path. `scripts/reset-local-db.sh` runs `docker compose down -v` \u2014 the `-v` flag deletes the named volume `cedar_pgdata`... The script then runs only `scripts/migrate.sh`, which applies `db/migrations/*.sql`... `cedar_app` exists only in `db/bootstrap/create_app_role.sql`, which its own header comment, the README, and `docs/local-setup.md` all describe as a one-time first-setup step; nothing re-runs it",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

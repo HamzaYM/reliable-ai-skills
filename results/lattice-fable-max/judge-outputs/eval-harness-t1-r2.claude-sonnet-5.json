@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 32910,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.12473129999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9854,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9854,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9854,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9854,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3433,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3433,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports match on the mechanics of the bug (a, b, c), but Report 2 uniquely delivers the requested distinction between the gate axis and optional axes (d), explicitly proposing renormalization as viable for relevance/tone but never for accuracy, whereas Report 1 explicitly argues the remedy should be axis-independent and rejects renormalization outright \u2014 missing that expectation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Inside `grader/aggregate.py:6-13`, `composite()` computes the weighted sum `0.3\u00b7relevance + 0.5\u00b7accuracy + 0.2\u00b7tone`, and lines 10\u201311 (`if value is None: value = 0.0`) silently substitute **0.0** \u2014 the worst possible score \u2014 for any failed axis... In form, the record is **indistinguishable** from a fully scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Inside `composite()`, `grader/aggregate.py:9-12` converts that `None` to `0.0` (`if value is None: value = 0.0`) and folds it into the weighted sum... In form, the degraded record is **byte-for-byte indistinguishable** from a fully scored one",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Semantically wrong: it converts \"we don't know this axis's score\" into \"this axis scored 0 out of 10\" \u2014 an infrastructure hiccup is recorded as the harshest possible quality judgment. Missing data and worst-possible data are opposite claims... Zero-filled rows still increment the count, so every failure biases the agent's mean downward",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A zero is a real, comparable data point (\"this reply measured as worthless on this axis\"); a failed call is the absence of a measurement. Conflating them writes fiction into the dataset... `grader/leaderboard.py:13-16` sums `float(comp)` over every row and divides by row count, treating every row as equally valid.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If an axis still has no score, write no composite for that record. Do not call `composite()` with a partial dict and do not write a row to `results/scores.csv`... a reply with an unverified accuracy score is *ungradable*, not *failed*",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No comparable composite should be emitted at all when accuracy is missing... If accuracy is still missing after retries: write nothing to `results/scores.csv` for that record. No composite, no zero, no placeholder.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "A failed relevance or tone call is survivable. Losing an \"embellishment\" degrades precision, not meaning: a composite renormalized over the surviving axes is still an honest, roughly comparable quality signal (worth flagging, but not disqualifying)... If only relevance or tone is missing: either hold the row for retry the same way (simplest and most consistent), or emit a composite renormalized over the surviving weights",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r2",
+  "repeat": 2,
+  "task": "eval-harness-t1"
+}

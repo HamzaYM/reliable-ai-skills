@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24478,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1644585,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9730,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9730,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9730,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9730,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 2118,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2118,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough, technically correct, and hit all four expectations; they are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Target **`main`** ... Had the dependency still been open, the correct move would have been a stacked PR based on `feat/weighted-scorer`; since it is merged, `main` is the only sensible base.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The PR should target `main`. ... The only alternative candidate \u2014 `feat/weighted-scorer`, the branch this work was actually built on \u2014 must not be used, because it is a dead base: its content has already been merged into `main`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was created from the **tip of `feat/weighted-scorer`** ... `git merge-base --is-ancestor feat/weighted-scorer main` exits 1 ... PR #42 collapsed W1\u2013W3 into the single commit `1971f08` on main, byte-for-byte identical in content",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/weighted-scorer` has already been merged into `main` via a squash-merge ... `git merge-base --is-ancestor feat/weighted-scorer main` fails (its commits W1 `d6fdbc3`, W2 `2d3029b`, W3 `ac9d505` are *not* ancestors of main) ... merged as PR #42",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`: +13/\u22123 \u2014 rewrites the scorer from flat metrics to weighted aggregation ... **No, not all of it is pairwise work.** ... it appears in the PR-style diff only because the W commits remain in this branch's ancestry while main carries the same content under a different commit, pinning the merge-base back at `65204ad`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`scoring/scorer.py`: +13/\u22123 ... **entirely weighted-scorer work (W1/W2), none of it pairwise**. ... appears in the PR diff only because the branch's merge-base with main predates the squash-merge",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... `git diff main...feat/pairwise-metric` should now equal the 5-line pairwise-only delta ... `git fetch origin`, then verify `origin/main` hasn't moved past `1971f08`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... `git diff main...feat/pairwise-metric --stat` must show only `prompts/grader.txt` (+1) and `scoring/metrics.py` (+4). Also confirm `git merge-base --is-ancestor main feat/pairwise-metric` now succeeds",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

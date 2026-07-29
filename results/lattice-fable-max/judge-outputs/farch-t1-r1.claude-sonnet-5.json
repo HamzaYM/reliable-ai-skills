@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 30730,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1327573,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11531,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11531,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11531,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11531,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3218,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3218,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy all four expectations by grounding their analysis in the same prior-attempt commits (454a21f/597777b/1712565) and the same recorded connection-exhaustion cause; Report 2 goes further with additional code-level defects (missing Postgres driver, circular import, dead stopgap engine) but this extra depth is not required by the expectations, making the two reports comparable on the graded criteria.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the sequence: 454a21f \"Add Edgerunner serverless deploy for API (PLAT-31)\" \u2192 597777b \"Open a dedicated Postgres connection per request in the serverless handler (PLAT-31)\" \u2192 1712565 \"Revert Edgerunner migration\u2026\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "commits 454a21f (Apr 14, 2026), 597777b (Apr 16), and 1712565 (Apr 21) are a complete prior Edgerunner migration and revert under ticket PLAT-31.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit 1712565 (2026-04-21) records that on Edgerunner, /reports/monthly exhausted Postgres max_connections under *normal* dashboard load (\"FATAL: too many connections\") and took the endpoint down, forcing a revert to Cargobox. Commit 597777b records the root constraint: \"Edgerunner runs each request in a fresh isolate and does not keep the SQLAlchemy connection pool between invocations.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Revert commit 1712565 (Apr 21, 2026, PLAT-31): \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production\" \u2014 \"per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "this migration is a re-attempt of PLAT-31, which was reverted from production in commit 1712565 on 2026-04-21... The current deployment project documentation being replaced. deploy/cargobox.yaml (always-on, replicas: 2, 1 CPU / 1 Gi, secret-injected DATABASE_URL) and backend/Dockerfile (uvicorn server process) \u2014 both assume a long-lived process.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Recreate the Edgerunner artifacts. Restore deploy/edgerunner.toml (git show 454a21f:deploy/edgerunner.toml: [service] name/entry + [scaling] per_request = true)... Reverting to Cargobox is the proven escape hatch \u2014 it is literally what commit 1712565 did.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Who should be involved: the owner of the PLAT ticket queue / author of the PLAT-31 revert (they hold the context and own the settled decision), whoever operates the Postgres instance (they own max_connections and would own any pooler), and the leadership sponsor of the cost initiative \u2014 the go/no-go is theirs to make, but only after seeing the failure history.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Who should be involved: whoever owns PLAT-31 and ran the April attempt/revert (commits are authored by \"Fixture Bot\", so real owners must be identified via the PLAT tracker)... and the leadership sponsor to re-approve with full history.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

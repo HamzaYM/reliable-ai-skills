@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 25449,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1570875,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9480,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9480,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9480,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9480,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1931,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1931,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and accurately answer all four questions with matching evidence; they are comparable, with Report 2 slightly more explicit on the fetch/freshness check and Report 1 adding a merge-conflict simulation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The only conceivable alternative base is `feat/weighted-scorer`, the branch this work was stacked on \u2014 and that would be a mistake ... Every PR should target the trunk, and here the trunk is unambiguously `main`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The only alternative would be the classic stacked-PR base, `feat/weighted-scorer`, since the branch was built on it \u2014 but that would be wrong now ... Target `main`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric` was created from the tip of `feat/weighted-scorer` ... its entire content has already landed on `main` via a squash merge (commit `1971f08` \"Refactor scorer for weighted metrics (#42)\" ... the W1\u2013W3 commits are unreachable from `main`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feat/pairwise-metric` was created from the tip of `feat/weighted-scorer` \u2014 commit `ac9d505` ... main's single new commit `1971f08 \"Refactor scorer for weighted metrics (#42)\" (2 files, +16/\u22123) is a **squash merge** of exactly W1+W2+W3.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**Not all of this is pairwise work.** The `scoring/scorer.py` hunk and the `overlap()` function are the weighted-scorer changes (commits W1\u2013W3), which are already on `main` inside squash commit `1971f08`. They appear in the diff only because the branch's merge-base with `main` predates that squash merge",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`scoring/scorer.py` +13/\u22123: ... **entirely weighted-scorer work** (W1+W2), no pairwise content at all. ... it appears **even though main already contains that exact content**, because the merge-base diff is computed from `65204ad`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`git rebase --onto main feat/weighted-scorer feat/pairwise-metric` ... *Verify the diff is now scoped:* `git log main..feat/pairwise-metric --oneline` must show exactly the two replayed X commits, and `git diff main...feat/pairwise-metric` must equal the +5-line net diff from question 3 \u2014 nothing but pairwise content.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Sync with the remote** \u2014 `git fetch origin` and confirm `main` = `origin/main`. ... `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`. ... **Verify the result** \u2014 `git log --oneline main..feat/pairwise-metric` must show only the two X commits; `git diff main...feat/pairwise-metric` must now equal the +5-line diff above",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r3",
+  "repeat": 3,
+  "task": "git-cc-t2"
+}

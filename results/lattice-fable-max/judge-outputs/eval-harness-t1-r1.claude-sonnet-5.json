@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 37602,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.17023449999999998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13152,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13152,
+        "cache_read_input_tokens": 68275,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3179,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3179,
+            "cache_read_input_tokens": 39124,
+            "input_tokens": 2,
+            "output_tokens": 1241,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4362,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports cover the mechanics (a, b) and the accuracy-specific write-block (c) equally well, but only Report 1 arrives at the required distinction (d) that relevance/tone failures may be handled via renormalization while accuracy failures must not \u2014 Report 2 explicitly argues against differentiated handling, making Report 1 the stronger answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Inside `grader/aggregate.py:6-13`, `composite()` iterates the weights ... and at lines 9-11 substitutes `0.0` for any `None` value before summing. So a failed axis contributes exactly what a genuine worst-possible score of 0 would contribute. ... In form, the degraded record is **byte-for-byte indistinguishable** from a fully-scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Inside `grader/aggregate.py:8-12`, `composite()` substitutes `0.0` for any axis whose value is `None` (lines 10-11: `if value is None: value = 0.0`) and proceeds with the weighted sum. ... In form, the written record is byte-for-byte indistinguishable from a fully scored one",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Conflating \"we couldn't score this axis\" with \"this axis scored 0\" corrupts every downstream aggregate. ... For `grader/leaderboard.py`: `rankings()` (lines 12-16) reads every row, does `sums[agent] += float(comp); counts[agent] += 1`, and ranks by mean. It has no way to exclude or down-weight degraded rows, so each failure drags the affected agent's mean down as if they had performed terribly.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No \u2014 it conflates \"we could not measure this axis\" with \"this axis was measured and scored 0/10\". ... Consequence for `grader/leaderboard.py`: `rankings()` (lines 9-17) averages every row equally, with no notion of validity. Agents whose replies happened to hit transient failures get dragged down in proportion to their bad luck, not their quality",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If accuracy failed: do **not** write a comparable composite into `scores.csv`. Record the reply in a degraded/incomplete state \u2014 either a separate failures file or a status column that the leaderboard filters out",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The gate axis is exactly the one you must never fabricate a value for; it also rules out fallbacks like renormalizing the composite over the remaining two axes, since a composite that never measured the gate axis is meaningless under this rubric.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "If only relevance and/or tone failed (accuracy succeeded): renormalize over the surviving axes \u2014 e.g. with tone missing, composite = (0.3\u00b7relevance + 0.5\u00b7accuracy) / 0.8 \u2014 and write the row... If accuracy failed: do not write a comparable composite into scores.csv.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "But the correct handling is the same for all three axes, because the failure is *missing data*, and missing data is not a score on any axis. Zero-filling tone is wrong in exactly the same way",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

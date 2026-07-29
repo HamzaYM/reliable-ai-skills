@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28793,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1835608,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 15452,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 15452,
+        "cache_read_input_tokens": 114476,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1303,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1303,
+            "cache_read_input_tokens": 43300,
+            "input_tokens": 2,
+            "output_tokens": 1078,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3264,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with nearly identical citations and reasoning; Report 2 is marginally more precise on the shadow-scoring fix mechanics, but overall the two are comparable in coverage and quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\" ... Delete the key entirely from the prod file. ... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\" ... Delete the key entirely. ... SHADOW_SCORING_SINK ... Delete both keys from the prod file ... LEGACY_BILLING_SECRET_ARN ... delete the key",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ENABLE_DEBUG_TOOLBAR = \"true\". ... Change to \"false\" or delete the key. ... PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\". ... Remove the entry (set to empty) ... SHADOW_SCORING_SINK ... Either set it to \"\" ... LEGACY_BILLING_SECRET_ARN ... This needs a production-specific secret ARN",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Because the URL is inlined at build time, there is no runtime fix \u2014 production needs its own build (`.env.production` with the prod API URL, a `--mode production` build, a separately pushed image/digest), not a promotion of the staging artifact.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "production users would load a frontend hard-wired to call `https://staging-api.example.com`, not the production API. ... one of the two has to change (per-environment builds, or runtime-injected API base URL).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the workflow contains no migration step at all ... For a first production release the prod database schema does not exist; the three migrations ... need an explicit first pass, manual or pipelined. \"The pipeline succeeded\" would not mean the schema exists.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the workflow has no migration step ... The first release must bring a fresh production database from nothing through `0001_base`, `0002_tenants`, and `0003_billing` ... as things stand nothing will do that.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The fix is `oidc_sub_condition = \"repo:acme-health/medislot:environment:production\"` in `infra/prod/main.tf:3`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "But `infra/prod/main.tf:3` \u2014 unedited from the staging copy \u2014 trusts `repo:acme-health/medislot:environment:staging`. ... Change to \"repo:acme-health/medislot:environment:production\"",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r2",
+  "repeat": 2,
+  "task": "s2p-cutover-t1"
+}

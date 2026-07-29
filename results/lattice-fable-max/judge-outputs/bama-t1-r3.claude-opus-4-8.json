@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19555,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1318835,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7499,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7499,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7499,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7499,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1774,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1774,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with the same core numbers and recommendation; they are comparable, with Report 1 slightly richer on deadline/reset reasoning and Report 2 slightly more precise on file citations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 ~1,800 tokens per scoring call, and `score_batch.py` makes one call per transcript, so a full run needs **\u2248 9.36M tokens**. ... **northpeak (primary, the default):** 640,000 tokens remaining of a 10,000,000-token window ... it covers only ~355 of 5,200 transcripts before the job hits the limit.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The full run needs about **9.36M tokens**: ... 5,200 \u00d7 1,800 = 9,360,000 tokens ... **northpeak (default):** 640,000 tokens remaining of a 10,000,000-token window ... That covers only ~355 of 5,200 transcripts (~7% of the run), a shortfall of ~8.72M tokens",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would route the full run to the secondary backend: ... --provider secondary ... ridgeline's 10.8M remaining covers the 9.36M-token run outright.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Launch on the secondary backend, not the default: ... --provider secondary ... ridgeline (secondary):** 10,800,000 tokens remaining of 12,000,000 ... That covers the full 9.36M-token run now",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** launch the default path. Instead I would route the full run to the secondary backend ... I'd use the script's built-in `--limit` flag to score the highest-priority subset on ridgeline tonight",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That is the command *as shipped*; per question 3, I would not actually launch it that way tonight. ... Launch on the secondary backend, not the default",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the snapshot was taken at 19:25Z, ~3 hours before the stated current time of 22:30Z ... I'd re-pull the live allowances (vendor dashboard or whatever process writes `.cache/usage_snapshot.json`) right before kickoff.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the snapshot is ~3 hours stale (19:25Z vs. a 22:30Z launch); other consumers may have drawn ridgeline down since. Refresh or re-check it immediately before starting.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r3",
+  "repeat": 3,
+  "task": "bama-t1"
+}

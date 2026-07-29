@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15295,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.14304649999999997,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9607,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9607,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9607,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9607,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1333,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1333,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully and accurately hit all three expectations with essentially equivalent substance; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The application connects to Postgres as `cedar_owner`, a role that is exempt from row-level security, so the isolation policies exist but are never applied. The responsible configuration is `cedarline/.env` (mirrored by `.env.example`), which sets `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`... `cedar_owner` **owns** the tables, and table owners are exempt from RLS unless the table has `FORCE ROW LEVEL SECURITY` \u2014 which `0001_init.sql` never sets",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The responsible configuration is `cedarline/.env`, which sets `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`... RLS policies do not apply to superusers, and they also do not apply to the table's owner unless the table has `FORCE ROW LEVEL SECURITY` (the migration only uses `ENABLE`, never `FORCE`). `cedar_owner` is both",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Change `DATABASE_URL` in `cedarline/.env` and `cedarline/.env.example` to the dedicated application role: `postgresql://cedar_app:apppw@localhost:5432/cedar`... **`cedar_owner` is for migrations only.**... **`cedar_app` is for all runtime traffic**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "database access should be split by privilege: the owner/superuser role (`cedar_owner`) should be used only for schema migrations (`scripts/migrate.sh`) and administration, while all application runtime traffic goes through the least-privileged `cedar_app` role so RLS applies to every app query",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It is created in exactly one place: `cedarline/db/bootstrap/create_app_role.sql`, which is explicitly a manual, one-time step... `cedarline/scripts/reset-local-db.sh` runs `docker compose down -v`, which deletes the `cedar_pgdata` volume... `docker-compose.yml` mounts nothing into `/docker-entrypoint-initdb.d/`, so no repo SQL runs at cluster init... The bootstrap file lives in `db/bootstrap/`, outside that glob, so it is never replayed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_app` exists only in `db/bootstrap/create_app_role.sql`, which its own header comment, the README, and `docs/local-setup.md` all describe as a one-time first-setup step; nothing re-runs it... The script then runs only `scripts/migrate.sh`, which applies `db/migrations/*.sql`... fails at connection time with `FATAL: role \"cedar_app\" does not exist`",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r2",
+  "repeat": 2,
+  "task": "env-hazards-t1"
+}

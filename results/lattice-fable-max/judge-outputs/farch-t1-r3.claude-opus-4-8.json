@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22624,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.17820249999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11458,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11458,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11458,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11458,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1935,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1935,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with commit-grounded evidence; they are comparable, with Report 2 adding slightly more repo detail (requirements.txt, README PLAT scheme) but Report 1 equally thorough.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the repository contains a completed prior attempt (commits `454a21f`, `597777b`, `1712565`, ticket PLAT-31)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git log --all --oneline` in `carelog-api` reveals that this exact migration was already done and reverted: `454a21f` \"Add Edgerunner serverless deploy for API (PLAT-31)\" (2026-04-14), `597777b` ... and `1712565` \"Revert Edgerunner migration\u2026\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`597777b` (Apr 16) discovered isolates can't hold the SQLAlchemy pool and fell back to per-request connections; `1712565` (Apr 21) reverted everything, recording: \"the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565` (2026-04-21) reverts the Edgerunner deployment because \"serverless isolates cannot hold the Postgres pool\" and per-request connections \"opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`1712565` (Apr 21) reverted everything ... keep the Cargobox deployment (`deploy/cargobox.yaml`) live until sustained clean operation",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the only commits since the revert are a dependency bump (`1b834c5`) and a test tidy (`e004559`) ... Run Edgerunner alongside the existing Cargobox service (leave `deploy/cargobox.yaml` and the `Dockerfile` in place)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Re-attempting a reverted migration is a call for the system's owner to make with full knowledge of the prior failure ... the engineer/team who owned PLAT-31 and authored the revert (they hold context the commits don't capture)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "People to involve: whoever owns PLAT-31 and authored the April revert (the platform team, per the PLAT scheme in `carelog-api/README.md`) \u2014 they hold the incident context",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

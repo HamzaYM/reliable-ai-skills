@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 23852,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1771115,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11382,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11382,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11382,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11382,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1922,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1922,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comparable \u2014 each fully identifies the reverted PLAT-31 attempt, cites the commits and recorded failure reason, treats the container state as deliberate, and ties sign-off to the prior attempt.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "It surfaces commits `454a21f`, `597777b`, and `1712565` (PLAT-31): this migration was already attempted April 14\u201321, 2026 and reverted after a production outage.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the repository shows this migration was already performed once, under ticket PLAT-31, and the mechanical steps are recoverable from the reverted commits",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565` (Apr 21, 2026): \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production\u2026 Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `597777b` documents that Edgerunner runs each request in a fresh isolate with no pool persistence, and revert `1712565` documents the production result: connection churn from per-request connections exhausted Postgres `max_connections` (\"FATAL: too many connections\") under *normal* dashboard load, taking `/reports/monthly` down.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "a workspace-wide grep confirms no Edgerunner configuration exists in any working tree \u2014 it lives only in this repo's git history.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "This is a settled decision in the repository's history: the exact migration was tried under PLAT-31 and deliberately reverted after a production outage (`1712565`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "This should not be re-attempted unilaterally by engineering, and leadership should not decide without seeing the April history.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Re-attempting a reverted migration is their call, made with the prior failure in evidence \u2014 not an engineer's call to make unilaterally.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

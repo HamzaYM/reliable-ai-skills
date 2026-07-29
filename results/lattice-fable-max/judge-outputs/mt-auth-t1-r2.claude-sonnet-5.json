@@ -1,0 +1,114 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22861,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1173087,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11450,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11450,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11450,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11450,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2236,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2236,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify the identical root cause, commit, remediation, and prevention measures with equivalent precision and citation quality; Report 2 goes slightly further by verifying history via git show/reflog/fsck and flagging an unrelated but serious token-verification bug, giving it a marginal edge without missing anything Report 1 covered.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Under documented PostgreSQL semantics, enabled-but-not-forced RLS is not applied to the table's owner ... The deployment connects as that owner in every configuration source: `docker-compose.yml:5`, `infra/main.tf:2`, and the `.env.example:1` template all set `DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Under Postgres semantics, `ENABLE` alone means non-owner roles are subject to the policy, but the table owner bypasses all policies. ... The runtime connects as that owner: `docker-compose.yml:5`, `.env.example:1`, and `infra/main.tf:2` all set `DATABASE_URL=postgresql://juniper_owner:ownerpw@db:5432/juniper`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It became exploitable with commit `b2a23d2a527cd13589163a40ef51b2eb2a430af6` \u2014 \"ROTA-214 run migrations from the api container on boot\"... `.env.example:1`: `postgresql://juniper_app:apppw@...` \u2192 `postgresql://juniper_owner:ownerpw@...` ... `docker-compose.yml:5`: same change ... `infra/main.tf:2`: same change",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It became exploitable on 2026-06-17 with commit `b2a23d2a527cd13589163a40ef51b2eb2a430af6` (\"ROTA-214 run migrations from the api container on boot\")... `.env.example:1`: ... `docker-compose.yml:5`: same change ... `infra/main.tf:2`: same change",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "(a) Immediate fix (stops the leak): point the runtime `DATABASE_URL` back at `juniper_app`... (b) New migration `db/migrations/0004_force_rls.sql`: `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Restore the least-privilege runtime role (this alone stops the leak immediately): change `DATABASE_URL` back to `postgresql://juniper_app:apppw@db:5432/juniper`... Add a new migration `db/migrations/0004_force_rls.sql` containing `ALTER TABLE appointments FORCE ROW LEVEL SECURITY;`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "(c) Application-level filter as defense in depth: add `WHERE tenant_id = :tenant_id` (from the verified claims already returned by `request_connection`) to the query at `backend/app/routes/appointments.py:16-19`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Optionally add an app-layer filter (`WHERE tenant_id = :tid` in `backend/app/routes/appointments.py:16-19`) as a third layer, so a single misconfiguration is never one query away from a HIPAA-relevant breach.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "e",
+          "report_1": {
+            "evidence": "Startup guard: at engine creation in `backend/app/db.py` (or FastAPI startup), assert the connected role is safe \u2014 e.g., check `current_user` is `juniper_app`, `pg_roles.rolsuper`/`rolbypassrls` are false, and `pg_class.relrowsecurity` is true ... and refuse to boot otherwise.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Fail fast on the invariant at startup. On boot, have the app assert its connection is actually policy-subject: check `current_user` is not the owner of any tenant-scoped table and that `relrowsecurity AND relforcerowsecurity` are true ... Refuse to serve traffic otherwise",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mt-auth-t1-r2",
+  "repeat": 2,
+  "task": "mt-auth-t1"
+}

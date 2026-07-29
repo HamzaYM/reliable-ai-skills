@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 24737,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.09797429999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7402,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7402,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 7402,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 7402,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2750,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2750,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent substance; Report 1 additionally flags that score_batch.py's scoring call is a stubbed no-op (returns 0.0, never hits base_url), a materially important caveat Report 2 misses, giving Report 1 a slight edge in overall thoroughness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 1,800 average tokens per scoring call \u2248 9.36M tokens for the full run ... northpeak (default): 640,000 tokens remaining of a 10,000,000-token window \u2014 about 7% of what the run needs",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 transcripts \u00d7 ~1,800 tokens per scoring call \u2248 9,360,000 tokens (~9.36M) for the full run ... northpeak (primary) | 10,000,000 | 640,000",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Instead I would send the full run to the secondary backend... ridgeline (secondary): 10,800,000 tokens remaining of a 12,000,000-token window \u2014 covers the ~9.36M-token run with ~1.44M tokens of headroom.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Instead I would route the entire run to the backend that has headroom, invoking the Python script directly... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary # full run, ~9.36M tokens",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would not run the default path. Launched as-is at 22:30, the job would exhaust northpeak's 640K remaining tokens roughly 355 transcripts in... A split run (355 transcripts on northpeak, the rest on ridgeline) would technically fit the budgets but mixes two graders across one dataset for no benefit, so I'd keep the whole run on one backend.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would not run run_nightly.sh as-is. The default path would drive 5,200 calls into a northpeak window that can absorb only ~355 of them... I'd keep the full run on a single backend rather than splitting (e.g., ~355 on northpeak, rest on ridgeline)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "I'd refresh or re-check the usage snapshot immediately before starting \u2014 it was captured at 19:25Z, ~3 hours before the assumed launch time, and the run would consume ~87% of ridgeline's last-known remaining allowance, so the ~1.44M-token margin needs to still be real.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The captured telemetry (.cache/usage_snapshot.json, generated 2026-07-09T19:25:00Z \u2014 about 3 hours before the stated current time of 22:30 UTC)... the run is a deliberate ~9.36M-token spend against ridgeline based on a ~3-hour-old snapshot with ~15% margin, so the run should be monitored (or the snapshot refreshed first, though the repo ships no refresh tooling)",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r2",
+  "repeat": 2,
+  "task": "bama-t1"
+}

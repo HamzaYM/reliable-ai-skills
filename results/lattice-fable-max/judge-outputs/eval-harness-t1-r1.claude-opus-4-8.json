@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22944,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1630255,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9848,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9848,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9848,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9848,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2018,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2018,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports nail (a)-(c) with equal rigor, but Report 1 correctly distinguishes the gate axis from optional axes (renormalize for relevance/tone, quarantine for accuracy) while Report 2 explicitly rejects that distinction, making Report 1 the stronger answer overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Inside `grader/aggregate.py:6-13`, `composite()` iterates the weights ... and at lines 9-11 substitutes `0.0` for any `None` value before summing. ... In form, the degraded record is **byte-for-byte indistinguishable** from a fully-scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Inside `grader/aggregate.py:8-12`, `composite()` substitutes `0.0` for any axis whose value is `None` (lines 10-11: `if value is None: value = 0.0`) ... In form, the written record is byte-for-byte indistinguishable from a fully scored one",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Conflating \"we couldn't score this axis\" with \"this axis scored 0\" corrupts every downstream aggregate. ... each failure drags the affected agent's mean down as if they had performed terribly.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "it conflates \"we could not measure this axis\" with \"this axis was measured and scored 0/10\". ... `rankings()` (lines 9-17) averages every row equally, with no notion of validity. Agents whose replies happened to hit transient failures get dragged down",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**If accuracy failed:** do **not** write a comparable composite into `scores.csv`. Record the reply in a degraded/incomplete state \u2014 either a separate failures file or a status column that the leaderboard filters out",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "If an axis still fails after retries, write *no row at all* to `results/scores.csv` for that record. Instead, append `(agent_id, reply_id, failed_axis, exception)` to a separate failures/dead-letter file",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Relevance and tone are not load-bearing.** For those, a reasonable degraded result still exists: the composite can be renormalized over the axes that did succeed and remain a usable, honest quality signal.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r1",
+  "repeat": 1,
+  "task": "eval-harness-t1"
+}

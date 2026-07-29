@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21404,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1465825,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8402,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8402,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8402,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8402,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1980,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1980,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent grounding and depth; they are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A clinic that has never opened the setting WILL have reminders sent automatically \u2014 the flag defaults to enabled when unset.** The deciding code is the function `auto_send_reminders_enabled` in `backend/app/feature_flags.py`: line 11 checks `if tenant.settings.get(\"auto_send_reminders\") is None:` and line 12 \u2014 the exact line that decides this case \u2014 is `return True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A clinic that has never opened this setting WILL have reminder messages sent automatically.** The deciding code is `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py:10-13`. For a never-touched clinic, `tenant.settings` has no `auto_send_reminders` key, so `tenant.settings.get(\"auto_send_reminders\")` is `None`; the check at `feature_flags.py:11`... is true and **line 12 (`return True`) decides it**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "for this feature, default-on for an unset value is the wrong behavior... I would change `backend/app/feature_flags.py:12` from `return True` to `return False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "for this flag, the default is wrong and should be inverted to off... I would change `feature_flags.py:12` from `return True` to `return False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "created `feature_flags.py` with one function, `compact_calendar_view_enabled`... added `auto_send_reminders_enabled` as a structurally identical, line-for-line copy of the function directly above it... defaulting a display preference on affects only pixels, while defaulting auto-messaging on silently opts every existing tenant into sending SMS/email to patients",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`compact_calendar_view_enabled` (`feature_flags.py:4-7`) defaults on appropriately: it's a UI preference... appended `auto_send_reminders_enabled` directly beneath it as a line-for-line structural copy... the two flags sit in opposite risk categories \u2014 a cosmetic view preference versus an automated outbound action toward patients",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add a global kill switch.** The grep confirmed the per-tenant flag at `reminders.py:25` is the *only* gate \u2014 there is no environment-level or ops-level way to stop all sends quickly if the job misbehaves",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an environment-level master switch** ANDed with the per-tenant value... there is currently **no kill switch**: disabling the feature fleet-wide would require editing every tenant's settings row",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 16267,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0977193,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9250,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9250,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9250,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9250,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 1910,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1910,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent, well-cited answers; Report 2 adds slightly more rigor on edge-case value coercion (null/string handling) but the two are comparable in overall quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "A clinic that has never opened the setting WILL have reminders sent automatically.** The deciding code is `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, specifically the `None` check at line 11 and the `return True` at **line 12**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Reminder messages **will be sent automatically** for it. The decision is made by `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py` (lines 10\u201313): line 11 checks `if tenant.settings.get(\"auto_send_reminders\") is None:` and line 12 executes `return True`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "No \u2014 the default is wrong and should be flipped to off... Where I'd change it: `backend/app/feature_flags.py` lines 11\u201312 \u2014 make a missing value return `False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "No. This flag gates automated outbound messaging to patients (SMS and email), and for that category a missing value should mean **off**... The fix is at `backend/app/feature_flags.py:12`: change `return True` to `return False`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The missing-value handling was inherited by copy-paste from a cosmetic flag, and that was not a sound basis... `compact_calendar_view` is a read-only display preference \u2014 defaulting it on is harmless. `auto_send_reminders` causes external side effects on patients of every tenant.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The sibling flag doesn't justify it.** `compact_calendar_view_enabled` (lines 4\u20137 of the same file) also defaults on, and that's fine \u2014 it's a cosmetic display preference... That reasoning does not transfer to a flag that takes automated outbound action.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add a global kill switch above the per-tenant toggles.** `run()` in `reminders.py` iterates every tenant with no environment-level or global gate \u2014 `infra/main.tf` defines only an unused `environment` variable \u2014 so once the job is scheduled, the only \"off\" is stopping the job itself.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an environment-level master switch ANDed with the per-tenant value.** Grep confirms nothing in Slotwise reads any environment variable, and `infra/main.tf` contains only an `environment` name variable \u2014 the per-tenant flag is currently the *only* gate on the batch job.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r1",
+  "repeat": 1,
+  "task": "csh-t1"
+}

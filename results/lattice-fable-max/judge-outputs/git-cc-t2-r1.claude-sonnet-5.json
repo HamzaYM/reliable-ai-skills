@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 28546,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1186017,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9355,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9355,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9355,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9355,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 3241,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3241,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with equivalent rigor; Report 2 is marginally stronger on (d) with an explicit `git fetch origin`/origin-main freshness check, while Report 1 is otherwise just as thorough.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**1. Base branch: `main`.** ... The only conceivable alternative base \u2014 the dependency branch `feat/weighted-scorer`, which this branch was stacked on \u2014 is no longer appropriate: its content has already landed on `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**1. Base branch: `main`.** ... The only other conceivable target, `feat/weighted-scorer` \u2014 the branch this work was stacked on \u2014 is a dead base: its entire content already landed on `main` via the squash commit `1971f08`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`feat/pairwise-metric@{2}: branch: Created from HEAD` at commit `ac9d505` \u2014 which is the tip of `feat/weighted-scorer` ... `feat/weighted-scorer` has been **squash-merged into `main` as PR #42**. Evidence: `main`'s tip is the single commit `1971f08` \"Refactor scorer for weighted metrics (#42)\"... Targeting `feat/weighted-scorer` now would base the PR on a stale, effectively-merged branch that will presumably be deleted.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The branch reflog is explicit: `feat/pairwise-metric@{2}: branch: Created from HEAD` at `ac9d505`, which is the tip of `feat/weighted-scorer`... its entire content already landed on `main` via the squash commit `1971f08` \"Refactor scorer for weighted metrics (#42)\"... The fact that `feat/weighted-scorer` still exists on origin proves nothing about it being a live PR target",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`: the entire weighted-metrics refactor ... **all weighted-scorer work**, none of it pairwise. ... They appear because the branch physically contains commits W1\u2013W3, and `main` holds that same content only as the *different* squashed commit `1971f08` \u2014 the merge-base is still `65204ad`, so the three-dot diff and the commit list re-present the already-merged weighted-scorer changes as if they were part of this PR.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`scoring/scorer.py` +13/\u22123 \u2014 the weighted-metrics rewrite ... entirely W1/W2, **not** pairwise work. ... That content appears because the merge-base with `main` is `65204ad`: commits W1\u2013W3 exist in this branch's ancestry but not in `main`'s history, since `main` received the same changes as the single squash commit `1971f08` instead \u2014 git compares histories, not content, so the PR re-displays them.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase only the pairwise commits onto `main`, dropping the W commits:** `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... **Verify the result:** `git log --oneline main..feat/pairwise-metric` should now list exactly the two X commits; `git diff main...feat/pairwise-metric` should now equal the two-dot diff observed above (grader.txt +1, metrics.py +4, and no `scoring/scorer.py` changes at all)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Re-verify remote state at execution time**: `git fetch origin`, confirm `origin/main` is still `1971f08` and no new commits or PRs appeared. (Verified read-only today via `git ls-remote origin`... ) **Rebase only the pairwise commits onto main**: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... `git diff main...feat/pairwise-metric` now equals the +5-line pairwise-only diff... a scope check confirms only `prompts/grader.txt` and `scoring/metrics.py` are touched.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r1",
+  "repeat": 1,
+  "task": "git-cc-t2"
+}

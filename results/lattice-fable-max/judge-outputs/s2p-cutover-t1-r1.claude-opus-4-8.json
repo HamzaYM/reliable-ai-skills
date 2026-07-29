@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 40244,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2283975,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13521,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13521,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13521,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13521,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 3052,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3052,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with correct file/line citations; Report 1 is marginally more thorough (explicit migration chain and cleaner category-(d) removal), but they are essentially comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`infra/prod/app.auto.tfvars:2` \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`... **Delete the line entirely**... `infra/prod/app.auto.tfvars:4` \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`... **Delete the line entirely.**... `SHADOW_SCORING_SINK = \"s3://medislot-shadow/staging/observations/\"`... **Delete both lines entirely**... `LEGACY_BILLING_SECRET_ARN`... **Delete the line**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/app.auto.tfvars` line 2 \u2014 `ENABLE_DEBUG_TOOLBAR = \"true\"`... Change to `\"false\"` or remove the key... line 4 \u2014 `PRESET_ADMIN_ACCOUNTS = \"qa@example.com:superadmin\"`... Change to `\"\"` or remove entirely... `SHADOW_SCORING_SINK`... Change to `\"\"` for launch",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The app reads its API base URL from `import.meta.env.VITE_API_BASE_URL` **at build time**... deploy-prod` then deploys **the exact same digest** to prod... the production frontend, as configured, would ship a bundle whose API base URL is `https://staging-api.example.com`... Production needs its own env file (or CI-injected variable), its own build",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "VITE_-prefixed variables are **inlined into the built bundle at build time**... The `deploy-prod` job... deploys **the same already-built digest**... the API base URL in the bundle production users receive is `https://staging-api.example.com`... the fix is either runtime injection of the API base URL... or a separate production build using `--mode production`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Nothing runs database migrations. The workflow contains no migration step... the runbook's claim that \"Database migrations are applied automatically during deploy\"... is unverifiable-at-best... The first production release must apply the full chain `0001_base` \u2192 `0002_tenants` \u2192 `0003_billing`... to a brand-new, empty prod database; as things stand nothing will.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Migrations for an empty prod database are unverifiable. The runbook claims migrations run automatically during deploy, presumably inside the missing `deploy.sh`; the three migrations (`backend/migrations/versions/0001_base.py`\u2013`0003_billing.py`) would all need to run against a brand-new prod database, and nothing in the repo provisions that database",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the production Terraform passes the **staging** condition into the prod deploy role: `oidc_sub_condition = \"repo:acme-health/medislot:environment:staging\"` (`infra/prod/main.tf:3`, unchanged from the staging copy)... The fix is a production-scoped condition (`repo:acme-health/medislot:environment:production`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`infra/prod/main.tf:3` \u2014 copied unedited from staging \u2014 trusts `repo:acme-health/medislot:environment:staging`... **any job running in the staging GitHub environment could assume the production deploy role**... The fix is changing `infra/prod/main.tf:3` to `repo:acme-health/medislot:environment:production`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "s2p-cutover-t1-r1",
+  "repeat": 1,
+  "task": "s2p-cutover-t1"
+}

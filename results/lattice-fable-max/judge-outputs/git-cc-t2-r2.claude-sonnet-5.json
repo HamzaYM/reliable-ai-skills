@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 21957,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1096777,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9855,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9855,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9855,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9855,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 2419,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2419,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and hit all four expectations with essentially equivalent evidence; Report 2 is marginally more explicit in its post-rebase verification step (naming exactly which two files should remain in the stat diff), but the substantive content and conclusions are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Target **`main`**... the dependency this branch was stacked on, `feat/weighted-scorer`, has already landed on `main`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The PR should target `main`.... The only alternative candidate \u2014 `feat/weighted-scorer`, the branch this work was actually built on \u2014 must not be used, because it is a dead base",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It was created from the **tip of `feat/weighted-scorer`** \u2014 commit `ac9d505`... That combination is the signature of a **squash-merge**: PR #42 collapsed W1\u2013W3 into the single commit `1971f08` on main",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**`feat/weighted-scorer` has already been merged into `main` via a squash-merge, so it is dead as a base even though it still exists on origin.**... Main's single new commit `1971f08` (\"Refactor scorer for weighted metrics (#42)\"... is therefore a squash of W1\u2013W3, merged as PR #42.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`scoring/scorer.py`: +13/\u22123 \u2014 rewrites the scorer from flat metrics to weighted aggregation... The rest \u2014 the entire `scoring/scorer.py` rewrite and the `overlap()` function \u2014 is the `feat/weighted-scorer` work (commits W1\u2013W3). That content is **already on main** as squash commit `1971f08` (#42); it appears in the PR-style diff only because the W commits remain in this branch's ancestry while main carries the same content under a different commit",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`scoring/scorer.py`: +13/\u22123 \u2014 docstring changed from \"flat metrics\" to \"weighted metrics\"... **entirely weighted-scorer work (W1/W2), none of it pairwise**... those changes already exist on main inside squash commit `1971f08`, but since W1\u2013W3 are not ancestors of main, git counts them as new on this branch.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Rebase only the pairwise commits onto main, dropping W1\u2013W3**: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... **Verify the rewrite**: `git log --oneline main..feat/pairwise-metric` should show exactly the two X commits, and `git diff main...feat/pairwise-metric` should now equal the 5-line pairwise-only delta... **Sync and confirm the base is current**: `git fetch origin`, then verify `origin/main` hasn't moved past `1971f08`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Rebase only the two pairwise commits onto main, dropping W1\u2013W3**: `git rebase --onto main feat/weighted-scorer feat/pairwise-metric`... `git diff main...feat/pairwise-metric --stat` must show only `prompts/grader.txt` (+1) and `scoring/metrics.py` (+4)... Also confirm `git merge-base --is-ancestor main feat/pairwise-metric` now succeeds",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "git-cc-t2-r2",
+  "repeat": 2,
+  "task": "git-cc-t2"
+}

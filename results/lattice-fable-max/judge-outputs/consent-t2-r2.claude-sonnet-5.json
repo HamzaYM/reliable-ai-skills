@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20967,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.11528129999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10934,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10934,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10934,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10934,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2315,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2315,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with well-cited evidence; Report 2 is slightly more thorough (flags the erase_user audit-log gap, the pseudonymous user_id nuance in consent_receipts, and unused CUTOFF_DAYS constant) but both are comparable in substance.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The `consent_audit` deletion is the one the job **must not** perform. `db/schema.sql:21-22` states the table's contract explicitly: \"Audit/history table: append-only. Rows are never updated or deleted; the table serves as tamper evidence.\" A routine sweep that deletes from it destroys the tamper-evidence property the table exists to provide",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The table it must NOT modify is `consent_audit`, and it currently does.** `db/schema.sql:21-22` states, immediately above the table definition at `db/schema.sql:23-28`: \"Audit/history table: append-only. Rows are never updated or deleted; the table serves as tamper evidence.\" Deleting old rows destroys exactly the tamper evidence the table exists to provide.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`deploy/crontab` \u2014 the file the README ... identifies as \"the deployed schedule\" \u2014 contains exactly one job: `0 4 * * * python3 jobs/daily_scoring.py` (`deploy/crontab:2`). There is no entry for `retention_sweep.py`. ... `TODO.md:1` confirms this is a known, open gap: \"retention sweep: run manually for now / wire into scheduler later.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It contains exactly one job entry, `deploy/crontab:2`: `0 4 * * * python3 jobs/daily_scoring.py`. There is no entry for `retention_sweep.py`. ... the only mention outside the job file itself is **`TODO.md:1`**: \"retention sweep: run manually for now / wire into scheduler later\" \u2014 the repo explicitly acknowledges it is not wired in.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "So: `events` and `user_data` are the right things to erase; `consent_receipts` should be **preserved**, and the already-untouched `consent_audit` trail must likewise remain intact ... Deleting it alongside the raw data means that the moment a deletion request is honored, the organization also destroys its only evidence that it ever had consent to process that user's data",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "That design \u2014 a hash (`receipt_hash`, `db/schema.sql:18`) with no profile or event content \u2014 exists precisely so the organization can retain durable proof that consent was validly captured *even after* the user's actual data is erased. Deleting these rows on erasure destroys the compliance evidence",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Recommendation:** never exercise this publisher against staging (or production) as a verification step. If the mechanism must be tested end-to-end, do it against an isolated, disposable database \u2014 e.g., a local throwaway Postgres with `db/schema.sql` applied, torn down afterward \u2014 with the validation guard left **on** and a realistic \u2265200-character text",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "1. **Never run it against the staging `DATABASE_URL`** while `consent_versions` is shared with production ... 3. **For an end-to-end rehearsal, use a disposable local database**: apply `db/schema.sql` to a throwaway Postgres ... 4. **Rehearse with validation ON, not off.**",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "consent-t2-r2",
+  "repeat": 2,
+  "task": "consent-t2"
+}

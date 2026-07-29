@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 44785,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1748998,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11662,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11662,
+        "cache_read_input_tokens": 66236,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3724,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3724,
+            "cache_read_input_tokens": 37087,
+            "input_tokens": 2,
+            "output_tokens": 1760,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5408,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports correctly and thoroughly identify the same root cause, regression commit, and reasons the flaky-closure was wrong; Report 2 is marginally stronger on the final assessment, explicitly naming the shared-runner risk and proposing an isolated shadow run, while Report 1 only implies isolation via its in-memory verification.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "It still contains `expected_label_field: label`, but every record in `fixtures/eval_set.jsonl` now stores its gold label under the key `gold_label` (11/11 records, 0 with `label`). In `pipeline/score_batch.py:score()` (lines 40\u201349), the gold value is fetched with `record.get(gold_field)`; since no record has a `label` key, this returns `None` for every record, so `prediction == gold` is `False` for all 11 records and accuracy is exactly 0.0.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "line 2 reads `expected_label_field: label`, but every record in `fixtures/eval_set.jsonl` now carries its gold label under the key `gold_label`. The nightly batch scorer reads the gold-field name from that config (`pipeline/score_batch.py:42`) and fetches it with `record.get(gold_field)` (`pipeline/score_batch.py:47`). `dict.get` on the nonexistent `label` key silently returns `None`, so every comparison `prediction == None` is `False`, giving exactly 0/11 = 0.00",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "The regression began on 2026-06-17, introduced by commit `53551e8` (\"chore(eval): migrate eval set to gold_label schema (SCORE-77)\", dated 2026-06-17). Evidence: (a) `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and 0.00 on 2026-06-17, with 0.00 every night since; (b) `git show 53551e8` shows that commit renamed the eval-set field from `label` to `gold_label` and updated `REQUIRED_KEYS` in `score_batch.py`, but left `config/scoring_config.yaml` untouched",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "introduced by commit **`53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"**, authored 2026-06-17 13:00 UTC. Evidence: (a) `pipeline/metrics/nightly_scores.csv` shows accuracy 0.90\u20130.92 every night from 2026-05-20 through 2026-06-16, then exactly 0.00 from 2026-06-17 onward; (b) the `git show 53551e8` diff renames `label` \u2192 `gold_label` in all 11 eval records and in `REQUIRED_KEYS`, but touches neither `config/scoring_config.yaml` nor the `record.get(gold_field)` lookup",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The earlier investigator's spot-check tool couldn't have detected this bug: `pipeline/score_one.py` never reads the config and never compares a prediction to a gold label \u2014 it only prints the raw prediction. So \"the predictions looked correct\" was true (they are correct; they score 0.91 against `gold_label`) but irrelevant, because the defect is in the batch scorer's gold-label lookup, a code path `score_one.py` never exercises. The correct reproduction is: run the batch scorer itself (`python3 -m pipeline.score_batch`) and observe 0.00",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The earlier investigation never exercised the failing code path: it re-ran tickets through `pipeline/score_one.py`, which never loads the eval set, the config, or any gold label, and computes no accuracy \u2014 it only prints the prediction... Correct reproduction: run the batch scorer itself against `fixtures/eval_set.jsonl`, observe deterministic 0.00, then inspect one iteration to see `record.get(\"label\")` return `None`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Swapping `model_id` \u2014 or any actual model behind it \u2014 would leave the scorer still comparing every prediction to `None`, so accuracy would remain 0.00, likely being misread as \"the old model is broken too\" and further entrenching the flakiness theory.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Acting on the plan would burn a nightly cycle, produce another 0.00, and risk being misread as \"the old model is broken too.\" It is also methodologically the \"flip it and see\" anti-pattern on a shared nightly job; if a model comparison were ever genuinely needed, a shadow run alongside the production scorer would be the right instrument.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r3",
+  "repeat": 3,
+  "task": "sysdbg-t2"
+}

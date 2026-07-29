@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 38648,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.18263400000000002,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12544,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12544,
+        "cache_read_input_tokens": 107210,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1584,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1584,
+            "cache_read_input_tokens": 40111,
+            "input_tokens": 2,
+            "output_tokens": 1361,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4712,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent substance and citations; Report 2 is marginally more precise on (d) by naming a concrete master-switch mechanism and its consumer, but the two are comparable overall.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The decision point is the function `auto_send_reminders_enabled` in `backend/app/feature_flags.py`, specifically lines 11\u201312:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deciding code is the function `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py`, specifically the missing-value branch at lines 11\u201312:\n\n```python\nif tenant.settings.get(\"auto_send_reminders\") is None:\n    return True\n```",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change `backend/app/feature_flags.py:11-12`: delete the `is None \u2192 return True` special case so the function is just `return bool(tenant.settings.get(\"auto_send_reminders\"))` \u2014 `bool(None)` is `False`, giving unset \u2192 off",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change the missing-value branch at `slotwise/backend/app/feature_flags.py:11-12` to return `False` (equivalently, collapse the function to `return bool(tenant.settings.get(\"auto_send_reminders\"))`, since `bool(None)` is `False`), making the feature opt-in per clinic",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Commit `aa4cf8d` (SLOT-214, 2026-07-01) then added `auto_send_reminders_enabled` as a line-for-line structural copy of the adjacent function... The pattern was lifted from a cosmetic toggle where \"everyone gets the new view unless they opt out\" is fine, and applied unchanged to a toggle where the equivalent is \"we message everyone's patients unless the clinic opts out.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `aa4cf8d` (\"Add automatic appointment reminders (SLOT-214)\", 2026-07-01) then added `auto_send_reminders_enabled` as a line-for-line structural duplicate of that resolver... That is unsound because the two flags sit in opposite risk categories: for the calendar view, \"default on\" at worst shows a layout someone didn't pick; for reminders, \"default on\" auto-enrolls every existing tenant into sending messages to patients. The precedent the pattern was copied from does not transfer.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add an operational kill switch and staged rollout: there is no global/env-level gate (`infra/main.tf` defines only an `environment` variable), no dry-run mode, no per-tenant error isolation or rate limiting in `run()`. I'd want a job-level disable flag, a dry-run/log-only mode, and a pilot with a handful of consenting clinics before fleet-wide enablement",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an environment-level master switch ANDed with the per-tenant value (e.g., a `REMINDERS_ENABLED`-style variable read by `jobs/reminders.py:run()`), defaulting to off. Today the per-tenant flag is the *only* gate \u2014 `grep` confirms `jobs/reminders.py:25` is the sole consumer and there is no env gate; `infra/main.tf` defines nothing but `environment`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r2",
+  "repeat": 2,
+  "task": "csh-t1"
+}

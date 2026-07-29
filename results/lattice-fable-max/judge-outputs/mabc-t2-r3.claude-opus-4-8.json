@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 29897,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.2152915,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12973,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12973,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12973,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12973,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2762,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2762,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are strong and comparable on (a)\u2013(c), but Report 1 wins overall by correctly identifying the shared fixed results-DB path as a real concurrent-corruption risk (d), which Report 2 downplays as unused \"cheap insurance.\"",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`pipeline/registry.py` is named by three findings (F-02, F-05, F-09) and `pipeline/run_batch.py` by four (F-04, F-07, F-13, F-14). Per-finding assignment across different engineers guarantees merge conflicts",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer C \u2014 `pipeline/registry.py`: ... These are three one-line edits in an 11-line file that nothing else imports (verified by grep), so they are trivially safe \u2014 but only if one person owns the file.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Wave 1 \u2014 four parallel batches, one engineer each. ... A \u2014 config | F-02, F-05, F-09 | `pipeline/registry.py` ... C \u2014 rubric parsing | F-11 (test first), F-01",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Wave 1 \u2014 four parallel streams ... Engineer B \u2014 `pipeline/rubric.py`: F-01 ... then F-11 ... Engineer C \u2014 `pipeline/registry.py`: F-09 immediately ... then F-02 and F-05",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 escalate it, don't assign it. \"Thresholds are too lenient; tighten them\" is a scoring-policy change, not a bug fix: it changes the score every borderline answer receives ... It needs a decision from whoever owns the rubric/scoring policy",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 not an engineering task yet. \"Thresholds are too lenient; tighten them\" names no target values ... changing it moves every borderline score in future runs and breaks comparability with past results ... An engineer should not pick the numbers; the rubric owner decides",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`tests/conftest.py:4` points every test run at `RESULTS_DB = /var/tmp/llm-scoring/results.db` unless the `RESULTS_DB` env var overrides it. Multiple engineers running the suite in parallel on the same machine (or CI runner) will stomp the same database file. Each needs a private path.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "",
+            "hit": false
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r3",
+  "repeat": 3,
+  "task": "mabc-t2"
+}

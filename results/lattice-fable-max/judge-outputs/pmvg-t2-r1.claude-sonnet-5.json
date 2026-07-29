@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 9767,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0885947,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9855,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9855,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9855,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9855,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1016,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1016,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Report 2 covers all four expectations, including a concrete reproducibility check (re-running twice) and naming the set-ordering instability source; Report 1 misses expectation (d) despite noting nondeterministic key ordering, since it never actually verifies reproducibility across multiple runs.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "they POST to a remote endpoint ... would \"incur per-call cost\" per the module's own docstring ... The deselection is deliberate design, not an oversight ... If someone wanted a live smoke check anyway, the right form is an explicit one-off `pytest -m live` with the key set, never a change to the default `addopts`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "would tie the default suite's pass/fail to network and remote-service availability. So the teammate's \"enable the live marker so nothing is skipped\" step should be rejected: it adds cost and nondeterminism to everyone's runs while adding zero signal about this diff. If live coverage were ever wanted, the right invocation is an explicit, sanctioned `pytest -m live`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "first revert the rounding back to `round(..., 3)` (or, if it was somehow intended, split it into its own documented change). *Then* update the golden file deliberately, review the resulting three-line diff value-by-value against hand-computed expectations ... and commit it alongside the code change with each delta explained",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "resolve the confidence-rounding change (revert or explicitly declare it) before anything else ... run the default suite ... and confirm the only failure is the golden comparison, quoting it verbatim and checking the observed deltas against the arithmetic in answer 2 \u2014 any delta I can't trace to the declared change is a regression to investigate, not a project documentation to refresh",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would report measured numbers from the branch, not the figures in `docs/testing.md` \u2014 both of that doc's claims are contradicted by the repository.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would report only numbers I measured in this checkout, and both of `docs/testing.md`'s figures are wrong against the current code",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "re-run the suite in plain assert mode at least twice to confirm the new fixture is stable, and commit code + golden together with the explanation. One more caution from reading the script: it iterates `CATEGORIES`, a `set`, with its own comment admitting \"set ordering is arbitrary\" \u2014 with Python's default string-hash randomization the JSON key order can differ between runs",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "pmvg-t2-r1",
+  "repeat": 1,
+  "task": "pmvg-t2"
+}

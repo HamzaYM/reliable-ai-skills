@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15175,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08578970000000001,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8429,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8429,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8429,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8429,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1473,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1473,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently arrive at the same correct root cause, timeline, and reproduction critique with equivalent supporting evidence; Report 2 is marginally stronger on point (d) by explicitly naming a shadow/parallel-lane alternative rather than only arguing the model swap is futile.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The specific file to change is **`ticket-scorer/config/scoring_config.yaml`**: set `expected_label_field: gold_label` (one line).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The one-line fix is `expected_label_field: gold_label`; ... the defect that caused this incident lives in the config file.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "It began on **2026-06-17**, introduced by commit **`53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** ... `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and 0.00 on 2026-06-17",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The regression began with the nightly run of **2026-06-17**, introduced by commit **`53551e8` \u2014 \"chore(eval): migrate eval set to gold_label schema (SCORE-77)\"** ... `pipeline/metrics/nightly_scores.csv` shows 0.91 on 2026-06-16 and 0.00 on 2026-06-17",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`pipeline/score_one.py` only runs the prediction half of the pipeline \u2014 `predict_category(normalize_simple(text))` \u2014 and never loads the config, never loads the eval set, and never compares against a gold label. The bug lives entirely in the gold-label lookup inside `score_batch.py`'s scoring loop",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`pipeline/score_one.py` never loads the config and never compares against a gold label \u2014 it only prints the classifier's prediction. So their spot-checks exercised the *classification* step ... while the defect lives in the *scoring comparison* step, which only the batch path executes.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The team should not act on it \u2014 it cannot fix, and would actively mislead. ... The failure mode is structural: `prediction == None` is false for every possible prediction, so accuracy stays 0.00 under any model, old or new.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "even in a pipeline that *did* call a model, flipping the model on the shared nightly environment to \"confirm whether the score recovers\" is experimenting on production; a candidate should run in a shadow/parallel lane instead.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "sysdbg-t2-r2",
+  "repeat": 2,
+  "task": "sysdbg-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17964,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1399525,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8712,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8712,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8712,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8712,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1584,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1584,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with strong repository-grounded evidence and are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Patients can now export their full visit history as a PDF\" (`highlights-v4.md:24`) \u2014 false.** The visit-history code, `app/routers/visits.py`, contains only a `GET /visits` endpoint that returns an empty list, and line 11 is literally `# TODO: pdf export`. ... \"Two-factor authentication is now enabled for every clinic by default\" (`highlights-v4.md:30`) \u2014 false.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default\" \u2014 false.** `app/security/config.py:4` sets `TWO_FACTOR_DEFAULT = False` ... \"Patients can now export their full visit history as a PDF\" \u2014 false.** The only visit-history code, `app/routers/visits.py`, is a stub that returns an empty list, with `# TODO: pdf export` on line 11. The feature does not exist. ... Remove the entire section.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`captions.json` records `after_scheduling.png` as captured from route `/billing/invoices` (while `before_scheduling.png` came from `/schedule`), and opening the image confirms it: it shows a \"BILLING / INVOICES\" screen, whereas the \"before\" shows \"SCHEDULING CALENDAR\".",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`before_scheduling.png` shows \"SCHEDULING CALENDAR\", but `after_scheduling.png` shows \"BILLING / INVOICES\". The manifest confirms this was not a labeling slip in the image itself: `captures.json` records `after_scheduling.png` as captured from route `/billing/invoices`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "one referenced image with no file (`after_export.png`), and one file with no reference or manifest entry (`unused_capture_07.png`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_export.png` | **No** | Broken reference ... And one file on disk is referenced by nothing: **`img/unused_capture_07.png`**, which shows \"PATIENT LIST\". It appears in neither the document nor `captures.json`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the footer at `highlights-v4.md:33`: \"*Highlights draft assembled with AI assistance.*\" ... The **AI-assistance attribution** is an internal provenance note.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (line 33)** is an internal drafting note. ... Remove it (or replace it with a deliberate, approved disclosure if one is required).",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r1",
+  "repeat": 1,
+  "task": "dora-t2"
+}

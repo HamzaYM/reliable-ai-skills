@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 17725,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0982837,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9192,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9192,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9192,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9192,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1972,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1972,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are comparably thorough and hit all four expectations with solid grounded evidence; Report 1 is slightly more assertive on the AI-footer removal while Report 2 hedges slightly, but substance is equivalent.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "**\"Two-factor authentication is now enabled for every clinic by default\" \u2014 false.** `clinic-portal/app/security/config.py:4` sets `TWO_FACTOR_DEFAULT = False`... **\"Patients can now export their full visit history as a PDF\" \u2014 false.** `clinic-portal/app/routers/visits.py` contains only a `list_visits` endpoint that returns an empty list, and line 11 is literally `# TODO: pdf export`. The feature does not exist. The section (and its image reference, see below) must be removed.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**\"Patients can now export their full visit history as a PDF\" (line 24) \u2014 false; remove the section.** `app/routers/visits.py` contains only `GET /visits`, which returns an empty list, and the file ends with the comment `# TODO: pdf export`... **\"Two-factor authentication is now enabled for every clinic by default\" (line 30) \u2014 false; correct or remove.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`, with the comment \"Two-factor authentication is opt-in per clinic.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**The \"after\" image is not the scheduling calendar.** Viewing the file, `img/after_scheduling.png` shows a \"BILLING / INVOICES\" screen, while `img/before_scheduling.png` shows \"SCHEDULING CALENDAR\". The manifest confirms this is a capture mix-up, not a rendering artifact: `captures.json` records `before_scheduling.png` as captured from route `/schedule` but `after_scheduling.png` from route `/billing/invoices`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the \"after\" image is a screenshot of a completely different screen.** Opening the two files shows `before_scheduling.png` is the scheduling calendar (\"SCHEDULING CALENDAR\") while `after_scheduling.png` is the billing screen (\"BILLING / INVOICES\"). The capture manifest confirms this is how it was captured... `captures.json` records `before_scheduling.png` from route `/schedule` but `after_scheduling.png` from route `/billing/invoices`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "**does not exist** | Broken reference \u2014 no such file anywhere in the workspace (`find` returned nothing; `git ls-files` confirms it was never committed)... **Orphan** \u2014 exists on disk and in git but is referenced neither by the doc nor by `captures.json`. It shows \"PATIENT LIST\".",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "First, `img/after_export.png` is referenced by the Export section but does not exist anywhere (workspace-wide search found nothing)... Second, `img/unused_capture_07.png` exists on disk (and is committed) but is referenced by nothing and has no manifest entry \u2014 it shows a \"PATIENT LIST\" screen.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (line 33).** It is an internal drafting note \u2014 it labels the message a *draft* and discloses the production process. Neither belongs in a polished customer email; remove the line",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer, line 33: \"Highlights draft assembled with AI assistance.\"** Two problems: it announces the email is a *draft*, which must never appear in the sent version; and it is an AI-attribution artifact... a \"draft \u2026 AI assistance\" line in a polished customer email is clearly an internal artifact, and I would remove it pending that confirmation.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r2",
+  "repeat": 2,
+  "task": "dora-t2"
+}

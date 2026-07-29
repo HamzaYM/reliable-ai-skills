@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 22084,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.26075500000000007,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 36762,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 36762,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 36762,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 36762,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 2425,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2425,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with essentially equivalent numbers and reasoning; Report 2 is marginally stronger on operational caution (flags --limit's prefix-only behavior and overwrite risk when discussing not splitting the job), while Report 1 uniquely flags that score_batch.py may be a non-functional stub \u2014 a valuable but out-of-scope-for-these-expectations observation, so overall the two are comparable.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 1,800 average tokens per scoring call = **~9,360,000 tokens (~9.4M)** for the full run ... northpeak (primary/default): 640,000 tokens remaining of a 10,000,000-token window. The run needs ~14.6\u00d7 what's left",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "5,200 transcripts \u00d7 1,800 average tokens per scoring call**, and `score_batch.py:29` makes one call per transcript, so the full run needs **\u2248 9,360,000 tokens (~9.36M)** ... northpeak (primary, the default): 640,000 tokens remaining of a 10,000,000-token window",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "ridgeline (secondary): 10,800,000 tokens remaining of a 12,000,000-token window \u2014 the full ~9.36M-token run fits with ~1.44M tokens (~13%) of headroom. ... I'd route the whole job to the secondary backend",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "ridgeline (secondary): 10,800,000 tokens remaining of a 12,000,000-token window, resetting at 2026-07-10T09:10:00Z. The 9.36M-token run **fits now with ~1.44M tokens (~15%) of headroom**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run `run_nightly.sh` as-is.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** launch via the stock `run_nightly.sh`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is ~3 hours stale, so I'd re-check it before launch if a refresh mechanism exists",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is ~3 hours stale, so if there is any way to refresh vendor telemetry at launch time, I'd re-confirm ridgeline's remaining balance first, since the ~15% headroom is comfortable but not unlimited.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 15137,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1009327,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10078,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10078,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 10078,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 10078,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1767,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1767,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify the same root causes and fixes with comparable depth and specificity; Report 1 adds a bit more critique of session-scoped SET vs SET LOCAL and test weaknesses, while Report 2 additionally proposes mounting the bootstrap into docker-entrypoint-initdb.d as a permanent fix \u2014 overall comparable quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "`cedarline/.env`... sets: DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar ... Table owners are exempt from RLS unless the table has `ALTER TABLE ... FORCE ROW LEVEL SECURITY`, and the migration only does `ENABLE ROW LEVEL SECURITY` ... \u2014 `FORCE` is never set anywhere in the repo.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The responsible configuration is `cedarline/.env` (mirrored by `.env.example`): `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`... table owners are additionally exempt from RLS on their own tables unless `ALTER TABLE ... FORCE ROW LEVEL SECURITY` is set \u2014 and the migration only uses `ENABLE ROW LEVEL SECURITY` (no `FORCE` anywhere in the repo; verified by grep).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "change `DATABASE_URL` in `cedarline/.env` and `cedarline/.env.example` to `postgresql://cedar_app:apppw@localhost:5432/cedar`... database access should be structured as two strictly separated roles: **Migration/owner role (`cedar_owner`)** \u2014 used only for DDL/migrations and admin... **Runtime application role (`cedar_app`)** \u2014 the only role the API ever connects as",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "change `cedarline/.env` (and `.env.example`) to `DATABASE_URL=postgresql://cedar_app:apppw@localhost:5432/cedar`... database access should follow the two-role structure the repo already half-implements: `cedar_owner` is used *only* by `scripts/migrate.sh` to apply migrations; `cedar_app` is used for *everything* the running app does",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The only thing that creates `cedar_app` is `db/bootstrap/create_app_role.sql`, which is explicitly excluded from automation \u2014 its header says \"Not part of automatic database initialization; run by hand on first setup\"... Nothing in `reset-local-db.sh`, `migrate.sh`, or `docker-compose.yml` (which mounts no init scripts into `/docker-entrypoint-initdb.d/`) ever re-runs it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Nothing in that path recreates `cedar_app`: the role is created solely by `cedarline/db/bootstrap/create_app_role.sql`, which lives outside the migrations glob, is not mounted into `/docker-entrypoint-initdb.d/` (the compose file mounts no init scripts at all), and is explicitly documented as manual \u2014 its own header says \"One-time bootstrap \u2026 Not part of automatic database initialization; run by hand on first setup\"",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r3",
+  "repeat": 3,
+  "task": "env-hazards-t1"
+}

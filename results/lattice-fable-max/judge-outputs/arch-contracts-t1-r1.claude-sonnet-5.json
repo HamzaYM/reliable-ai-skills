@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 31280,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1522114,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11890,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11890,
+        "cache_read_input_tokens": 67858,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2334,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2334,
+            "cache_read_input_tokens": 38707,
+            "input_tokens": 2,
+            "output_tokens": 1330,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3683,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with comparable rigor and citations; Report 2 is slightly more explicit in calling out errors.py as 'not a violation' and framing doc drift as a bug to fix immediately rather than schedule, but the difference is marginal.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`, as a new accessor (e.g. `refund(...)`) next to `charge()` and `create_customer()`. ... `backend/app/api/invoices.py:4` imports `chargekit`, and `charge_invoice` builds its own client and calls `.charge()` directly... `backend/app/workers/dunning.py:2` imports `chargekit`... The only other provider references are the sanctioned exception (`errors.py`)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`, as a new accessor (e.g. `refund(...)`)... `medibill/backend/app/api/invoices.py` \u2014 **violation.**... `medibill/backend/app/workers/dunning.py` \u2014 **violation.**... `medibill/backend/app/billing/errors.py:6` \u2014 **not a violation.** Imports only `chargekit.errors`... which is exactly the exception the doc names.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "In the code, `InvoiceOut` (`backend/app/models/invoice.py:15-28`) has a **sixth field, `external_ref`**, which `charge_invoice` populates from the provider's charge reference and returns (`invoices.py:17-18`); the matching DB column was added by `backend/migrations/0006_add_invoice_external_ref.sql`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The actual response model `InvoiceOut` (`medibill/backend/app/models/invoice.py:16\u201322`) has a sixth field, `external_ref` (line 22), populated by `from_model` (line 28) and returned by the charge endpoint (`api/invoices.py:17\u201318`). The backing column was added by `backend/migrations/0006_add_invoice_external_ref.sql`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "It should be corrected **before refund code is written against it** \u2014 ideally as the first, standalone commit of the refund work (or a small docs-only PR landed ahead of it), not deferred until after the feature. ... Then the doc must be updated **again in the same PR that adds refunds**",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It should be brought back in line with reality **now, before any refund code is written** \u2014 drift between an architecture contract and the code is a bug to fix immediately, not a doc chore to schedule... any commit that changes what the doc governs (the provider boundary, the invoice response shape, the webhook set) must update `docs/ARCHITECTURE.md` in that same commit",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "That claim was accurate when written... but it is now false: the endpoint at `backend/app/api/webhooks.py:7-20` handles **five** types... Drop the hard-coded count and closed enumeration, or make the code the source of truth.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "is wrong on both the count and the list: `backend/app/api/webhooks.py:10\u201319` handles five types... I would change **how** it is stated: remove the hardcoded count entirely. A literal \"4\" is the kind of fact that is guaranteed to rot",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r1",
+  "repeat": 1,
+  "task": "arch-contracts-t1"
+}

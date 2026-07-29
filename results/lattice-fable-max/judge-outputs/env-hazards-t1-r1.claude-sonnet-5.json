@@ -1,0 +1,92 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 14883,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.0936587,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9491,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9491,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9491,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9491,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1536,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1536,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and correctly hit all three expectations with nearly equivalent depth and accuracy; Report 1 and Report 2 are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the application connects to Postgres as `cedar_owner`, and `cedar_owner` is exempt from the row-level-security policies... table owners are exempt from RLS unless the table is set to `FORCE ROW LEVEL SECURITY` \u2014 the migration only uses `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` (`0001_init.sql:21`), never `FORCE`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The break is in `cedarline/.env` (mirrored by `.env.example`): `DATABASE_URL=postgresql://cedar_owner:ownerpw@localhost:5432/cedar`... table owners bypass RLS unless the table has `FORCE ROW LEVEL SECURITY` \u2014 which `0001_init.sql` never sets",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Going forward, database access should follow a strict two-role model:\n\n- `cedar_owner` (schema owner/superuser): used **only** by `scripts/migrate.sh` to run migrations and by the one-time bootstrap. The application must never connect as it.\n- `cedar_app` (least privilege): used for **everything** the running app does.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Going forward, database access should be structured as two roles with distinct jobs:\n\n- **`cedar_owner`** (superuser/table owner): used only by `scripts/migrate.sh` and admin/bootstrap tasks \u2014 never by the running application.\n- **`cedar_app`** (least-privilege, RLS-subject): the only role in the application's `DATABASE_URL`, in every environment",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The role lives in `db/bootstrap/create_app_role.sql`, which (a) is outside the `db/migrations/*.sql` glob that `migrate.sh` replays, (b) is not mounted into the container's `/docker-entrypoint-initdb.d/`... its header says \"Not part of automatic database initialization; run by hand on first setup,\"... Result: after the wipe, any connection as `cedar_app`... fails immediately with Postgres's `FATAL: role \"cedar_app\" does not exist`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`cedar_app` is created only by `cedarline/db/bootstrap/create_app_role.sql`, which is explicitly manual... `cedarline/scripts/reset-local-db.sh` runs `docker compose down -v` \u2014 deleting the `cedar_pgdata` named volume... `docker-compose.yml` mounts no init scripts either. So after a rebuild, `cedar_app` simply does not exist in the new cluster... fails immediately with the server's `FATAL: role \"cedar_app\" does not exist`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "env-hazards-t1-r1",
+  "repeat": 1,
+  "task": "env-hazards-t1"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 33829,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1261243,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9718,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9718,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9718,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9718,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3578,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3578,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are nearly equivalent in technical substance (a, b, d), but Report 2 explicitly articulates a going-forward policy that doc updates must land in the same commit as the code changes they describe, which Report 1 omits \u2014 giving Report 2 a slight edge on expectation (c).",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "New provider calls belong in `medibill/backend/app/billing/gateway.py`... with `app/billing/errors.py` as the only sanctioned exception (it imports just the SDK's exception types, `errors.py:6-9`, and stays within that exception)... `medibill/backend/app/api/invoices.py`... `medibill/backend/app/workers/dunning.py`... That is the complete list.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "New refund calls should live in `medibill/backend/app/billing/gateway.py`... with `app/billing/errors.py` (which only re-exports the SDK's exception types, `errors.py:6-9`) as the sole exception... `backend/app/api/invoices.py`... `backend/app/workers/dunning.py`... That is the complete list.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "claims the response contains \"exactly\" `id, tenant_id, amount_cents, currency, status`. Since commit `c23da88` (MEDB-214, 2026-06-18), the response model `InvoiceOut` also carries `external_ref` (`backend/app/models/invoice.py:22`, serialized at lines 26-28, populated in `invoices.py:17`, backed by `migrations/0006_add_invoice_external_ref.sql`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In the code, `InvoiceOut` has **six** fields \u2014 those five plus `external_ref: str | None` (`backend/app/models/invoice.py:16-22`) \u2014 and `from_model` serializes `external_ref` into every response (`invoice.py:26-28`)... The field was added in commit `c23da88` (MEDB-214), together with migration `0006_add_invoice_external_ref.sql`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "It should be corrected to match reality **before any refund code is written** \u2014 as the first commit of the refund work (or an immediately-preceding standalone commit), not \"eventually.\"... Going forward, treat drift as a merge-blocking bug: any commit that changes the invoice response shape, the webhook set, or the provider boundary must update this doc in the same commit.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "it is wrong on both the count and the enumeration: the code handles **five** types, the four listed plus `payment_pending`... What I would change about how it is stated: drop the hard-coded count. \"Handles 4 webhook event types\" is the most fragile possible phrasing... and it failed in exactly the expected way. Restate it to name the source of truth and describe behavior",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "is wrong on both the count and the enumeration. The handler `payment_webhook`... matches five event types... I would change **how it is stated**: drop the hardcoded count entirely. A literal \"handles 4\" is guaranteed to go stale the next time anyone adds an `if` branch \u2014 which is exactly what happened in `c23da88`.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "arch-contracts-t1-r3",
+  "repeat": 3,
+  "task": "arch-contracts-t1"
+}

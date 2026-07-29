@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 20226,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1593045,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9881,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9881,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 9881,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 9881,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 1848,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1848,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with strong code-grounded reasoning; they are comparable, with Report 1 marginally more detailed on remediation.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "grader/aggregate.py:9-12 \u2014 composite() then converts that None into a real score of zero: value = axis_scores.get(axis); if value is None: value = 0.0; total += weight * value ... In form, the failed record is byte-for-byte indistinguishable from a fully scored one",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "In grader/aggregate.py:9-12, composite() coerces the None to a real score: value = axis_scores.get(axis); if value is None: value = 0.0 ... In form, the degraded record is indistinguishable from a fully scored one",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "A zero is a real, comparable data point asserting \"this reply scored terribly\"; a failed call means \"we don't know.\" Conflating them corrupts every downstream aggregate. ... rankings() ... sums float(comp) over every row and divides by row count, with no filtering, so each poisoned row drags the affected agent's mean down hard",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "It conflates \"we could not measure this axis\" with \"this axis was measured and scored 0,\" the worst possible measurement. ... rankings() (leaderboard.py:13-17) sums float(comp) over every row and divides by the row count, counting degraded rows at full weight in each agent's mean",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "If accuracy (the load-bearing axis) fails: write no composite row to scores.csv at all. Record the failure in a separate place ... never as a number in the file the leaderboard averages.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "A record with unknown accuracy simply cannot be scored. ... If retries are exhausted, write nothing for that row to scores.csv. Instead, record the failure explicitly and loudly",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Relevance and tone are non-critical embellishments: if one of them fails, the record still contains the load-bearing measurement. Renormalizing the remaining weights over the axes that succeeded and keeping the result (flagged) is a defensible degradation; silently zero-filling still is not.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "for relevance or tone one could at least imagine an explicit, flagged degraded mode (e.g., renormalizing weights over the axes that did return). For accuracy even that is off the table \u2014 a gate axis requires the actual measurement; there is no defensible substitute value.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "eval-harness-t1-r3",
+  "repeat": 3,
+  "task": "eval-harness-t1"
+}

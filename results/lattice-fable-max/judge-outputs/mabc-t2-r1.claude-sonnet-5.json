@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 26651,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1415823,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 12705,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 12705,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 12705,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 12705,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 3272,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 3272,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently identify the same core facts (registry.py cluster, staged ordering, F-06 as a policy decision, and the shared RESULTS_DB path) and hit all four expectations equally well; they are comparable in substance, with Report 1 slightly more detailed on integration/branching mechanics and Report 2 slightly more explicit about output-attribution risk from landing changes together.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Registry | Eng A | F-05, F-09 now; F-02 when the URL arrives | pipeline/registry.py ... Three findings (F-02, F-05, F-09) all edit the 11-line pipeline/registry.py... Splitting those across people guarantees conflicts; giving each hotspot one owner makes the parallelism real.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer C \u2014 pipeline/registry.py cluster: F-09 and F-05 now, F-02 when unblocked. ... All three findings live in one 11-line file... pipeline/registry.py triple-booked. F-02, F-05, F-09 are three edits to one 11-line file \u2014 three separate PRs by three people is pure conflict churn.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Rubric | Eng B | F-11 (test first), then F-01 ... Registry | Eng A | F-05, F-09 now; F-02 when the URL arrives | pipeline/registry.py ... Runner | Eng C | F-12 (test first), then F-04(+F-13), then F-07, then F-14",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Engineer B \u2014 pipeline/rubric.py cluster: F-01 plus F-11. ... Engineer C \u2014 pipeline/registry.py cluster: F-09 and F-05 now, F-02 when unblocked. ... Engineer A \u2014 pipeline/run_batch.py cluster: F-04+F-13, then F-14, then F-07, plus F-12.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "F-06 \u2014 escalate, don't let an engineer guess. \"Thresholds are too lenient; tighten them\" names no target values. PARTIAL_CREDIT_THRESHOLDS = (0.35, 0.65) at score.py:3 directly sets production scores for every borderline answer \u2014 this is a product/behavior decision, not a mechanical fix... Get the numbers from the owner, then assign.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "F-06 \u2014 do not hand to an engineer as written; it is a scoring-policy decision, not a bug fix. \"Tighten them\" specifies no target values, and PARTIAL_CREDIT_THRESHOLDS (score.py:3) determines every partial-credit score the pipeline emits \u2014 changing it silently re-scores all downstream results. It needs the rubric/metrics owner to pick values, ideally from a calibration run.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Shared test resource \u2014 tests/conftest.py:4 points the suite at a machine-global default, RESULTS_DB = /var/tmp/llm-scoring/results.db. Parallel test runs on a shared machine can collide unless each engineer overrides RESULTS_DB to a private path. ... A private RESULTS_DB: export RESULTS_DB=<own scratch path> before running tests, because tests/conftest.py:4 defaults to the machine-global /var/tmp/llm-scoring/results.db.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Shared local state. tests/conftest.py:4 defaults RESULTS_DB to the fixed path /var/tmp/llm-scoring/results.db \u2014 engineers sharing a machine or CI runner would collide unless each overrides the env var. ... RESULTS_DB env var set to a private path (e.g., under their own home/tmp), since tests/conftest.py defaults to the shared /var/tmp/llm-scoring/results.db.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "mabc-t2-r1",
+  "repeat": 1,
+  "task": "mabc-t2"
+}

@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19802,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1940055,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13330,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13330,
+        "cache_read_input_tokens": 17373,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 13330,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 13330,
+            "cache_read_input_tokens": 17373,
+            "input_tokens": 2,
+            "output_tokens": 1765,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1765,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit every expectation with correct file/function citations and concrete fixes; they are comparable in quality and depth.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "catches bare `Exception`, so **every class is handled identically** ... `BadRequestError` (malformed request): **inappropriate**. ... `ContentPolicyError`: **inappropriate and a compliance problem**. ... `AuthError` (bad primary credentials): **inappropriate severity**. ... **Fix:** import the provider exceptions and catch only the transient set for fallback \u2014 `except (RateLimitError, RequestTimeoutError, ServerError) as e:` \u2014 let `BadRequestError` propagate, route `ContentPolicyError` to a failed/review status without retrying on another vendor",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the *same payload* \u2014 containing the sensitive document text \u2014 is sent unconditionally to the secondary vendor ... `BadRequestError` \u2014 ... Should fail the record instead. ... `ContentPolicyError` \u2014 ... Must never fail over. ... `AuthError` \u2014 ... Should raise and page, not fail over. Concrete fix: add an explicit denylist of definitively non-retryable classes that re-raises *before* the catch-all",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "**Path A \u2014 environment bypass** ... if `os.environ.get(\"STAGE\") != \"production\"` ... return `True` unconditionally. **Assessment: fail-open on configuration.** ... **Path D \u2014 redis failure** ... `redis.incr` raises `RedisError` \u2192 return `True`. **Assessment: silent fail-open.** ... replace the `STAGE` string comparison with an explicit, logged disable flag ... prefer failing closed",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**Path A \u2014 environment bypass** ... `STAGE` is unset or is anything other than the exact lowercase string `\"production\"` ... this is a fail-open gate keyed on an environment-name check ... **Path D \u2014 Redis failure, returns `True`** ... fails open ... It should fail closed: return `False` (or raise so the batch halts) and log loudly. ... delete the `STAGE` bypass ... return `False` on `RedisError`",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`input_text` (the **entire intake document text**, which the task states contains sensitive personal data), and `metadata` (unbounded, contents unspecified). **Assessment: this is a direct PII leak** ... **Fix:** ... drop `input_text` entirely (at most a content hash and length); replace free-form `metadata` with an explicit whitelist of non-sensitive fields",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the **complete `input_text`** \u2014 the entire sensitive intake document, verbatim \u2014 and the **entire `record.metadata` dict**, unfiltered ... replace `input_text` with `hashlib.sha256(record.input_text.encode()).hexdigest()` plus a character count; project `metadata` through an explicit allowlist of known-safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "`salt = os.environ.get(\"PII_SALT\", \"\")` ... When the dependency is not satisfied (unset or empty `PII_SALT`), the function **silently** falls back to `salt = \"\"` and produces a plain, unsalted SHA-256 ... **Fix:** read the salt with `os.environ[\"PII_SALT\"]` and fail fast with a clear error when missing or empty",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "reads the `PII_SALT` environment variable at call time with `os.environ.get(\"PII_SALT\", \"\")` ... it silently returns a plain unsalted `sha256(applicant_id)` ... a missing secret that gates handling of personal data should stop the pipeline, not quietly weaken it. ... if not salt: raise RuntimeError(\"PII_SALT must be set and non-empty\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

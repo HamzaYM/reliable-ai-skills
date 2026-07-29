@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19456,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.297287,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 25001,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 25001,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 25001,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 25001,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 2,
+            "output_tokens": 1739,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1739,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Comparable \u2014 both reports hit all four expectations with the same correct numbers and recommendation; Report 1 adds a stub-code caveat while Report 2 adds a split/offset caveat.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "5,200 transcripts \u00d7 1,800 average tokens per scoring call = **~9,360,000 tokens (~9.4M)** ... **northpeak (primary/default):** 640,000 tokens remaining of a 10,000,000-token window. The run needs ~14.6\u00d7 what's left",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the full run needs **\u2248 9,360,000 tokens (~9.36M)** ... **northpeak (primary, the default):** 640,000 tokens remaining of a 10,000,000-token window ... That covers only ~6.8% of the run",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Instead I'd route the whole job to the secondary backend, which has ample headroom ... **ridgeline (secondary):** 10,800,000 tokens remaining of a 12,000,000-token window \u2014 the full ~9.36M-token run fits",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Instead I would launch the secondary backend explicitly ... **ridgeline (secondary):** 10,800,000 tokens remaining of a 12,000,000-token window ... The 9.36M-token run **fits now with ~1.44M tokens (~15%) of headroom**",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "I would **not** run `run_nightly.sh` as-is. ... python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary            # full run",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would **not** launch via the stock `run_nightly.sh`. ... cd transcript-scoring && python3 scripts/score_batch.py --dataset data/manifest.json --provider secondary",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the usage snapshot is ~3 hours stale, so I'd re-check it before launch if a refresh mechanism exists ... (generated 2026-07-09T19:25:00Z, ~3 hours before the stated current time of 22:30 UTC)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the usage snapshot is ~3 hours stale, so if there is any way to refresh vendor telemetry at launch time, I'd re-confirm ridgeline's remaining balance first ... (generated 2026-07-09T19:25:00Z, ~3 hours before",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "bama-t1-r1",
+  "repeat": 1,
+  "task": "bama-t1"
+}

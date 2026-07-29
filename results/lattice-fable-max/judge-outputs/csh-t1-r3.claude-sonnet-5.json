@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 19855,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.10023829999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8667,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8667,
+        "cache_read_input_tokens": 29151,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8667,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8667,
+            "cache_read_input_tokens": 29151,
+            "input_tokens": 2,
+            "output_tokens": 2341,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2341,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports fully satisfy all four expectations with essentially equivalent grounding and citations; Report 2 adds a few extra considerations (malformed values, execution-path caveats) but this doesn't affect expectation coverage \u2014 the two are comparable in quality.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The deciding code is the function `auto_send_reminders_enabled` in `backend/app/feature_flags.py`: line 11 checks `if tenant.settings.get(\"auto_send_reminders\") is None:` and line 12 \u2014 the exact line that decides this case \u2014 is `return True`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deciding code is `auto_send_reminders_enabled` in `slotwise/backend/app/feature_flags.py:10-13`. ... the check at `feature_flags.py:11` (`if tenant.settings.get(\"auto_send_reminders\") is None:`) is true and **line 12 (`return True`) decides it**.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "I would change `backend/app/feature_flags.py:12` from `return True` to `return False` (equivalently, collapse lines 11\u201313 to `return bool(tenant.settings.get(\"auto_send_reminders\"))`, since `bool(None)` is `False`).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "I would change `feature_flags.py:12` from `return True` to `return False` (equivalently, collapse the function to `return bool(tenant.settings.get(\"auto_send_reminders\", False))`), making missing/None/malformed all mean off",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Commit `25509a7` (\"SLOT-190 tenant settings and calendar view preference\", 2026-06-10) created `feature_flags.py` with one function, `compact_calendar_view_enabled`, using the `if ... is None: return True` shape... Commit `aa4cf8d`... then added `auto_send_reminders_enabled` as a structurally identical, line-for-line copy of the function directly above it... It was not a sound basis because the copied precedent and the new flag have opposite risk profiles: defaulting a display preference on affects only pixels, while defaulting auto-messaging on silently opts every existing tenant into sending SMS/email to patients.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`feature_flags.py` was created in commit `25509a7`... containing only `compact_calendar_view_enabled`, whose default-on was a deliberate, test-pinned choice for a UI preference... Commit `aa4cf8d`... then appended `auto_send_reminders_enabled` directly beneath it as a line-for-line structural copy... That basis was unsound because the two flags sit in opposite risk categories \u2014 a cosmetic view preference versus an automated outbound action toward patients",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Add a global kill switch. The grep confirmed the per-tenant flag at `reminders.py:25` is the *only* gate \u2014 there is no environment-level or ops-level way to stop all sends quickly if the job misbehaves (`infra/main.tf` contains only an `environment` variable). An env-var or config check in `run()` before the tenant loop is the minimum.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Add an environment-level master switch ANDed with the per-tenant value (in the resolver or in `run()` at `reminders.py:22-25`), defaulting off, wired through deploy config. Grep shows the backend reads no environment variables at all and `infra/main.tf` contains only an `environment` variable \u2014 there is currently **no kill switch**: disabling the feature fleet-wide would require editing every tenant's settings row.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "csh-t1-r3",
+  "repeat": 3,
+  "task": "csh-t1"
+}

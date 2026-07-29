@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 40280,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2090105,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 17813,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 17813,
+        "cache_read_input_tokens": 72575,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3536,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3536,
+            "cache_read_input_tokens": 43426,
+            "input_tokens": 2,
+            "output_tokens": 1230,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4787,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are thorough and nearly identical in substance across (a), (c), and (d); Report 2 is stronger on (b) because it explicitly commits to fail-closed (return False) on Redis backend failure, while Report 1 hedges by saying to 'decide fail-open vs. fail-closed explicitly' without recommending deny.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Concrete fix: import the exception classes and catch only the transient trio \u2014 `except (RateLimitError, RequestTimeoutError, ServerError) as e:` \u2014 falling over for those; let `BadRequestError`, `ContentPolicyError`, `AuthError`, and everything else propagate (with `AuthError` additionally alerting).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "NON_RETRYABLE = (BadRequestError, ContentPolicyError, AuthError)\n\ndef call_with_fallback(payload):\n    try:\n        return primary.complete(payload)\n    except NON_RETRYABLE:\n        raise\n    except Exception as e:\n        log_fallover(e)   # log exception type only, not repr of the message\n        return secondary.complete(payload)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Fail-open may be an acceptable availability trade-off for an internal batch job, but it must be a logged, alerting, deliberate one. ... (and decide fail-open vs. fail-closed explicitly)",
+            "hit": false
+          },
+          "report_2": {
+            "evidence": "A gate that bounds both spend and the egress of sensitive documents must fail **closed** \u2014 return `False` (and log loudly / alert) so a redis outage stops the batch rather than unleashing it.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Concrete fix: log the pseudonymized id, never the document body, and allowlist metadata \u2014 e.g. `{\"applicant_id\": pseudonymize(record.applicant_id), \"input_chars\": len(record.input_text), \"doc_type\": record.metadata.get(\"doc_type\")}`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Free-text content should never be logged verbatim (hash and/or truncate it if it must be referenced); identifiers should be pseudonymized; and metadata should pass through an explicit **allowlist** of known-safe keys, dropping everything else, rather than being dumped",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "**Concrete fix:** fail fast \u2014 `salt = os.environ[\"PII_SALT\"]` plus `if not salt: raise RuntimeError(\"PII_SALT must be set\")` \u2014 and compute `hmac.new(salt.encode(), applicant_id.encode(), hashlib.sha256).hexdigest()`.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "def pseudonymize(applicant_id):\n    salt = os.environ.get(\"PII_SALT\")\n    if not salt:\n        raise RuntimeError(\"PII_SALT must be set; refusing to emit unsalted pseudonyms\")\n    return hmac.new(salt.encode(), applicant_id.encode(), hashlib.sha256).hexdigest()",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r1",
+  "repeat": 1,
+  "task": "aicg-t2"
+}

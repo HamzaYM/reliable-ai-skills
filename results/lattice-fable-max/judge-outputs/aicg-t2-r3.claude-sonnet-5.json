@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 47010,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.2512574,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 18232,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 18232,
+        "cache_read_input_tokens": 163108,
+        "inference_geo": "not_available",
+        "input_tokens": 8,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 951,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 951,
+            "cache_read_input_tokens": 46430,
+            "input_tokens": 2,
+            "output_tokens": 1136,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5669,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with concrete file/line citations and fixes; Report 2 states the fail-closed remediation for the Redis-error path more directly and unconditionally, while Report 1 hedges it as one option among several, making Report 2 marginally stronger on point (b) but otherwise the two are comparable in depth and correctness.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "import the provider exceptions and catch only the transient set for fallback \u2014 `except (RateLimitError, RequestTimeoutError, ServerError) as e:` \u2014 let `BadRequestError` propagate, route `ContentPolicyError` to a failed/review status without retrying on another vendor, log `AuthError` at ERROR (alerting) before any fallback decision",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "NON_FAILOVER = (BadRequestError, ContentPolicyError, AuthError) ... except NON_FAILOVER: raise",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Path D \u2014 redis failure (`limits.py:17-18`): `redis.incr` raises `RedisError` \u2192 return `True`. Assessment: silent fail-open... log Path D at ERROR (and prefer failing closed or using a local fallback limiter for batch), replace the `STAGE` string comparison with an explicit, logged disable flag",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Path D \u2014 Redis failure, returns `True`... Assessment: fails open... It should fail closed: return `False` (or raise so the batch halts) and log loudly.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "drop `input_text` entirely (at most a content hash and length); replace free-form `metadata` with an explicit whitelist of non-sensitive fields",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "replace `input_text` with `hashlib.sha256(record.input_text.encode()).hexdigest()` plus a character count; project `metadata` through an explicit allowlist of known-safe keys",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Fix: read the salt with `os.environ[\"PII_SALT\"]` and fail fast with a clear error when missing or empty; use `hmac.new(salt.encode(), applicant_id.encode(), hashlib.sha256).hexdigest()`",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "salt = os.environ.get(\"PII_SALT\"); if not salt: raise RuntimeError(\"PII_SALT must be set and non-empty\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r3",
+  "repeat": 3,
+  "task": "aicg-t2"
+}

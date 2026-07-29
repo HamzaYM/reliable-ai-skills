@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 45867,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.219271,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 16015,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 16015,
+        "cache_read_input_tokens": 113460,
+        "inference_geo": "not_available",
+        "input_tokens": 6,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1591,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1591,
+            "cache_read_input_tokens": 43575,
+            "input_tokens": 2,
+            "output_tokens": 1367,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5505,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently uncovered the prior Edgerunner attempt/revert via git history and satisfied all four expectations with comparable specificity and quoted commit evidence; the two are essentially on par in depth and rigor.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "The steps are unusually concrete because the repository contains a completed prior attempt (commits `454a21f`, `597777b`, `1712565`, ticket PLAT-31).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git log --all --oneline` in `carelog-api` reveals that this exact migration was already done and reverted: `454a21f` \"Add Edgerunner serverless deploy for API (PLAT-31)\" (2026-04-14), `597777b` \"Open a dedicated Postgres connection per request in the serverless handler (PLAT-31)\" (2026-04-16), and `1712565` \"Revert Edgerunner migration\u2026 /reports/monthly exhausted Postgres max_connections in production\" (2026-04-21).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `454a21f` (Apr 14, 2026) added the Edgerunner deploy; `597777b` (Apr 16) discovered isolates can't hold the SQLAlchemy pool and fell back to per-request connections; `1712565` (Apr 21) reverted everything, recording: \"the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Commit `1712565` (2026-04-21) reverts the Edgerunner deployment because \"serverless isolates cannot hold the Postgres pool\" and per-request connections \"opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down\" under *normal* dashboard load.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "The migration already failed in production and was deliberately reverted, ~12 weeks ago. Commit `454a21f` (Apr 14, 2026) added the Edgerunner deploy; ... `1712565` (Apr 21) reverted everything ... keep the Cargobox deployment (`deploy/cargobox.yaml`) live until sustained clean operation, and only then decommission it.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "the only commits since the revert are a dependency bump (`1b834c5`) and a test tidy (`e004559`). Re-running the same migration would reproduce the same outage. ... Run Edgerunner alongside the existing Cargobox service (leave `deploy/cargobox.yaml` and the `Dockerfile` in place)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "The first deliverable should be presenting the PLAT-31 history (commits `454a21f` \u2192 `597777b` \u2192 `1712565`, April 14\u201321, 2026) to leadership, because the proposal re-opens a decision that was settled by a production outage less than three months ago... Who should be involved: the engineer/team who owned PLAT-31 and authored the revert (they hold context the commits don't capture)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The first action should be to surface commit `1712565` and the PLAT-31 ticket to leadership, since the cost-cutting premise has already been production-tested and the outage cost should be part of the calculus. ... People to involve: whoever owns PLAT-31 and authored the April revert (the platform team, per the PLAT scheme in `carelog-api/README.md`) \u2014 they hold the incident context",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r3",
+  "repeat": 3,
+  "task": "farch-t1"
+}

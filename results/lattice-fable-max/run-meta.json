@@ -17,28 +17,27 @@
     "floor_rule": "a must-hit whose disputed mark has no adjudicator result (adjudicator failure after the pre-registered retry) is excluded from both arms of that comparison as a judge-failure exclusion, never as a disagreement; when more than one third of a comparison's must-hit marks are excluded this way, the entire paired comparison is excluded and reported; adjudicated disagreements never trigger this floor",
     "input": "minimal by construction: the disputed expectation text, the two blinded report slots exactly as the primary judges saw them, and the judging frame; invoked once per disputed report-slot mark",
     "model": "claude-fable-5",
-    "models_effective": [],
+    "models_effective": [
+      "claude-fable-5",
+      "claude-haiku-4-5-20251001"
+    ],
     "rule": "per report-slot must-hit mark: both primary judges score every blinded comparison fully and independently; each report-slot mark they disagree on is scored once by the pinned adjudicator, which sees only the disputed expectation, the two blinded report slots, and the judging frame; the final mark is the two-of-three majority and disputed marks never leave any denominator",
     "schema": "eval/schemas/adjudicator.schema.json"
   },
   "auth_mode": "subscription-login",
-  "claude_cli_version": "2.1.206 (Claude Code)",
+  "claude_cli_version": "2.1.207 (Claude Code)",
   "cold_arm_isolation": {
-    "ambient_user_skills": [
-      "budget-aware-allocation",
-      "codex-adversarial-review",
-      "codex-advisory-opinion",
-      "consulting-company-framework",
-      "framer",
-      "framer-code-components",
-      "tiered-review"
-    ],
+    "ambient_user_skills": [],
     "skill_tool": "consumers run with --allowedTools Read,Grep,Glob,Bash, which exposes no Skill tool, so user-level and project-level skills cannot be invoked in either arm",
     "workspace": "cold workspaces are staged into a fresh temp directory and asserted to contain no .claude directory before every consumer run"
   },
-  "concurrency": 4,
-  "consumer_models_effective": [],
-  "created_at": "2026-07-10T13:52:01Z",
+  "concurrency": 2,
+  "consumer_models_effective": [
+    "claude-fable-5",
+    "claude-haiku-4-5-20251001",
+    "claude-opus-4-8[1m]"
+  ],
+  "created_at": "2026-07-12T15:19:42Z",
   "effort": "max",
   "effort_mechanism": {
     "advertised_levels": [
@@ -85,139 +84,10 @@
   "excluded_tasks": [
     {
       "failed_arms": [
-        "cold",
         "loaded"
       ],
-      "reason": "aicg-t2-r1-cold: claude exited 1: ; aicg-t2-r1-loaded: claude exited 1: ; aicg-t2-r2-cold: claude exited 1: ; aicg-t2-r2-loaded: claude exited 1: ; aicg-t2-r3-cold: claude exited 1: ; aicg-t2-r3-loaded: claude exited 1: ",
-      "task": "aicg-t2"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "arch-contracts-t1-r1-cold: claude exited 1: ; arch-contracts-t1-r1-loaded: claude exited 1: ; arch-contracts-t1-r2-cold: claude exited 1: ; arch-contracts-t1-r2-loaded: claude exited 1: ; arch-contracts-t1-r3-cold: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; arch-contracts-t1-r3-loaded: claude exited 1: ",
-      "task": "arch-contracts-t1"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "bama-t1-r1-cold: claude exited 1: ; bama-t1-r1-loaded: claude exited 1: ; bama-t1-r2-cold: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; bama-t1-r2-loaded: claude exited 1: ; bama-t1-r3-cold: claude exited 1: ; bama-t1-r3-loaded: claude exited 1: ",
-      "task": "bama-t1"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "consent-t2-r1-cold: claude exited 1: ; consent-t2-r1-loaded: claude exited 1: ; consent-t2-r2-cold: claude exited 1: ; consent-t2-r2-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; consent-t2-r3-cold: claude exited 1: ; consent-t2-r3-loaded: claude exited 1: ",
-      "task": "consent-t2"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "csh-t1-r1-cold: claude exited 1: ; csh-t1-r1-loaded: claude exited 1: ; csh-t1-r2-cold: claude exited 1: ; csh-t1-r2-loaded: claude exited 1: ; csh-t1-r3-cold: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; csh-t1-r3-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists",
-      "task": "csh-t1"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "dora-t2-r1-cold: claude exited 1: ; dora-t2-r1-loaded: claude exited 1: ; dora-t2-r2-cold: claude exited 1: ; dora-t2-r2-loaded: claude exited 1: ; dora-t2-r3-cold: claude exited 1: ; dora-t2-r3-loaded: claude exited 1: ",
-      "task": "dora-t2"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "env-hazards-t1-r1-cold: claude exited 1: ; env-hazards-t1-r1-loaded: claude exited 1: ; env-hazards-t1-r2-cold: claude exited 1: ; env-hazards-t1-r2-loaded: claude exited 1: ; env-hazards-t1-r3-cold: claude exited 1: ; env-hazards-t1-r3-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists",
-      "task": "env-hazards-t1"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "eval-harness-t1-r1-cold: claude exited 1: ; eval-harness-t1-r1-loaded: claude exited 1: ; eval-harness-t1-r2-cold: claude exited 1: ; eval-harness-t1-r2-loaded: claude exited 1: ; eval-harness-t1-r3-cold: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; eval-harness-t1-r3-loaded: claude exited 1: ",
-      "task": "eval-harness-t1"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "farch-t1-r1-cold: claude exited 1: ; farch-t1-r1-loaded: claude exited 1: ; farch-t1-r2-cold: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; farch-t1-r2-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; farch-t1-r3-cold: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; farch-t1-r3-loaded: claude exited 1: ",
-      "task": "farch-t1"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "git-cc-t2-r1-cold: claude exited 1: ; git-cc-t2-r1-loaded: claude exited 1: ; git-cc-t2-r2-cold: claude exited 1: ; git-cc-t2-r2-loaded: claude exited 1: ; git-cc-t2-r3-cold: claude exited 1: ; git-cc-t2-r3-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists",
-      "task": "git-cc-t2"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "mabc-t2-r1-cold: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; mabc-t2-r1-loaded: claude exited 1: ; mabc-t2-r2-cold: claude exited 1: ; mabc-t2-r2-loaded: claude exited 1: ; mabc-t2-r3-cold: claude exited 1: ; mabc-t2-r3-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists",
-      "task": "mabc-t2"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "mmar-t1-r1-loaded: claude exited 1: ; mmar-t1-r2-cold: claude exited 1: ; mmar-t1-r2-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; mmar-t1-r3-loaded: claude exited 1: ",
+      "reason": "mmar-t1-r2-loaded: timed out after 600s; mmar-t1-r3-loaded: timed out after 600s",
       "task": "mmar-t1"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "mt-auth-t1-r1-cold: claude exited 1: ; mt-auth-t1-r1-loaded: claude exited 1: ; mt-auth-t1-r2-cold: claude exited 1: ; mt-auth-t1-r2-loaded: claude exited 1: ; mt-auth-t1-r3-cold: claude exited 1: ; mt-auth-t1-r3-loaded: claude exited 1: ",
-      "task": "mt-auth-t1"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "pmvg-t2-r1-cold: claude exited 1: ; pmvg-t2-r1-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; pmvg-t2-r2-cold: claude exited 1: ; pmvg-t2-r2-loaded: claude exited 1: ; pmvg-t2-r3-cold: claude exited 1: ; pmvg-t2-r3-loaded: claude exited 1: ",
-      "task": "pmvg-t2"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "s2p-cutover-t1-r1-cold: claude exited 1: ; s2p-cutover-t1-r1-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; s2p-cutover-t1-r2-cold: claude exited 1: ; s2p-cutover-t1-r2-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; s2p-cutover-t1-r3-cold: claude exited 1: ; s2p-cutover-t1-r3-loaded: claude exited 1: ",
-      "task": "s2p-cutover-t1"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "sysdbg-t2-r1-cold: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists; sysdbg-t2-r1-loaded: claude exited 1: ; sysdbg-t2-r2-cold: claude exited 1: ; sysdbg-t2-r2-loaded: claude exited 1: ; sysdbg-t2-r3-cold: claude exited 1: ; sysdbg-t2-r3-loaded: claude exited 1: mktemp: mkstemp failed on <LOCAL-TMP-PATH>: File exists",
-      "task": "sysdbg-t2"
-    },
-    {
-      "failed_arms": [
-        "cold",
-        "loaded"
-      ],
-      "reason": "tcr-t1-r1-cold: claude exited 1: ; tcr-t1-r1-loaded: claude exited 1: ; tcr-t1-r2-cold: claude exited 1: ; tcr-t1-r2-loaded: claude exited 1: ; tcr-t1-r3-cold: claude exited 1: ; tcr-t1-r3-loaded: claude exited 1: ",
-      "task": "tcr-t1"
     }
   ],
   "freeze": {
@@ -254,13 +124,19 @@
         "effort_effective": "medium",
         "effort_requested": "medium",
         "model_requested": "claude-opus-4-8",
-        "models_effective": []
+        "models_effective": [
+          "claude-haiku-4-5-20251001",
+          "claude-opus-4-8"
+        ]
       },
       "claude-sonnet-5": {
         "effort_effective": "medium",
         "effort_requested": "medium",
         "model_requested": "claude-sonnet-5",
-        "models_effective": []
+        "models_effective": [
+          "claude-haiku-4-5-20251001",
+          "claude-sonnet-5"
+        ]
       }
     },
     "models": [
@@ -477,6 +353,12 @@
     "cross_model_fallback": "a consumer run answered by a model other than the requested one is invalid: one retry, then the task is excluded-as-invalid",
     "truncated_by_limit": "a consumer run whose output hit the pinned ceiling is invalid: one retry, then the task is excluded-as-invalid"
   },
-  "wall_clock_seconds": 844.5,
-  "workspace_mutation_warnings": []
+  "wall_clock_seconds": 1282.7,
+  "workspace_mutation_warnings": [
+    "csh-t1-r2-cold",
+    "eval-harness-t1-r1-loaded",
+    "eval-harness-t1-r3-loaded",
+    "sysdbg-t2-r1-cold",
+    "sysdbg-t2-r3-cold"
+  ]
 }

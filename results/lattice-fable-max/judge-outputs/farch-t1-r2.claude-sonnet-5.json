@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 37754,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1813717,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14540,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14540,
+        "cache_read_input_tokens": 69669,
+        "inference_geo": "not_available",
+        "input_tokens": 4,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 3173,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 3173,
+            "cache_read_input_tokens": 40518,
+            "input_tokens": 2,
+            "output_tokens": 1248,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 4446,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports independently discover the same prior Edgerunner attempt/revert via git history, cite the same commits and failure cause, and recommend owner sign-off grounded in that history; they are comparable in substance, with Report 2 slightly more explicit in quoting the revert commit message tying the outage directly back to the Cargobox deploy.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "the repository's own history shows the ordering matters: the database layer must be reworked *before* any Edgerunner deploy, because that is what failed last time (commits `454a21f` \u2192 `597777b` \u2192 `1712565`, ticket PLAT-31).",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`git log --oneline --all` ... immediately surfaces: `454a21f` \"Add Edgerunner serverless deploy for API (PLAT-31)\" (2026-04-14), `597777b` \"Open a dedicated Postgres connection per request in the serverless handler (PLAT-31)\" (2026-04-16), and `1712565` \"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31)\" (2026-04-21).",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565` (Apr 21, 2026): \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production\u2026 Under normal dashboard load the per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "commit `597777b` records that \"Edgerunner runs each request in a fresh isolate and does not keep the SQLAlchemy connection pool between invocations.\" Revert `1712565` records that per-request connections exhausted Postgres `max_connections` in production... the revert records the concrete failure: \"per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Do not proceed with this migration as previously attempted, and do not treat it as a fresh idea \u2014 it is a re-run of PLAT-31, which caused a production outage in April 2026 and was deliberately reverted.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`1712565` \"Revert Edgerunner migration: serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production, back to Cargobox container deploy (PLAT-31)\"... This is a settled decision in the repository's history: the exact migration was tried under PLAT-31 and deliberately reverted after a production outage (`1712565`)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "This should not be re-attempted unilaterally by engineering, and leadership should not decide without seeing the April history.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Re-attempting a reverted migration is their call, made with the prior failure in evidence \u2014 not an engineer's call to make unilaterally.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r2",
+  "repeat": 2,
+  "task": "farch-t1"
+}

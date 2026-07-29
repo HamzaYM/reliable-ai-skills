@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 27658,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-opus-4-8",
+      "model_requested": "claude-opus-4-8",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-8"
+      ],
+      "total_cost_usd": 0.1880425,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11406,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11406,
+        "cache_read_input_tokens": 17375,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 11406,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 11406,
+            "cache_read_input_tokens": 17375,
+            "input_tokens": 2,
+            "output_tokens": 2350,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 2350,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-opus-4-8",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with commit-grounded evidence; Report 2 is somewhat more exhaustive but the two are comparable in answering the task.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "Mechanically, the steps are known precisely because they were already executed once, in commits `454a21f` and `597777b` (April 2026)... PLAT-31, which was reverted from production in commit `1712565` on 2026-04-21",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "commits `454a21f` (Apr 14, 2026), `597777b` (Apr 16), and `1712565` (Apr 21) are a complete prior Edgerunner migration and revert under ticket PLAT-31",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "Commit `1712565` (2026-04-21) records that on Edgerunner, `/reports/monthly` exhausted Postgres `max_connections` under *normal* dashboard load (\"FATAL: too many connections\")... Commit `597777b` records the root constraint: \"Edgerunner runs each request in a fresh isolate and does not keep the SQLAlchemy connection pool between invocations.\"",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Revert commit `1712565` (Apr 21, 2026, PLAT-31): \"serverless isolates cannot hold the Postgres pool; /reports/monthly exhausted Postgres max_connections in production\" \u2014 \"per-request connections opened faster than Postgres could recycle them and tripped the connection limit ('FATAL: too many connections'), taking the endpoint down.\"",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "Re-attempting a deliberately reverted change is a decision for whoever owns this system... Reverting to Cargobox is the proven escape hatch \u2014 it is literally what commit `1712565` did.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "The deleted platform artifacts: `git show 454a21f:deploy/edgerunner.toml`... It is a re-run of PLAT-31, which caused a production outage ... and was reverted; the codebase is unchanged in every respect that mattered.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the owner of the PLAT ticket queue / author of the PLAT-31 revert (they hold the context and own the settled decision)... the go/no-go is theirs to make, but only after seeing the failure history.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "whoever owns PLAT-31 and ran the April attempt/revert... and the leadership sponsor to re-approve with full history.",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "farch-t1-r1",
+  "repeat": 1,
+  "task": "farch-t1"
+}

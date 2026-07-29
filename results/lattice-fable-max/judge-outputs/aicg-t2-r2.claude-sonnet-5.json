@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 13271,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.1294467,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14815,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14815,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 14815,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 14815,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1520,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1520,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports are highly comparable in substance and depth, hitting all four expectations with nearly identical concrete fixes; Report 1 adds a compliance-region observation on log_fallover leaking repr text and Report 2 adds a slightly more explicit windowed-key fix, but neither materially outperforms the other on the graded expectations.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "BadRequestError**: inappropriate. This is a deterministic client-side error... ContentPolicyError**: inappropriate and compliance-relevant... AuthError**: inappropriate. Expired/invalid credentials are a persistent operational failure, not a transient blip... TRANSIENT = (RateLimitError, RequestTimeoutError, ServerError)",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "BadRequestError \u2014 a deterministic rejection of the payload itself... **Wrong \u2014 should re-raise, not fail over.** ContentPolicyError ... **Wrong \u2014 must never fail over.** AuthError ... **Wrong \u2014 should fail loudly...** NON_FALLOVERABLE = (BadRequestError, ContentPolicyError, AuthError)",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "taken when `os.environ.get(\"STAGE\") != \"production\"`... this is fail-open on configuration... taken when `redis.incr` raises `RedisError`. Assessment: silent fail-open... fail-closed is the safer default",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "environment bypass (lines 12): returns `True`... This gates a safety control on an environment-name check and fails open everywhere not literally named `production`... redis failure (lines 17\u201318): returns `True`... **Bad \u2014 fail-open.** ... A safety gate should fail closed.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "the **complete `input_text`** \u2014 the entire sensitive intake document, verbatim \u2014 and the **whole `metadata` object** unfiltered... \"doc_type\": (record.metadata or {}).get(\"doc_type\"),  # allowlisted keys only",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`input_text` \u2014 the **entire document text**. This copies the sensitive personal data itself into the log stream... `metadata` \u2014 the **whole metadata dict**, unfiltered. This isn't even a denylist; it's a passthrough... SAFE_METADATA_KEYS = {\"doc_type\", \"model\", \"vendor\", \"latency_ms\", \"input_tokens\", \"output_tokens\"}",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "the `\"\"` default means a missing (or empty) `PII_SALT` **silently** degrades the function to `sha256(applicant_id)` \u2014 an unsalted, unkeyed hash. No exception, no warning, no log... if not salt:\n        raise RuntimeError(\"PII_SALT is not set; refusing to pseudonymize\")",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "because of the `\"\"` default, an unset (or empty) `PII_SALT` silently degrades the function to a plain **unsalted** `sha256(applicant_id)`. No error, no warning... if not salt:\n        raise RuntimeError(\"PII_SALT is required; refusing to pseudonymize without it\")",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "aicg-t2-r2",
+  "repeat": 2,
+  "task": "aicg-t2"
+}

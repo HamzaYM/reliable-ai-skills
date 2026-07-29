@@ -1,0 +1,103 @@
+{
+  "cli_meta": [
+    {
+      "attempts": 1,
+      "duration_ms": 13667,
+      "effort_effective": "medium",
+      "effort_requested": "medium",
+      "model_effective": "claude-sonnet-5",
+      "model_requested": "claude-sonnet-5",
+      "models_effective": [
+        "claude-haiku-4-5-20251001",
+        "claude-sonnet-5"
+      ],
+      "total_cost_usd": 0.08839369999999999,
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8697,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8697,
+        "cache_read_input_tokens": 29149,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 8697,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 8697,
+            "cache_read_input_tokens": 29149,
+            "input_tokens": 2,
+            "output_tokens": 1529,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 1529,
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "judge_effort": "medium",
+  "judge_model": "claude-sonnet-5",
+  "judgments": [
+    {
+      "comparative_verdict": "Both reports hit all four expectations with solid grounded evidence; Report 2 is slightly more organized in answer 4 (explicitly enumerates three items) but substantively the two reports are comparable in coverage and accuracy.",
+      "expectations": [
+        {
+          "expectation_id": "a",
+          "report_1": {
+            "evidence": "\"Patients can now export their full visit history as a PDF\" (`highlights-v4.md:24`) \u2014 false.** The visit-history code, `app/routers/visits.py`, contains only a `GET /visits` endpoint that returns an empty list, and line 11 is literally `# TODO: pdf export`. ... \"Two-factor authentication is now enabled for every clinic by default\" (`highlights-v4.md:30`) \u2014 false.** `app/security/config.py` sets `TWO_FACTOR_DEFAULT = False`, with the comment \"Two-factor authentication is opt-in per clinic.\" ... it must be removed or rewritten",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "\"Two-factor authentication is now enabled for every clinic by default\" \u2014 false.** `app/security/config.py:4` sets `TWO_FACTOR_DEFAULT = False`... Remove the claim or rewrite it as opt-in. ... \"Patients can now export their full visit history as a PDF\" \u2014 false.** The only visit-history code, `app/routers/visits.py`, is a stub that returns an empty list, with `# TODO: pdf export` on line 11. The feature does not exist. ... Remove the entire section.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "b",
+          "report_1": {
+            "evidence": "`captures.json` records `after_scheduling.png` as captured from route `/billing/invoices` (while `before_scheduling.png` came from `/schedule`), and opening the image confirms it: it shows a \"BILLING / INVOICES\" screen, whereas the \"before\" shows \"SCHEDULING CALENDAR\". The pair compares two different surfaces",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "Viewing the files: `before_scheduling.png` shows \"SCHEDULING CALENDAR\", but `after_scheduling.png` shows \"BILLING / INVOICES\". The manifest confirms this was not a labeling slip in the image itself: `captures.json` records `after_scheduling.png` as captured from route `/billing/invoices`, while the before image came from `/schedule`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "c",
+          "report_1": {
+            "evidence": "`after_export.png` | yes (l.26) | **no** | yes \u2014 flagged \"expected capture; no corresponding file\" | referenced but missing... `unused_capture_07.png` | **no** | yes | **no** | orphan file: on disk (added in commit `24d8f6b`) but referenced nowhere and absent from the manifest",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "`img/after_export.png` | **No** | Broken reference; `captures.json` says \"expected capture; no corresponding file\"... And one file on disk is referenced by nothing: **`img/unused_capture_07.png`**, which shows \"PATIENT LIST\". It appears in neither the document nor `captures.json`.",
+            "hit": true
+          }
+        },
+        {
+          "expectation_id": "d",
+          "report_1": {
+            "evidence": "Yes \u2014 the footer at `highlights-v4.md:33`: \"*Highlights draft assembled with AI assistance.*\" ... it should not ship by default as a leftover of how the draft was produced.",
+            "hit": true
+          },
+          "report_2": {
+            "evidence": "**The footer \"Highlights draft assembled with AI assistance.\" (line 33)** is an internal drafting note... does not belong in polished customer communication. Remove it",
+            "hit": true
+          }
+        }
+      ]
+    }
+  ],
+  "pair": "dora-t2-r1",
+  "repeat": 1,
+  "task": "dora-t2"
+}
