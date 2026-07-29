@@ -366,6 +366,19 @@ VERDICT_SUPPORTED = "directionally supported under the pre-registered rule"
 VERDICT_NOT_SUPPORTED = "not supported under the pre-registered rule"
 VERDICT_NOT_EVALUABLE = "not evaluable (missing endpoint data)"
 
+# Pre-registered per-column degradation threshold (effort-sweep-
+# preregistration.md section 5, verbatim): "If exclusions exceed 10
+# percent of a column's planned endpoint repeat-pair comparisons in its
+# reporting set, that column is reported as degraded and no hypothesis
+# verdicts are issued from it." EXCEED is strict: a column sitting
+# exactly at 10 percent is not degraded. Interior-cell exclusions never
+# enter this count.
+DEGRADATION_THRESHOLD_PCT = 10.0
+VERDICT_COLUMN_DEGRADED = (
+    "no verdict: column degraded (endpoint exclusions exceed the "
+    "pre-registered 10 percent threshold)"
+)
+
 # Task-cluster bootstrap: descriptive sensitivity only, non-inferential.
 # The seed is fixed and recorded so the resampling is deterministic and
 # cannot be reseeded after seeing any scores.
@@ -576,7 +589,98 @@ def _endpoint_cells(cells, model):
     return by_effort["low"], by_effort[endpoint_effort]
 
 
-def _hypothesis_verdicts(cells):
+def _cell_endpoint_comparisons(cell, per_repeat):
+    """Planned vs surviving repeat-pair comparisons for one endpoint cell.
+
+    Planned is the cell's frozen task snapshot times its repeat count, so
+    a five-level column's two replicated endpoints give the pre-registered
+    2 x 3 x 17 = 102 denominator. A repeat pair survives when it
+    contributed scored must-hit marks; everything else is an exclusion --
+    an arm invalid under the paired rule, a judge or adjudicator failure,
+    the judge-failure floor, or a task left with no scorable mark. Judge
+    disagreement excludes nothing and cannot appear here.
+    """
+    planned = cell["invalidation"]["planned_tasks"] * cell["repeats"]
+    if per_repeat:
+        surviving = sum(
+            1
+            for r in per_repeat.values()
+            for pair in (r.get("tasks") or {}).values()
+            if pair["n_must_hits"]
+        )
+    else:
+        # Single-run cell: its one comparison per task is its one repeat
+        # pair, so the surviving task count is the surviving pair count.
+        surviving = cell["n_tasks"]
+    return {
+        "planned_comparisons": planned,
+        "surviving_comparisons": surviving,
+        "excluded_comparisons": planned - surviving,
+    }
+
+
+def _column_degradation(cells, cell_repeat_tasks):
+    """Pre-registered per-column degradation threshold (see
+    DEGRADATION_THRESHOLD_PCT).
+
+    Counts exclusions over the planned ENDPOINT repeat-pair comparisons of
+    each model column -- its low cell plus its confirmatory endpoint cell,
+    nothing else. A column above the threshold is reported as degraded and
+    _hypothesis_verdicts issues no H1 or H2 verdict from it.
+    """
+    out = {
+        "rule": (
+            "pre-registered: exclusions exceeding "
+            f"{DEGRADATION_THRESHOLD_PCT:g} percent of a column's planned "
+            "endpoint repeat-pair comparisons report that column as "
+            "degraded, and no hypothesis verdict is issued from it; "
+            "'exceed' is strict, so a column exactly at "
+            f"{DEGRADATION_THRESHOLD_PCT:g} percent is not degraded"
+        ),
+        "threshold_pct": DEGRADATION_THRESHOLD_PCT,
+        "scope": (
+            "endpoint cells only (low plus the confirmatory endpoint); "
+            "interior-cell exclusions are reported elsewhere and degrade "
+            "only the descriptive curve, never a verdict"
+        ),
+        "columns": {},
+    }
+    for model in sorted({c["model"] for c in cells.values()}):
+        endpoints = _endpoint_cells(cells, model)
+        if endpoints is None:
+            continue
+        per_cell = {}
+        planned = 0
+        excluded = 0
+        for cell in endpoints:
+            cid = f"{cell['model']}@{cell['effort']}"
+            block = _cell_endpoint_comparisons(
+                cell, cell_repeat_tasks.get(cid))
+            per_cell[cid] = block
+            planned += block["planned_comparisons"]
+            excluded += block["excluded_comparisons"]
+        # Compared on exact counts, never on the rounded percentage, so a
+        # column just over the line cannot round its way back under it.
+        degraded = bool(
+            planned
+            and 100 * excluded > DEGRADATION_THRESHOLD_PCT * planned
+        )
+        out["columns"][model] = {
+            "model": model,
+            "endpoint_effort": endpoints[1]["effort"],
+            "planned_comparisons": planned,
+            "excluded_comparisons": excluded,
+            "excluded_pct": (round(100 * excluded / planned, 2)
+                             if planned else None),
+            "degraded": degraded,
+            "per_cell": per_cell,
+        }
+    out["degraded_columns"] = sorted(
+        m for m, c in out["columns"].items() if c["degraded"])
+    return out
+
+
+def _hypothesis_verdicts(cells, degradation=None):
     """Confirmatory H1/H2 endpoint verdicts per model, 3 pp minimum effect.
 
     H1 and H2 are the only confirmatory hypotheses. Verdicts derive from
@@ -611,6 +715,26 @@ def _hypothesis_verdicts(cells):
         if endpoints is None:
             continue
         endpoint_effort = endpoints[1]["effort"]
+        column = ((degradation or {}).get("columns") or {}).get(model) or {}
+        if column.get("degraded"):
+            # Pre-registered: a degraded column issues no verdict at all,
+            # so its endpoint values are withheld here rather than shown
+            # beside a label (the descriptive tables still carry them).
+            degraded_basis = (
+                f"{column['excluded_comparisons']} of "
+                f"{column['planned_comparisons']} planned endpoint "
+                f"repeat-pair comparisons excluded "
+                f"({column['excluded_pct']}%), above the pre-registered "
+                f"{DEGRADATION_THRESHOLD_PCT:g} percent threshold"
+            )
+            for key in ("h1", "h2"):
+                out[key][model] = {
+                    "verdict": VERDICT_COLUMN_DEGRADED,
+                    "endpoint_effort": endpoint_effort,
+                    "column_degraded": True,
+                    "basis": degraded_basis,
+                }
+            continue
         low, high = (_cc_endpoint_scoped(c) for c in endpoints)
         basis = f"low: {low['basis']}; {endpoint_effort}: {high['basis']}"
         if low["cold"] is None or high["cold"] is None:
@@ -1110,6 +1234,7 @@ def matrix_scores(run_dirs):
                 if slot_marks else None
             ),
         }
+    degradation = _column_degradation(cells, cell_repeat_tasks)
     return {
         "cells": cells,
         "cell_order": cell_order,
@@ -1124,7 +1249,8 @@ def matrix_scores(run_dirs):
         "views": _views(cells),
         "h4_matched_low_high": _h4_matched_low_high(
             cells, cell_task_scores, cell_repeat_tasks),
-        "hypothesis_verdicts": _hypothesis_verdicts(cells),
+        "column_degradation": degradation,
+        "hypothesis_verdicts": _hypothesis_verdicts(cells, degradation),
         "invalidation_note": (
             "invalidation rates by model x effort x arm live on each "
             "cell's invalidation block; natural-completion invalidations "
@@ -1264,6 +1390,38 @@ def render_matrix(matrix):
         lines.append(
             "- Not applicable: retention needs a low and a max cell for "
             "the same model."
+        )
+    degradation = matrix.get("column_degradation") or {}
+    columns = degradation.get("columns") or {}
+    lines += [
+        "",
+        "## Column degradation threshold (pre-registered)",
+        "",
+        f"Rule: {degradation.get('rule', '')}.",
+        "",
+        f"Scope: {degradation.get('scope', '')}.",
+        "",
+    ]
+    if columns:
+        lines += [
+            "| Column | Endpoint | Excluded / planned endpoint comparisons "
+            "| Excluded | Status |",
+            "|---|---|---|---|---|",
+        ]
+        for model, c in sorted(columns.items()):
+            pct = c["excluded_pct"]
+            pct_label = "-" if pct is None else f"{pct}%"
+            status = ("DEGRADED (no verdict issued)" if c["degraded"]
+                      else "not degraded")
+            lines.append(
+                f"| {model} | low vs {c['endpoint_effort']} "
+                f"| {c['excluded_comparisons']}/{c['planned_comparisons']} "
+                f"| {pct_label} | {status} |"
+            )
+    else:
+        lines.append(
+            "- Not applicable: the threshold needs a low and an endpoint "
+            "cell for at least one model."
         )
     verdicts = matrix.get("hypothesis_verdicts") or {}
     lines += [
@@ -1408,6 +1566,17 @@ def render_matrix(matrix):
         "excluded from all effort-trend views.",
         "",
     ]
+    degraded_columns = degradation.get("degraded_columns") or []
+    if degraded_columns:
+        # Pre-registered: H4's side-by-side marks any degraded column and
+        # drops the cross-family ordering statement while one stands.
+        lines += [
+            "DEGRADED under the pre-registered column threshold: "
+            + ", ".join(degraded_columns)
+            + ". The remaining columns' values stand below with no "
+              "cross-family ordering statement.",
+            "",
+        ]
     if h4:
         h4_overridden = [r for r in h4 if r.get("endpoint_effort") != "max"]
         if h4_overridden:
