@@ -26,7 +26,14 @@ For anything merge-bound or high-stakes, don't rely on a single reviewer even wi
 
 ## Refute-verification: the load-bearing step
 
-Every candidate finding must survive an attempt to refute it before it gets reported. In practice: route each finding to two or three independent reviewers whose job is specifically to try to knock it down. A finding survives only if it withstands that attempt. This single rule is what keeps a review from turning into a pile of plausible-sounding but wrong "findings." Fewer real findings beat a long list of maybes, and a wall of nitpicks with no real issue means "nothing substantive found," not "lots of problems."
+Every candidate finding must survive an attempt to refute it before it gets reported. In practice: route each finding to two or three independent reviewers whose job is specifically to try to knock it down. This single rule is what keeps a review from turning into a pile of plausible-sounding but wrong "findings."
+
+Refutation has four outcomes, and treating it as pass/fail is where reviews lose their best findings. A finding that withstands refutation is reported at high confidence. A finding actually shown to be wrong is dropped to a kill log, with the refutation recorded. That is the only drop. The two interesting cases are in between, and they are not the same:
+
+- **Unsettled, but probable or high-blast-radius.** The refuters could not resolve it and it would matter if true. This is the most valuable item on the board, not the least. Spend one more targeted pass to settle it against ground truth: read the code path, run the case, check the data. Then report the resolved answer. A "maybe" that would matter is a research task, not a confidence label.
+- **Unsettled and marginal.** Low probability, low impact. Report at low confidence with a one-line reason and spend nothing further.
+
+Rank by probability times impact, not by how confident a finding sounds. Never omit a finding for being small or uncertain: filtering is the reader's job, and a model that filters silently cannot tell you what it filtered. A wall of nitpicks with no real issue still means "nothing substantive found," not "lots of problems."
 
 Add one more pass after the fan-out: a **completeness critic** whose only job is "what did we not look at?"
 
@@ -48,6 +55,16 @@ Fixes for confirmed findings should be test-first where feasible (write the fail
 ## Graceful degradation
 
 If the second model or reviewing tool is unavailable (not installed, unauthenticated, timed out, empty output), proceed with the single-model review and say so explicitly in your report. Never block a review pass on tooling being down, and never silently downgrade to single-model without disclosing it.
+
+## Scope: this skill or the tiered ladder
+
+The tiered-consultancy-review skill runs review as an escalation ladder defined by role and lens: analysts, managers, specialists, then partners. It never specifies a model or a vendor, so a single model can satisfy that ladder in full and still fail the rule at the top of this page. Reviewer diversity is this skill's requirement, not the ladder's.
+
+- Reach for this skill when the failure you fear is a shared blind spot on a diff, a claim, or a plan.
+- Reach for the ladder when framing, tone, and defensibility for a named audience matter as much as correctness, and the draft has to climb from rough to finished.
+- When both apply, staff at least the specialist and adversarial-partner tiers with a different vendor or a different model size. That clears both bars in one pass.
+
+**Sequencing when both are in play: the ladder wins.** "Run the two passes concurrently" above means concurrently within a single review stage, not across tiers. Keep the ladder ordered and run the two-model fan-out inside whichever tier you are on. Flattening the tiers to buy concurrency discards what the ladder is for, which is each tier working from what the tier below already settled.
 
 ## A related, prospective use of the same idea
 

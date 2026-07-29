@@ -35,3 +35,5 @@ The same escalation idea works as a **fixed-panel** variant rather than a strict
 ## When not to use this
 
 For a quick correctness check on a small diff, use a single adversarial pass instead (see the adversarial-review pattern). The full ladder is overkill and will just slow you down without adding real signal.
+
+The boundary with that skill is worth naming, because the two overlap. This ladder is defined by role and lens, and nothing in it requires a second model or a second vendor, so one model can run the whole ladder and still fail the multi-model-adversarial-review skill's bar. Staffing at least the specialist and adversarial-partner tiers with a different vendor or a different model size satisfies both. When both are in play, this ladder's sequence wins: that skill's "run the two passes concurrently" applies inside a single tier, not across the ladder, since the ladder's value is each tier working from what the tier below already settled.
